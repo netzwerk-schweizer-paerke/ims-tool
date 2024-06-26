@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@payloadcms/ui/elements/Button';
+import { Button } from '@payloadcms/ui';
 
 export const BulkUpload = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);

@@ -1,8 +1,9 @@
 import { Access } from 'payload/config';
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants';
 
 export const isAdminOrCreatedBy: Access = ({ req: { user } }) => {
   // Scenario #1 - Check if user has the 'admin' role
-  if (user && user.role === 'admin') {
+  if (user && user.role === ROLE_SUPER_ADMIN) {
     return true;
   }
 

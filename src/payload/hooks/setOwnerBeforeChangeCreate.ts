@@ -1,4 +1,4 @@
-import { CollectionBeforeChangeHook } from 'payload/types';
+import { CollectionBeforeChangeHook } from 'payload';
 import { logger } from '@/lib/logger';
 
 export const setOwnerBeforeChangeCreate: CollectionBeforeChangeHook = async ({

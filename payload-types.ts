@@ -6,13 +6,26 @@
  * and re-run `payload generate:types` to regenerate this file.
  */
 
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UserOrganisations".
+ */
+export type UserOrganisations =
+  | {
+      organisation: number | Organisation;
+      roles: ('admin' | 'user')[];
+      id?: string | null;
+    }[]
+  | null;
+
 export interface Config {
   collections: {
-    users: User;
     media: Media;
-    documents: Document;
     organisations: Organisation;
-    processes: Process;
+    activities: Activity;
+    documents: Document;
+    'task-flows': TaskFlow;
+    users: User;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -24,30 +37,15 @@ export interface Config {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  role: 'admin' | 'user';
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: number;
-  alt?: string | null;
+  name?: string | null;
+  description?: string | null;
+  organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -88,41 +86,44 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "documents".
- */
-export interface Document {
-  id: number;
-  alt?: string | null;
-  createdBy?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organisations".
  */
 export interface Organisation {
   id: number;
   name: string;
-  logo?: number | Media | null;
-  users?: (number | User)[] | null;
+  description?: string | null;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "processes".
+ * via the `definition` "users".
  */
-export interface Process {
+export interface User {
+  id: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  roles: ('admin' | 'user')[];
+  organisations?: UserOrganisations;
+  selectedOrganisation?: (number | null) | Organisation;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activities".
+ */
+export interface Activity {
   id: number;
   name: string;
   description?: {
@@ -140,78 +141,426 @@ export interface Process {
     };
     [k: string]: unknown;
   } | null;
-  fragment?:
-    | {
-        graph?: {
-          first?: string | null;
-          second?: string | null;
-        };
-        'keypoints-tab'?: {
-          keypoints?: {
-            root: {
-              type: string;
-              children: {
-                type: string;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
+  blocks?:
+    | (
+        | {
+            graph?: {
+              task?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
             };
-            [k: string]: unknown;
-          } | null;
-        };
-        'tools-tab'?: {
-          tools?: {
-            root: {
-              type: string;
-              children: {
-                type: string;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
+            relations?: {
+              relation?: (number | TaskFlow)[] | null;
             };
-            [k: string]: unknown;
-          } | null;
-        };
-        'responsibility-tab'?: {
-          responsibility?: {
-            root: {
-              type: string;
-              children: {
-                type: string;
-                version: number;
+            io?: {
+              input?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
                 [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
+              } | null;
+              output?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
             };
-            [k: string]: unknown;
-          } | null;
-        };
-        'attachments-tab'?: {
-          attachment?:
-            | {
-                document: number | Document;
-                id?: string | null;
-              }[]
-            | null;
-        };
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'block-start';
-      }[]
+            infos?: {
+              norms?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              support?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            files?: {
+              files?:
+                | {
+                    type?: ('file' | 'link') | null;
+                    name?: string | null;
+                    document?: (number | null) | Document;
+                    url?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'activity-io';
+          }
+        | {
+            graph?: {
+              task?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+            };
+            relations?: {
+              relation?: (number | TaskFlow)[] | null;
+            };
+            io?: {
+              input?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              output?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            infos?: {
+              norms?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              support?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            files?: {
+              files?:
+                | {
+                    type?: ('file' | 'link') | null;
+                    name?: string | null;
+                    document?: (number | null) | Document;
+                    url?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'activity-task';
+          }
+      )[]
     | null;
+  variant: 'standard' | 'group';
+  organisation?: (number | null) | Organisation;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
+  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "task-flows".
+ */
+export interface TaskFlow {
+  id: number;
+  name: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  blocks?:
+    | (
+        | {
+            graph?: {
+              'input-output'?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+              task?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+            };
+            'keypoints-tab'?: {
+              keypoints?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            'tools-tab'?: {
+              tools?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            'responsibility-tab'?: {
+              responsibility?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            'file-tab'?: {
+              files?:
+                | {
+                    type?: ('file' | 'link') | null;
+                    name?: string | null;
+                    document?: (number | null) | Document;
+                    url?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'proc-task-io';
+          }
+        | {
+            graph?: {
+              test?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+            };
+            'keypoints-tab'?: {
+              keypoints?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            'tools-tab'?: {
+              tools?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            'responsibility-tab'?: {
+              responsibility?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: string;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+            };
+            'file-tab'?: {
+              files?:
+                | {
+                    type?: ('file' | 'link') | null;
+                    name?: string | null;
+                    document?: (number | null) | Document;
+                    url?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'proc-test';
+          }
+      )[]
+    | null;
+  organisation?: (number | null) | Organisation;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
+  docOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  name?: string | null;
+  description?: string | null;
+  organisation?: (number | null) | Organisation;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

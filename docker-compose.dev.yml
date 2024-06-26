@@ -17,14 +17,33 @@ services:
     container_name: minio
     ports:
       - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: swiss-parcs-ims
       MINIO_ROOT_PASSWORD: swiss-parcs-ims
       MINIO_DEFAULT_BUCKETS: swiss-parcs-ims
     volumes:
       - minio-data:/data
+    command: server /data --console-address ":9001"
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+      - mailpit-data:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      MP_MAX_MESSAGES: 100
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
 volumes:
+    mailpit-data:
+      driver: local
     postgres-data:
       driver: local
     minio-data:
