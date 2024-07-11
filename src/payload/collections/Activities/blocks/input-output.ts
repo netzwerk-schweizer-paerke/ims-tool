@@ -2,7 +2,8 @@ import { Block } from 'payload';
 
 import './block.scss';
 import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata';
-import { ActivityIOField } from '@/payload/admin-components/graph/fields/activities/activity-i-o-field';
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { ActivityIOField } from '@/admin-components/graph/fields/graph/activities/io/activity-i-o-field';
 
 export const ActivityIOBlock: Block = {
   slug: 'activity-io',
@@ -12,6 +13,7 @@ export const ActivityIOBlock: Block = {
   },
   imageURL: '/process-block-shapes/input-output.svg',
   imageAltText: 'Input/output task group',
+  interfaceName: 'ActivityIOBlock',
   fields: [
     {
       type: 'row',
@@ -36,6 +38,7 @@ export const ActivityIOBlock: Block = {
                   Field: ActivityIOField,
                 },
               },
+              jsonSchema: connectionSchema,
             },
           ],
         },

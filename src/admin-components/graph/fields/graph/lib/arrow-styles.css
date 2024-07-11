@@ -1,0 +1,20 @@
+.x-arrows {
+  svg {
+    > path {
+      stroke: var(--theme-text);
+    }
+    > g > path {
+      fill: var(--theme-text);
+    }
+  }
+  @media print {
+    svg {
+      > path {
+        stroke: black;
+      }
+      > g > path {
+        fill: black;
+      }
+    }
+  }
+}

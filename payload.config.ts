@@ -13,16 +13,18 @@ import { fr } from '@payloadcms/translations/languages/fr';
 import { it } from '@payloadcms/translations/languages/it';
 import { Users } from '@/payload/collections/Users';
 import { buildConfig } from 'payload';
-import { OrganisationSelect } from '@/payload/admin-components/organisation-select';
-import { docsReorder } from '@payload-enchants/docs-reorder';
+import { OrganisationSelect } from '@/admin-components/organisation-select';
 import { Activities } from '@/payload/collections/Activities';
 import { TaskFlows } from 'src/payload/collections/TaskFlow';
 import { Media } from '@/payload/collections/Media';
 import { Organisations } from '@/payload/collections/Organisations';
 import { Documents } from '@/payload/collections/Documents';
-import { ActivityLandscapeLink } from '@/payload/admin-components/activity-landscape-link';
-import { ActivityLandscapeView } from '@/payload/admin-components/activity-landscape-view';
-import { i18nTranslations } from '@/lib/i18n-translations';
+import { ActivityLandscapeLink } from '@/admin-components/activity/activity-landscape-link';
+import { ActivitiesView } from '@/admin-components/activity/overview';
+import { customI18nTranslations } from '@/lib/custom-i18n-translations';
+import { TaskLists } from '@/payload/collections/TaskList';
+import { ActivityBlockView } from '@/admin-components/activity/view';
+import { FlowBlockView } from '@/admin-components/flow';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -31,7 +33,7 @@ export default buildConfig({
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
   }),
-  collections: [Media, Organisations, Activities, Documents, TaskFlows, Users],
+  collections: [Media, Organisations, Activities, Documents, TaskFlows, TaskLists, Users],
   globals: [],
   localization: {
     locales: [
@@ -52,17 +54,17 @@ export default buildConfig({
         code: 'it',
       },
     ],
-    defaultLocale: 'en',
+    defaultLocale: 'de',
     fallback: true,
   },
   i18n: {
     fallbackLanguage: 'en',
     supportedLanguages: { en, de, fr, it },
-    translations: i18nTranslations,
+    translations: customI18nTranslations,
   },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
+    outputFile: path.resolve(dirname, 'src', 'types', 'payload-types.ts'),
   },
   db: postgresAdapter({
     pool: {
@@ -82,9 +84,17 @@ export default buildConfig({
     components: {
       beforeNavLinks: [ActivityLandscapeLink, OrganisationSelect],
       views: {
-        ActivityLandscape: {
-          path: '/activity-landscape',
-          Component: ActivityLandscapeView,
+        FlowBlockView: {
+          path: '/activity/:id/flow/:id',
+          Component: FlowBlockView,
+        },
+        ActivityBlockView: {
+          path: '/activity/:id/block/:id',
+          Component: ActivityBlockView,
+        },
+        ActivitiesView: {
+          path: '/activities',
+          Component: ActivitiesView,
         },
       },
     },
@@ -107,12 +117,12 @@ export default buildConfig({
   },
   plugins: [
     // https://github.com/r1tsuu/payload-enchants/tree/master/packages/docs-reorder
-    docsReorder({
-      collections: [{ slug: Activities.slug }, { slug: TaskFlows.slug }],
-    }),
+    // docsReorder({
+    //   collections: [{ slug: Activities.slug }],
+    // }),
     // translator({
     //   // collections with the enabled translator in the admin UI
-    //   collections: ['processes', 'tasks'],
+    //   collections: ['activities', 'task-flows', 'media', 'documents'],
     //   // globals with the enabled translator in the admin UI
     //   globals: [],
     //   // add resolvers that you want to include, examples on how to write your own in ./plugin/src/resolvers

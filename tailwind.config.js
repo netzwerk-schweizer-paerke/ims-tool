@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-import daisyui from "daisyui";
+import daisyui from 'daisyui';
+import typography from '@tailwindcss/typography';
 
 module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
@@ -12,14 +13,11 @@ module.exports = {
     'checkbox',
     'radio',
     'switch',
-    'collapsible'
+    'collapsible',
   ],
-  theme: {
-  },
+  theme: {},
   daisyui: {
-    themes: ["light", "dark"],
+    themes: ['light', 'dark'],
   },
-  plugins: [
-    daisyui
-  ],
-}
+  plugins: [daisyui, typography],
+};

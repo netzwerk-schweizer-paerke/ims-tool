@@ -1,4 +1,5 @@
 import {
+  BoldFeature,
   FixedToolbarFeature,
   lexicalEditor,
   LinkFeature,
@@ -11,6 +12,7 @@ export const lexicalEditorReducedFeatures = lexicalEditor({
     UnorderedListFeature(),
     OrderedListFeature(),
     LinkFeature(),
+    BoldFeature(),
     FixedToolbarFeature(),
   ],
 });

@@ -1,6 +1,5 @@
-import { translations } from '@/lib/translations';
+import { I18nCollection } from '@/lib/i18nCollection';
 import { Field } from 'payload';
-import { filesArrayField } from '@/payload/fields/files-array';
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
 
 export const tabsMetadata: Field[] = [
@@ -8,8 +7,8 @@ export const tabsMetadata: Field[] = [
     type: 'tabs',
     tabs: [
       {
-        name: 'keypoints-tab',
-        label: translations.fieldLabel.keypoints,
+        name: 'keypoints',
+        label: I18nCollection.fieldLabel.keypoints,
         fields: [
           {
             name: 'keypoints',
@@ -21,8 +20,8 @@ export const tabsMetadata: Field[] = [
         ],
       },
       {
-        name: 'tools-tab',
-        label: translations.fieldLabel.tools,
+        name: 'tools',
+        label: I18nCollection.fieldLabel.tools,
         fields: [
           {
             name: 'tools',
@@ -34,8 +33,8 @@ export const tabsMetadata: Field[] = [
         ],
       },
       {
-        name: 'responsibility-tab',
-        label: translations.fieldLabel.responsibility,
+        name: 'responsibility',
+        label: I18nCollection.fieldLabel.responsibility,
         fields: [
           {
             name: 'responsibility',
@@ -45,11 +44,6 @@ export const tabsMetadata: Field[] = [
             editor: lexicalEditorReducedFeatures,
           },
         ],
-      },
-      {
-        name: 'file-tab',
-        label: translations.fieldLabel.attachments,
-        fields: [filesArrayField],
       },
     ],
   },

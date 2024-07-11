@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload';
-import { translations } from '@/lib/translations';
+import { I18nCollection } from '@/lib/i18nCollection';
 import { organisationsAccess } from '@/payload/collections/access/organisationsAccess';
 import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
@@ -10,12 +10,12 @@ import { filesArrayField } from '@/payload/fields/files-array';
 export const TaskLists: CollectionConfig = {
   slug: 'task-lists',
   admin: {
-    group: translations.collectionGroup.process,
+    group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
   },
   labels: {
-    plural: translations.fieldLabel.taskLists,
-    singular: translations.fieldLabel.taskList,
+    plural: I18nCollection.fieldLabel.taskLists,
+    singular: I18nCollection.fieldLabel.taskList,
   },
   access: {
     read: organisationsAccess,
@@ -26,48 +26,48 @@ export const TaskLists: CollectionConfig = {
   fields: [
     {
       name: 'name',
-      label: translations.fieldLabel.name,
+      label: I18nCollection.fieldLabel.name,
       type: 'text',
       localized: true,
       required: true,
     },
     {
       name: 'description',
-      label: translations.fieldLabel.description,
+      label: I18nCollection.fieldLabel.description,
       type: 'richText',
       localized: true,
       editor: lexicalEditorReducedFeatures,
     },
     {
       name: 'items',
-      label: translations.fieldLabel.listItem,
+      label: I18nCollection.fieldLabel.listItem,
       type: 'array',
       localized: true,
       fields: [
         {
           name: 'topic',
-          label: translations.fieldLabel.topic,
+          label: I18nCollection.fieldLabel.topic,
           type: 'richText',
           localized: true,
           editor: lexicalEditorReducedFeatures,
         },
         {
           name: 'tools',
-          label: translations.fieldLabel.tools,
+          label: I18nCollection.fieldLabel.tools,
           type: 'richText',
           localized: true,
           editor: lexicalEditorReducedFeatures,
         },
         {
           name: 'responsibility',
-          label: translations.fieldLabel.responsibility,
+          label: I18nCollection.fieldLabel.responsibility,
           type: 'richText',
           localized: true,
           editor: lexicalEditorReducedFeatures,
         },
-        filesArrayField,
       ],
     },
+    filesArrayField,
     adminSettingsField({ sidebar: true }),
   ],
 };

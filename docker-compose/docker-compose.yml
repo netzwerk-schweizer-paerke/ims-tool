@@ -1,0 +1,55 @@
+
+services:
+
+  proxy:
+    image: caddy:latest
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./data/caddy:/data
+      - ./data/certs:/certs
+    networks:
+        - default
+        - internal
+
+  app:
+    image: ghcr.io/netzwerk-schweizer-paerke/ims-tool:latest
+    container_name: app
+    env_file:
+      - .env
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - .env
+    volumes:
+      - ./data/minio:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

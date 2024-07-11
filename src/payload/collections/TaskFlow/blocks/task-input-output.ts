@@ -2,8 +2,9 @@ import { Block } from 'payload';
 
 import './block.scss';
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata';
-import { ProcessInputOutputField } from '@/payload/admin-components/graph/fields/processes/process-input-output-field';
-import { ProcessTaskField } from '@/payload/admin-components/graph/fields/processes/process-task-field';
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { ProcessInputOutputField } from '@/admin-components/graph/fields/graph/flows/io/process-input-output-field';
+import { ProcessTaskField } from '@/admin-components/graph/fields/graph/flows/task/process-task-field';
 
 export const ProcessTaskInputOutputBlock: Block = {
   slug: 'proc-task-io',
@@ -13,6 +14,7 @@ export const ProcessTaskInputOutputBlock: Block = {
   },
   imageURL: '/process-block-shapes/block-start.svg',
   imageAltText: 'Task with optional input/output',
+  interfaceName: 'ProcessTaskIOBlock',
   fields: [
     {
       type: 'row',
@@ -35,7 +37,7 @@ export const ProcessTaskInputOutputBlock: Block = {
               },
               fields: [
                 {
-                  name: 'input-output',
+                  name: 'io',
                   type: 'json',
                   localized: true,
                   admin: {
@@ -43,6 +45,7 @@ export const ProcessTaskInputOutputBlock: Block = {
                       Field: ProcessInputOutputField,
                     },
                   },
+                  jsonSchema: connectionSchema,
                 },
                 {
                   name: 'task',
@@ -53,6 +56,7 @@ export const ProcessTaskInputOutputBlock: Block = {
                       Field: ProcessTaskField,
                     },
                   },
+                  jsonSchema: connectionSchema,
                 },
               ],
             },

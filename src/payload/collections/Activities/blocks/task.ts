@@ -1,8 +1,9 @@
 import { Block } from 'payload';
 
 import './block.scss';
-import { ActivityTaskField } from '@/payload/admin-components/graph/fields/activities/activity-task-field';
 import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata';
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { ActivityTaskField } from '@/admin-components/graph/fields/graph/activities/task/activity-task-field';
 
 export const ActivityTaskBlock: Block = {
   slug: 'activity-task',
@@ -12,6 +13,7 @@ export const ActivityTaskBlock: Block = {
   },
   imageURL: '/process-block-shapes/task.svg',
   imageAltText: 'Task group',
+  interfaceName: 'ActivityTaskBlock',
   fields: [
     {
       type: 'row',
@@ -23,7 +25,6 @@ export const ActivityTaskBlock: Block = {
           type: 'group',
           name: 'graph',
           label: false,
-          localized: true,
           admin: {
             className: 'graph-fields-group',
           },
@@ -37,6 +38,7 @@ export const ActivityTaskBlock: Block = {
                   Field: ActivityTaskField,
                 },
               },
+              jsonSchema: connectionSchema,
             },
           ],
         },

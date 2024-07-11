@@ -1,6 +1,6 @@
-import { AfterLoginHook } from 'payload/dist/collections/config/types';
+import { CollectionAfterLoginHook } from 'payload';
 
-export const recordSelectedOrganisation: AfterLoginHook = async ({ req, user }) => {
+export const recordSelectedOrganisation: CollectionAfterLoginHook = async ({ req, user }) => {
   req.payload.logger.info(`Setting selected organisation for user ${user.id}`);
   try {
     let selectedOrgId = user.selectedOrganisation;

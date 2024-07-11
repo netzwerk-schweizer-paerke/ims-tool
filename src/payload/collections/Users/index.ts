@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload';
-import { translations } from '@/lib/translations';
+import { I18nCollection } from '@/lib/i18nCollection';
 import { adminsAndSelf } from '@/payload/collections/Users/access/adminsAndSelf';
 import { anyone } from '@/payload/access/anyone';
 import { isSuperOrOrganisationAdmin } from '@/payload/collections/Users/utilities/isSuperOrOrganisationAdmin';
@@ -13,7 +13,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
   admin: {
-    group: translations.collectionGroup.settings,
+    group: I18nCollection.collectionGroup.settings,
     useAsTitle: 'email',
   },
   access: {

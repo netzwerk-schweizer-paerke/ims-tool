@@ -1,6 +1,6 @@
 import { CollectionConfig } from 'payload';
 import path from 'path';
-import { translations } from '@/lib/translations';
+import { I18nCollection } from '@/lib/i18nCollection';
 import { organisationsAccess } from '@/payload/collections/access/organisationsAccess';
 import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
@@ -9,7 +9,7 @@ import { adminSettingsField } from '@/payload/fields/admin-settings';
 export const Documents: CollectionConfig = {
   slug: 'documents',
   admin: {
-    group: translations.collectionGroup.files,
+    group: I18nCollection.collectionGroup.files,
   },
   access: {
     read: organisationsAccess,
@@ -30,13 +30,13 @@ export const Documents: CollectionConfig = {
   fields: [
     {
       name: 'name',
-      label: translations.fieldLabel.name,
+      label: I18nCollection.fieldLabel.name,
       localized: true,
       type: 'text',
     },
     {
       name: 'description',
-      label: translations.fieldLabel.description,
+      label: I18nCollection.fieldLabel.description,
       localized: true,
       type: 'textarea',
     },

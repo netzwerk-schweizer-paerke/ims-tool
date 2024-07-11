@@ -2,7 +2,7 @@ import { checkUserRoles } from '@/payload/utilities/checkUserRoles';
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 import { Access } from 'payload';
-import { User } from '../../../../payload-types'; // the user must be an admin of the document's organisation
+import { User } from '@/types/payload-types';
 
 // the user must be an admin of the document's organisation
 export const organisationAdminsAccess: Access<User> = ({ req: { user } }) => {

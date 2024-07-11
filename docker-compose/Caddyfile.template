@@ -1,0 +1,3 @@
+myhost.mydomain.com {
+    reverse_proxy app:3000
+}

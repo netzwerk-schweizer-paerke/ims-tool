@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload';
-import { translations } from '@/lib/translations';
+import { I18nCollection } from '@/lib/i18nCollection';
 import { superAdmins } from '@/payload/access/superAdmins';
 import { organisationAdmins } from '@/payload/collections/Organisations/access/organisationAdmins';
 import { createdByField } from '@/payload/fields/created-by';
@@ -8,11 +8,11 @@ import { updatedByField } from '@/payload/fields/updated-by';
 export const Organisations: CollectionConfig = {
   slug: 'organisations',
   labels: {
-    plural: translations.fieldLabel.organisations,
-    singular: translations.fieldLabel.organisation,
+    plural: I18nCollection.fieldLabel.organisations,
+    singular: I18nCollection.fieldLabel.organisation,
   },
   admin: {
-    group: translations.collectionGroup.settings,
+    group: I18nCollection.collectionGroup.settings,
     useAsTitle: 'name',
   },
   access: {
@@ -24,13 +24,13 @@ export const Organisations: CollectionConfig = {
   fields: [
     {
       name: 'name',
-      label: translations.fieldLabel.name,
+      label: I18nCollection.fieldLabel.name,
       type: 'text',
       required: true,
     },
     {
       name: 'description',
-      label: translations.fieldLabel.description,
+      label: I18nCollection.fieldLabel.description,
       type: 'textarea',
     },
     createdByField,

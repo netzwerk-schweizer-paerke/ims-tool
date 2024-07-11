@@ -1,7 +1,6 @@
-import { translations } from '@/lib/translations';
+import { I18nCollection } from '@/lib/i18nCollection';
 import { Field } from 'payload';
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
-import { filesArrayField } from '@/payload/fields/files-array';
 
 export const tabsMetadata: Field[] = [
   {
@@ -9,31 +8,38 @@ export const tabsMetadata: Field[] = [
     tabs: [
       {
         name: 'relations',
-        label: translations.fieldLabel.taskFlows,
+        label: I18nCollection.fieldLabel.tasks,
         fields: [
           {
-            name: 'relation',
+            name: 'flowRelation',
             type: 'relationship',
-            label: translations.fieldLabel.taskFlows,
+            label: I18nCollection.fieldLabel.taskFlows,
             relationTo: 'task-flows',
+            hasMany: true,
+          },
+          {
+            name: 'listRelation',
+            type: 'relationship',
+            label: I18nCollection.fieldLabel.taskLists,
+            relationTo: 'task-lists',
             hasMany: true,
           },
         ],
       },
       {
         name: 'io',
-        label: translations.fieldLabel.tools,
+        label: I18nCollection.fieldLabel.io,
         fields: [
           {
             name: 'input',
-            label: translations.fieldLabel.input,
+            label: I18nCollection.fieldLabel.input,
             type: 'richText',
             localized: true,
             editor: lexicalEditorReducedFeatures,
           },
           {
             name: 'output',
-            label: translations.fieldLabel.output,
+            label: I18nCollection.fieldLabel.output,
             type: 'richText',
             localized: true,
             editor: lexicalEditorReducedFeatures,
@@ -42,28 +48,23 @@ export const tabsMetadata: Field[] = [
       },
       {
         name: 'infos',
-        label: translations.fieldLabel.activityInfos,
+        label: I18nCollection.fieldLabel.activityInfos,
         fields: [
           {
             name: 'norms',
-            label: translations.fieldLabel.normRequirements,
+            label: I18nCollection.fieldLabel.normRequirements,
             type: 'richText',
             localized: true,
             editor: lexicalEditorReducedFeatures,
           },
           {
             name: 'support',
-            label: translations.fieldLabel.activitySupport,
+            label: I18nCollection.fieldLabel.activitySupport,
             type: 'richText',
             localized: true,
             editor: lexicalEditorReducedFeatures,
           },
         ],
-      },
-      {
-        name: 'files',
-        label: translations.fieldLabel.attachments,
-        fields: [filesArrayField],
       },
     ],
   },

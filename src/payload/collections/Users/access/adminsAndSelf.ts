@@ -1,10 +1,11 @@
-import type { Access } from 'payload';
+import type { Access, AccessResult } from 'payload';
 
 import { isAdmin } from '@/payload/utilities/isAdmin';
-import { User } from '../../../../../payload-types';
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants';
+import { User } from '@/types/payload-types';
+import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 
-export const adminsAndSelf: Access<User> = async ({ req: { user } }) => {
+export const adminsAndSelf: Access<User> = async ({ req: { user } }): Promise<AccessResult> => {
   if (!user) return false;
   const isSuper = isAdmin(user);
 
@@ -25,30 +26,22 @@ export const adminsAndSelf: Access<User> = async ({ req: { user } }) => {
         ? [
             {
               'organisations.organisation': {
-                in: [
-                  typeof user?.selectedOrganisation === 'string'
-                    ? user?.selectedOrganisation
-                    : user?.selectedOrganisation?.id,
-                ].filter(Boolean),
+                in: [getIdFromRelation(user.selectedOrganisation)].filter(
+                  (id): id is string | number => id !== null,
+                ),
               },
             },
           ]
-        : [
-            {
+        : user?.organisations
+            ?.map(({ organisation, roles }) =>
+              roles.includes(ROLE_SUPER_ADMIN) ? getIdFromRelation(organisation) : null,
+            )
+            .filter((id): id is string | number => id !== null)
+            .map((id) => ({
               'organisations.organisation': {
-                in:
-                  user?.organisations
-                    ?.map(({ organisation, roles }) =>
-                      roles.includes(ROLE_SUPER_ADMIN)
-                        ? typeof organisation === 'string'
-                          ? organisation
-                          : organisation.id
-                        : null,
-                    ) // eslint-disable-line function-paren-newline
-                    .filter(Boolean) || [],
+                in: [id],
               },
-            },
-          ]),
+            })) || []),
     ],
   };
 };

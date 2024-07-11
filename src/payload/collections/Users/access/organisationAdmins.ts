@@ -2,9 +2,9 @@ import type { FieldAccess } from 'payload';
 
 import { checkUserRoles } from '@/payload/utilities/checkUserRoles';
 import { checkOrganisationRoles } from '../utilities/checkOrganisationRoles';
-import { User } from '../../../../../payload-types';
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants';
+import { User } from '@/types/payload-types';
+import { isNumber } from 'is-what';
 
 export const organisationAdmins: FieldAccess<User> = (args) => {
   const {
@@ -15,8 +15,10 @@ export const organisationAdmins: FieldAccess<User> = (args) => {
   return !!(
     checkUserRoles([ROLE_SUPER_ADMIN], user) ||
     doc?.organisations?.some(({ organisation }) => {
-      const id = getIdFromRelation(organisation);
-      return checkOrganisationRoles([ROLE_SUPER_ADMIN], user, id);
+      if (!isNumber(organisation)) {
+        throw new Error('organisationAdmins: The organisation ID must be a number');
+      }
+      return checkOrganisationRoles([ROLE_SUPER_ADMIN], user, organisation);
     })
   );
 };
