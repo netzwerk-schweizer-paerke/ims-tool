@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { isObject } from 'lodash-es';
 import { TaskShapeWrapper } from '@/admin-components/graph/wrappers/task-shape-wrapper';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
-import { Xwrapper } from 'react-xarrows-updated';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
   ButtonBottomCenter,
@@ -17,6 +16,7 @@ import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-targe
 import { deepEqual } from '@hapi/hoek';
 
 import '../../lib/arrow-styles.css';
+import { Xwrapper } from '@/lib/xarrows/src';
 
 type ComponentState = {
   connections: ConnectionsType;

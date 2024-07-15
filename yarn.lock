@@ -3825,7 +3825,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.3":
+"@types/prop-types@npm:*":
   version: 15.7.12
   resolution: "@types/prop-types@npm:15.7.12"
   checksum: 10/ac16cc3d0a84431ffa5cfdf89579ad1e2269549f32ce0c769321fdd078f84db4fbe1b461ed5a1a496caf09e637c0e367d600c541435716a55b1d9713f5035dfe
@@ -10001,19 +10001,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-xarrows-updated@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "react-xarrows-updated@npm:1.0.3"
-  dependencies:
-    "@types/prop-types": "npm:^15.7.3"
-    lodash: "npm:^4.17.21"
-    prop-types: "npm:^15.7.2"
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 10/1722ccab1f960d6346be4e073473440040392a8affb4106f7095cada27e27bd0a93e2a64eeecc8e9dcb728a237f0bb3881640a262c7b3b2dca81b51f51c38fc7
-  languageName: node
-  linkType: hard
-
 "react@npm:19.0.0-rc-6230622a1a-20240610":
   version: 19.0.0-rc-6230622a1a-20240610
   resolution: "react@npm:19.0.0-rc-6230622a1a-20240610"
@@ -11023,7 +11010,6 @@ __metadata:
     react-dom: "npm:19.0.0-rc-6230622a1a-20240610"
     react-i18next: "npm:^14.1.2"
     react-router-dom: "npm:5.3.4"
-    react-xarrows-updated: "npm:^1.0.3"
     sharp: "npm:0.32.6"
     tailwindcss: "npm:^3.4.4"
     tslog: "npm:^4.9.3"

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { isObject } from 'lodash-es';
 import { TaskShapeWrapper } from '@/admin-components/graph/wrappers/task-shape-wrapper';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
-import { Xwrapper } from 'react-xarrows-updated';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
   ButtonBottomCenter,
@@ -14,6 +13,7 @@ import {
 import { processTaskConnections } from '@/admin-components/graph/fields/graph/flows/task/connection-definitions';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
+import { Xwrapper } from '@/lib/xarrows/src';
 
 type ComponentState = {
   connections: ConnectionsType;

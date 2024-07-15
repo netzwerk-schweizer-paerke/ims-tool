@@ -1,5 +1,4 @@
 'use client';
-import Xarrow, { useXarrow } from 'react-xarrows-updated';
 import { debounce } from 'lodash-es';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import '../graph/fields/graph/lib/arrow-styles.css';
@@ -7,6 +6,7 @@ import { arrowStyle } from '@/admin-components/graph/fields/graph/lib/arrow-styl
 import { ProcessTaskCompoundBlock } from '@/admin-components/flow/flow-block';
 import { assignBlockArrows } from '@/admin-components/flow/lib/assign-block-arrows';
 import { RootTargetName } from '@/admin-components/graph/fields/graph/lib/root-target';
+import Xarrow, { useXarrow } from '@/lib/xarrows/src';
 
 type Props = {
   taskFlowBlock: ProcessTaskCompoundBlock;

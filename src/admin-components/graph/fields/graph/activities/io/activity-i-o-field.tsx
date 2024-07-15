@@ -4,7 +4,6 @@ import { useField, useFieldProps } from '@payloadcms/ui';
 import { useEffect, useState } from 'react';
 import { isObject } from 'lodash-es';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
-import { Xwrapper } from 'react-xarrows-updated';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
   ButtonBottomCenter,
@@ -18,6 +17,7 @@ import { IOShapeWrapper } from '@/admin-components/graph/wrappers/i-o-shape-wrap
 import { deepEqual } from '@hapi/hoek';
 
 import '../../lib/arrow-styles.css';
+import { Xwrapper } from '@/lib/xarrows/src';
 
 type ComponentState = {
   connections: ConnectionsType;

@@ -1,11 +1,11 @@
 'use client';
-import Xarrow, { useXarrow, xarrowPropsType } from 'react-xarrows-updated';
 import { debounce } from 'lodash-es';
 import { Key, useCallback, useEffect, useRef, useState } from 'react';
 import '../../../graph/fields/graph/lib/arrow-styles.css';
 import { arrowStyle } from '@/admin-components/graph/fields/graph/lib/arrow-style';
 import { Activity } from '@/types/payload-types';
 import { assignActivityBlockArrows } from '@/admin-components/activity/overview/activity/lib/assign-activity-block-arrows';
+import Xarrow, { useXarrow, xarrowPropsType } from '@/lib/xarrows/src';
 
 type Props = {
   activity: Activity;

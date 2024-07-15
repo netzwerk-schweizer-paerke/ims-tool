@@ -1,6 +1,6 @@
-import { xarrowPropsType } from 'react-xarrows-updated';
 import { RootTargetName } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { OuterTargetsEnum } from '@/admin-components/graph/fields/graph/lib/outer-targets';
+import { xarrowPropsType } from '@/lib/xarrows/src';
 
 const taskArrowRightOptions = [
   'in-top',
@@ -13,7 +13,10 @@ const taskArrowRightOptions = [
   'none',
 ] as const;
 
-const taskArrowRightDef: Record<(typeof taskArrowRightOptions)[number], xarrowPropsType[]> = {
+const taskArrowRightDef: Record<
+  (typeof taskArrowRightOptions)[number],
+  Partial<xarrowPropsType>[]
+> = {
   none: [],
   'in-top': [
     {
@@ -81,7 +84,10 @@ const taskArrowRightDef: Record<(typeof taskArrowRightOptions)[number], xarrowPr
 
 const taskArrowBottomOptions = ['none', 'out'] as const;
 
-const taskArrowBottomDef: Record<(typeof taskArrowBottomOptions)[number], xarrowPropsType[]> = {
+const taskArrowBottomDef: Record<
+  (typeof taskArrowBottomOptions)[number],
+  Partial<xarrowPropsType>[]
+> = {
   none: [],
   out: [
     {
@@ -95,7 +101,7 @@ const taskArrowBottomDef: Record<(typeof taskArrowBottomOptions)[number], xarrow
 
 const taskArrowTopOptions = ['none', 'in'] as const;
 
-const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], xarrowPropsType[]> = {
+const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarrowPropsType>[]> = {
   none: [],
   in: [
     {

@@ -2,7 +2,6 @@
 import { IOShapeWrapper } from '@/admin-components/graph/wrappers/i-o-shape-wrapper';
 import { useEffect, useState } from 'react';
 import { isObject } from 'lodash-es';
-import { Xwrapper } from 'react-xarrows-updated';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
@@ -10,6 +9,7 @@ import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-targe
 import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/lib/buttons';
 import { useField, useFieldProps } from '@payloadcms/ui';
 import { processIoConnections } from '@/admin-components/graph/fields/graph/flows/io/connection-definitions';
+import { Xwrapper } from '@/lib/xarrows/src';
 
 type ComponentState = {
   enabled: boolean;

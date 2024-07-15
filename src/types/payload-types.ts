@@ -567,12 +567,12 @@ export interface TaskList {
           };
           [k: string]: unknown;
         } | null;
-        files?:
-          | {
-              document?: (number | null) | Document;
-              id?: string | null;
-            }[]
-          | null;
+        id?: string | null;
+      }[]
+    | null;
+  files?:
+    | {
+        document?: (number | null) | Document;
         id?: string | null;
       }[]
     | null;

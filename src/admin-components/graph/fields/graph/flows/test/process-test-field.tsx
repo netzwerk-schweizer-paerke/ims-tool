@@ -3,7 +3,6 @@ import { useField, useFieldProps } from '@payloadcms/ui';
 import { useEffect, useState } from 'react';
 import { isObject } from 'lodash-es';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
-import { Xwrapper } from 'react-xarrows-updated';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
   ButtonBottomCenter,
@@ -14,6 +13,7 @@ import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/grap
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { processTestConnections } from '@/admin-components/graph/fields/graph/flows/test/connection-definitions';
 import { TestShapeWrapper } from '@/admin-components/graph/wrappers/test-shape-wrapper';
+import { Xwrapper } from '@/lib/xarrows/src';
 
 enum BooleanOutput {
   FALSE = 'false',

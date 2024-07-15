@@ -1,8 +1,8 @@
 'use client';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { debounce } from 'lodash-es';
-import Xarrow, { useXarrow } from 'react-xarrows-updated';
 import { arrowStyle } from '@/admin-components/graph/fields/graph/lib/arrow-style';
+import Xarrow, { useXarrow } from '@/lib/xarrows/src';
 
 export const connectionTypes = ['in', 'out', 'pass-by', 'in-bottom', 'out-top', 'none'] as const;
 
