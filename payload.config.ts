@@ -136,7 +136,10 @@ export default buildConfig({
     // }),
     // betterLocalizedFields(),
     s3Storage({
-      collections: { media: true, 'product-media': true },
+      collections: {
+        [Documents.slug]: { prefix: Documents.slug },
+        [Media.slug]: { prefix: Documents.slug },
+      },
       config: {
         credentials: {
           accessKeyId: process.env.S3_ACCESS_KEY_ID || '',

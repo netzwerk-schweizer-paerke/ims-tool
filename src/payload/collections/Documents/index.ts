@@ -1,10 +1,10 @@
 import { CollectionConfig } from 'payload';
-import path from 'path';
 import { I18nCollection } from '@/lib/i18nCollection';
 import { organisationsAccess } from '@/payload/collections/access/organisationsAccess';
 import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
 import { adminSettingsField } from '@/payload/fields/admin-settings';
+import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload';
 
 export const Documents: CollectionConfig = {
   slug: 'documents',
@@ -17,9 +17,10 @@ export const Documents: CollectionConfig = {
     update: organisationAdminsAccess,
     delete: organisationAdminsAccess,
   },
+  hooks: {
+    beforeChange: [assignOrgToUpload],
+  },
   upload: {
-    staticDir: path.resolve('./public/documents'),
-    disableLocalStorage: true,
     mimeTypes: [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

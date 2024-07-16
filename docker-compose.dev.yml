@@ -21,7 +21,6 @@ services:
     environment:
       MINIO_ROOT_USER: swiss-parcs-ims
       MINIO_ROOT_PASSWORD: swiss-parcs-ims
-      MINIO_DEFAULT_BUCKETS: swiss-parcs-ims
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
