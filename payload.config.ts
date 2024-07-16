@@ -6,8 +6,6 @@ import { fileURLToPath } from 'url';
 import { en } from '@payloadcms/translations/languages/en';
 import { de } from '@payloadcms/translations/languages/de';
 import { s3Storage } from '@payloadcms/storage-s3';
-import nodemailer from 'nodemailer';
-import { nodemailerAdapter } from '@/config/nodemailerAdapter';
 import { seedDevUser } from '@/config/seed/dev-user';
 import { fr } from '@payloadcms/translations/languages/fr';
 import { it } from '@payloadcms/translations/languages/it';
@@ -25,6 +23,7 @@ import { customI18nTranslations } from '@/lib/custom-i18n-translations';
 import { TaskLists } from '@/payload/collections/TaskList';
 import { ActivityBlockView } from '@/admin-components/activity/view';
 import { FlowBlockView } from '@/admin-components/flow';
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -37,22 +36,22 @@ export default buildConfig({
   globals: [],
   localization: {
     locales: [
-      {
-        label: 'English',
-        code: 'en',
-      },
+      // {
+      //   label: 'English',
+      //   code: 'en',
+      // },
       {
         label: 'Deutsch',
         code: 'de',
       },
-      {
-        label: 'Français',
-        code: 'fr',
-      },
-      {
-        label: 'Italiano',
-        code: 'it',
-      },
+      // {
+      //   label: 'Français',
+      //   code: 'fr',
+      // },
+      // {
+      //   label: 'Italiano',
+      //   code: 'it',
+      // },
     ],
     defaultLocale: 'de',
     fallback: true,
@@ -103,14 +102,14 @@ export default buildConfig({
   email: nodemailerAdapter({
     defaultFromAddress: process.env.SMTP_FROM_ADDRESS || '',
     defaultFromName: process.env.SMTP_FROM_ADDRESS || '',
-    transport: nodemailer.createTransport({
+    transportOptions: {
       host: process.env.SMTP_HOST || '',
       port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
       auth: {
         user: process.env.SMTP_USER || '',
         pass: process.env.SMTP_PASS || '',
       },
-    }),
+    },
   }),
   async onInit(payload) {
     await seedDevUser(payload);
