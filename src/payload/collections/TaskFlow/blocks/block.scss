@@ -24,3 +24,12 @@
     grid-column-start: 2;
   }
 }
+
+.process-task-parallel-block {
+  .graph-fields-row {
+    @apply size-full;
+    &.field-type.row > .row__fields {
+      @apply size-full block;
+    }
+  }
+}

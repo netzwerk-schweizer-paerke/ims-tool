@@ -8,6 +8,7 @@ import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/te
 import { adminSettingsField } from '@/payload/fields/admin-settings';
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
 import { filesArrayField } from '@/payload/fields/files-array';
+import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel';
 
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
@@ -45,7 +46,7 @@ export const TaskFlows: CollectionConfig = {
       label: I18nCollection.fieldLabel.fragment,
       localized: true,
       type: 'blocks',
-      blocks: [ProcessTaskInputOutputBlock, ProcessTestOutputBlock],
+      blocks: [ProcessTaskInputOutputBlock, ProcessTestOutputBlock, ProcessTaskParallelBlock],
     },
     filesArrayField,
     adminSettingsField(),

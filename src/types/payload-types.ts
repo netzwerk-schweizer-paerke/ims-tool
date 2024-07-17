@@ -186,7 +186,11 @@ export interface ActivityIOBlock {
         type: string;
         [k: string]: unknown;
       }[];
-      text: string;
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
       enabled?: boolean;
       rightBoolean?: 'false' | 'true' | 'none';
       leftBoolean?: 'false' | 'true' | 'none';
@@ -288,7 +292,7 @@ export interface TaskFlow {
     };
     [k: string]: unknown;
   } | null;
-  blocks?: (ProcessTaskIOBlock | ProcessTestOutputBlock)[] | null;
+  blocks?: (ProcessTaskIOBlock | ProcessTestOutputBlock | ProcessTaskParallelBlock)[] | null;
   files?:
     | {
         document?: (number | null) | Document;
@@ -314,7 +318,11 @@ export interface ProcessTaskIOBlock {
         type: string;
         [k: string]: unknown;
       }[];
-      text: string;
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
       enabled?: boolean;
       rightBoolean?: 'false' | 'true' | 'none';
       leftBoolean?: 'false' | 'true' | 'none';
@@ -327,7 +335,11 @@ export interface ProcessTaskIOBlock {
         type: string;
         [k: string]: unknown;
       }[];
-      text: string;
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
       enabled?: boolean;
       rightBoolean?: 'false' | 'true' | 'none';
       leftBoolean?: 'false' | 'true' | 'none';
@@ -402,7 +414,11 @@ export interface ProcessTestOutputBlock {
         type: string;
         [k: string]: unknown;
       }[];
-      text: string;
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
       enabled?: boolean;
       rightBoolean?: 'false' | 'true' | 'none';
       leftBoolean?: 'false' | 'true' | 'none';
@@ -415,7 +431,11 @@ export interface ProcessTestOutputBlock {
         type: string;
         [k: string]: unknown;
       }[];
-      text: string;
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
       enabled?: boolean;
       rightBoolean?: 'false' | 'true' | 'none';
       leftBoolean?: 'false' | 'true' | 'none';
@@ -477,6 +497,85 @@ export interface ProcessTestOutputBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'proc-test';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProcessTaskParallelBlock".
+ */
+export interface ProcessTaskParallelBlock {
+  graph?: {
+    task?: {
+      connections: {
+        position: string;
+        type: string;
+        [k: string]: unknown;
+      }[];
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
+      enabled?: boolean;
+      rightBoolean?: 'false' | 'true' | 'none';
+      leftBoolean?: 'false' | 'true' | 'none';
+      bottomBoolean?: 'false' | 'true' | 'none';
+      [k: string]: unknown;
+    };
+  };
+  keypoints?: {
+    keypoints?: {
+      root: {
+        type: string;
+        children: {
+          type: string;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  tools?: {
+    tools?: {
+      root: {
+        type: string;
+        children: {
+          type: string;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  responsibility?: {
+    responsibility?: {
+      root: {
+        type: string;
+        children: {
+          type: string;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'proc-task-p';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -599,7 +698,11 @@ export interface ActivityTaskBlock {
         type: string;
         [k: string]: unknown;
       }[];
-      text: string;
+      text?: string;
+      textBottom?: string;
+      textTop?: string;
+      textLeft?: string;
+      textRight?: string;
       enabled?: boolean;
       rightBoolean?: 'false' | 'true' | 'none';
       leftBoolean?: 'false' | 'true' | 'none';

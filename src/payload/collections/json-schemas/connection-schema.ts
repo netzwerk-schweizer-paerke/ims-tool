@@ -7,7 +7,7 @@ export const connectionSchema: ConnectionSchema = {
   fileMatch: ['a://b/foo.json'],
   schema: {
     type: 'object',
-    required: ['connections', 'text'],
+    required: ['connections'],
     properties: {
       connections: {
         type: 'array',
@@ -25,6 +25,18 @@ export const connectionSchema: ConnectionSchema = {
         },
       },
       text: {
+        type: 'string',
+      },
+      textBottom: {
+        type: 'string',
+      },
+      textTop: {
+        type: 'string',
+      },
+      textLeft: {
+        type: 'string',
+      },
+      textRight: {
         type: 'string',
       },
       enabled: {

@@ -3,6 +3,7 @@ import { processIoConnections } from '@/admin-components/graph/fields/graph/flow
 import { processTaskConnections } from '@/admin-components/graph/fields/graph/flows/task/connection-definitions';
 import { processTestConnections } from '@/admin-components/graph/fields/graph/flows/test/connection-definitions';
 import { connectionTypes } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
+import { processTaskParallelConnections } from '@/admin-components/graph/fields/graph/flows/parallel/connection-definitions';
 
 type ArrowType = {
   start: string;
@@ -18,6 +19,7 @@ type AccumulatorItem = {
   arrows: ArrowType[];
   leftId: string;
   rightId: string;
+  blockType: string;
 };
 
 type ReturnObject = {
@@ -50,7 +52,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
         };
       }
       blockRight = {
-        id: `${block.id}-right`,
+        id: rightId,
         arrows: block.graph?.task?.connections,
         connections: processTaskConnections,
         leftId,
@@ -60,7 +62,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
     case 'proc-test':
       if (block.graph?.output?.enabled) {
         blockLeft = {
-          id: `${block.id}-left`,
+          id: leftId,
           arrows: block.graph?.output?.connections,
           connections: processIoConnections,
           leftId,
@@ -68,9 +70,25 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
         };
       }
       blockRight = {
-        id: `${block.id}-right`,
+        id: rightId,
         arrows: block.graph?.test?.connections,
         connections: processTestConnections,
+        leftId,
+        rightId,
+      };
+      break;
+    case 'proc-task-p':
+      blockLeft = {
+        id: leftId,
+        arrows: block.graph?.task?.connections,
+        connections: processTaskParallelConnections,
+        leftId,
+        rightId,
+      };
+      blockRight = {
+        id: rightId,
+        arrows: block.graph?.task?.connections,
+        connections: processTaskParallelConnections,
         leftId,
         rightId,
       };
@@ -83,7 +101,10 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
     throw new Error('Block right should not be undefined');
   }
 
+  // @ts-ignore
   const result: ReturnTuple = [blockLeft, blockRight as ReturnObject];
+
+  const blockType = block.blockType;
 
   return result.reduce<AccumulatorItem[]>((acc, block) => {
     // Skip iteration if the block is undefined
@@ -93,7 +114,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
 
     const { connections, arrows, id, leftId, rightId } = block;
 
-    arrows.forEach((arrow) => {
+    arrows?.forEach((arrow) => {
       const definition = connections.find((c) => c.position === arrow.position)?.definitions;
       if (!definition || !connectionTypesSet.has(arrow.type)) {
         return;
@@ -106,7 +127,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
       });
 
       if (displayArrows && displayArrows.length > 0) {
-        acc.push({ arrows: displayArrows, id, leftId, rightId });
+        acc.push({ arrows: displayArrows, id, leftId, rightId, blockType });
       }
     });
     return acc;

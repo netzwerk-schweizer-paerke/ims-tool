@@ -13,9 +13,11 @@ export type ConnectionsType = {
 
 export type ConnectionStateType = {
   connections: ConnectionsType;
-  text: string;
+  text?: string;
   textBottom?: string;
   textTop?: string;
+  textLeft?: string;
+  textRight?: string;
 };
 
 type ArrowConnections = {

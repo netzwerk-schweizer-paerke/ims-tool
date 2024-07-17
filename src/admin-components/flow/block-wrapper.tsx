@@ -12,9 +12,9 @@ export const BlockWrapper: React.FC<Props> = ({ children, id, position }) => {
     throw new Error('BlockWrapper requires an id prop');
   }
   return (
-    <div className={`flow-block relative flex size-full items-center justify-center p-8`}>
+    <div className={`block-wrapper relative flex size-full items-center justify-center p-8`}>
       <div className={'relative flex min-h-24 min-w-44 items-center justify-center text-center'}>
-        <div id={`${id}-${RootTargetName}`} className={'root-target'}>
+        <div id={`${id}-${RootTargetName}`} className={'root-target w-full'}>
           {children}
         </div>
       </div>

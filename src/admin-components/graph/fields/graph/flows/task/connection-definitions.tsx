@@ -46,6 +46,8 @@ const taskArrowRightDef: Record<
     {
       start: RootTargetName,
       end: OuterTargetsEnum.TOP_RIGHT,
+      showHead: false,
+      showTail: false,
     },
   ],
   'out-bottom': [

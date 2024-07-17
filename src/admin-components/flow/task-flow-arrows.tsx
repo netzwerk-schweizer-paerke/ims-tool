@@ -5,7 +5,11 @@ import '../graph/fields/graph/lib/arrow-styles.css';
 import { arrowStyle } from '@/admin-components/graph/fields/graph/lib/arrow-style';
 import { ProcessTaskCompoundBlock } from '@/admin-components/flow/flow-block';
 import { assignBlockArrows } from '@/admin-components/flow/lib/assign-block-arrows';
-import { RootTargetName } from '@/admin-components/graph/fields/graph/lib/root-target';
+import {
+  RootTargetLeftName,
+  RootTargetName,
+  RootTargetRightName,
+} from '@/admin-components/graph/fields/graph/lib/root-target';
 import Xarrow, { useXarrow } from '@/lib/xarrows/src';
 
 type Props = {
@@ -54,28 +58,49 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
   const renderArrows = useCallback(() => {
     const arrowSet = assignBlockArrows(taskFlowBlock);
 
-    return arrowSet.map(({ arrows, id, leftId, rightId }, index) => (
+    return arrowSet.map(({ arrows, id, leftId, rightId, blockType }, index) => (
       <Fragment key={id + index}>
         {arrows.map((arrow, index) => {
-          const startPrefix =
+          let startPrefix =
             id === leftId &&
             arrow.originalArrow.position === 'right' &&
             arrow.originalArrow.type === 'in'
               ? `${rightId}-${RootTargetName}`
               : `${id}-${arrow.start}`;
-          const endPrefix =
+          let endPrefix =
             id === leftId &&
             arrow.originalArrow.position === 'right' &&
             arrow.originalArrow.type === 'out'
               ? `${rightId}-${RootTargetName}`
               : `${id}-${arrow.end}`;
+
+          if (blockType === 'proc-task-p') {
+            if (id === leftId) {
+              return null;
+            }
+            console.log({ startPrefix, endPrefix });
+            startPrefix = startPrefix.replace(
+              `right-${RootTargetLeftName}`,
+              `left-${RootTargetName}`,
+            );
+            endPrefix = endPrefix.replace(`right-${RootTargetLeftName}`, `left-${RootTargetName}`);
+            startPrefix = startPrefix
+              .replace(RootTargetLeftName, RootTargetName)
+              .replace(RootTargetRightName, RootTargetName);
+            endPrefix = endPrefix
+              .replace(RootTargetLeftName, RootTargetName)
+              .replace(RootTargetRightName, RootTargetName);
+          }
           const props = {
             ...arrow,
             start: startPrefix,
             end: endPrefix,
             ...arrowStyle,
           };
-          return <Xarrow key={startPrefix + endPrefix} {...props} />;
+          if (blockType === 'proc-task-p') {
+            console.log({ props, id, left: id === leftId, startPrefix, endPrefix });
+          }
+          return <Xarrow key={startPrefix + endPrefix + index} {...props} />;
         })}
       </Fragment>
     ));

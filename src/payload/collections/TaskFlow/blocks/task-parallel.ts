@@ -1,24 +1,24 @@
 import { Block } from 'payload';
+
 import './block.scss';
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata';
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
-import { ProcessInputOutputField } from '@/admin-components/graph/fields/graph/flows/io/process-input-output-field';
-import { ProcessTestField } from '@/admin-components/graph/fields/graph/flows/test/process-test-field';
+import { ProcessTaskParallelField } from '@/admin-components/graph/fields/graph/flows/parallel/process-task-parallel-field';
 
-export const ProcessTestOutputBlock: Block = {
-  slug: 'proc-test',
+export const ProcessTaskParallelBlock: Block = {
+  slug: 'proc-task-p',
   labels: {
-    singular: 'Test with optional output',
-    plural: 'Tests with optional output',
+    singular: 'Two parallel tasks',
+    plural: 'Two parallel tasks',
   },
-  imageURL: '/process-block-shapes/block-test.svg',
-  imageAltText: 'Test with optional output',
-  interfaceName: 'ProcessTestOutputBlock',
+  imageURL: '/process-block-shapes/block-parallel.svg',
+  imageAltText: 'Two parallel tasks',
+  interfaceName: 'ProcessTaskParallelBlock',
   fields: [
     {
       type: 'row',
       admin: {
-        className: 'process-test-block process-block-row',
+        className: 'process-task-parallel-block process-block-row',
       },
       fields: [
         {
@@ -36,23 +36,12 @@ export const ProcessTestOutputBlock: Block = {
               },
               fields: [
                 {
-                  name: 'output',
+                  name: 'task',
                   type: 'json',
                   localized: true,
                   admin: {
                     components: {
-                      Field: ProcessInputOutputField,
-                    },
-                  },
-                  jsonSchema: connectionSchema,
-                },
-                {
-                  name: 'test',
-                  type: 'json',
-                  localized: true,
-                  admin: {
-                    components: {
-                      Field: ProcessTestField,
+                      Field: ProcessTaskParallelField,
                     },
                   },
                   jsonSchema: connectionSchema,
