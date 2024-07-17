@@ -34,7 +34,7 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   globals: {};
-  locale: 'en' | 'de' | 'fr' | 'it';
+  locale: 'de';
   user: User & {
     collection: 'users';
   };
@@ -170,6 +170,7 @@ export interface Activity {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -297,6 +298,7 @@ export interface TaskFlow {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -581,6 +583,7 @@ export interface TaskList {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }

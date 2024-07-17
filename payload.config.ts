@@ -24,6 +24,7 @@ import { TaskLists } from '@/payload/collections/TaskList';
 import { ActivityBlockView } from '@/admin-components/activity/view';
 import { FlowBlockView } from '@/admin-components/flow';
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
+import { docsReorder } from '@payload-enchants/docs-reorder';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -116,9 +117,9 @@ export default buildConfig({
   },
   plugins: [
     // https://github.com/r1tsuu/payload-enchants/tree/master/packages/docs-reorder
-    // docsReorder({
-    //   collections: [{ slug: Activities.slug }],
-    // }),
+    docsReorder({
+      collections: [{ slug: Activities.slug }, { slug: TaskFlows.slug }, { slug: TaskLists.slug }],
+    }),
     // translator({
     //   // collections with the enabled translator in the admin UI
     //   collections: ['activities', 'task-flows', 'media', 'documents'],

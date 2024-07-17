@@ -2362,22 +2362,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@payload-enchants/better-localized-fields@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@payload-enchants/better-localized-fields@npm:1.2.1"
+"@payload-enchants/better-localized-fields@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@payload-enchants/better-localized-fields@npm:1.2.2"
   peerDependencies:
     "@payloadcms/next": ^3.0.0-beta.61
     "@payloadcms/translations": ^3.0.0-beta.61
     "@payloadcms/ui": ^3.0.0-beta.61
     flatley: ^5.2.0
     payload: ^3.0.0-beta.61
-  checksum: 10/1bb98721e9b70debc6cbc5628d8016bad2cc9956a61b87031f3a3203cc1e8642f71165ec6951b2ded69f4c4b51e260762a9ee0622ffe780ed91d34beab67d703
+  checksum: 10/4a26714fe87c1b45b5c21c1b7aa4aa3161a682daafc52c145cd5374a768fae524a5c58e9a4392499fcbaa41c8e5dcbc00fced31abb784befd6a7d013cb5d9e4d
   languageName: node
   linkType: hard
 
-"@payload-enchants/docs-reorder@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@payload-enchants/docs-reorder@npm:1.2.1"
+"@payload-enchants/docs-reorder@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@payload-enchants/docs-reorder@npm:1.2.2"
   dependencies:
     "@radix-ui/react-dialog": "npm:^1.1.1"
     clsx: "npm:^2.1.1"
@@ -2385,20 +2385,20 @@ __metadata:
   peerDependencies:
     "@payloadcms/ui": ^3.0.0-beta.61
     payload: ^3.0.0-beta.61
-  checksum: 10/4a069e7bda3f4f8c9c6be00910f51f090a80384b674773b48df772c2abeda402a5bbd87beeaa30137e54a52c26930252309d038f252621badfa01cb5fcdb5395
+  checksum: 10/de19aeea3750b646e510ba189fb291b29bea08717b12918dbcb76b64d84938efc6f00b78cb2df0108df294672184140bc8f1e26b2aef6502841251c7566ca6a3
   languageName: node
   linkType: hard
 
-"@payload-enchants/translator@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@payload-enchants/translator@npm:1.2.1"
+"@payload-enchants/translator@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@payload-enchants/translator@npm:1.2.2"
   dependencies:
     bson-objectid: "npm:^2.0.4"
   peerDependencies:
     "@payloadcms/translations": ^3.0.0-beta.61
     "@payloadcms/ui": ^3.0.0-beta.61
     payload: ^3.0.0-beta.61
-  checksum: 10/0c73341bdd648f5cb1869b93564440a29c0883cb06dabe3377084edcfa9eda75fb2c41c93d53c87f0220ad1a666529a41eeeac7c94c8f0ba39e7313dccd5bd7f
+  checksum: 10/2a659b19f25069a402c17ec330fea0498ee3fabfea534db26daddcf2fc7b2f0c784916b82e0a3dc4a3ce830e2a2ac2589f6fdf817a330d492eb825e0654717cf
   languageName: node
   linkType: hard
 
@@ -10963,9 +10963,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "swiss-parcs-ims@workspace:."
   dependencies:
-    "@payload-enchants/better-localized-fields": "npm:^1.2.1"
-    "@payload-enchants/docs-reorder": "npm:^1.2.1"
-    "@payload-enchants/translator": "npm:^1.2.1"
+    "@payload-enchants/better-localized-fields": "npm:^1.2.2"
+    "@payload-enchants/docs-reorder": "npm:^1.2.2"
+    "@payload-enchants/translator": "npm:^1.2.2"
     "@payloadcms/db-postgres": "npm:3.0.0-beta.65"
     "@payloadcms/email-nodemailer": "npm:3.0.0-beta.65"
     "@payloadcms/next": "npm:3.0.0-beta.65"
