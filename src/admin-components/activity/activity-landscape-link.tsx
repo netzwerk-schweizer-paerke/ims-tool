@@ -20,20 +20,16 @@ export const ActivityLandscapeLink: React.FC = () => {
         <Translate k={'admin:links:title'} />
       </h2>
       <ul className={'text-md menu mb-8 w-full text-lg'}>
-        {isActivityRoute && (
-          <li>
-            <Link href={'/admin'}>
-              <Translate k={'admin:links:dashboard'} />
-            </Link>
-          </li>
-        )}
-        {(isActivityDetailRoute || isAdminDashboard) && (
-          <li>
-            <Link href={'/admin/activities'}>
-              <Translate k={'admin:links:activityLandscape'} />
-            </Link>
-          </li>
-        )}
+        <li>
+          <Link href={'/admin'}>
+            <Translate k={'admin:links:dashboard'} />
+          </Link>
+        </li>
+        <li>
+          <Link href={'/admin/activities'}>
+            <Translate k={'admin:links:activityLandscape'} />
+          </Link>
+        </li>
       </ul>
     </>
   );

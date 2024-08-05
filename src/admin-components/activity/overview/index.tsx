@@ -8,7 +8,6 @@ import { ActivitySupport } from '@/admin-components/activity/overview/activity/a
 import { LandscapeBg } from '@/admin-components/activity/overview/landscape-bg';
 import { ActivityStrategy } from '@/admin-components/activity/overview/activity/activity-strategy';
 import { Translate } from '@/lib/translate';
-import { logger } from '@/lib/logger';
 import Link from 'next/link';
 
 export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult }) => {
@@ -45,8 +44,6 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
     (activity) => activity.variant === 'supportActivity',
   );
   const standardActivities = activities?.filter((activity) => activity.variant === 'standard');
-
-  logger.info('ActivitiesView', activities);
 
   return (
     <DefaultTemplate
