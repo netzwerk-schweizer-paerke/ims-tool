@@ -1,5 +1,4 @@
 import { ActivityBlock } from '@/admin-components/activity/overview/activity/block';
-import { ActivityFlowArrows } from '@/admin-components/activity/overview/activity/activity-flow-arrows';
 import { ActivityEditLink } from '@/admin-components/activity/overview/activity/activity-edit-link';
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/types/payload-types';
 import Link from 'next/link';
@@ -10,7 +9,7 @@ type Props = {
   activity: Activity;
 };
 
-export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
+export const ActivitySupport: React.FC<Props> = ({ activity, locale }) => {
   if (!activity.name) {
     return (
       <div>
@@ -68,33 +67,17 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
   }, blocksDisplay);
 
   return (
-    <div className={'activity-flow z-10 flex flex-col'}>
+    <div className={'activity-support relative z-10 flex min-w-fit flex-col'}>
       <div className={'text-center'}>
         <h2 className={'text-xl'}>{activity.name}</h2>
         <ActivityEditLink id={activity.id} locale={locale} />
       </div>
-      <div className={'relative flex h-full grow flex-col'}>
-        {blocksDisplay.input.length === 0 ? (
-          <ActivityBlock type={'empty'} activityId={activity.id} />
-        ) : (
-          blocksDisplay.input.map((block) => (
-            <ActivityBlock block={block} activityId={activity.id} type={'input'} key={block.id} />
-          ))
-        )}
-        {blocksDisplay.tasks.map((block) => (
-          <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
-        ))}
-        <div className={'relative grow'}>
-          <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
+      <div className={'flex grow flex-col items-center justify-center'}>
+        <div className={'relative grid grid-cols-2'}>
+          {blocksDisplay.tasks.map((block) => (
+            <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
+          ))}
         </div>
-        {blocksDisplay.output.length === 0 ? (
-          <ActivityBlock activityId={activity.id} type={'empty'} />
-        ) : (
-          blocksDisplay.output.map((block) => (
-            <ActivityBlock activityId={activity.id} block={block} type={'output'} key={block.id} />
-          ))
-        )}
-        <ActivityFlowArrows activity={activity} />
       </div>
     </div>
   );

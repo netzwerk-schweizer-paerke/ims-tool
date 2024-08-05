@@ -14,13 +14,13 @@ export const I18nCollection = {
     },
     activity: {
       en: 'Activity',
-      de: 'Aktivität',
+      de: 'Prozessgruppe',
       fr: 'Activité',
       it: 'Attività',
     },
     activities: {
       en: 'Activities',
-      de: 'Aktivitäten',
+      de: 'Prozessgruppen',
       fr: 'Activités',
       it: 'Attività',
     },
@@ -59,6 +59,12 @@ export const I18nCollection = {
       de: 'Infos / Unterstützung',
       fr: 'Infos / soutien',
       it: 'Informazioni / supporto',
+    },
+    strategyActivities: {
+      en: 'Toplevel strategic processes',
+      de: 'Übergeordnete strategische Prozesse',
+      fr: 'Processus stratégiques de niveau supérieur',
+      it: 'Processi strategici di alto livello',
     },
     link: {
       en: 'Link',
@@ -122,13 +128,13 @@ export const I18nCollection = {
     },
     taskFlow: {
       en: 'Flow',
-      de: 'Ablauf',
+      de: 'Prozess Ablauf',
       fr: 'Flux',
       it: 'Flusso',
     },
     taskFlows: {
       en: 'Flows',
-      de: 'Abläufe',
+      de: 'Prozess Abläufe',
       fr: 'Flux',
       it: 'Flussi',
     },
@@ -150,71 +156,23 @@ export const I18nCollection = {
       fr: 'Fichier',
       it: 'File',
     },
-    taskProcess: {
-      en: 'Task process',
-      de: 'Aufgabenprozess',
-      fr: 'Processus de tâche',
-      it: 'Processo di compiti',
-    },
-    taskProcesses: {
-      en: 'Task processes',
-      de: 'Aufgabenprozesse',
-      fr: 'Processus de tâches',
-      it: 'Processi di compiti',
-    },
     taskList: {
       en: 'Task list',
-      de: 'Aufgabenliste',
+      de: 'Prozesse Tabelle',
       fr: 'Liste de tâches',
       it: 'Elenco dei compiti',
     },
     taskLists: {
       en: 'Task lists',
-      de: 'Aufgabenlisten',
+      de: 'Prozesse Tabellen',
       fr: 'Listes de tâches',
       it: 'Elenchi di compiti',
-    },
-    taskGroup: {
-      en: 'Task group',
-      de: 'Aufgabengruppe',
-      fr: 'Groupe de tâches',
-      it: 'Gruppo di compiti',
-    },
-    taskGroups: {
-      en: 'Task groups',
-      de: 'Aufgabengruppen',
-      fr: 'Groupes de tâches',
-      it: 'Gruppi di compiti',
-    },
-    externalUrl: {
-      en: 'External URL',
-      de: 'Externe URL',
-      fr: 'URL externe',
-      it: 'URL esterno',
-    },
-    processGroup: {
-      en: 'Process group',
-      de: 'Prozessgruppe',
-      fr: 'Groupe de processus',
-      it: 'Gruppo di processi',
-    },
-    processGroups: {
-      en: 'Process groups',
-      de: 'Prozessgruppen',
-      fr: 'Groupes de processus',
-      it: 'Gruppi di processi',
     },
     variant: {
       en: 'Variant',
       de: 'Variante',
       fr: 'Variante',
       it: 'Variante',
-    },
-    details: {
-      en: 'Details',
-      de: 'Details',
-      fr: 'Détails',
-      it: 'Dettagli',
     },
     order: {
       en: 'Order',
@@ -308,7 +266,7 @@ export const I18nCollection = {
     },
     keypoints: {
       en: 'Key points',
-      de: 'Schlüsselpunkte',
+      de: 'Merkpunkte',
       fr: 'Points clés',
       it: 'Punti chiave',
     },
@@ -332,12 +290,6 @@ export const I18nCollection = {
     },
   },
   fieldDescription: {
-    externalUrl: {
-      en: 'External URL for the document',
-      de: 'Externe URL für das Dokument',
-      fr: 'URL externe pour le document',
-      it: 'URL esterno per il documento',
-    },
     file: {
       en: 'Choose an existing document or upload a new one',
       de: 'Wählen Sie ein vorhandenes Dokument aus oder laden Sie ein neues hoch',

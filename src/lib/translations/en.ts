@@ -19,14 +19,16 @@ export const en = {
     input: {
       title: 'Input',
     },
-    lists: {
-      title: 'Lists',
+    tasks: {
+      title: 'Tasks',
+      noTasks: 'No tasks defined',
     },
     output: {
       title: 'Output',
     },
     flows: {
       title: 'Flows',
+      noFlows: 'No process flows defined',
     },
   },
   flowBlock: {

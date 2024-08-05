@@ -63,7 +63,11 @@ export const Activities: CollectionConfig = {
         },
         {
           label: I18nCollection.fieldLabel.supportActivities,
-          value: 'group',
+          value: 'supportActivity',
+        },
+        {
+          label: I18nCollection.fieldLabel.strategyActivities,
+          value: 'strategyActivity',
         },
       ],
     },

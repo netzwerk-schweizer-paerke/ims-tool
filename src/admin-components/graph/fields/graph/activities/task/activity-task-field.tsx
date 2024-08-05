@@ -1,7 +1,7 @@
 'use client';
 import { useField, useFieldProps } from '@payloadcms/ui';
 import { useEffect, useState } from 'react';
-import { isObject } from 'lodash-es';
+import { isEqual, isObject } from 'lodash-es';
 import { TaskShapeWrapper } from '@/admin-components/graph/wrappers/task-shape-wrapper';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
@@ -13,7 +13,6 @@ import {
 import { activityTaskConnections } from './connection-definitions';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
-import { deepEqual } from '@hapi/hoek';
 
 import '../../lib/arrow-styles.css';
 import { Xwrapper } from '@/lib/xarrows/src';
@@ -64,7 +63,7 @@ export const ActivityTaskField: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (deepEqual(state, value)) return;
+    if (isEqual(state, value)) return;
     setValue(state);
   }, [setValue, state, state.text, state.connections, value]);
 

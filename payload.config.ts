@@ -138,7 +138,7 @@ export default buildConfig({
     s3Storage({
       collections: {
         [Documents.slug]: { prefix: Documents.slug },
-        [Media.slug]: { prefix: Documents.slug },
+        [Media.slug]: { prefix: Media.slug },
       },
       config: {
         credentials: {

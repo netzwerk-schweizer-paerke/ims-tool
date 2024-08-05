@@ -10,7 +10,7 @@ type Props = {
   activity: Activity;
 };
 
-export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
+export const ActivityStrategy: React.FC<Props> = ({ activity, locale }) => {
   if (!activity.name) {
     return (
       <div>
@@ -68,12 +68,12 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
   }, blocksDisplay);
 
   return (
-    <div className={'activity-flow z-10 flex flex-col'}>
+    <div className={'activity-strategy z-10 flex flex-col'}>
       <div className={'text-center'}>
         <h2 className={'text-xl'}>{activity.name}</h2>
         <ActivityEditLink id={activity.id} locale={locale} />
       </div>
-      <div className={'relative flex h-full grow flex-col'}>
+      <div className={'relative flex h-full grow flex-col justify-center'}>
         {blocksDisplay.input.length === 0 ? (
           <ActivityBlock type={'empty'} activityId={activity.id} />
         ) : (
@@ -84,9 +84,6 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
         {blocksDisplay.tasks.map((block) => (
           <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
         ))}
-        <div className={'relative grow'}>
-          <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
-        </div>
         {blocksDisplay.output.length === 0 ? (
           <ActivityBlock activityId={activity.id} type={'empty'} />
         ) : (

@@ -8,6 +8,9 @@ import { FlowsGrid } from '@/admin-components/activity/view/flows-grid';
 import { toNumber } from 'lodash-es';
 import { assert } from 'ts-essentials';
 import { Translate } from '@/lib/translate';
+import { ListsGrid } from '@/admin-components/activity/view/lists-grid';
+import { ActivityEditLink } from '@/admin-components/activity/overview/activity/activity-edit-link';
+import { LandscapeSvgBgArrow } from '@/admin-components/activity/overview/activity/lib/landscape-svg-bg-arrow';
 
 export const ActivityBlockView: React.FC<AdminViewProps> = async ({
   initPageResult,
@@ -70,39 +73,61 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
         <h1 id="custom-view-title">
           <Translate k={'activityBlock:title'} />
         </h1>
-        <div className={'mt-8 grid grid-cols-[20%_auto_20%] gap-16'}>
+        <ActivityEditLink id={activityid} locale={locale} />
+        <div className={'mt-8 grid grid-cols-[22%_auto_22%]'}>
           {activityBlock ? (
             <>
-              <div className={'prose prose-lg'}>
-                <h3>
-                  <Translate k={'activityBlock:input:title'} />
-                </h3>
-                {activityBlock.io?.input ? (
-                  <PayloadLexicalReactRenderer content={activityBlock.io.input as any} />
-                ) : (
-                  <p>
-                    <Translate k={'common:noContentDefined'} />
-                  </p>
-                )}
+              <div className={'grid grid-cols-[auto_64px]'}>
+                <div className={'prose prose-lg bg-[var(--theme-text-33)] p-4'}>
+                  <h3>
+                    <Translate k={'activityBlock:input:title'} />
+                  </h3>
+                  {activityBlock.io?.input ? (
+                    <PayloadLexicalReactRenderer content={activityBlock.io.input as any} />
+                  ) : (
+                    <p>
+                      <Translate k={'common:noContentDefined'} />
+                    </p>
+                  )}
+                </div>
+                <div className={'relative h-full'}>
+                  <div className={'absolute inset-0'}>
+                    <LandscapeSvgBgArrow opacity={0.33} />
+                  </div>
+                </div>
               </div>
-              <div className={'prose prose-lg'}>
-                <FlowsGrid activityId={activityid} flows={activityBlock?.relations?.flowRelation} />
-                <h3>
-                  <Translate k={'activityBlock:lists:title'} />
-                </h3>
-                <div>{activityBlock.relations?.listRelation ? null : <p>No lists defined</p>}</div>
+              <div className={'grid grid-cols-[auto_64px]'}>
+                <div className={'relative bg-[var(--theme-text-33)] p-4'}>
+                  <div className={'prose prose-lg flex flex-col gap-16'}>
+                    <FlowsGrid
+                      activityId={activityid}
+                      flows={activityBlock?.relations?.flowRelation}
+                    />
+                    <ListsGrid
+                      activityId={activityid}
+                      lists={activityBlock?.relations?.listRelation}
+                    />
+                  </div>
+                </div>
+                <div className={'relative h-full'}>
+                  <div className={'absolute inset-0'}>
+                    <LandscapeSvgBgArrow opacity={0.33} />
+                  </div>
+                </div>
               </div>
-              <div className={'prose prose-lg'}>
-                <h3>
-                  <Translate k={'activityBlock:output:title'} />
-                </h3>
-                {activityBlock.io?.input ? (
-                  <PayloadLexicalReactRenderer content={activityBlock.io.output as any} />
-                ) : (
-                  <p>
-                    <Translate k={'common:noContentDefined'} />
-                  </p>
-                )}
+              <div className={'relative bg-[var(--theme-text-33)] p-4'}>
+                <div className={'prose prose-lg'}>
+                  <h3>
+                    <Translate k={'activityBlock:output:title'} />
+                  </h3>
+                  {activityBlock.io?.input ? (
+                    <PayloadLexicalReactRenderer content={activityBlock.io.output as any} />
+                  ) : (
+                    <p>
+                      <Translate k={'common:noContentDefined'} />
+                    </p>
+                  )}
+                </div>
               </div>
             </>
           ) : (

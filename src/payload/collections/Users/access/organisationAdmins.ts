@@ -4,7 +4,7 @@ import { checkUserRoles } from '@/payload/utilities/checkUserRoles';
 import { checkOrganisationRoles } from '../utilities/checkOrganisationRoles';
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants';
 import { User } from '@/types/payload-types';
-import { isNumber } from 'is-what';
+import { isNumber } from 'lodash-es';
 
 export const organisationAdmins: FieldAccess<User> = (args) => {
   const {

@@ -33,6 +33,9 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
+  db: {
+    defaultIDType: number;
+  };
   globals: {};
   locale: 'de';
   user: User & {
@@ -44,12 +47,15 @@ export interface UserAuthOperations {
     email: string;
   };
   login: {
-    password: string;
     email: string;
+    password: string;
   };
   registerFirstUser: {
     email: string;
     password: string;
+  };
+  unlock: {
+    email: string;
   };
 }
 /**
@@ -166,7 +172,7 @@ export interface Activity {
         id?: string | null;
       }[]
     | null;
-  variant: 'standard' | 'group';
+  variant: 'standard' | 'supportActivity' | 'strategyActivity';
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;

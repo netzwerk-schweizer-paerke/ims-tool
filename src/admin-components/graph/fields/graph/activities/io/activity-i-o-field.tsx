@@ -2,7 +2,7 @@
 import { useField, useFieldProps } from '@payloadcms/ui';
 
 import { useEffect, useState } from 'react';
-import { isObject } from 'lodash-es';
+import { isEqual, isObject } from 'lodash-es';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
@@ -14,7 +14,6 @@ import { activityIOFieldConnections } from './connection-definitions';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { IOShapeWrapper } from '@/admin-components/graph/wrappers/i-o-shape-wrapper';
-import { deepEqual } from '@hapi/hoek';
 
 import '../../lib/arrow-styles.css';
 import { Xwrapper } from '@/lib/xarrows/src';
@@ -65,7 +64,7 @@ export const ActivityIOField: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (deepEqual(state, value)) return;
+    if (isEqual(state, value)) return;
     setValue(state);
   }, [setValue, state, state.text, state.connections, value]);
 

@@ -2,12 +2,11 @@ import { MigrateDownArgs, MigrateUpArgs, sql } from '@payloadcms/db-postgres';
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
- ALTER TABLE "media" ADD COLUMN "prefix" varchar;
-ALTER TABLE "documents" ADD COLUMN "prefix" varchar;`);
+ ALTER TYPE "enum_activities_variant" ADD VALUE 'supportActivity';
+ ALTER TYPE "enum_activities_variant" ADD VALUE 'strategyActivity';`);
 }
 
 export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
- ALTER TABLE "media" DROP COLUMN IF EXISTS "prefix";
-ALTER TABLE "documents" DROP COLUMN IF EXISTS "prefix";`);
+ ALTER TYPE "enum_activities_variant" ADD VALUE 'group';`);
 }
