@@ -7,6 +7,9 @@ import { ActivityFlow } from '@/admin-components/activity/overview/activity/acti
 import { ActivitySupport } from '@/admin-components/activity/overview/activity/activity-support';
 import { LandscapeBg } from '@/admin-components/activity/overview/landscape-bg';
 import { ActivityStrategy } from '@/admin-components/activity/overview/activity/activity-strategy';
+import { Translate } from '@/lib/translate';
+import { logger } from '@/lib/logger';
+import Link from 'next/link';
 
 export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult }) => {
   const headers = getHeaders();
@@ -43,6 +46,8 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
   );
   const standardActivities = activities?.filter((activity) => activity.variant === 'standard');
 
+  logger.info('ActivitiesView', activities);
+
   return (
     <DefaultTemplate
       i18n={req.i18n}
@@ -57,35 +62,54 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
             paddingRight: 'var(--gutter-h)',
           }}>
           <div className={'flex flex-row items-stretch justify-stretch'}>
-            {strategicActivity ? (
-              <div className={'relative flex flex-row items-stretch justify-stretch pr-8'}>
-                <LandscapeBg />
-                {strategicActivity.map((activity) => (
-                  <ActivityStrategy key={activity.id} activity={activity} locale={locale} />
-                ))}
+            {!activities || activities?.length === 0 ? (
+              <div>
+                <Translate k={'activityLandscape:noContent'} />{' '}
+                <Link href={'/admin/collections/activities/create'}>
+                  <Translate k={'common:continue'} />
+                </Link>
               </div>
             ) : (
-              <div>No activities found</div>
-            )}
-            {standardActivities ? (
-              <div className={'flex flex-row items-stretch justify-stretch'}>
-                {standardActivities.map((activity) => (
-                  <ActivityFlow key={activity.id} activity={activity} locale={locale} />
-                ))}
-              </div>
-            ) : (
-              <div>No activities found</div>
-            )}
-            {supportActivities ? (
-              <div
-                className={'relative flex min-w-fit flex-row items-stretch justify-stretch pl-8'}>
-                <LandscapeBg rotate={180} />
-                {supportActivities.map((activity) => (
-                  <ActivitySupport key={activity.id} activity={activity} locale={locale} />
-                ))}
-              </div>
-            ) : (
-              <div>No activities found</div>
+              <>
+                {strategicActivity ? (
+                  <div className={'relative flex flex-row items-stretch justify-stretch pr-8'}>
+                    <LandscapeBg />
+                    {strategicActivity.map((activity) => (
+                      <ActivityStrategy key={activity.id} activity={activity} locale={locale} />
+                    ))}
+                  </div>
+                ) : (
+                  <div>
+                    <Translate k={'activityLandscape:noBlocks'} />
+                  </div>
+                )}
+                {standardActivities ? (
+                  <div className={'flex flex-row items-stretch justify-stretch'}>
+                    {standardActivities.map((activity) => (
+                      <ActivityFlow key={activity.id} activity={activity} locale={locale} />
+                    ))}
+                  </div>
+                ) : (
+                  <div>
+                    <Translate k={'activityLandscape:noBlocks'} />
+                  </div>
+                )}
+                {supportActivities ? (
+                  <div
+                    className={
+                      'relative flex min-w-fit flex-row items-stretch justify-stretch pl-8'
+                    }>
+                    <LandscapeBg rotate={180} />
+                    {supportActivities.map((activity) => (
+                      <ActivitySupport key={activity.id} activity={activity} locale={locale} />
+                    ))}
+                  </div>
+                ) : (
+                  <div>
+                    <Translate k={'activityLandscape:noBlocks'} />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

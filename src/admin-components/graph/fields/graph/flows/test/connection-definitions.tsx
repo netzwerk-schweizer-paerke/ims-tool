@@ -26,6 +26,12 @@ const taskArrowRightDef: Record<
   'out-bottom': [
     {
       start: RootTargetName,
+      end: OuterTargetsEnum.CENTER_RIGHT,
+      showHead: false,
+      showTail: false,
+    },
+    {
+      start: OuterTargetsEnum.CENTER_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
       showHead: false,
       showTail: false,
@@ -34,7 +40,7 @@ const taskArrowRightDef: Record<
   'out-pass-by': [
     {
       start: RootTargetName,
-      end: OuterTargetsEnum.BOTTOM_RIGHT,
+      end: OuterTargetsEnum.CENTER_RIGHT,
       showHead: false,
       showTail: false,
     },

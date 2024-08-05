@@ -13,6 +13,7 @@ export const en = {
     title: 'Activity Landscape',
     blockHasNoName: 'Block has no name',
     noBlocks: 'No blocks',
+    noContent: 'No activities or processes defined yet. Create some first.',
   },
   activityBlock: {
     title: 'Activity Block',
@@ -43,6 +44,7 @@ export const en = {
     edit: 'Edit',
     delete: 'Delete',
     noContentDefined: 'No content defined',
+    continue: 'Continue',
     boolean: {
       true: 'True',
       false: 'False',

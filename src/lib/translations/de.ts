@@ -13,6 +13,7 @@ export const de = {
     title: 'Prozesslandschaft',
     blockHasNoName: 'Block hat keinen Namen',
     noBlocks: 'Keine Blöcke',
+    noContent: 'Keine Aktivitäten oder Prozesse definiert. Erstellen Sie zuerst einige.',
   },
   activityBlock: {
     title: 'Prozessgruppe',
@@ -43,6 +44,7 @@ export const de = {
     edit: 'Bearbeiten',
     delete: 'Löschen',
     noContentDefined: 'Kein Inhalt definiert',
+    continue: 'Weiter',
     boolean: {
       true: 'Wahr',
       false: 'Falsch',

@@ -5,6 +5,7 @@ import { TaskFlowArrows } from '@/admin-components/flow/task-flow-arrows';
 import { Translate } from '@/lib/translate';
 import { TestShapeWrapper } from '@/admin-components/graph/wrappers/test-shape-wrapper';
 import { BlockMetadata } from '@/admin-components/flow/lib/block-metadata';
+import { logger } from '@/lib/logger';
 
 type Props = {
   block: ProcessTestOutputBlock;
@@ -32,6 +33,8 @@ export const BlockTestOutput: React.FC<Props> = ({ block }) => {
     return '';
   };
 
+  logger.info('BlockTestOutput', block);
+
   return (
     <>
       <div className={'flow-block relative grid grid-cols-2 border-b border-base-content/40'}>
@@ -43,7 +46,7 @@ export const BlockTestOutput: React.FC<Props> = ({ block }) => {
           )}
         </div>
         <div>
-          <BlockWrapper id={`${block.id}-right`} position={'right'}>
+          <BlockWrapper id={`${block.id}-right`} position={'right'} spacing={'auto'}>
             <TestShapeWrapper>{testBlockText}</TestShapeWrapper>
             {rightBoolean && rightBoolean !== 'none' && (
               <div className={'absolute right-0'}>{getBoolean(rightBoolean)}</div>

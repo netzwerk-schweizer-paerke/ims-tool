@@ -57,7 +57,6 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
 
   const renderArrows = useCallback(() => {
     const arrowSet = assignBlockArrows(taskFlowBlock);
-
     return arrowSet.map(({ arrows, id, leftId, rightId, blockType }, index) => (
       <Fragment key={id + index}>
         {arrows.map((arrow, index) => {

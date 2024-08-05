@@ -116,7 +116,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
 
     arrows?.forEach((arrow) => {
       const definition = connections.find((c) => c.position === arrow.position)?.definitions;
-      if (!definition || !connectionTypesSet.has(arrow.type)) {
+      if (!definition) {
         return;
       }
       const displayArrows = definition[arrow.type]?.flat().map((a: any) => {
