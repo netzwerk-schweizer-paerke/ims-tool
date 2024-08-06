@@ -1,12 +1,9 @@
 import { Activity } from '@/types/payload-types';
-import { connectionTypes } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { activityTaskConnections } from '@/admin-components/graph/fields/graph/activities/task/connection-definitions';
 import { activityIOFieldConnections } from '@/admin-components/graph/fields/graph/activities/io/connection-definitions';
 import { ActivityTaskCompoundBlock } from '@/admin-components/activity/overview/activity/block';
 
 export const assignActivityBlockArrows = (activity: Activity) => {
-  const connectionTypesSet = new Set(connectionTypes);
-
   const categorizedBlocks = {
     'activity-task': [],
     'activity-io': [],
@@ -30,11 +27,8 @@ export const assignActivityBlockArrows = (activity: Activity) => {
       const arrows = compoundBlock.graph?.task?.connections;
 
       arrows?.forEach((arrow) => {
-        if (!connectionTypesSet.has(arrow.type as (typeof connectionTypes)[number])) {
-          return;
-        }
         const definition = connections.find((c) => c.position === arrow.position)?.definitions;
-        if (!definition || !(arrow.type in definition)) {
+        if (!definition) {
           return;
         }
         // @ts-ignore
