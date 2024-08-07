@@ -28,24 +28,22 @@ export const OrganisationSelect: React.FC = async () => {
     }),
   );
 
-  if (!userOrganisations || userOrganisations.length === 0) {
+  if (!userOrganisations || userOrganisations.length < 2) {
     return null;
   }
 
   return (
-    <div className={'mb-8 w-full'}>
-      <label className="form-control w-full max-w-xs">
-        <div className="label">
-          <span className="label-text">
-            <Translate k={'admin:selectOrganisations:title'} />
-          </span>
-        </div>
+    <div className={'field-type mb-8 w-full'}>
+      <label className="field-label">
+        <Translate k={'admin:selectOrganisations:title'} />
+      </label>
+      <div className="field-type__wrap">
         <UserOrganisationSelect
           orgs={userOrganisations}
           userId={user?.id}
           selectedOrgId={user?.selectedOrganisation}
         />
-      </label>
+      </div>
     </div>
   );
 };

@@ -9,7 +9,7 @@ import {
   ButtonBottomCenter,
   ButtonCenterRight,
   ButtonTopCenter,
-} from '@/admin-components/graph/fields/graph/lib/buttons';
+} from '@/admin-components/graph/fields/graph/components/node-buttons';
 import { processTaskConnections } from '@/admin-components/graph/fields/graph/flows/task/connection-definitions';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';

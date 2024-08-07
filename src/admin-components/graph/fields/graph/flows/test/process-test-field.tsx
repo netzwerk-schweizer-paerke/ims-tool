@@ -8,12 +8,13 @@ import {
   ButtonBottomCenter,
   ButtonCenterRight,
   ButtonTopCenter,
-} from '@/admin-components/graph/fields/graph/lib/buttons';
+} from '@/admin-components/graph/fields/graph/components/node-buttons';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { processTestConnections } from '@/admin-components/graph/fields/graph/flows/test/connection-definitions';
 import { TestShapeWrapper } from '@/admin-components/graph/wrappers/test-shape-wrapper';
 import { Xwrapper } from '@/lib/xarrows/src';
+import { BooleanButton } from '@/admin-components/graph/fields/graph/components/boolean-button';
 
 enum BooleanOutput {
   FALSE = 'false',
@@ -116,7 +117,7 @@ export const ProcessTestField: React.FC = () => {
             <TestShapeWrapper mode={'edit'}>
               <textarea
                 className={
-                  'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-10 text-center leading-snug focus:outline-none'
+                  'textarea-lg mx-12 flex size-full resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-10 text-center leading-snug focus:outline-none'
                 }
                 onChange={(e) => setText(e.target.value)}
                 value={state.text}
@@ -124,24 +125,21 @@ export const ProcessTestField: React.FC = () => {
               <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
               <ButtonBottomCenter onClickFn={() => toggleConnectionType('bottom')} />
               <ButtonTopCenter onClickFn={() => toggleConnectionType('top')} />
-              <button
-                type={'button'}
-                className={'btn bottom-boolean btn-ghost btn-sm absolute -bottom-1/3 left-1/2 z-10'}
-                onClick={() => toggleBoolean('bottomBoolean')}>
-                <DisplayBoolean booleanOutput={state.bottomBoolean} />
-              </button>
-              <button
-                type={'button'}
-                className={'btn right-boolean btn-ghost btn-sm absolute -right-2 bottom-1/2 z-10'}
-                onClick={() => toggleBoolean('rightBoolean')}>
-                <DisplayBoolean booleanOutput={state.rightBoolean} />
-              </button>
-              <button
-                type={'button'}
-                className={'btn left-boolean btn-ghost btn-sm absolute -left-2 bottom-1/2 z-10'}
-                onClick={() => toggleBoolean('leftBoolean')}>
-                <DisplayBoolean booleanOutput={state.leftBoolean} />
-              </button>
+              <div className={'absolute -bottom-1/3 left-1/2 z-10 -translate-x-1/2'}>
+                <BooleanButton onClick={() => toggleBoolean('bottomBoolean')}>
+                  <DisplayBoolean booleanOutput={state.bottomBoolean} />
+                </BooleanButton>
+              </div>
+              <div className={'absolute -right-2 bottom-4 z-10'}>
+                <BooleanButton onClick={() => toggleBoolean('rightBoolean')}>
+                  <DisplayBoolean booleanOutput={state.rightBoolean} />
+                </BooleanButton>
+              </div>
+              <div className={'absolute -left-2 bottom-4 z-10'}>
+                <BooleanButton onClick={() => toggleBoolean('leftBoolean')}>
+                  <DisplayBoolean booleanOutput={state.leftBoolean} />
+                </BooleanButton>
+              </div>
             </TestShapeWrapper>
           </RootTarget>
           <OuterTargets id={arrowSetId} />

@@ -15,22 +15,22 @@ export const ActivityLandscapeLink: React.FC = () => {
     pathname.startsWith('/admin') && !isActivityRoute && !isActivityDetailRoute;
 
   return (
-    <>
-      <h2>
+    <div className={'nav-group pb-8'}>
+      <div className={'nav-group__toggle'}>
         <Translate k={'admin:links:title'} />
-      </h2>
-      <ul className={'text-md menu mb-8 w-full text-lg'}>
-        <li>
+      </div>
+      <div className={'nav-group__content'}>
+        <div className={'nav__link'}>
           <Link href={'/admin'}>
             <Translate k={'admin:links:dashboard'} />
           </Link>
-        </li>
-        <li>
+        </div>
+        <div className={'nav__link'}>
           <Link href={'/admin/activities'}>
             <Translate k={'admin:links:activityLandscape'} />
           </Link>
-        </li>
-      </ul>
-    </>
+        </div>
+      </div>
+    </div>
   );
 };

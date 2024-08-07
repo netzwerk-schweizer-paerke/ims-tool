@@ -5,7 +5,7 @@ import { isObject } from 'lodash-es';
 import { TaskShapeWrapper } from '@/admin-components/graph/wrappers/task-shape-wrapper';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
-import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/lib/buttons';
+import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/components/node-buttons';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { Xwrapper } from '@/lib/xarrows/src';

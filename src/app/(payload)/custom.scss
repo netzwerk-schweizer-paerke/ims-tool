@@ -23,8 +23,7 @@
 }
 
 .prose {
-  h1, h2, h3, h4, h5, h6 {
-    color: var(--theme-text);
-  }
-  color: var(--theme-text);
+  --tw-prose-links: currentColor;
+  --tw-prose-body: currentColor;
+  --tw-prose-headings: currentColor;
 }

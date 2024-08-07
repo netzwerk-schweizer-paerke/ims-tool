@@ -4,6 +4,7 @@ import { toNumber } from 'lodash-es';
 import ky from 'ky';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 import { Organisation, User } from '@/types/payload-types';
+import { Select } from '@payloadcms/ui';
 
 type Props = {
   userId?: number;
@@ -12,8 +13,8 @@ type Props = {
 };
 
 export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selectedOrgId }) => {
-  const onChangeHandler = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = toNumber(e.target.value);
+  const onChange = async (option: { value: any }) => {
+    const selectedId = toNumber(option.value);
     await ky.patch(`/api/users/${userId}`, {
       json: {
         selectedOrganisation: selectedId,
@@ -25,18 +26,23 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
 
   const currentOrgId = getIdFromRelation(selectedOrgId) as number;
 
+  const options =
+    orgs?.map((org) => {
+      return {
+        value: `${org.id}`,
+        label: org.name,
+      };
+    }) || [];
+
+  const selectedOption = options.find((option) => option.value === `${currentOrgId}`);
+
   return (
-    <select
-      className="select select-bordered w-full"
-      value={currentOrgId}
-      onChange={onChangeHandler}>
-      {orgs?.map((org) => {
-        return (
-          <option key={org.id} value={org.id}>
-            {org.name}
-          </option>
-        );
-      })}
-    </select>
+    <Select
+      options={options}
+      value={selectedOption}
+      onChange={onChange as any}
+      isCreatable={false}
+      isClearable={false}
+    />
   );
 };

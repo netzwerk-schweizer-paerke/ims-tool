@@ -6,7 +6,7 @@ import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-w
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
-import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/lib/buttons';
+import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/components/node-buttons';
 import { useField, useFieldProps } from '@payloadcms/ui';
 import { processIoConnections } from '@/admin-components/graph/fields/graph/flows/io/connection-definitions';
 import { Xwrapper } from '@/lib/xarrows/src';
