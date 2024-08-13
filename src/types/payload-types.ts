@@ -27,6 +27,7 @@ export interface Config {
     organisations: Organisation;
     activities: Activity;
     documents: Document;
+    documentsPublic: DocumentsPublic;
     'task-flows': TaskFlow;
     'task-lists': TaskList;
     users: User;
@@ -789,6 +790,25 @@ export interface ActivityTaskBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'activity-task';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documentsPublic".
+ */
+export interface DocumentsPublic {
+  id: number;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

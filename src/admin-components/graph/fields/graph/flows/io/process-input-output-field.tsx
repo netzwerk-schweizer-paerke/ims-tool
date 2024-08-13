@@ -1,15 +1,13 @@
 'use client';
 import { IOShapeWrapper } from '@/admin-components/graph/wrappers/i-o-shape-wrapper';
-import { useEffect, useState } from 'react';
-import { isObject } from 'lodash-es';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/graph/hooks/use-arrows';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/components/node-buttons';
-import { useField, useFieldProps } from '@payloadcms/ui';
 import { processIoConnections } from '@/admin-components/graph/fields/graph/flows/io/connection-definitions';
 import { Xwrapper } from '@/lib/xarrows/src';
+import { useGraphFieldState } from '@/admin-components/graph/fields/graph/hooks/use-graph-field-state';
 
 type ComponentState = {
   enabled: boolean;
@@ -17,7 +15,7 @@ type ComponentState = {
   text: string;
 };
 
-const componentState: ComponentState = {
+const initialState: ComponentState = {
   enabled: true,
   connections: [
     {
@@ -29,9 +27,9 @@ const componentState: ComponentState = {
 };
 
 export const ProcessInputOutputField: React.FC = () => {
-  const { path } = useFieldProps();
-  const { value, setValue } = useField<string>({ path });
-  const [state, setState] = useState<ComponentState>(componentState);
+  const { setText, state, setState } = useGraphFieldState<ComponentState>({
+    initialState,
+  });
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
@@ -42,21 +40,6 @@ export const ProcessInputOutputField: React.FC = () => {
   const toggleEnabled = () => {
     setState({ ...state, enabled: !state.enabled });
   };
-
-  const setText = (text: string) => {
-    setState({ ...state, text });
-  };
-
-  useEffect(() => {
-    if (!value) return;
-    if (isObject(value)) {
-      setState(value as unknown as ComponentState);
-    }
-  }, []);
-
-  useEffect(() => {
-    setValue(state);
-  }, [setValue, state, state.text]);
 
   return (
     <div ref={ref}>

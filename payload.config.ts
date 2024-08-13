@@ -25,6 +25,8 @@ import { ActivityBlockView } from '@/admin-components/activity/view';
 import { FlowBlockView } from '@/admin-components/flow';
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
 import { docsReorder } from '@payload-enchants/docs-reorder';
+import { DocumentsPublic } from '@/payload/collections/DocumentsPublic';
+import { ListBlockView } from '@/admin-components/list';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -33,7 +35,16 @@ export default buildConfig({
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
   }),
-  collections: [Media, Organisations, Activities, Documents, TaskFlows, TaskLists, Users],
+  collections: [
+    Media,
+    Organisations,
+    Activities,
+    Documents,
+    DocumentsPublic,
+    TaskFlows,
+    TaskLists,
+    Users,
+  ],
   globals: [],
   localization: {
     locales: [
@@ -58,7 +69,7 @@ export default buildConfig({
     fallback: true,
   },
   i18n: {
-    fallbackLanguage: 'en',
+    fallbackLanguage: 'de',
     supportedLanguages: { en, de, fr, it },
     translations: customI18nTranslations,
   },
@@ -85,8 +96,12 @@ export default buildConfig({
       beforeNavLinks: [ActivityLandscapeLink, OrganisationSelect],
       views: {
         FlowBlockView: {
-          path: '/activity/:id/flow/:id',
+          path: '/flow/:id',
           Component: FlowBlockView,
+        },
+        ListBlockView: {
+          path: '/list/:id',
+          Component: ListBlockView,
         },
         ActivityBlockView: {
           path: '/activity/:id/block/:id',

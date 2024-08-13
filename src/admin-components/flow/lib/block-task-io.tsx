@@ -24,7 +24,7 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
 
   return (
     <>
-      <div className={'flow-block relative grid grid-cols-2 border-b border-base-content/40'}>
+      <div className={'flow-block border-base-content/40 relative grid grid-cols-2 border-b'}>
         <div>
           {isIoEnabled && (
             <BlockWrapper id={`${block.id}-left`} position={'left'}>

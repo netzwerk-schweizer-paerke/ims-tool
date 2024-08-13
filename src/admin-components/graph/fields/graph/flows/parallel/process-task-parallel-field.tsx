@@ -1,7 +1,4 @@
 'use client';
-import { useField, useFieldProps } from '@payloadcms/ui';
-import { useEffect, useState } from 'react';
-import { isObject } from 'lodash-es';
 import { TaskShapeWrapper } from '@/admin-components/graph/wrappers/task-shape-wrapper';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
@@ -10,6 +7,7 @@ import { ConnectionsType, useArrows } from '@/admin-components/graph/fields/grap
 import { RootTarget } from '@/admin-components/graph/fields/graph/lib/root-target';
 import { Xwrapper } from '@/lib/xarrows/src';
 import { processTaskParallelConnections } from '@/admin-components/graph/fields/graph/flows/parallel/connection-definitions';
+import { useGraphFieldState } from '@/admin-components/graph/fields/graph/hooks/use-graph-field-state';
 
 type ComponentState = {
   connections: ConnectionsType;
@@ -17,7 +15,7 @@ type ComponentState = {
   textRight: string;
 };
 
-const componentState: ComponentState = {
+const initialState: ComponentState = {
   connections: [
     {
       position: 'top',
@@ -37,9 +35,9 @@ const componentState: ComponentState = {
 };
 
 export const ProcessTaskParallelField: React.FC = () => {
-  const { path } = useFieldProps();
-  const { value, setValue } = useField<string>({ path });
-  const [state, setState] = useState<ComponentState>(componentState);
+  const { state, setState } = useGraphFieldState<ComponentState>({
+    initialState,
+  });
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
@@ -54,17 +52,6 @@ export const ProcessTaskParallelField: React.FC = () => {
   const setTextRight = (text: string) => {
     setState({ ...state, textRight: text });
   };
-
-  useEffect(() => {
-    if (!value) return;
-    if (isObject(value)) {
-      setState(value as unknown as ComponentState);
-    }
-  }, []);
-
-  useEffect(() => {
-    setValue(state);
-  }, [setValue, state, state.connections]);
 
   return (
     <div ref={ref}>

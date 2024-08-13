@@ -1,7 +1,4 @@
 'use client';
-import { useField, useFieldProps } from '@payloadcms/ui';
-import { useEffect, useState } from 'react';
-import { isObject } from 'lodash-es';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
@@ -15,6 +12,7 @@ import { processTestConnections } from '@/admin-components/graph/fields/graph/fl
 import { TestShapeWrapper } from '@/admin-components/graph/wrappers/test-shape-wrapper';
 import { Xwrapper } from '@/lib/xarrows/src';
 import { BooleanButton } from '@/admin-components/graph/fields/graph/components/boolean-button';
+import { useGraphFieldState } from '@/admin-components/graph/fields/graph/hooks/use-graph-field-state';
 
 enum BooleanOutput {
   FALSE = 'false',
@@ -30,7 +28,7 @@ type ComponentState = {
   rightBoolean: BooleanOutput;
 };
 
-const componentState: ComponentState = {
+const initialState: ComponentState = {
   connections: [
     {
       position: 'top',
@@ -72,19 +70,15 @@ const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = ({ booleanOut
 };
 
 export const ProcessTestField: React.FC = () => {
-  const { path } = useFieldProps();
-  const { value, setValue } = useField<string>({ path });
-  const [state, setState] = useState<ComponentState>(componentState);
+  const { setText, state, setState } = useGraphFieldState<ComponentState>({
+    initialState,
+  });
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
     setState,
     connections: processTestConnections,
   });
-
-  const setText = (text: string) => {
-    setState({ ...state, text });
-  };
 
   const toggleBoolean = (position: 'leftBoolean' | 'bottomBoolean' | 'rightBoolean') => {
     const currentBoolean = state[position];
@@ -96,18 +90,6 @@ export const ProcessTestField: React.FC = () => {
     }
     setState({ ...state, [position]: newBoolean });
   };
-
-  useEffect(() => {
-    if (!value) return;
-    if (isObject(value)) {
-      setState(value as unknown as ComponentState);
-    }
-    console.log(value);
-  }, []);
-
-  useEffect(() => {
-    setValue(state);
-  }, [setValue, state, state.text, state.connections]);
 
   return (
     <div ref={ref}>

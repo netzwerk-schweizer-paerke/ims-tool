@@ -303,6 +303,22 @@ export const I18nCollection = {
       it: 'File: Scegli o carica uno nuovo o fornisci un URL esterno',
     },
   },
+  collectionLabel: {
+    documentsPublic: {
+      singular: {
+        en: 'Public document',
+        de: 'Öffentliches Dokument',
+        fr: 'Document public',
+        it: 'Documento pubblico',
+      },
+      plural: {
+        en: 'Public documents',
+        de: 'Öffentliche Dokumente',
+        fr: 'Documents publics',
+        it: 'Documenti pubblici',
+      },
+    },
+  },
   collectionGroup: {
     process: {
       en: 'Process',

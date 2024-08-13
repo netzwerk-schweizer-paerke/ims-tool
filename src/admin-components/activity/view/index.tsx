@@ -11,6 +11,7 @@ import { Translate } from '@/lib/translate';
 import { ListsGrid } from '@/admin-components/activity/view/lists-grid';
 import { ActivityEditLink } from '@/admin-components/activity/overview/activity/activity-edit-link';
 import { LandscapeSvgBgArrow } from '@/admin-components/activity/overview/activity/lib/landscape-svg-bg-arrow';
+import { StepNav } from '@/admin-components/activity/view/step-nav';
 
 export const ActivityBlockView: React.FC<AdminViewProps> = async ({
   initPageResult,
@@ -59,6 +60,34 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
       return res?.docs[0]?.blocks?.find((block) => block.id === (activityBlockId as any));
     });
 
+  const activity = await req.payload
+    .find({
+      collection: 'activities',
+      locale: locale as any,
+      depth: 2,
+      where: {
+        and: [
+          {
+            organisation: {
+              equals: selectedOrganisationId,
+            },
+            id: { equals: activityid },
+          },
+        ],
+      },
+      //   TODO: Implement doc order sorting
+    })
+    .then((res) => {
+      console.log({ res: res.docs[0] });
+      if (res.docs.length === 0) {
+        return null;
+      }
+      if (res.docs.length > 1) {
+        throw new Error('More than one activity found');
+      }
+      return res?.docs[0];
+    });
+
   return (
     <DefaultTemplate
       i18n={req.i18n}
@@ -70,9 +99,13 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
           paddingLeft: 'var(--gutter-h)',
           paddingRight: 'var(--gutter-h)',
         }}>
-        <h1 id="custom-view-title">
-          <Translate k={'activityBlock:title'} />
-        </h1>
+        <StepNav activity={{ id: activityid, title: activity?.name, blockId: activityBlockId }} />
+        <div className={'prose lg:prose-lg'}>
+          <h1>{activity?.name}</h1>
+          <h3>
+            <Translate k={'activityBlock:title'} />
+          </h3>
+        </div>
         <ActivityEditLink id={activityid} locale={locale} />
         <div className={'mt-8 grid grid-cols-[22%_auto_22%]'}>
           {activityBlock ? (
@@ -99,14 +132,8 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
               <div className={'grid grid-cols-[auto_64px]'}>
                 <div className={'relative bg-[var(--theme-text-33)] p-4'}>
                   <div className={'prose prose-lg flex flex-col gap-16'}>
-                    <FlowsGrid
-                      activityId={activityid}
-                      flows={activityBlock?.relations?.flowRelation}
-                    />
-                    <ListsGrid
-                      activityId={activityid}
-                      lists={activityBlock?.relations?.listRelation}
-                    />
+                    <FlowsGrid flows={activityBlock?.relations?.flowRelation} />
+                    <ListsGrid lists={activityBlock?.relations?.listRelation} />
                   </div>
                 </div>
                 <div className={'relative h-full'}>
@@ -135,6 +162,32 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
               <Translate k={'common:noContentDefined'} />
             </div>
           )}
+        </div>
+        <div className={'mt-16 grid grid-cols-2 gap-8'}>
+          <div className={'prose prose-lg'}>
+            <h3>
+              <Translate k={'activityBlock:infos:norms'} />
+            </h3>
+            {activityBlock?.infos?.norms ? (
+              <PayloadLexicalReactRenderer content={activityBlock.infos?.norms as any} />
+            ) : (
+              <p>
+                <Translate k={'common:noContentDefined'} />
+              </p>
+            )}
+          </div>
+          <div className={'prose prose-lg'}>
+            <h3>
+              <Translate k={'activityBlock:infos:support'} />
+            </h3>
+            {activityBlock?.infos?.support ? (
+              <PayloadLexicalReactRenderer content={activityBlock.infos?.support as any} />
+            ) : (
+              <p>
+                <Translate k={'common:noContentDefined'} />
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </DefaultTemplate>

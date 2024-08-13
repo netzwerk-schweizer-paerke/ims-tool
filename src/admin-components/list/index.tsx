@@ -5,17 +5,17 @@ import { headers as getHeaders } from 'next/headers';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 import { toNumber } from 'lodash-es';
 import { assert } from 'ts-essentials';
-import { FlowBlock } from '@/admin-components/flow/flow-block';
 import { FlowEditLink } from '@/admin-components/flow/flow-edit-link';
 import { Translate } from '@/lib/translate';
 import { StepNav } from '@/admin-components/activity/view/step-nav';
 import { TaskFlow } from '@/types/payload-types';
+import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer';
 
-function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
-  return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number');
+function isTaskFlowArray(listRelation: any): listRelation is TaskFlow[] {
+  return Array.isArray(listRelation) && listRelation.every((list) => typeof list.id === 'number');
 }
 
-export const FlowBlockView: React.FC<AdminViewProps> = async ({
+export const ListBlockView: React.FC<AdminViewProps> = async ({
   initPageResult,
   params,
   searchParams,
@@ -27,14 +27,14 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
 
   const selectedOrganisationId = getIdFromRelation(user?.selectedOrganisation);
 
-  const flowId = toNumber(params?.segments?.[1]);
+  const listId = toNumber(params?.segments?.[1]);
 
   assert(selectedOrganisationId, `Selected Organisation ID not set, ${selectedOrganisationId}`);
-  assert(flowId, `Flow ID not set, ${flowId}`);
+  assert(listId, `Flow ID not set, ${listId}`);
 
-  const flowBlock = await req.payload
+  const listBlock = await req.payload
     .find({
-      collection: 'task-flows',
+      collection: 'task-lists',
       locale: locale as any,
       depth: 2,
       where: {
@@ -43,7 +43,7 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
             organisation: {
               equals: selectedOrganisationId,
             },
-            id: { equals: flowId },
+            id: { equals: listId },
           },
         ],
       },
@@ -59,11 +59,11 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
       return res?.docs[0];
     });
 
-  if (!flowBlock) {
-    throw new Error(`Flow block (${flowId}) not found`);
+  if (!listBlock) {
+    throw new Error(`Flow block (${listId}) not found`);
   }
 
-  const blocks = flowBlock.blocks || [];
+  const blocks = listBlock.items || [];
 
   const activity = await req.payload
     .find({
@@ -83,11 +83,11 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
     .then((res) => {
       let blockId = '';
       const activity = res.docs.filter((doc) => {
-        // These are activity blocks that contain flows and lists
+        // These are activity blocks that contain lists and lists
         const activityBlocks = doc.blocks;
         return activityBlocks?.some((block) => {
-          const flowRelation = block.relations?.flowRelation;
-          if (isTaskFlowArray(flowRelation) && flowRelation.some((flow) => flow.id === flowId)) {
+          const listRelation = block.relations?.listRelation;
+          if (isTaskFlowArray(listRelation) && listRelation.some((list) => list.id === listId)) {
             blockId = block.id as string;
             return true;
           }
@@ -120,29 +120,38 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
         }}>
         <StepNav
           activity={{ id: activity.id, title: activity.name, blockId: activity.blockId }}
-          flowBlock={{ id: flowId, title: flowBlock.name }}
+          listBlock={{ id: listId, title: listBlock.name }}
         />
         <div className={'prose prose-lg'}>
-          <h1>{flowBlock.name}</h1>
+          <h1>{listBlock.name}</h1>
           <h3>
-            <Translate k={'flowBlock:title'} />
+            <Translate k={'listBlock:title'} />
           </h3>
-          <FlowEditLink id={flowBlock.id} locale={locale} />
+          <FlowEditLink id={listBlock.id} locale={locale} />
         </div>
         <div className={'mt-8'}>
-          <div className={'grid grid-cols-[420px_auto_auto_auto]'}>
-            <div></div>
+          <div className={'grid grid-cols-3'}>
             <div className={'pl-4'}>
-              <Translate k={'flowBlock:table:keypoints'} />
+              <Translate k={'listBlock:table:keypoints'} />
             </div>
             <div className={'pl-4'}>
-              <Translate k={'flowBlock:table:tools'} />
+              <Translate k={'listBlock:table:tools'} />
             </div>
             <div className={'pl-4'}>
-              <Translate k={'flowBlock:table:responsibility'} />
+              <Translate k={'listBlock:table:responsibility'} />
             </div>
             {blocks.map((block, i) => (
-              <FlowBlock key={i} block={block} />
+              <React.Fragment key={i}>
+                <div className={'border-base-content/40 prose prose-lg border-b py-6 pl-4'}>
+                  <PayloadLexicalReactRenderer content={block.topic as any} />
+                </div>
+                <div className={'border-base-content/40 prose prose-lg border-b py-6 pl-4'}>
+                  <PayloadLexicalReactRenderer content={block.tools as any} />
+                </div>
+                <div className={'border-base-content/40 prose prose-lg border-b py-6 pl-4'}>
+                  <PayloadLexicalReactRenderer content={block.responsibility as any} />
+                </div>
+              </React.Fragment>
             ))}
           </div>
           {blocks.length === 0 && (

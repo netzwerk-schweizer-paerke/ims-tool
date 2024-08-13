@@ -37,6 +37,7 @@ export const ActivityFlowArrows: React.FC<Props> = ({ activity }) => {
         resizeObserver.unobserve(reference);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderArrows = useCallback(() => {

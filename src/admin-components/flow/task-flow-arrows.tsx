@@ -16,17 +16,6 @@ type Props = {
   taskFlowBlock: ProcessTaskCompoundBlock;
 };
 
-const getTestBlockLabel = (
-  block: ProcessTaskCompoundBlock,
-  position: 'right' | 'left' | 'bottom',
-) => {
-  if (block.blockType !== 'proc-test' || !block.graph?.test) {
-    return undefined;
-  }
-  const label = block.graph.test[`${position}Boolean`];
-  return label !== 'none' ? label : undefined;
-};
-
 export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
   const ref = useRef<HTMLDivElement>(null);
   const updateXarrow = useXarrow();
@@ -53,6 +42,7 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
         resizeObserver.unobserve(reference);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderArrows = useCallback(() => {

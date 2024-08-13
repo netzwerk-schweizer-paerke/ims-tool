@@ -31,6 +31,10 @@ export const de = {
       title: 'Prozesse Ablauf',
       noFlows: 'Keine Prozesse definiert',
     },
+    infos: {
+      norms: 'Normen',
+      support: 'Unterstützende Informationen',
+    },
   },
   flowBlock: {
     title: 'Flow',
@@ -40,7 +44,16 @@ export const de = {
       responsibility: 'Verantwortung',
     },
   },
+  listBlock: {
+    title: 'Aufgaben',
+    table: {
+      keypoints: 'Merkpunkte',
+      tools: 'Werkzeuge',
+      responsibility: 'Verantwortung',
+    },
+  },
   common: {
+    back: 'Zurück',
     edit: 'Bearbeiten',
     delete: 'Löschen',
     noContentDefined: 'Kein Inhalt definiert',

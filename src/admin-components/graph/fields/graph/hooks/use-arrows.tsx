@@ -102,6 +102,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
         resizeObserver.unobserve(reference);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderArrows = useCallback(() => {

@@ -30,6 +30,10 @@ export const it = {
       title: 'Flows',
       noFlows: 'No process flows defined',
     },
+    infos: {
+      norms: 'Norms',
+      support: 'Support',
+    },
   },
   flowBlock: {
     title: 'Flow',
@@ -39,7 +43,16 @@ export const it = {
       responsibility: 'Responsibility',
     },
   },
+  listBlock: {
+    title: 'List',
+    table: {
+      keypoints: 'Key Points',
+      tools: 'Tools',
+      responsibility: 'Responsibility',
+    },
+  },
   common: {
+    back: 'Back',
     edit: 'Edit',
     delete: 'Delete',
     noContentDefined: 'No content defined',

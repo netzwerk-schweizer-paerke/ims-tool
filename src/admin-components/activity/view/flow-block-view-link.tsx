@@ -2,13 +2,12 @@ import { PropsWithChildren } from 'react';
 import Link from 'next/link';
 
 type Props = PropsWithChildren & {
-  activityId: number;
   flowId: number;
 };
 
-export const FlowBlockViewLink: React.FC<Props> = ({ activityId, flowId, children }) => {
+export const FlowBlockViewLink: React.FC<Props> = ({ flowId, children }) => {
   return (
-    <Link className={'link-hover link'} href={`/admin/activity/${activityId}/flow/${flowId}`}>
+    <Link className={'link-hover link'} href={`/admin/flow/${flowId}`}>
       {children}
     </Link>
   );

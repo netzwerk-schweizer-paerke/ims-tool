@@ -14,7 +14,7 @@ export const TestShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) =
   return (
     <div className={`test-shape-wrapper`}>
       <div
-        className={`test-shape-wrapper__inner absolute ${wrapperClasses} z-50 flex w-full items-center justify-center bg-base-100/80 text-center`}>
+        className={`test-shape-wrapper__inner absolute ${wrapperClasses} bg-base-100/80 z-50 flex w-full items-center justify-center text-center`}>
         {children}
       </div>
       <div className="shape z-0 h-6 w-10">

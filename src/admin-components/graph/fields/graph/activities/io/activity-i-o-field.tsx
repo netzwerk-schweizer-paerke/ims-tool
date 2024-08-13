@@ -1,8 +1,4 @@
 'use client';
-import { useField, useFieldProps } from '@payloadcms/ui';
-
-import { useEffect, useState } from 'react';
-import { isEqual, isObject } from 'lodash-es';
 import { BlockTaskWrapper } from '@/admin-components/graph/wrappers/block-task-wrapper';
 import { OuterTargets } from '@/admin-components/graph/fields/graph/lib/outer-targets';
 import {
@@ -17,13 +13,14 @@ import { IOShapeWrapper } from '@/admin-components/graph/wrappers/i-o-shape-wrap
 
 import '../../lib/arrow-styles.css';
 import { Xwrapper } from '@/lib/xarrows/src';
+import { useGraphFieldState } from '@/admin-components/graph/fields/graph/hooks/use-graph-field-state';
 
 type ComponentState = {
   connections: ConnectionsType;
   text: string;
 };
 
-const componentState: ComponentState = {
+const initialState: ComponentState = {
   connections: [
     {
       position: 'top',
@@ -42,31 +39,15 @@ const componentState: ComponentState = {
 };
 
 export const ActivityIOField: React.FC = () => {
-  const { path } = useFieldProps();
-  const { value, setValue } = useField<string>({ path });
-  const [state, setState] = useState<ComponentState>(componentState);
+  const { setText, state, setState } = useGraphFieldState<ComponentState>({
+    initialState,
+  });
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
     setState,
     connections: activityIOFieldConnections,
   });
-
-  const setText = (text: string) => {
-    setState({ ...state, text });
-  };
-
-  useEffect(() => {
-    if (!value) return;
-    if (isObject(value)) {
-      setState(value as unknown as ComponentState);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isEqual(state, value)) return;
-    setValue(state);
-  }, [setValue, state, state.text, state.connections, value]);
 
   return (
     <div ref={ref}>

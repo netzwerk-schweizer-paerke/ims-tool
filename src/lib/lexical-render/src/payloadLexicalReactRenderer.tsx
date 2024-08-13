@@ -1,4 +1,6 @@
 import React, { CSSProperties } from 'react';
+import { TaskFlow, TaskList } from '@/types/payload-types';
+import Link from 'next/link';
 
 export type AbstractNode<Type extends string> = {
   format?: '' | 'start' | 'center' | 'right' | 'justify' | number;
@@ -232,14 +234,54 @@ export const defaultElementRenderers: ElementRenderers = {
   paragraph: (element) => {
     return <p style={getElementStyle<'paragraph'>(element)}>{element.children}</p>;
   },
-  link: (element) => (
-    <a
-      href={element.fields.url}
-      target={element.fields.newTab ? '_blank' : '_self'}
-      style={getElementStyle<'link'>(element)}>
-      {element.children}
-    </a>
-  ),
+  link: (element) => {
+    if (element.fields.linkType === 'internal') {
+      switch (element.fields.doc.relationTo) {
+        case 'task-flows': {
+          const doc = element.fields.doc.value as TaskFlow;
+          return (
+            <Link
+              href={`/admin/flow/${doc.id}`}
+              title={doc.name}
+              target={element.fields.newTab ? '_blank' : '_self'}
+              style={getElementStyle<'link'>(element)}>
+              {element.children}
+            </Link>
+          );
+        }
+        case 'task-lists': {
+          const doc = element.fields.doc.value as TaskList;
+          return (
+            <Link
+              href={`/admin/flow/${doc.id}`}
+              title={doc.name}
+              target={element.fields.newTab ? '_blank' : '_self'}
+              style={getElementStyle<'link'>(element)}>
+              {element.children}
+            </Link>
+          );
+        }
+        default:
+          return (
+            <a
+              href={element.fields.url}
+              target={element.fields.newTab ? '_blank' : '_self'}
+              style={getElementStyle<'link'>(element)}>
+              {element.children}
+            </a>
+          );
+      }
+    }
+
+    return (
+      <a
+        href={element.fields.url}
+        target={element.fields.newTab ? '_blank' : '_self'}
+        style={getElementStyle<'link'>(element)}>
+        {element.children}
+      </a>
+    );
+  },
   autolink: (element) => (
     <a
       href={element.fields.url}

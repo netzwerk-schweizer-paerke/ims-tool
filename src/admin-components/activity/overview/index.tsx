@@ -9,6 +9,7 @@ import { LandscapeBg } from '@/admin-components/activity/overview/landscape-bg';
 import { ActivityStrategy } from '@/admin-components/activity/overview/activity/activity-strategy';
 import { Translate } from '@/lib/translate';
 import Link from 'next/link';
+import { StepNav } from '@/admin-components/activity/view/step-nav';
 
 export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult }) => {
   const headers = getHeaders();
@@ -50,6 +51,7 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
       i18n={req.i18n}
       payload={req.payload}
       visibleEntities={initPageResult.visibleEntities}>
+      <StepNav home={true} />
       <div className={'w-full overflow-x-auto overflow-y-hidden'}>
         <div
           className={'relative z-10'}

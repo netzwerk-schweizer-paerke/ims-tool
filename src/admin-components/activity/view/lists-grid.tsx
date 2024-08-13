@@ -1,13 +1,12 @@
-import { FlowBlock } from '@/admin-components/activity/view/flow-block';
 import { TaskList } from '@/types/payload-types';
 import { Translate } from '@/lib/translate';
+import { ListBlock } from '@/admin-components/activity/view/list-block';
 
 type Props = {
-  activityId: number;
   lists: (number | TaskList)[] | null | undefined;
 };
 
-export const ListsGrid: React.FC<Props> = ({ lists, activityId }) => {
+export const ListsGrid: React.FC<Props> = ({ lists }) => {
   if (!lists) {
     throw new Error('FlowsGrid flows prop should not be null or undefined');
   }
@@ -16,9 +15,9 @@ export const ListsGrid: React.FC<Props> = ({ lists, activityId }) => {
       <h3>
         <Translate k={'activityBlock:tasks:title'} />
       </h3>
-      <div className={'grid grid-cols-4'}>
-        {lists.map((flow, i) => (
-          <FlowBlock key={i} activityId={activityId} flow={flow} />
+      <div className={'grid grid-cols-4 gap-4'}>
+        {lists.map((list, i) => (
+          <ListBlock key={i} list={list} />
         ))}
         {lists.length < 1 && (
           <div className={'col-span-4'}>

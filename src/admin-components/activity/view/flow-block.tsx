@@ -3,20 +3,17 @@ import { TaskFlow } from '@/types/payload-types';
 import { FlowBlockViewLink } from '@/admin-components/activity/view/flow-block-view-link';
 
 type Props = {
-  activityId: number;
   flow: TaskFlow | number;
 };
 
-export const FlowBlock: React.FC<Props> = ({ activityId, flow }) => {
+export const FlowBlock: React.FC<Props> = ({ flow }) => {
   if (typeof flow === 'number') {
     throw new Error('FlowBlock flow prop should be a TaskFlow object');
   }
   const blockText = flow.name;
   return (
     <TaskShapeWrapper>
-      <FlowBlockViewLink activityId={activityId} flowId={flow.id}>
-        {blockText}
-      </FlowBlockViewLink>
+      <FlowBlockViewLink flowId={flow.id}>{blockText}</FlowBlockViewLink>
     </TaskShapeWrapper>
   );
 };
