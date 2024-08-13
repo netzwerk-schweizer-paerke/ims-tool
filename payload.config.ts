@@ -154,6 +154,7 @@ export default buildConfig({
       collections: {
         [Documents.slug]: { prefix: Documents.slug },
         [Media.slug]: { prefix: Media.slug },
+        [DocumentsPublic.slug]: { prefix: DocumentsPublic.slug },
       },
       config: {
         credentials: {

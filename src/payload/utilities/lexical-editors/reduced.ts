@@ -10,7 +10,7 @@ import { CollectionSlug } from 'payload';
 
 const enabledCollections: CollectionSlug[] = [
   'documents',
-  'documentsPublic',
+  'documents-public',
   'task-flows',
   'task-lists',
 ];

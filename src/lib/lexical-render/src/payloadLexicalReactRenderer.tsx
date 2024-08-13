@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { TaskFlow, TaskList } from '@/types/payload-types';
+import { Document, DocumentsPublic, TaskFlow, TaskList } from '@/types/payload-types';
 import Link from 'next/link';
 
 export type AbstractNode<Type extends string> = {
@@ -253,8 +253,22 @@ export const defaultElementRenderers: ElementRenderers = {
           const doc = element.fields.doc.value as TaskList;
           return (
             <Link
-              href={`/admin/flow/${doc.id}`}
+              href={`/admin/list/${doc.id}`}
               title={doc.name}
+              target={element.fields.newTab ? '_blank' : '_self'}
+              style={getElementStyle<'link'>(element)}>
+              {element.children}
+            </Link>
+          );
+        }
+        case 'documents':
+        case 'documents-public': {
+          console.log('element', element.fields);
+          const doc = element.fields.doc.value as DocumentsPublic | Document;
+          return (
+            <Link
+              href={doc.url!}
+              title={doc.filename!}
               target={element.fields.newTab ? '_blank' : '_self'}
               style={getElementStyle<'link'>(element)}>
               {element.children}

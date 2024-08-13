@@ -27,7 +27,7 @@ export interface Config {
     organisations: Organisation;
     activities: Activity;
     documents: Document;
-    documentsPublic: DocumentsPublic;
+    'documents-public': DocumentsPublic;
     'task-flows': TaskFlow;
     'task-lists': TaskList;
     users: User;
@@ -793,11 +793,12 @@ export interface ActivityTaskBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "documentsPublic".
+ * via the `definition` "documents-public".
  */
 export interface DocumentsPublic {
   id: number;
   description?: string | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;

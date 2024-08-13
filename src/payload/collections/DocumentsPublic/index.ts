@@ -1,10 +1,9 @@
 import { CollectionConfig } from 'payload';
 import { I18nCollection } from '@/lib/i18nCollection';
 import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
-import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload';
 
 export const DocumentsPublic: CollectionConfig = {
-  slug: 'documentsPublic',
+  slug: 'documents-public',
   labels: I18nCollection.collectionLabel.documentsPublic,
   admin: {
     group: I18nCollection.collectionGroup.files,
@@ -14,9 +13,6 @@ export const DocumentsPublic: CollectionConfig = {
     create: loggedInAccess,
     update: loggedInAccess,
     delete: loggedInAccess,
-  },
-  hooks: {
-    beforeChange: [assignOrgToUpload],
   },
   upload: {
     mimeTypes: [
@@ -33,6 +29,5 @@ export const DocumentsPublic: CollectionConfig = {
       localized: true,
       type: 'textarea',
     },
-    // adminSettingsField({ sidebar: true }),
   ],
 };
