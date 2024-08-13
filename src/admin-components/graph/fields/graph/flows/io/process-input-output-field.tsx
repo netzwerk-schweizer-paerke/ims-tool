@@ -8,6 +8,7 @@ import { ButtonCenterRight } from '@/admin-components/graph/fields/graph/compone
 import { processIoConnections } from '@/admin-components/graph/fields/graph/flows/io/connection-definitions';
 import { Xwrapper } from '@/lib/xarrows/src';
 import { useGraphFieldState } from '@/admin-components/graph/fields/graph/hooks/use-graph-field-state';
+import { ToggleSwitch } from '@/admin-components/graph/fields/graph/lib/toggle-switch';
 
 type ComponentState = {
   enabled: boolean;
@@ -63,13 +64,8 @@ export const ProcessInputOutputField: React.FC = () => {
               <div className={'x-arrows'}>{isLoaded && renderArrows()}</div>
             </>
           )}
-          <div className={'absolute -top-2 right-1/2 translate-x-1/2'}>
-            <input
-              type="checkbox"
-              className="toggle"
-              checked={state.enabled}
-              onChange={toggleEnabled}
-            />
+          <div className={'absolute right-1/2 top-0 translate-x-1/2'}>
+            <ToggleSwitch checked={state.enabled} onChange={toggleEnabled} />
           </div>
         </BlockTaskWrapper>
       </Xwrapper>

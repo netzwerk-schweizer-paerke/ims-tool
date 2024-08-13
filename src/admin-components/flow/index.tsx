@@ -10,6 +10,7 @@ import { FlowEditLink } from '@/admin-components/flow/flow-edit-link';
 import { Translate } from '@/lib/translate';
 import { StepNav } from '@/admin-components/activity/view/step-nav';
 import { TaskFlow } from '@/types/payload-types';
+import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer';
 
 function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
   return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number');
@@ -151,6 +152,13 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
             </p>
           )}
         </div>
+        {flowBlock.description && (
+          <div className={'mt-8'}>
+            <div className={'prose prose-lg py-6 pl-4'}>
+              <PayloadLexicalReactRenderer content={flowBlock.description as any} />
+            </div>
+          </div>
+        )}
       </div>
     </DefaultTemplate>
   );

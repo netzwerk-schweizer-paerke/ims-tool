@@ -160,6 +160,13 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
             </p>
           )}
         </div>
+        {listBlock.description && (
+          <div className={'mt-8'}>
+            <div className={'prose prose-lg py-6 pl-4'}>
+              <PayloadLexicalReactRenderer content={listBlock.description as any} />
+            </div>
+          </div>
+        )}
       </div>
     </DefaultTemplate>
   );
