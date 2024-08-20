@@ -38,6 +38,12 @@ export const TaskLists: CollectionConfig = {
       localized: true,
       editor: lexicalEditorReducedFeatures,
     },
+    // This is temporary until payload-enchants/docs_reorder is updated
+    {
+      index: true,
+      name: 'docOrder',
+      type: 'number',
+    },
     {
       name: 'items',
       label: I18nCollection.fieldLabel.listItem,

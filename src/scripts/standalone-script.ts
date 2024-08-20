@@ -4,11 +4,10 @@
  */
 
 import { getPayload } from 'payload';
-import { importConfig } from 'payload/node';
+import config from '../../payload.config';
 
 async function run() {
-  const awaitedConfig = await importConfig('../../payload.config.ts');
-  const payload = await getPayload({ config: awaitedConfig });
+  const payload = await getPayload({ config });
 
   const pages = await payload.find({
     collection: 'users',

@@ -17,7 +17,7 @@ export const BlockWrapper: React.FC<Props> = ({ children, id }) => {
           {children}
         </div>
       </div>
-      <OuterTargets id={id} debug={false} />
+      <OuterTargets id={id} />
     </div>
   );
 };

@@ -168,6 +168,7 @@ export interface Activity {
     };
     [k: string]: unknown;
   } | null;
+  docOrder?: number | null;
   blocks?: (ActivityIOBlock | ActivityTaskBlock)[] | null;
   files?:
     | {
@@ -179,7 +180,6 @@ export interface Activity {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
-  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -301,6 +301,7 @@ export interface TaskFlow {
     };
     [k: string]: unknown;
   } | null;
+  docOrder?: number | null;
   blocks?: (ProcessTaskIOBlock | ProcessTestOutputBlock | ProcessTaskParallelBlock)[] | null;
   files?:
     | {
@@ -311,7 +312,6 @@ export interface TaskFlow {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
-  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -632,6 +632,7 @@ export interface TaskList {
     };
     [k: string]: unknown;
   } | null;
+  docOrder?: number | null;
   items?:
     | {
         topic?: {
@@ -691,7 +692,6 @@ export interface TaskList {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
-  docOrder?: number | null;
   updatedAt: string;
   createdAt: string;
 }

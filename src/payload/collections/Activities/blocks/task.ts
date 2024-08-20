@@ -1,9 +1,6 @@
 import { Block } from 'payload';
-
-import './block.scss';
 import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata';
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
-import { ActivityTaskField } from '@/admin-components/graph/fields/graph/activities/task/activity-task-field';
 
 export const ActivityTaskBlock: Block = {
   slug: 'activity-task',
@@ -35,7 +32,8 @@ export const ActivityTaskBlock: Block = {
               localized: true,
               admin: {
                 components: {
-                  Field: ActivityTaskField,
+                  Field:
+                    'src/admin-components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
                 },
               },
               jsonSchema: connectionSchema,

@@ -1,9 +1,6 @@
 import { Block } from 'payload';
-
-import './block.scss';
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata';
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
-import { ProcessTaskParallelField } from '@/admin-components/graph/fields/graph/flows/parallel/process-task-parallel-field';
 
 export const ProcessTaskParallelBlock: Block = {
   slug: 'proc-task-p',
@@ -41,7 +38,8 @@ export const ProcessTaskParallelBlock: Block = {
                   localized: true,
                   admin: {
                     components: {
-                      Field: ProcessTaskParallelField,
+                      Field:
+                        'src/admin-components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
                     },
                   },
                   jsonSchema: connectionSchema,

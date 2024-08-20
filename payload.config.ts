@@ -11,22 +11,15 @@ import { fr } from '@payloadcms/translations/languages/fr';
 import { it } from '@payloadcms/translations/languages/it';
 import { Users } from '@/payload/collections/Users';
 import { buildConfig } from 'payload';
-import { OrganisationSelect } from '@/admin-components/organisation-select';
 import { Activities } from '@/payload/collections/Activities';
 import { TaskFlows } from 'src/payload/collections/TaskFlow';
 import { Media } from '@/payload/collections/Media';
 import { Organisations } from '@/payload/collections/Organisations';
 import { Documents } from '@/payload/collections/Documents';
-import { ActivityLandscapeLink } from '@/admin-components/activity/activity-landscape-link';
-import { ActivitiesView } from '@/admin-components/activity/overview';
 import { customI18nTranslations } from '@/lib/custom-i18n-translations';
 import { TaskLists } from '@/payload/collections/TaskList';
-import { ActivityBlockView } from '@/admin-components/activity/view';
-import { FlowBlockView } from '@/admin-components/flow';
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
-import { docsReorder } from '@payload-enchants/docs-reorder';
 import { DocumentsPublic } from '@/payload/collections/DocumentsPublic';
-import { ListBlockView } from '@/admin-components/list';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -93,23 +86,26 @@ export default buildConfig({
         }
       : {}),
     components: {
-      beforeNavLinks: [ActivityLandscapeLink, OrganisationSelect],
+      beforeNavLinks: [
+        'src/admin-components/activity/activity-landscape-link#ActivityLandscapeLink',
+        'src/admin-components/organisation-select#OrganisationSelect',
+      ],
       views: {
         FlowBlockView: {
           path: '/flow/:id',
-          Component: FlowBlockView,
+          Component: 'src/admin-components/flow#FlowBlockView',
         },
         ListBlockView: {
           path: '/list/:id',
-          Component: ListBlockView,
+          Component: 'src/admin-components/list#ListBlockView',
         },
         ActivityBlockView: {
           path: '/activity/:id/block/:id',
-          Component: ActivityBlockView,
+          Component: 'src/admin-components/activity/view#ActivityBlockView',
         },
         ActivitiesView: {
           path: '/activities',
-          Component: ActivitiesView,
+          Component: 'src/admin-components/activity/overview#ActivitiesView',
         },
       },
     },
@@ -132,9 +128,10 @@ export default buildConfig({
   },
   plugins: [
     // https://github.com/r1tsuu/payload-enchants/tree/master/packages/docs-reorder
-    docsReorder({
-      collections: [{ slug: Activities.slug }, { slug: TaskFlows.slug }, { slug: TaskLists.slug }],
-    }),
+    // docsReorder({
+    //   collections: [{ slug: Activities.slug }, { slug: TaskFlows.slug }, { slug: TaskLists.slug }],
+    // }),
+    // https://github.com/r1tsuu/payload-enchants/tree/master/packages/translator
     // translator({
     //   // collections with the enabled translator in the admin UI
     //   collections: ['activities', 'task-flows', 'media', 'documents'],

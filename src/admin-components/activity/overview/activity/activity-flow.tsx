@@ -1,6 +1,5 @@
 import { ActivityBlock } from '@/admin-components/activity/overview/activity/block';
 import { ActivityFlowArrows } from '@/admin-components/activity/overview/activity/activity-flow-arrows';
-import { ActivityEditLink } from '@/admin-components/activity/overview/activity/activity-edit-link';
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/types/payload-types';
 import Link from 'next/link';
 import { Translate } from '@/lib/translate';
@@ -69,10 +68,6 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
 
   return (
     <div className={'activity-flow z-10 flex flex-col'}>
-      <div className={'text-center'}>
-        <h2 className={'text-xl'}>{activity.name}</h2>
-        <ActivityEditLink id={activity.id} locale={locale} />
-      </div>
       <div className={'relative flex h-full grow flex-col'}>
         {blocksDisplay.input.length === 0 ? (
           <ActivityBlock type={'empty'} activityId={activity.id} />

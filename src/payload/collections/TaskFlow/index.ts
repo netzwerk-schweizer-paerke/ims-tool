@@ -41,6 +41,12 @@ export const TaskFlows: CollectionConfig = {
       localized: true,
       editor: lexicalEditorReducedFeatures,
     },
+    // This is temporary until payload-enchants/docs_reorder is updated
+    {
+      index: true,
+      name: 'docOrder',
+      type: 'number',
+    },
     {
       name: 'blocks',
       label: I18nCollection.fieldLabel.fragment,
