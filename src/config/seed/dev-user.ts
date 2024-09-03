@@ -3,24 +3,24 @@ import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants';
 
 export const seedDevUser = async (payload: Payload) => {
   // Create admin user on imported dbs
-  // const devAdminUser = await payload.find({
-  //   collection: 'users',
-  //   where: {
-  //     email: { equals: 'admin@test.com' },
-  //   },
-  // });
-  // if (devAdminUser.docs.length === 0) {
-  //   await payload.create({
-  //     collection: 'users',
-  //     data: {
-  //       roles: [ROLE_SUPER_ADMIN],
-  //       firstName: 'Admin',
-  //       lastName: 'User',
-  //       email: 'admin@test.com',
-  //       password: 'admin',
-  //     },
-  //   });
-  // }
+  const devAdminUser = await payload.find({
+    collection: 'users',
+    where: {
+      email: { equals: 'admin@test.com' },
+    },
+  });
+  if (devAdminUser.docs.length === 0) {
+    await payload.create({
+      collection: 'users',
+      data: {
+        roles: [ROLE_SUPER_ADMIN],
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@test.com',
+        password: 'admin',
+      },
+    });
+  }
 
   // Create a default user if one doesn't exist
   const existingUsers = await payload.find({

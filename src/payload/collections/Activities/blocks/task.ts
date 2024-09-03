@@ -29,11 +29,10 @@ export const ActivityTaskBlock: Block = {
             {
               name: 'task',
               type: 'json',
-              localized: true,
               admin: {
                 components: {
                   Field:
-                    'src/admin-components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
+                    'src/admin/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
                 },
               },
               jsonSchema: connectionSchema,

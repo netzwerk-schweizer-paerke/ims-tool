@@ -87,25 +87,25 @@ export default buildConfig({
       : {}),
     components: {
       beforeNavLinks: [
-        'src/admin-components/activity/activity-landscape-link#ActivityLandscapeLink',
-        'src/admin-components/organisation-select#OrganisationSelect',
+        'src/admin/components/activity-landscape-link#ActivityLandscapeLink',
+        'src/admin/components/organisation-select#OrganisationSelect',
       ],
       views: {
         FlowBlockView: {
           path: '/flow/:id',
-          Component: 'src/admin-components/flow#FlowBlockView',
+          Component: 'src/admin/views/flow#FlowBlockView',
         },
         ListBlockView: {
           path: '/list/:id',
-          Component: 'src/admin-components/list#ListBlockView',
+          Component: 'src/admin/views/list#ListBlockView',
         },
         ActivityBlockView: {
           path: '/activity/:id/block/:id',
-          Component: 'src/admin-components/activity/view#ActivityBlockView',
+          Component: 'src/admin/views/activity/view#ActivityBlockView',
         },
         ActivitiesView: {
           path: '/activities',
-          Component: 'src/admin-components/activity/overview#ActivitiesView',
+          Component: 'src/admin/views/activity/overview#ActivitiesView',
         },
       },
     },

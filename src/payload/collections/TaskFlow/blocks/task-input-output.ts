@@ -35,11 +35,10 @@ export const ProcessTaskInputOutputBlock: Block = {
                 {
                   name: 'io',
                   type: 'json',
-                  localized: true,
                   admin: {
                     components: {
                       Field:
-                        'src/admin-components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
+                        'src/admin/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
                   },
                   jsonSchema: connectionSchema,
@@ -47,11 +46,10 @@ export const ProcessTaskInputOutputBlock: Block = {
                 {
                   name: 'task',
                   type: 'json',
-                  localized: true,
                   admin: {
                     components: {
                       Field:
-                        'src/admin-components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField',
+                        'src/admin/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField',
                     },
                   },
                   jsonSchema: connectionSchema,

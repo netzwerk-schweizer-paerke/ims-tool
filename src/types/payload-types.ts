@@ -168,6 +168,7 @@ export interface Activity {
     };
     [k: string]: unknown;
   } | null;
+  variant: 'standard' | 'supportActivity' | 'strategyActivity';
   docOrder?: number | null;
   blocks?: (ActivityIOBlock | ActivityTaskBlock)[] | null;
   files?:
@@ -176,7 +177,6 @@ export interface Activity {
         id?: string | null;
       }[]
     | null;
-  variant: 'standard' | 'supportActivity' | 'strategyActivity';
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;

@@ -1,56 +1,33 @@
 .collection-edit--task-flows {
-  .process-block-row.field-type.row > .row__fields  {
-    @apply grid grid-cols-2 gap-4;
-  }
+  .field-type.blocks-field {
+    .render-fields.row__fields {
+      @apply grid grid-cols-2 gap-4;
+      .render-fields.row__fields {
+        @apply grid grid-cols-2 gap-0;
 
-  .graph-fields-group {
-    @apply m-0 p-0;
-    .group-field__wrap, .render-fields {
-      @apply size-full;
-      &.row__fields > div {
-        @apply pr-0 pl-0;
       }
     }
   }
-
-  .graph-fields-row {
+  .process-task-parallel-block.process-block-row {
+    .render-fields.row__fields {
+      .render-fields.row__fields {
+        display: block!important;
+      }
+    }
+  }
+  .group-field__wrap, .render-fields, .graph-fields-row {
     @apply size-full;
-    &.field-type.row > .row__fields {
-      @apply size-full grid grid-cols-[1fr_1fr] gap-0;
-    }
-  }
-
-  .process-task-block {
-    .graph-fields-row.field-type.row > .row__fields > :first-child {
-      grid-column-start: 2;
-    }
-  }
-
-  .process-task-parallel-block {
-    .graph-fields-row {
-      @apply size-full;
-      &.field-type.row > .row__fields {
-        @apply size-full block;
-      }
-    }
   }
 }
 
-.collection-edit--activities {
-  .task-group-row {
-    //&.field-type.row > .row__fields  {
-    //  @apply grid grid-cols-1 gap-4;
-    //}
 
-    .graph-fields-group {
-      max-width: 400px;
-      //@apply m-0 p-0;
-      //.group-field__wrap, .render-fields {
-      //  @apply size-full;
-      //  &.row__fields > div {
-      //    @apply pr-0 pl-0;
-      //  }
-      //}
+.collection-edit--activities {
+  .field-type.blocks-field {
+    .render-fields.row__fields {
+      @apply grid grid-cols-[1fr_2fr] gap-4;
     }
+  }
+  .group-field__wrap, .render-fields, .graph-fields-row {
+    @apply size-full;
   }
 }

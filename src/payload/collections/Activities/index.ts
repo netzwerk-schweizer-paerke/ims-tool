@@ -40,28 +40,11 @@ export const Activities: CollectionConfig = {
       localized: true,
       editor: lexicalEditorReducedFeatures,
     },
-    // This is temporary until payload-enchants/docs_reorder is updated
-    {
-      index: true,
-      name: 'docOrder',
-      type: 'number',
-    },
-    {
-      name: 'blocks',
-      label: I18nCollection.fieldLabel.blocks,
-      type: 'blocks',
-      localized: true,
-      blocks: [ActivityIOBlock, ActivityTaskBlock],
-    },
-    filesArrayField,
     {
       name: 'variant',
       label: I18nCollection.fieldLabel.variant,
       type: 'select',
       required: true,
-      admin: {
-        position: 'sidebar',
-      },
       options: [
         {
           label: I18nCollection.fieldLabel.standard,
@@ -77,6 +60,20 @@ export const Activities: CollectionConfig = {
         },
       ],
     },
-    adminSettingsField({ sidebar: true }),
+    // This is temporary until payload-enchants/docs_reorder is updated
+    {
+      index: true,
+      name: 'docOrder',
+      type: 'number',
+    },
+    {
+      name: 'blocks',
+      label: I18nCollection.fieldLabel.blocks,
+      type: 'blocks',
+      localized: true,
+      blocks: [ActivityIOBlock, ActivityTaskBlock],
+    },
+    filesArrayField,
+    adminSettingsField(),
   ],
 };

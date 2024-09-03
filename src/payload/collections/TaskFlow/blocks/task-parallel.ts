@@ -35,11 +35,10 @@ export const ProcessTaskParallelBlock: Block = {
                 {
                   name: 'task',
                   type: 'json',
-                  localized: true,
                   admin: {
                     components: {
                       Field:
-                        'src/admin-components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
+                        'src/admin/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
                     },
                   },
                   jsonSchema: connectionSchema,

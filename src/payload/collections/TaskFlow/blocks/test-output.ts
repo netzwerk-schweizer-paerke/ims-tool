@@ -35,11 +35,10 @@ export const ProcessTestOutputBlock: Block = {
                 {
                   name: 'output',
                   type: 'json',
-                  localized: true,
                   admin: {
                     components: {
                       Field:
-                        'src/admin-components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
+                        'src/admin/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
                   },
                   jsonSchema: connectionSchema,
@@ -51,7 +50,7 @@ export const ProcessTestOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/admin-components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
+                        'src/admin/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
                     },
                   },
                   jsonSchema: connectionSchema,

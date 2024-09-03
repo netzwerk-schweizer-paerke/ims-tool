@@ -29,11 +29,10 @@ export const ActivityIOBlock: Block = {
             {
               name: 'task',
               type: 'json',
-              localized: true,
               admin: {
                 components: {
                   Field:
-                    'src/admin-components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
+                    'src/admin/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
                 },
               },
               jsonSchema: connectionSchema,
