@@ -115,8 +115,8 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
                   <h3>
                     <Translate k={'activityBlock:input:title'} />
                   </h3>
-                  {activity?.input ? (
-                    <PayloadLexicalReactRenderer content={activity.input as any} />
+                  {activityBlock.io?.input ? (
+                    <PayloadLexicalReactRenderer content={activityBlock.io.input as any} />
                   ) : (
                     <p>
                       <Translate k={'common:noContentDefined'} />
@@ -147,8 +147,8 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
                   <h3>
                     <Translate k={'activityBlock:output:title'} />
                   </h3>
-                  {activity?.input ? (
-                    <PayloadLexicalReactRenderer content={activity.output as any} />
+                  {activityBlock.io?.input ? (
+                    <PayloadLexicalReactRenderer content={activityBlock.io.output as any} />
                   ) : (
                     <p>
                       <Translate k={'common:noContentDefined'} />
@@ -168,8 +168,8 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
             <h3>
               <Translate k={'activityBlock:infos:norms'} />
             </h3>
-            {activity?.norms ? (
-              <PayloadLexicalReactRenderer content={activity.norms as any} />
+            {activityBlock?.infos?.norms ? (
+              <PayloadLexicalReactRenderer content={activityBlock.infos?.norms as any} />
             ) : (
               <p>
                 <Translate k={'common:noContentDefined'} />
@@ -180,8 +180,8 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
             <h3>
               <Translate k={'activityBlock:infos:support'} />
             </h3>
-            {activity?.support ? (
-              <PayloadLexicalReactRenderer content={activity.support as any} />
+            {activityBlock?.infos?.support ? (
+              <PayloadLexicalReactRenderer content={activityBlock.infos?.support as any} />
             ) : (
               <p>
                 <Translate k={'common:noContentDefined'} />
