@@ -67,7 +67,6 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
             if (id === leftId) {
               return null;
             }
-            console.log({ startPrefix, endPrefix });
             startPrefix = startPrefix.replace(
               `right-${RootTargetLeftName}`,
               `left-${RootTargetName}`,
@@ -86,9 +85,6 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
             end: endPrefix,
             ...arrowStyle,
           };
-          if (blockType === 'proc-task-p') {
-            console.log({ props, id, left: id === leftId, startPrefix, endPrefix });
-          }
           return <Xarrow key={startPrefix + endPrefix + index} {...props} />;
         })}
       </Fragment>

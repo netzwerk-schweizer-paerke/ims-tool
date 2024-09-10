@@ -15,9 +15,11 @@ export const FlowsGrid: React.FC<Props> = ({ flows }) => {
       <h3>
         <Translate k={'activityBlock:flows:title'} />
       </h3>
-      <div className={'grid grid-cols-4 gap-4'}>
+      <div className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}>
         {flows.map((flow, i) => (
-          <FlowBlock key={i} flow={flow} />
+          <div key={i} className={'w-48'}>
+            <FlowBlock flow={flow} />
+          </div>
         ))}
         {flows.length < 1 && (
           <div className={'col-span-4'}>

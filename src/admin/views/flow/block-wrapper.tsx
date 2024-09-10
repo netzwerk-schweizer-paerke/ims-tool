@@ -14,7 +14,7 @@ export const BlockWrapper: React.FC<Props> = ({ children, id, position, spacing 
   }
   return (
     <div className={`block-wrapper relative flex size-full items-center justify-center p-8`}>
-      <div className={'relative flex min-h-24 min-w-44 items-center justify-center text-center'}>
+      <div className={'relative flex min-h-32 min-w-48 items-center justify-center text-center'}>
         <div
           id={`${id}-${RootTargetName}`}
           className={`root-target ${spacing === 'full' ? 'w-full' : ''}`}>

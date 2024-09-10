@@ -11,7 +11,6 @@ type Props = {
 export const BlockTaskParallel: React.FC<Props> = ({ block }) => {
   const graph = block.graph;
   const task = graph?.task;
-  console.log('task', task);
 
   if (!task) {
     throw new Error('FlowBlock proc-task-p block should have a task');
@@ -19,7 +18,7 @@ export const BlockTaskParallel: React.FC<Props> = ({ block }) => {
 
   return (
     <>
-      <div className={'flow-block border-base-content/40 relative grid grid-cols-2 border-b'}>
+      <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           <BlockWrapper id={`${block.id}-left`} position={'right'}>
             <TaskShapeWrapper>{task?.textLeft}</TaskShapeWrapper>

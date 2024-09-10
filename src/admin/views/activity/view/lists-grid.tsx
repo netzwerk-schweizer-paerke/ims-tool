@@ -15,9 +15,11 @@ export const ListsGrid: React.FC<Props> = ({ lists }) => {
       <h3>
         <Translate k={'activityBlock:tasks:title'} />
       </h3>
-      <div className={'grid grid-cols-4 gap-4'}>
+      <div className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}>
         {lists.map((list, i) => (
-          <ListBlock key={i} list={list} />
+          <div key={i} className={'w-48'}>
+            <ListBlock list={list} />
+          </div>
         ))}
         {lists.length < 1 && (
           <div className={'col-span-4'}>

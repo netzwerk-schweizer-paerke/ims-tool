@@ -182,6 +182,14 @@ export type PayloadLexicalReactRendererProps<Blocks extends { [key: string]: any
   };
 };
 
+const linkTextReplacer = (text: any) => {
+  const linktext = text[0].props.children.props.children ?? text;
+  if (typeof linktext === 'string') {
+    return linktext.replace(/_/g, '_\u00AD');
+  }
+  return text;
+};
+
 // This copy-and-pasted from somewhere in lexical here: https://github.com/facebook/lexical/blob/c2ceee223f46543d12c574e62155e619f9a18a5d/packages/lexical/src/LexicalConstants.ts
 const IS_BOLD = 1;
 const IS_ITALIC = 1 << 1;
@@ -245,7 +253,7 @@ export const defaultElementRenderers: ElementRenderers = {
               title={doc.name}
               target={element.fields.newTab ? '_blank' : '_self'}
               style={getElementStyle<'link'>(element)}>
-              {element.children}
+              {linkTextReplacer(element.children)}
             </Link>
           );
         }
@@ -257,13 +265,12 @@ export const defaultElementRenderers: ElementRenderers = {
               title={doc.name}
               target={element.fields.newTab ? '_blank' : '_self'}
               style={getElementStyle<'link'>(element)}>
-              {element.children}
+              {linkTextReplacer(element.children)}
             </Link>
           );
         }
         case 'documents':
         case 'documents-public': {
-          console.log('element', element.fields);
           const doc = element.fields.doc.value as DocumentsPublic | Document;
           return (
             <Link
@@ -271,7 +278,7 @@ export const defaultElementRenderers: ElementRenderers = {
               title={doc.filename!}
               target={element.fields.newTab ? '_blank' : '_self'}
               style={getElementStyle<'link'>(element)}>
-              {element.children}
+              {linkTextReplacer(element.children)}
             </Link>
           );
         }
@@ -281,7 +288,7 @@ export const defaultElementRenderers: ElementRenderers = {
               href={element.fields.url}
               target={element.fields.newTab ? '_blank' : '_self'}
               style={getElementStyle<'link'>(element)}>
-              {element.children}
+              {linkTextReplacer(element.children)}
             </a>
           );
       }
@@ -292,7 +299,7 @@ export const defaultElementRenderers: ElementRenderers = {
         href={element.fields.url}
         target={element.fields.newTab ? '_blank' : '_self'}
         style={getElementStyle<'link'>(element)}>
-        {element.children}
+        {linkTextReplacer(element.children)}
       </a>
     );
   },
@@ -301,7 +308,7 @@ export const defaultElementRenderers: ElementRenderers = {
       href={element.fields.url}
       target={element.fields.newTab ? '_blank' : '_self'}
       style={getElementStyle<'autolink'>(element)}>
-      {element.children}
+      {linkTextReplacer(element.children)}
     </a>
   ),
   quote: (element) => (
@@ -311,6 +318,7 @@ export const defaultElementRenderers: ElementRenderers = {
   tab: () => <br />,
   upload: (element) => {
     if (element.value.mimeType?.includes('image')) {
+      // eslint-disable-next-line @next/next/no-img-element
       return <img src={element.value.url} alt={element.value.alt} />;
     }
   },

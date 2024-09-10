@@ -9,7 +9,7 @@ export const ActivityLandscapeLink: React.FC = () => {
 
   const isActivityRoute = pathname.endsWith('/admin/activities');
   const isActivityDetailRoute =
-    pathname.includes('/admin/views/activity/') && pathname.includes('/block/');
+    pathname.includes('/admin/activity/') && pathname.includes('/block/');
 
   const isAdminDashboard =
     pathname.startsWith('/admin') && !isActivityRoute && !isActivityDetailRoute;

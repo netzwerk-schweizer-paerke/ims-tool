@@ -9,7 +9,7 @@ type Props = PropsWithChildren & {
 export const ActivityBlockViewLink: React.FC<Props> = ({ activityId, blockId, children }) => {
   return (
     <Link
-      className={'link-hover link hyphens-auto'}
+      className={'link hyphens-auto no-underline hover:underline'}
       href={`/admin/activity/${activityId}/block/${blockId}`}>
       {children}
     </Link>

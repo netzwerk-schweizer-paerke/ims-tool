@@ -34,7 +34,7 @@ export const BlockTestOutput: React.FC<Props> = ({ block }) => {
 
   return (
     <>
-      <div className={'flow-block border-base-content/40 relative grid grid-cols-2 border-b'}>
+      <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           {isOutputEnabled && (
             <BlockWrapper id={`${block.id}-left`} position={'left'}>

@@ -84,6 +84,7 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
     })
     .then((res) => {
       let blockId = '';
+      let blockTitle = '';
       const activity = res.docs.filter((doc) => {
         // These are activity blocks that contain flows and lists
         const activityBlocks = doc.blocks;
@@ -91,6 +92,7 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
           const flowRelation = block.relations?.flowRelation;
           if (isTaskFlowArray(flowRelation) && flowRelation.some((flow) => flow.id === flowId)) {
             blockId = block.id as string;
+            blockTitle = block?.graph?.task?.text as string;
             return true;
           }
           return false;
@@ -104,7 +106,8 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
       }
       return {
         id: activity[0].id,
-        blockId: blockId,
+        blockId,
+        blockTitle,
         name: activity[0].name,
       };
     });
@@ -122,6 +125,7 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
         }}>
         <StepNav
           activity={{ id: activity.id, title: activity.name, blockId: activity.blockId }}
+          activityBlock={{ id: activity.blockId, title: activity.blockTitle }}
           flowBlock={{ id: flowId, title: flowBlock.name }}
         />
         <div className={'prose prose-lg'}>
@@ -132,7 +136,7 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
           <FlowEditLink id={flowBlock.id} locale={locale} />
         </div>
         <div className={'mt-8'}>
-          <div className={'grid grid-cols-[420px_auto_auto_auto]'}>
+          <div className={'grid grid-cols-[440px_auto_auto_auto]'}>
             <div></div>
             <div className={'pl-4'}>
               <Translate k={'flowBlock:table:keypoints'} />

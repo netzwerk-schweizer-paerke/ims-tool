@@ -5,11 +5,12 @@ import { headers as getHeaders } from 'next/headers';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 import { toNumber } from 'lodash-es';
 import { assert } from 'ts-essentials';
-import { FlowEditLink } from '@/admin/views/flow/flow-edit-link';
 import { Translate } from '@/lib/translate';
 import { TaskFlow } from '@/types/payload-types';
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer';
 import { StepNav } from '@/admin/components/step-nav';
+import { ListEditLink } from '@/admin/views/list/list-edit-link';
+import { BlockMetaWrapper } from '@/admin/views/flow/lib/block-meta-wrapper';
 
 function isTaskFlowArray(listRelation: any): listRelation is TaskFlow[] {
   return Array.isArray(listRelation) && listRelation.every((list) => typeof list.id === 'number');
@@ -127,7 +128,7 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
           <h3>
             <Translate k={'listBlock:title'} />
           </h3>
-          <FlowEditLink id={listBlock.id} locale={locale} />
+          <ListEditLink id={listBlock.id} locale={locale} />
         </div>
         <div className={'mt-8'}>
           <div className={'grid grid-cols-3'}>
@@ -142,15 +143,15 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
             </div>
             {blocks.map((block, i) => (
               <React.Fragment key={i}>
-                <div className={'border-base-content/40 prose prose-lg border-b py-6 pl-4'}>
+                <BlockMetaWrapper>
                   <PayloadLexicalReactRenderer content={block.topic as any} />
-                </div>
-                <div className={'border-base-content/40 prose prose-lg border-b py-6 pl-4'}>
+                </BlockMetaWrapper>
+                <BlockMetaWrapper>
                   <PayloadLexicalReactRenderer content={block.tools as any} />
-                </div>
-                <div className={'border-base-content/40 prose prose-lg border-b py-6 pl-4'}>
+                </BlockMetaWrapper>
+                <BlockMetaWrapper>
                   <PayloadLexicalReactRenderer content={block.responsibility as any} />
-                </div>
+                </BlockMetaWrapper>
               </React.Fragment>
             ))}
           </div>

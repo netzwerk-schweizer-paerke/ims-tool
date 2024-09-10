@@ -7,7 +7,9 @@ type Props = PropsWithChildren & {
 
 export const ListBlockViewLink: React.FC<Props> = ({ listId, children }) => {
   return (
-    <Link className={'link-hover link hyphens-auto'} href={`/admin/list/${listId}`}>
+    <Link
+      className={'link hyphens-auto no-underline hover:underline'}
+      href={`/admin/list/${listId}`}>
       {children}
     </Link>
   );

@@ -50,7 +50,6 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
       //   TODO: Implement doc order sorting
     })
     .then((res) => {
-      console.log({ res: res.docs[0] });
       if (res.docs.length === 0) {
         return null;
       }
@@ -78,7 +77,6 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
       //   TODO: Implement doc order sorting
     })
     .then((res) => {
-      console.log({ res: res.docs[0] });
       if (res.docs.length === 0) {
         return null;
       }
@@ -87,6 +85,13 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
       }
       return res?.docs[0];
     });
+
+  const findTitle = (a: typeof activity, block: typeof activityBlock) => {
+    if (block?.graph?.task?.text) {
+      return block.graph.task.text;
+    }
+    return a?.name;
+  };
 
   return (
     <DefaultTemplate
@@ -99,15 +104,21 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
           paddingLeft: 'var(--gutter-h)',
           paddingRight: 'var(--gutter-h)',
         }}>
-        <StepNav activity={{ id: activityid, title: activity?.name, blockId: activityBlockId }} />
+        <StepNav
+          activity={{ id: activityid, title: activity?.name, blockId: activityBlockId }}
+          activityBlock={{
+            id: activityBlockId,
+            title: activityBlock?.graph?.task?.text,
+          }}
+        />
         <div className={'prose lg:prose-lg'}>
-          <h1>{activity?.name}</h1>
+          <h1>{findTitle(activity, activityBlock)}</h1>
           <h3>
             <Translate k={'activityBlock:title'} />
           </h3>
         </div>
         <ActivityEditLink id={activityid} locale={locale} />
-        <div className={'mt-8 grid grid-cols-[22%_auto_22%]'}>
+        <div className={'mt-8 grid grid-cols-[30%_auto_30%]'}>
           {activityBlock ? (
             <>
               <div className={'grid grid-cols-[auto_64px]'}>
