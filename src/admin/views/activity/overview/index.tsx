@@ -5,12 +5,12 @@ import { headers as getHeaders } from 'next/headers';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 import { ActivityFlow } from '@/admin/views/activity/overview/activity/activity-flow';
 import { ActivitySupport } from '@/admin/views/activity/overview/activity/activity-support';
-import { LandscapeBg } from '@/admin/views/activity/overview/landscape-bg';
 import { ActivityStrategy } from '@/admin/views/activity/overview/activity/activity-strategy';
 import { Translate } from '@/lib/translate';
 import Link from 'next/link';
 import { ActivityTitles } from '@/admin/views/activity/overview/activity/activity-titles';
 import { StepNav } from '@/admin/components/step-nav';
+import './landscape-bg.css';
 
 export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult }) => {
   const headers = getHeaders();
@@ -72,11 +72,14 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
             ) : (
               <>
                 {strategicActivity ? (
-                  <div className={'relative flex flex-row items-stretch justify-stretch pr-8'}>
-                    <LandscapeBg />
-                    {strategicActivity.map((activity) => (
-                      <ActivityStrategy key={activity.id} activity={activity} locale={locale} />
-                    ))}
+                  <div className={'flex flex-row items-stretch justify-stretch'}>
+                    <div
+                      className={'landscape-bg flex flex-row items-stretch justify-stretch pt-2'}>
+                      {strategicActivity.map((activity) => (
+                        <ActivityStrategy key={activity.id} activity={activity} locale={locale} />
+                      ))}
+                    </div>
+                    <div className={'landscape-bg-arrow-right w-12'}></div>
                   </div>
                 ) : (
                   <div>
@@ -84,7 +87,7 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
                   </div>
                 )}
                 {standardActivities ? (
-                  <div className={'flex flex-col items-stretch justify-stretch'}>
+                  <div className={'flex flex-col items-stretch justify-stretch pt-2'}>
                     <div className={'flex flex-row justify-evenly'}>
                       {standardActivities.map((activity) => (
                         <ActivityTitles key={activity.id} activity={activity} locale={locale} />
@@ -102,14 +105,14 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
                   </div>
                 )}
                 {supportActivities ? (
-                  <div
-                    className={
-                      'relative flex min-w-fit flex-row items-stretch justify-stretch pl-8'
-                    }>
-                    <LandscapeBg rotate={180} />
-                    {supportActivities.map((activity) => (
-                      <ActivitySupport key={activity.id} activity={activity} locale={locale} />
-                    ))}
+                  <div className={'flex flex-row items-stretch justify-stretch'}>
+                    <div className={'landscape-bg-arrow-left w-12'}></div>
+                    <div
+                      className={'landscape-bg flex flex-row items-stretch justify-stretch pt-2'}>
+                      {supportActivities.map((activity) => (
+                        <ActivitySupport key={activity.id} activity={activity} locale={locale} />
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div>

@@ -9,9 +9,10 @@ import { assert } from 'ts-essentials';
 import { Translate } from '@/lib/translate';
 import { StepNav } from '@/admin/components/step-nav';
 import { ActivityEditLink } from '@/admin/views/activity/overview/activity/activity-edit-link';
-import { LandscapeSvgBgArrow } from '@/admin/views/activity/overview/activity/lib/landscape-svg-bg-arrow';
 import { FlowsGrid } from '@/admin/views/activity/view/flows-grid';
 import { ListsGrid } from '@/admin/views/activity/view/lists-grid';
+import './landscape-bg.css';
+import { LastUpdated } from '@/admin/components/last-updated';
 
 export const ActivityBlockView: React.FC<AdminViewProps> = async ({
   initPageResult,
@@ -117,12 +118,13 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
             <Translate k={'activityBlock:title'} />
           </h3>
         </div>
+        <LastUpdated date={activity?.updatedAt} />
         <ActivityEditLink id={activityid} locale={locale} />
-        <div className={'mt-8 grid grid-cols-[30%_auto_30%]'}>
+        <div className={'mt-8 grid grid-cols-[28%_auto_28%]'}>
           {activityBlock ? (
             <>
-              <div className={'grid grid-cols-[auto_64px]'}>
-                <div className={'prose prose-lg bg-[var(--theme-text-33)] p-4'}>
+              <div className={'grid grid-cols-[auto_48px]'}>
+                <div className={'landscape-bg prose prose-lg pb-4 pl-4 pt-2'}>
                   <h3>
                     <Translate k={'activityBlock:input:title'} />
                   </h3>
@@ -134,26 +136,21 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
                     </p>
                   )}
                 </div>
-                <div className={'relative h-full'}>
-                  <div className={'absolute inset-0'}>
-                    <LandscapeSvgBgArrow opacity={0.33} />
-                  </div>
-                </div>
+                <div className={'landscape-bg-arrow-right'}></div>
               </div>
-              <div className={'grid grid-cols-[auto_64px]'}>
-                <div className={'relative bg-[var(--theme-text-33)] p-4'}>
+              <div className={'grid grid-cols-[auto_48px]'}>
+                <div className={'landscape-bg relative p-4'}>
                   <div className={'prose prose-lg flex flex-col gap-16'}>
-                    <FlowsGrid flows={activityBlock?.relations?.flowRelation} />
-                    <ListsGrid lists={activityBlock?.relations?.listRelation} />
+                    <div
+                      className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}>
+                      <FlowsGrid flows={activityBlock?.relations?.flowRelation} />
+                      <ListsGrid lists={activityBlock?.relations?.listRelation} />
+                    </div>
                   </div>
                 </div>
-                <div className={'relative h-full'}>
-                  <div className={'absolute inset-0'}>
-                    <LandscapeSvgBgArrow opacity={0.33} />
-                  </div>
-                </div>
+                <div className={'landscape-bg-arrow-right'}></div>
               </div>
-              <div className={'relative bg-[var(--theme-text-33)] p-4'}>
+              <div className={'landscape-bg relative pb-4 pl-4 pt-2'}>
                 <div className={'prose prose-lg'}>
                   <h3>
                     <Translate k={'activityBlock:output:title'} />

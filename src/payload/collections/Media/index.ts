@@ -1,6 +1,6 @@
 import { CollectionConfig } from 'payload';
 import { I18nCollection } from '@/lib/i18nCollection';
-import { organisationsAccess } from '@/payload/collections/access/organisationsAccess';
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
 import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
 import { adminSettingsField } from '@/payload/fields/admin-settings';
@@ -10,9 +10,10 @@ export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
     group: I18nCollection.collectionGroup.files,
+    hidden: true,
   },
   access: {
-    read: organisationsAccess,
+    read: isCurrentlySelectedOrganisationAccess,
     create: loggedInAccess,
     update: organisationAdminsAccess,
     delete: organisationAdminsAccess,

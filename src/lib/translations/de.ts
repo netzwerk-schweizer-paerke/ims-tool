@@ -21,14 +21,14 @@ export const de = {
       title: 'Input',
     },
     tasks: {
-      title: 'Prozesse Tabelle',
+      title: 'Listen',
       noTasks: 'Keine Prozesse definiert',
     },
     output: {
       title: 'Output',
     },
     flows: {
-      title: 'Prozesse Ablauf',
+      title: 'Prozesse',
       noFlows: 'Keine Prozesse definiert',
     },
     infos: {
@@ -58,6 +58,7 @@ export const de = {
     delete: 'Löschen',
     noContentDefined: 'Kein Inhalt definiert',
     continue: 'Weiter',
+    lastUpdated: 'Zuletzt aktualisiert',
     boolean: {
       true: 'Wahr',
       false: 'Falsch',

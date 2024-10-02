@@ -1,7 +1,6 @@
 import { CollectionConfig } from 'payload';
 import { I18nCollection } from '@/lib/i18nCollection';
-import { organisationsAccess } from '@/payload/collections/access/organisationsAccess';
-import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
 import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output';
 import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output';
@@ -21,8 +20,8 @@ export const TaskFlows: CollectionConfig = {
     singular: I18nCollection.fieldLabel.taskFlow,
   },
   access: {
-    read: organisationsAccess,
-    create: loggedInAccess,
+    read: isCurrentlySelectedOrganisationAccess,
+    create: organisationAdminsAccess,
     update: organisationAdminsAccess,
     delete: organisationAdminsAccess,
   },

@@ -1,7 +1,6 @@
 import { CollectionConfig } from 'payload';
 import { I18nCollection } from '@/lib/i18nCollection';
-import { organisationsAccess } from '@/payload/collections/access/organisationsAccess';
-import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
 import { adminSettingsField } from '@/payload/fields/admin-settings';
 import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload';
@@ -12,8 +11,8 @@ export const Documents: CollectionConfig = {
     group: I18nCollection.collectionGroup.files,
   },
   access: {
-    read: organisationsAccess,
-    create: loggedInAccess,
+    read: isCurrentlySelectedOrganisationAccess,
+    create: organisationAdminsAccess,
     update: organisationAdminsAccess,
     delete: organisationAdminsAccess,
   },

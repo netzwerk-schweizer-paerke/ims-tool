@@ -12,6 +12,7 @@ import { TaskFlow } from '@/types/payload-types';
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer';
 import { StepNav } from '@/admin/components/step-nav';
 import { logger } from '@/lib/logger';
+import { LastUpdated } from '@/admin/components/last-updated';
 
 function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
   return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number');
@@ -133,6 +134,7 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
           <h3>
             <Translate k={'flowBlock:title'} />
           </h3>
+          <LastUpdated date={flowBlock?.updatedAt} />
           <FlowEditLink id={flowBlock.id} locale={locale} />
         </div>
         <div className={'mt-8'}>

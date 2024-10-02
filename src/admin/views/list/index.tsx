@@ -11,6 +11,7 @@ import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLex
 import { StepNav } from '@/admin/components/step-nav';
 import { ListEditLink } from '@/admin/views/list/list-edit-link';
 import { BlockMetaWrapper } from '@/admin/views/flow/lib/block-meta-wrapper';
+import { LastUpdated } from '@/admin/components/last-updated';
 
 function isTaskFlowArray(listRelation: any): listRelation is TaskFlow[] {
   return Array.isArray(listRelation) && listRelation.every((list) => typeof list.id === 'number');
@@ -128,6 +129,7 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
           <h3>
             <Translate k={'listBlock:title'} />
           </h3>
+          <LastUpdated date={listBlock?.updatedAt} />
           <ListEditLink id={listBlock.id} locale={locale} />
         </div>
         <div className={'mt-8'}>

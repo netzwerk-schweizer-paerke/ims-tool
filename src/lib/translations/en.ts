@@ -58,6 +58,7 @@ export const en = {
     delete: 'Delete',
     noContentDefined: 'No content defined',
     continue: 'Continue',
+    lastUpdated: 'Last updated',
     boolean: {
       true: 'True',
       false: 'False',

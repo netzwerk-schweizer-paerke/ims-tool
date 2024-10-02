@@ -56,6 +56,7 @@ export const it = {
     edit: 'Edit',
     delete: 'Delete',
     noContentDefined: 'No content defined',
+    lastUpdated: 'Last updated',
     boolean: {
       true: 'True',
       false: 'False',
