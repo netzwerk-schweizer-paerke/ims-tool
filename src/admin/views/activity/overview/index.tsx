@@ -13,7 +13,7 @@ import { StepNav } from '@/admin/components/step-nav';
 import './landscape-bg.css';
 
 export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult }) => {
-  const headers = getHeaders();
+  const headers = await getHeaders();
   const { permissions, req } = initPageResult;
   const { user } = await req.payload.auth({ headers });
   const locale = req.locale || req.payload.config.i18n.fallbackLanguage;

@@ -22,7 +22,7 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
   params,
   searchParams,
 }) => {
-  const headers = getHeaders();
+  const headers = await getHeaders();
   const { permissions, req } = initPageResult;
   const { user } = await req.payload.auth({ headers });
   const locale = req.locale || req.payload.config.i18n.fallbackLanguage;

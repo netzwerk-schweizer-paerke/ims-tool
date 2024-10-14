@@ -7,7 +7,7 @@ import { UserOrganisationSelect } from '@/admin/components/organisation-select/d
 import { Translate } from '@/lib/translate';
 
 export const OrganisationSelect: React.FC = async () => {
-  const headers = getHeaders();
+  const headers = await getHeaders();
   const client = await payload();
 
   const { user } = await client.auth({ headers });

@@ -1,6 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+//@tailwind base;
+//@tailwind components;
+//@tailwind utilities;
+
+@layer payload-default {
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+}
 
 @media print {
   aside.nav {

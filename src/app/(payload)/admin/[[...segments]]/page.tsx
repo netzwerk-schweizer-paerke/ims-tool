@@ -1,19 +1,19 @@
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
 import type { Metadata } from 'next';
-import './style.scss';
 
 import config from '@payload-config';
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
 import { generatePageMetadata, RootPage } from '@payloadcms/next/views';
-import { importMap } from '@/app/(payload)/admin/importMap';
+import { importMap } from '../importMap';
+import './style.scss';
 
 type Args = {
-  params: {
+  params: Promise<{
     segments: string[];
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     [key: string]: string | string[];
-  };
+  }>;
 };
 
 export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> =>

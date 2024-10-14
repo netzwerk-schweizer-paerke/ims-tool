@@ -1,5 +1,4 @@
 import React from 'react';
-import { AdminViewProps } from 'payload';
 import { DefaultTemplate } from '@payloadcms/next/templates';
 import { headers as getHeaders } from 'next/headers';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
@@ -13,13 +12,14 @@ import { FlowsGrid } from '@/admin/views/activity/view/flows-grid';
 import { ListsGrid } from '@/admin/views/activity/view/lists-grid';
 import './landscape-bg.css';
 import { LastUpdated } from '@/admin/components/last-updated';
+import { AdminViewProps } from 'payload';
 
 export const ActivityBlockView: React.FC<AdminViewProps> = async ({
   initPageResult,
   params,
   searchParams,
 }) => {
-  const headers = getHeaders();
+  const headers = await getHeaders();
   const { permissions, req } = initPageResult;
   const { user } = await req.payload.auth({ headers });
   const locale = req.locale || req.payload.config.i18n.fallbackLanguage;
