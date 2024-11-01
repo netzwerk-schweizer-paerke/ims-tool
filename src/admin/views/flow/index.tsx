@@ -18,13 +18,9 @@ function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
   return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number');
 }
 
-export const FlowBlockView: React.FC<AdminViewProps> = async ({
-  initPageResult,
-  params,
-  searchParams,
-}) => {
+export const FlowBlockView: React.FC<AdminViewProps> = async ({ initPageResult, params }) => {
   const headers = await getHeaders();
-  const { permissions, req } = initPageResult;
+  const { req } = initPageResult;
   const { user } = await req.payload.auth({ headers });
   const locale = req.locale || req.payload.config.i18n.fallbackLanguage;
 
@@ -90,7 +86,9 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({
         // These are activity blocks that contain flows and lists
         const activityBlocks = doc.blocks;
         return activityBlocks?.some((block) => {
-          const flowRelation = block.relations?.flowRelation;
+          const flowRelation = block.relations?.tasks
+            ?.filter((task) => task.relationTo === 'task-flows')
+            .map((task) => task.value);
           if (isTaskFlowArray(flowRelation) && flowRelation.some((flow) => flow.id === flowId)) {
             blockId = block.id as string;
             blockTitle = block?.graph?.task?.text as string;

@@ -88,7 +88,9 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
         // These are activity blocks that contain lists and lists
         const activityBlocks = doc.blocks;
         return activityBlocks?.some((block) => {
-          const listRelation = block.relations?.listRelation;
+          const listRelation = block.relations?.tasks
+            ?.filter((task) => task.relationTo === 'task-lists')
+            .map((task) => task.value);
           if (isTaskFlowArray(listRelation) && listRelation.some((list) => list.id === listId)) {
             blockId = block.id as string;
             return true;

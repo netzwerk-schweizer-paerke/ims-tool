@@ -227,8 +227,18 @@ export interface ActivityIOBlock {
     };
   };
   relations?: {
-    flowRelation?: (number | TaskFlow)[] | null;
-    listRelation?: (number | TaskList)[] | null;
+    tasks?:
+      | (
+          | {
+              relationTo: 'task-flows';
+              value: number | TaskFlow;
+            }
+          | {
+              relationTo: 'task-lists';
+              value: number | TaskList;
+            }
+        )[]
+      | null;
   };
   io?: {
     input?: {
@@ -739,8 +749,18 @@ export interface ActivityTaskBlock {
     };
   };
   relations?: {
-    flowRelation?: (number | TaskFlow)[] | null;
-    listRelation?: (number | TaskList)[] | null;
+    tasks?:
+      | (
+          | {
+              relationTo: 'task-flows';
+              value: number | TaskFlow;
+            }
+          | {
+              relationTo: 'task-lists';
+              value: number | TaskList;
+            }
+        )[]
+      | null;
   };
   io?: {
     input?: {
@@ -1003,8 +1023,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
               relations?:
                 | T
                 | {
-                    flowRelation?: T;
-                    listRelation?: T;
+                    tasks?: T;
                   };
               io?:
                 | T
@@ -1032,8 +1051,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
               relations?:
                 | T
                 | {
-                    flowRelation?: T;
-                    listRelation?: T;
+                    tasks?: T;
                   };
               io?:
                 | T

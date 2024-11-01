@@ -25,7 +25,6 @@
     "node": ">=22.6.0"
   },
   "dependencies": {
-    "@payload-enchants/docs-reorder": "^1.2.2",
     "@payloadcms/db-postgres": "3.0.0-beta.123",
     "@payloadcms/email-nodemailer": "3.0.0-beta.123",
     "@payloadcms/next": "3.0.0-beta.123",
@@ -51,18 +50,18 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^20.16.10",
+    "@types/node": "^22.8.6",
     "@types/nodemailer": "^6.4.16",
     "@types/prettier": "^3.0.0",
     "@types/react": "npm:types-react@19.0.0-rc.0",
     "@types/react-dom": "npm:types-react-dom@19.0.0-rc.0",
     "@types/react-router-dom": "5.3.3",
-    "@typescript-eslint/eslint-plugin": "7.18.0",
-    "@typescript-eslint/parser": "7.18.0",
+    "@typescript-eslint/eslint-plugin": "8.12.2",
+    "@typescript-eslint/parser": "8.12.2",
     "autoprefixer": "^10.4.20",
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
-    "eslint-config-next": "15.0.0-canary.53",
+    "eslint-config-next": "15.0.2",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsonc": "^2.16.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -70,7 +69,7 @@
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^3.4.14",
-    "typescript": "5.5.4"
+    "typescript": "5.4.2"
   },
   "overrides": {
     "@types/react": "npm:types-react@19.0.0-rc.0",

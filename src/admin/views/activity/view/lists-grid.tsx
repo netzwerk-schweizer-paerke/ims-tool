@@ -7,7 +7,7 @@ type Props = {
 
 export const ListsGrid: React.FC<Props> = ({ lists }) => {
   if (!lists) {
-    throw new Error('FlowsGrid flows prop should not be null or undefined');
+    throw new Error('TasksGrid flows prop should not be null or undefined');
   }
   return (
     <>

@@ -11,17 +11,10 @@ export const tabsMetadata: Field[] = [
         label: I18nCollection.fieldLabel.tasks,
         fields: [
           {
-            name: 'flowRelation',
+            name: 'tasks',
             type: 'relationship',
-            label: I18nCollection.fieldLabel.taskFlows,
-            relationTo: 'task-flows',
-            hasMany: true,
-          },
-          {
-            name: 'listRelation',
-            type: 'relationship',
-            label: I18nCollection.fieldLabel.taskLists,
-            relationTo: 'task-lists',
+            label: I18nCollection.fieldLabel.tasks,
+            relationTo: ['task-flows', 'task-lists'],
             hasMany: true,
           },
         ],

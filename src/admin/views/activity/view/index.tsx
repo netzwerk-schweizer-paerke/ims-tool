@@ -8,19 +8,14 @@ import { assert } from 'ts-essentials';
 import { Translate } from '@/lib/translate';
 import { StepNav } from '@/admin/components/step-nav';
 import { ActivityEditLink } from '@/admin/views/activity/overview/activity/activity-edit-link';
-import { FlowsGrid } from '@/admin/views/activity/view/flows-grid';
-import { ListsGrid } from '@/admin/views/activity/view/lists-grid';
+import { TasksGrid } from '@/admin/views/activity/view/tasks-grid';
 import './landscape-bg.css';
 import { LastUpdated } from '@/admin/components/last-updated';
 import { AdminViewProps } from 'payload';
 
-export const ActivityBlockView: React.FC<AdminViewProps> = async ({
-  initPageResult,
-  params,
-  searchParams,
-}) => {
+export const ActivityBlockView: React.FC<AdminViewProps> = async ({ initPageResult, params }) => {
   const headers = await getHeaders();
-  const { permissions, req } = initPageResult;
+  const { req } = initPageResult;
   const { user } = await req.payload.auth({ headers });
   const locale = req.locale || req.payload.config.i18n.fallbackLanguage;
 
@@ -48,7 +43,6 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
           },
         ],
       },
-      //   TODO: Implement doc order sorting
     })
     .then((res) => {
       if (res.docs.length === 0) {
@@ -143,8 +137,7 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({
                   <div className={'prose prose-lg flex flex-col gap-16'}>
                     <div
                       className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}>
-                      <FlowsGrid flows={activityBlock?.relations?.flowRelation} />
-                      <ListsGrid lists={activityBlock?.relations?.listRelation} />
+                      <TasksGrid tasks={activityBlock?.relations?.tasks} />
                     </div>
                   </div>
                 </div>
