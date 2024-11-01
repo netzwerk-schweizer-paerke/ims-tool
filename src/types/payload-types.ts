@@ -35,13 +35,31 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
+  collectionsSelect?: {
+    media: MediaSelect<false> | MediaSelect<true>;
+    organisations: OrganisationsSelect<false> | OrganisationsSelect<true>;
+    activities: ActivitiesSelect<false> | ActivitiesSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    'documents-public': DocumentsPublicSelect<false> | DocumentsPublicSelect<true>;
+    'task-flows': TaskFlowsSelect<false> | TaskFlowsSelect<true>;
+    'task-lists': TaskListsSelect<false> | TaskListsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+  };
   db: {
     defaultIDType: number;
   };
   globals: {};
+  globalsSelect?: {};
   locale: 'de';
   user: User & {
     collection: 'users';
+  };
+  jobs?: {
+    tasks: unknown;
+    workflows?: unknown;
   };
 }
 export interface UserAuthOperations {
@@ -892,6 +910,390 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  organisation?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        tablet?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organisations_select".
+ */
+export interface OrganisationsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activities_select".
+ */
+export interface ActivitiesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  variant?: T;
+  docOrder?: T;
+  blocks?:
+    | T
+    | {
+        'activity-io'?:
+          | T
+          | {
+              graph?:
+                | T
+                | {
+                    task?: T;
+                  };
+              relations?:
+                | T
+                | {
+                    flowRelation?: T;
+                    listRelation?: T;
+                  };
+              io?:
+                | T
+                | {
+                    input?: T;
+                    output?: T;
+                  };
+              infos?:
+                | T
+                | {
+                    norms?: T;
+                    support?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        'activity-task'?:
+          | T
+          | {
+              graph?:
+                | T
+                | {
+                    task?: T;
+                  };
+              relations?:
+                | T
+                | {
+                    flowRelation?: T;
+                    listRelation?: T;
+                  };
+              io?:
+                | T
+                | {
+                    input?: T;
+                    output?: T;
+                  };
+              infos?:
+                | T
+                | {
+                    norms?: T;
+                    support?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  files?:
+    | T
+    | {
+        document?: T;
+        id?: T;
+      };
+  organisation?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  organisation?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents-public_select".
+ */
+export interface DocumentsPublicSelect<T extends boolean = true> {
+  description?: T;
+  prefix?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "task-flows_select".
+ */
+export interface TaskFlowsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  docOrder?: T;
+  blocks?:
+    | T
+    | {
+        'proc-task-io'?:
+          | T
+          | {
+              graph?:
+                | T
+                | {
+                    io?: T;
+                    task?: T;
+                  };
+              keypoints?:
+                | T
+                | {
+                    keypoints?: T;
+                  };
+              tools?:
+                | T
+                | {
+                    tools?: T;
+                  };
+              responsibility?:
+                | T
+                | {
+                    responsibility?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        'proc-test'?:
+          | T
+          | {
+              graph?:
+                | T
+                | {
+                    output?: T;
+                    test?: T;
+                  };
+              keypoints?:
+                | T
+                | {
+                    keypoints?: T;
+                  };
+              tools?:
+                | T
+                | {
+                    tools?: T;
+                  };
+              responsibility?:
+                | T
+                | {
+                    responsibility?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        'proc-task-p'?:
+          | T
+          | {
+              graph?:
+                | T
+                | {
+                    task?: T;
+                  };
+              keypoints?:
+                | T
+                | {
+                    keypoints?: T;
+                  };
+              tools?:
+                | T
+                | {
+                    tools?: T;
+                  };
+              responsibility?:
+                | T
+                | {
+                    responsibility?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  files?:
+    | T
+    | {
+        document?: T;
+        id?: T;
+      };
+  organisation?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "task-lists_select".
+ */
+export interface TaskListsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  docOrder?: T;
+  items?:
+    | T
+    | {
+        topic?: T;
+        tools?: T;
+        responsibility?: T;
+        id?: T;
+      };
+  files?:
+    | T
+    | {
+        document?: T;
+        id?: T;
+      };
+  organisation?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  roles?: T;
+  organisations?:
+    | T
+    | {
+        organisation?: T;
+        roles?: T;
+        id?: T;
+      };
+  selectedOrganisation?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents_select".
+ */
+export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-preferences_select".
+ */
+export interface PayloadPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-migrations_select".
+ */
+export interface PayloadMigrationsSelect<T extends boolean = true> {
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

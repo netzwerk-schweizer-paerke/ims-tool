@@ -4,6 +4,7 @@ import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/acc
 import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
 import { adminSettingsField } from '@/payload/fields/admin-settings';
 import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload';
+import { mimeTypes } from '@/config/file-upload-mime';
 
 export const Documents: CollectionConfig = {
   slug: 'documents',
@@ -20,12 +21,7 @@ export const Documents: CollectionConfig = {
     beforeChange: [assignOrgToUpload],
   },
   upload: {
-    mimeTypes: [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'application/pdf',
-    ],
+    mimeTypes,
   },
   fields: [
     {

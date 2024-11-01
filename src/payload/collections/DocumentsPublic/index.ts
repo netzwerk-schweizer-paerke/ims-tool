@@ -1,6 +1,7 @@
 import { CollectionConfig } from 'payload';
 import { I18nCollection } from '@/lib/i18nCollection';
 import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
+import { mimeTypes } from '@/config/file-upload-mime';
 
 export const DocumentsPublic: CollectionConfig = {
   slug: 'documents-public',
@@ -15,12 +16,7 @@ export const DocumentsPublic: CollectionConfig = {
     delete: loggedInAccess,
   },
   upload: {
-    mimeTypes: [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'application/pdf',
-    ],
+    mimeTypes,
   },
   fields: [
     {
