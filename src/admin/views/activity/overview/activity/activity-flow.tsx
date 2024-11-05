@@ -28,7 +28,7 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
 
   if (!activity.blocks || activity.blocks.length === 0) {
     return (
-      <div>
+      <div className={'text-center'}>
         <p>
           <Translate k={'activityLandscape:noBlocks'} />
         </p>
@@ -67,8 +67,8 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
   }, blocksDisplay);
 
   return (
-    <div className={'activity-flow z-10 flex flex-col'}>
-      <div className={'relative flex h-full grow flex-col'}>
+    <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
+      <div className={'relative flex w-min grow flex-col'}>
         {blocksDisplay.input.length === 0 ? (
           <ActivityBlock type={'empty'} activityId={activity.id} />
         ) : (

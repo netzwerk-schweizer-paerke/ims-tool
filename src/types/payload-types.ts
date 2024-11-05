@@ -35,7 +35,7 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsSelect?: {
+  collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
     organisations: OrganisationsSelect<false> | OrganisationsSelect<true>;
     activities: ActivitiesSelect<false> | ActivitiesSelect<true>;
@@ -52,7 +52,7 @@ export interface Config {
     defaultIDType: number;
   };
   globals: {};
-  globalsSelect?: {};
+  globalsSelect: {};
   locale: 'de';
   user: User & {
     collection: 'users';
@@ -140,6 +140,10 @@ export interface Organisation {
   description?: string | null;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  orgActivities?: {
+    docs?: (number | Activity)[] | null;
+    hasNextPage?: boolean | null;
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -997,6 +1001,7 @@ export interface OrganisationsSelect<T extends boolean = true> {
   description?: T;
   createdBy?: T;
   updatedBy?: T;
+  orgActivities?: T;
   updatedAt?: T;
   createdAt?: T;
 }

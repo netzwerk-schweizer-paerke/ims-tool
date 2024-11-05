@@ -28,6 +28,11 @@ export default buildConfig({
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()],
   }),
+  logger: {
+    options: {
+      level: process.env.NODE_ENV === 'production' ? 'debug' : 'warn',
+    },
+  },
   collections: [
     Media,
     Organisations,

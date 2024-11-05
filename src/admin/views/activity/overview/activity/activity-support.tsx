@@ -67,13 +67,13 @@ export const ActivitySupport: React.FC<Props> = ({ activity, locale }) => {
   }, blocksDisplay);
 
   return (
-    <div className={'activity-support relative z-10 flex min-w-fit flex-col'}>
+    <div className={'activity-support relative z-10 flex flex-col'}>
       <div className={'text-center'}>
-        <h2 className={'hyphens-auto text-xl'}>{activity.name}</h2>
+        <h2 className={'mx-auto max-w-52 hyphens-auto text-xl font-bold'}>{activity.name}</h2>
         <ActivityEditLink id={activity.id} locale={locale} />
       </div>
       <div className={'flex grow flex-col items-center justify-center'}>
-        <div className={'relative grid grid-cols-2'}>
+        <div className={'relative flex flex-row flex-wrap justify-center'}>
           {blocksDisplay.tasks.map((block) => (
             <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
           ))}

@@ -68,9 +68,9 @@ export const ActivityStrategy: React.FC<Props> = ({ activity, locale }) => {
   }, blocksDisplay);
 
   return (
-    <div className={'activity-strategy z-10 flex flex-col'}>
+    <div className={'activity-strategy z-10 flex w-min flex-col'}>
       <div className={'text-center'}>
-        <h2 className={'hyphens-auto text-xl'}>{activity.name}</h2>
+        <h2 className={'mx-auto max-w-52 hyphens-auto text-xl font-bold'}>{activity.name}</h2>
         <ActivityEditLink id={activity.id} locale={locale} />
       </div>
       <div className={'relative flex h-full grow flex-col justify-center'}>

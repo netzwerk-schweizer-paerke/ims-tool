@@ -272,10 +272,18 @@ export const defaultElementRenderers: ElementRenderers = {
         case 'documents':
         case 'documents-public': {
           const doc = element.fields.doc.value as DocumentsPublic | Document;
+          const { url, filename } = doc;
+          if (!url) {
+            return (
+              <span style={{ color: 'red', fontWeight: 'bold' }}>
+                {linkTextReplacer(element.children)} (linked document no longer available)
+              </span>
+            );
+          }
           return (
             <Link
-              href={doc.url!}
-              title={doc.filename!}
+              href={url}
+              title={filename || ''}
               target={element.fields.newTab ? '_blank' : '_self'}
               style={getElementStyle<'link'>(element)}>
               {linkTextReplacer(element.children)}

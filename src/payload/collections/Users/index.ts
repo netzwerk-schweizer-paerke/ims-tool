@@ -53,6 +53,7 @@ export const Users: CollectionConfig = {
         create: superAdminFieldAccess,
         update: superAdminFieldAccess,
         // read: superAdminFieldAccess,
+        // delete: superAdminFieldAccess,
       },
       options: [
         {

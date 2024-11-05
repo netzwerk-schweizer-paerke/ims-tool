@@ -9,7 +9,7 @@ type Props = {
 export const ActivityTitles: React.FC<Props> = ({ activity, locale }) => {
   return (
     <div className={'px-4 text-center'}>
-      <h2 className={'w-52 hyphens-auto text-xl'}>{activity.name}</h2>
+      <h2 className={'hyphens-auto text-xl font-bold'}>{activity.name}</h2>
       <ActivityEditLink id={activity.id} locale={locale} />
     </div>
   );

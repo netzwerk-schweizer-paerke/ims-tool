@@ -1,19 +1,17 @@
 import type { Access, AccessResult } from 'payload';
 
 import { isAdmin } from '@/payload/utilities/isAdmin';
-import { User } from '@/types/payload-types';
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
 
-export const adminsAndSelf: Access<User> = async ({ req: { user } }): Promise<AccessResult> => {
+export const adminsAndSelf: Access = async ({ req: { user, payload } }): Promise<AccessResult> => {
   if (!user) return false;
-  const isSuper = isAdmin(user);
-
-  // allow super-admins through only if they have not scoped their user via `selectedOrganisation`
-  if (isSuper && !user?.selectedOrganisation) {
+  const isSuperAdmin = isAdmin(user);
+  if (isSuperAdmin) {
+    payload.logger.warn(`🔒adminsAndSelf: ${isSuperAdmin}`, { user: user?.id });
     return true;
   }
 
-  if (!isSuper) {
+  if (!isSuperAdmin) {
     return {
       id: {
         equals: user.id,

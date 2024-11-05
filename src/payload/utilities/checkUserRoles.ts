@@ -1,16 +1,20 @@
 import { User } from '@/types/payload-types';
+import { logger } from '@/lib/logger';
 
 export const checkUserRoles = (allRoles: User['roles'] = [], user: User | null): boolean => {
+  let checkResult = false;
   if (user) {
     if (
       allRoles.some((role) => {
-        return user?.roles?.some((individualRole) => {
+        checkResult = user?.roles?.some((individualRole) => {
           return individualRole === role;
         });
       })
     )
-      return true;
+      checkResult = true;
   }
 
-  return false;
+  logger.debug(`🔒checkUserRoles: ${checkResult}`, { allRoles, user: user?.roles });
+
+  return checkResult;
 };

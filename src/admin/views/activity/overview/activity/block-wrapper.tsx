@@ -12,7 +12,7 @@ export const BlockWrapper: React.FC<Props> = ({ children, id }) => {
   }
   return (
     <div className={'activity-block relative p-8'}>
-      <div className={'flex h-24 w-44 items-center justify-center text-center'}>
+      <div className={'flex h-24 w-52 items-center justify-center text-center'}>
         <div id={`${id}-${RootTargetName}`} className={'root-target size-full'}>
           {children}
         </div>
