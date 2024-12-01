@@ -1,6 +1,6 @@
-import { I18nCollection } from '@/lib/i18nCollection';
-import { Field } from 'payload';
-import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
+import { I18nCollection } from '@/lib/i18nCollection'
+import { Field } from 'payload'
+import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 
 export const tabsMetadata: Field[] = [
   {
@@ -44,4 +44,4 @@ export const tabsMetadata: Field[] = [
       },
     ],
   },
-];
+]

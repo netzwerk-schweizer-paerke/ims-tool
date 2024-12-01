@@ -1,12 +1,12 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
-import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
-import { adminSettingsField } from '@/payload/fields/admin-settings';
-import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task';
-import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output';
-import { filesArrayField } from '@/payload/fields/files-array';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
+import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
+import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
+import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
+import { filesArrayField } from '@/payload/fields/files-array'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
@@ -75,4 +75,4 @@ export const Activities: CollectionConfig = {
     filesArrayField,
     adminSettingsField(),
   ],
-};
+}

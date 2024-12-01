@@ -1,6 +1,6 @@
-import { Block } from 'payload';
-import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata';
-import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { Block } from 'payload'
+import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
 export const ProcessTaskParallelBlock: Block = {
   slug: 'proc-task-p',
@@ -38,7 +38,7 @@ export const ProcessTaskParallelBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/admin/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
+                        'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
                     },
                   },
                   jsonSchema: connectionSchema,
@@ -51,4 +51,4 @@ export const ProcessTaskParallelBlock: Block = {
       ],
     },
   ],
-};
+}

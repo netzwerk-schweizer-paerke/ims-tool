@@ -1,5 +1,5 @@
-import { Payload } from 'payload';
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants';
+import { Payload } from 'payload'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
 export const seedDevUser = async (payload: Payload) => {
   // Create admin user on imported dbs
@@ -8,7 +8,7 @@ export const seedDevUser = async (payload: Payload) => {
     where: {
       email: { equals: 'admin@test.com' },
     },
-  });
+  })
   if (devAdminUser.docs.length === 0) {
     await payload.create({
       collection: 'users',
@@ -19,13 +19,13 @@ export const seedDevUser = async (payload: Payload) => {
         email: 'admin@test.com',
         password: 'admin',
       },
-    });
+    })
   }
 
   // Create a default user if one doesn't exist
   const existingUsers = await payload.find({
     collection: 'users',
-  });
+  })
 
   if (existingUsers.docs.length === 0) {
     const musterPark = await payload.create({
@@ -33,13 +33,13 @@ export const seedDevUser = async (payload: Payload) => {
       data: {
         name: 'Musterpark',
       },
-    });
+    })
     const testPark = await payload.create({
       collection: 'organisations',
       data: {
         name: 'Testpark',
       },
-    });
+    })
 
     await payload.create({
       collection: 'users',
@@ -60,7 +60,7 @@ export const seedDevUser = async (payload: Payload) => {
           },
         ],
       },
-    });
+    })
 
     await payload.create({
       collection: 'users',
@@ -77,7 +77,7 @@ export const seedDevUser = async (payload: Payload) => {
           },
         ],
       },
-    });
+    })
 
     await payload.create({
       collection: 'users',
@@ -92,6 +92,6 @@ export const seedDevUser = async (payload: Payload) => {
           },
         ],
       },
-    });
+    })
   }
-};
+}

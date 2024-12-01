@@ -1,0 +1,13 @@
+svg.task-shape {
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: transparent;
+}
+
+@media print {
+  svg.task-shape {
+    stroke: black;
+    stroke-width: 2;
+    fill: transparent;
+  }
+}

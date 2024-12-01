@@ -1,10 +1,10 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
-import { adminSettingsField } from '@/payload/fields/admin-settings';
-import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload';
-import { mimeTypes } from '@/config/file-upload-mime';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
+import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload'
+import { mimeTypes } from '@/config/file-upload-mime'
 
 export const Documents: CollectionConfig = {
   slug: 'documents',
@@ -38,4 +38,4 @@ export const Documents: CollectionConfig = {
     },
     adminSettingsField({ sidebar: true }),
   ],
-};
+}

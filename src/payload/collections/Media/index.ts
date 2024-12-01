@@ -1,10 +1,10 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
-import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
-import { adminSettingsField } from '@/payload/fields/admin-settings';
-import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
+import { loggedInAccess } from '@/payload/collections/access/loggedInAccess'
+import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -59,4 +59,4 @@ export const Media: CollectionConfig = {
     },
     adminSettingsField({ sidebar: true }),
   ],
-};
+}

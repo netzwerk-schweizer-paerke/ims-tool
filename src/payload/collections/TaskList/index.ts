@@ -1,10 +1,10 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
-import { adminSettingsField } from '@/payload/fields/admin-settings';
-import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
-import { filesArrayField } from '@/payload/fields/files-array';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
+import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
+import { filesArrayField } from '@/payload/fields/files-array'
 
 export const TaskLists: CollectionConfig = {
   slug: 'task-lists',
@@ -72,4 +72,4 @@ export const TaskLists: CollectionConfig = {
     filesArrayField,
     adminSettingsField({ sidebar: true }),
   ],
-};
+}

@@ -4,22 +4,22 @@
       @apply grid grid-cols-2 gap-4;
       .render-fields.row__fields {
         @apply grid grid-cols-2 gap-0;
-
       }
     }
   }
   .process-task-parallel-block.process-block-row {
     .render-fields.row__fields {
       .render-fields.row__fields {
-        display: block!important;
+        display: block !important;
       }
     }
   }
-  .group-field__wrap, .render-fields, .graph-fields-row {
+  .group-field__wrap,
+  .render-fields,
+  .graph-fields-row {
     @apply size-full;
   }
 }
-
 
 .collection-edit--activities {
   .field-type.blocks-field {
@@ -27,7 +27,9 @@
       @apply grid grid-cols-[1fr_2fr] gap-4;
     }
   }
-  .group-field__wrap, .render-fields, .graph-fields-row {
+  .group-field__wrap,
+  .render-fields,
+  .graph-fields-row {
     @apply size-full;
   }
 }

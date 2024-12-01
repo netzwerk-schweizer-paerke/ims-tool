@@ -1,7 +1,7 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { loggedInAccess } from '@/payload/collections/access/loggedInAccess';
-import { mimeTypes } from '@/config/file-upload-mime';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { loggedInAccess } from '@/payload/collections/access/loggedInAccess'
+import { mimeTypes } from '@/config/file-upload-mime'
 
 export const DocumentsPublic: CollectionConfig = {
   slug: 'documents-public',
@@ -26,4 +26,4 @@ export const DocumentsPublic: CollectionConfig = {
       type: 'textarea',
     },
   ],
-};
+}

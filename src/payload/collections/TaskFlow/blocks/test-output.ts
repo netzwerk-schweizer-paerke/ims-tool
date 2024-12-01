@@ -1,6 +1,6 @@
-import { Block } from 'payload';
-import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata';
-import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { Block } from 'payload'
+import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
 export const ProcessTestOutputBlock: Block = {
   slug: 'proc-test',
@@ -38,7 +38,7 @@ export const ProcessTestOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/admin/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
+                        'src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
                   },
                   jsonSchema: connectionSchema,
@@ -50,7 +50,7 @@ export const ProcessTestOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/admin/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
+                        'src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
                     },
                   },
                   jsonSchema: connectionSchema,
@@ -63,4 +63,4 @@ export const ProcessTestOutputBlock: Block = {
       ],
     },
   ],
-};
+}

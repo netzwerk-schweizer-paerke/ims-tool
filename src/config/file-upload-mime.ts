@@ -26,4 +26,4 @@ export const mimeTypes = [
 
   // PDF MIME type
   'application/pdf', // .pdf
-];
+]

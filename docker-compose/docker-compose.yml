@@ -1,24 +1,22 @@
-
 services:
-
   proxy:
     image: caddy:latest
     container_name: caddy
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-      - "9001:9001" # minio UI
-      - "9001:9001/udp"
-      - "5050:5050" # pgadmin
-      - "5050:5050/udp"
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+      - '9001:9001' # minio UI
+      - '9001:9001/udp'
+      - '5050:5050' # pgadmin
+      - '5050:5050/udp'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - ./data/caddy:/data
       - ./data/certs:/certs
     networks:
-        - external
-        - internal
+      - external
+      - internal
 
   app:
     image: ghcr.io/netzwerk-schweizer-paerke/ims-tool:latest
@@ -31,8 +29,8 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres
-#    ports:
-#      - "5432:5432"
+    #    ports:
+    #      - "5432:5432"
     env_file:
       - .env
     volumes:
@@ -43,9 +41,9 @@ services:
   minio:
     image: minio/minio:latest
     container_name: minio
-#    ports:
-#      - "9000:9000"
-#      - "9001:9001"
+    #    ports:
+    #      - "9000:9000"
+    #      - "9001:9001"
     env_file:
       - .env
     volumes:

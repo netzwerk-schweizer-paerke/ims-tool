@@ -1,6 +1,6 @@
-import { Block } from 'payload';
-import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata';
-import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { Block } from 'payload'
+import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata'
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
 export const ActivityTaskBlock: Block = {
   slug: 'activity-task',
@@ -32,7 +32,7 @@ export const ActivityTaskBlock: Block = {
               admin: {
                 components: {
                   Field:
-                    'src/admin/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
+                    'src/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
                 },
               },
               jsonSchema: connectionSchema,
@@ -43,4 +43,4 @@ export const ActivityTaskBlock: Block = {
       ],
     },
   ],
-};
+}

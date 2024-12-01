@@ -1,6 +1,6 @@
-import { JSONSchema4 } from 'json-schema';
+import { JSONSchema4 } from 'json-schema'
 
-type ConnectionSchema = { fileMatch: string[]; schema: JSONSchema4; uri: string };
+type ConnectionSchema = { fileMatch: string[]; schema: JSONSchema4; uri: string }
 
 export const connectionSchema: ConnectionSchema = {
   uri: 'a://b/foo.json',
@@ -56,4 +56,4 @@ export const connectionSchema: ConnectionSchema = {
       },
     },
   },
-};
+}

@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres';
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
@@ -35,7 +35,7 @@ EXCEPTION
 END $$;
 
 CREATE INDEX IF NOT EXISTS "documents_public_created_at_idx" ON "documents_public" USING btree ("created_at");
-CREATE UNIQUE INDEX IF NOT EXISTS "documents_public_filename_idx" ON "documents_public" USING btree ("filename");`);
+CREATE UNIQUE INDEX IF NOT EXISTS "documents_public_filename_idx" ON "documents_public" USING btree ("filename");`)
 }
 
 export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
@@ -44,5 +44,5 @@ export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
 DROP TABLE "documents_public_locales";
 ALTER TABLE "media" ALTER COLUMN "prefix" DROP DEFAULT;
 ALTER TABLE "documents" ALTER COLUMN "prefix" DROP DEFAULT;
-ALTER TABLE "users" ALTER COLUMN "login_attempts" DROP DEFAULT;`);
+ALTER TABLE "users" ALTER COLUMN "login_attempts" DROP DEFAULT;`)
 }

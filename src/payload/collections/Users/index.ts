@@ -1,12 +1,12 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { adminsAndSelf } from '@/payload/collections/Users/access/adminsAndSelf';
-import { anyone } from '@/payload/access/anyone';
-import { loginAfterCreate } from '@/payload/collections/Users/hooks/loginAfterCreate';
-import { recordSelectedOrganisation } from '@/payload/collections/Users/hooks/recordSelectedOrganisation';
-import { superAdminFieldAccess } from '@/payload/access/superAdmins';
-import { organisationAdmins } from '@/payload/collections/Users/access/organisationAdmins';
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { adminsAndSelf } from '@/payload/collections/Users/access/adminsAndSelf'
+import { anyone } from '@/payload/access/anyone'
+import { loginAfterCreate } from '@/payload/collections/Users/hooks/loginAfterCreate'
+import { recordSelectedOrganisation } from '@/payload/collections/Users/hooks/recordSelectedOrganisation'
+import { superAdminFieldAccess } from '@/payload/access/superAdmins'
+import { organisationAdmins } from '@/payload/collections/Users/access/organisationAdmins'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -15,7 +15,7 @@ export const Users: CollectionConfig = {
     group: I18nCollection.collectionGroup.settings,
     useAsTitle: 'email',
     hidden: (user) => {
-      return !user?.user?.roles?.includes(ROLE_SUPER_ADMIN);
+      return !user?.user?.roles?.includes(ROLE_SUPER_ADMIN)
     },
   },
   access: {
@@ -116,4 +116,4 @@ export const Users: CollectionConfig = {
       },
     },
   ],
-};
+}

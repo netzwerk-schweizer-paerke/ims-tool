@@ -1,7 +1,0 @@
-.test-shape-wrapper{
-  .shape {
-    polygon {
-      fill: var(--theme-text);
-    }
-  }
-}

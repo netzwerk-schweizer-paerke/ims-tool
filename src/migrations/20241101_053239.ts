@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres';
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
@@ -45,7 +45,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_users_id_idx" ON "payload_locked_documents_rels" USING btree ("users_id");
   CREATE INDEX IF NOT EXISTS "payload_preferences_updated_at_idx" ON "payload_preferences" USING btree ("updated_at");
   CREATE INDEX IF NOT EXISTS "payload_preferences_rels_users_id_idx" ON "payload_preferences_rels" USING btree ("users_id");
-  CREATE INDEX IF NOT EXISTS "payload_migrations_updated_at_idx" ON "payload_migrations" USING btree ("updated_at");`);
+  CREATE INDEX IF NOT EXISTS "payload_migrations_updated_at_idx" ON "payload_migrations" USING btree ("updated_at");`)
 }
 
 export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
@@ -93,5 +93,5 @@ export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
   DROP INDEX IF EXISTS "payload_locked_documents_rels_users_id_idx";
   DROP INDEX IF EXISTS "payload_preferences_updated_at_idx";
   DROP INDEX IF EXISTS "payload_preferences_rels_users_id_idx";
-  DROP INDEX IF EXISTS "payload_migrations_updated_at_idx";`);
+  DROP INDEX IF EXISTS "payload_migrations_updated_at_idx";`)
 }

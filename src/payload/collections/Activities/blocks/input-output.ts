@@ -1,6 +1,6 @@
-import { Block } from 'payload';
-import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata';
-import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema';
+import { Block } from 'payload'
+import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata'
+import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
 export const ActivityIOBlock: Block = {
   slug: 'activity-io',
@@ -32,7 +32,7 @@ export const ActivityIOBlock: Block = {
               admin: {
                 components: {
                   Field:
-                    'src/admin/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
+                    'src/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
                 },
               },
               jsonSchema: connectionSchema,
@@ -43,4 +43,4 @@ export const ActivityIOBlock: Block = {
       ],
     },
   ],
-};
+}

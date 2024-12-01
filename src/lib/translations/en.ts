@@ -64,4 +64,4 @@ export const en = {
       false: 'False',
     },
   },
-};
+}

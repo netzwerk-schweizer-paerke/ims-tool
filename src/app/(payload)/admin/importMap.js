@@ -1,43 +1,58 @@
-import { RichTextCell as RichTextCell_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { RichTextField as RichTextField_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { getGenerateComponentMap as getGenerateComponentMap_ec38dd6bee95fe7974552968355b33ae } from '@payloadcms/richtext-lexical/generateComponentMap'
+import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
+import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { LinkFeatureClient as LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { OrderedListFeatureClient as OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UnorderedListFeatureClient as UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { ActivityIOField as ActivityIOField_ca7c9fa1ddf9257224b3a5593dccc050 } from 'src/admin/components/graph/fields/graph/activities/io/activity-i-o-field'
-import { ActivityTaskField as ActivityTaskField_d61c3cee015aad23a960047a4f6aebf5 } from 'src/admin/components/graph/fields/graph/activities/task/activity-task-field'
-import { ProcessInputOutputField as ProcessInputOutputField_b06d7a793ccbf63b82d7d3e976a65157 } from 'src/admin/components/graph/fields/graph/flows/io/process-input-output-field'
-import { ProcessTaskField as ProcessTaskField_05fc4a25538410d8c60e453574b56e6f } from 'src/admin/components/graph/fields/graph/flows/task/process-task-field'
-import { ProcessTestField as ProcessTestField_75d942216b84510da7abcb43916cb5ab } from 'src/admin/components/graph/fields/graph/flows/test/process-test-field'
-import { ProcessTaskParallelField as ProcessTaskParallelField_90fdb48cd8cd615c42abe46460a26267 } from 'src/admin/components/graph/fields/graph/flows/parallel/process-task-parallel-field'
-import { ActivityLandscapeLink as ActivityLandscapeLink_4a9162282efdbee1ea0d9827b3882d75 } from 'src/admin/components/activity-landscape-link'
-import { OrganisationSelect as OrganisationSelect_cf8aef8fe259e49964b1020e7116aa15 } from 'src/admin/components/organisation-select'
-import { FlowBlockView as FlowBlockView_5559a3e61ade2e0f0d174578cd5bd588 } from 'src/admin/views/flow'
-import { ListBlockView as ListBlockView_a58721332a709121362abf8b62578dd5 } from 'src/admin/views/list'
-import { ActivityBlockView as ActivityBlockView_26009d63beeccdcdca84681195e52c7f } from 'src/admin/views/activity/view'
-import { ActivitiesView as ActivitiesView_6346ac03856a4eac78289520f54f25bf } from 'src/admin/views/activity/overview'
+import { ActivityIOField as ActivityIOField_bccc8bb52fd2478fa9350f3c68a200f6 } from 'src/components/graph/fields/graph/activities/io/activity-i-o-field'
+import { ActivityTaskField as ActivityTaskField_a0957cc6c6bd29faf81e7216a2bd26dc } from 'src/components/graph/fields/graph/activities/task/activity-task-field'
+import { ProcessInputOutputField as ProcessInputOutputField_86f6546ccb9b4d404295b8a255596215 } from 'src/components/graph/fields/graph/flows/io/process-input-output-field'
+import { ProcessTaskField as ProcessTaskField_4398cb30c934d5d1617717da8602ea32 } from 'src/components/graph/fields/graph/flows/task/process-task-field'
+import { ProcessTestField as ProcessTestField_228a1d3d551a14020bbe557cc231c339 } from 'src/components/graph/fields/graph/flows/test/process-test-field'
+import { ProcessTaskParallelField as ProcessTaskParallelField_7e53e5f67e05b59712f3c0c3836b07aa } from 'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field'
+import { ActivityLandscapeLink as ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870 } from 'src/components/activity-landscape-link'
+import { OrganisationSelect as OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf } from 'src/components/organisation-select'
+import { FlowBlockView as FlowBlockView_b366da92bebaf7d6a5e4eaa1f457dca3 } from 'src/components/views/flow'
+import { ListBlockView as ListBlockView_6b259556698f42eac9d0778fbbe1bee6 } from 'src/components/views/list'
+import { ActivityBlockView as ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0 } from 'src/components/views/activity/view'
+import { ActivitiesView as ActivitiesView_2138b93d2cc56d1df1bfad938b66afc7 } from 'src/components/views/activity/overview'
 
 export const importMap = {
-  "@payloadcms/richtext-lexical/client#RichTextCell": RichTextCell_e70f5e05f09f93e00b997edb1ef0c864,
-  "@payloadcms/richtext-lexical/client#RichTextField": RichTextField_e70f5e05f09f93e00b997edb1ef0c864,
-  "@payloadcms/richtext-lexical/generateComponentMap#getGenerateComponentMap": getGenerateComponentMap_ec38dd6bee95fe7974552968355b33ae,
-  "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@payloadcms/richtext-lexical/client#LinkFeatureClient": LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@payloadcms/richtext-lexical/client#OrderedListFeatureClient": OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@payloadcms/richtext-lexical/client#UnorderedListFeatureClient": UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "src/admin/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField": ActivityIOField_ca7c9fa1ddf9257224b3a5593dccc050,
-  "src/admin/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField": ActivityTaskField_d61c3cee015aad23a960047a4f6aebf5,
-  "src/admin/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField": ProcessInputOutputField_b06d7a793ccbf63b82d7d3e976a65157,
-  "src/admin/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField": ProcessTaskField_05fc4a25538410d8c60e453574b56e6f,
-  "src/admin/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField": ProcessTestField_75d942216b84510da7abcb43916cb5ab,
-  "src/admin/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField": ProcessTaskParallelField_90fdb48cd8cd615c42abe46460a26267,
-  "src/admin/components/activity-landscape-link#ActivityLandscapeLink": ActivityLandscapeLink_4a9162282efdbee1ea0d9827b3882d75,
-  "src/admin/components/organisation-select#OrganisationSelect": OrganisationSelect_cf8aef8fe259e49964b1020e7116aa15,
-  "src/admin/views/flow#FlowBlockView": FlowBlockView_5559a3e61ade2e0f0d174578cd5bd588,
-  "src/admin/views/list#ListBlockView": ListBlockView_a58721332a709121362abf8b62578dd5,
-  "src/admin/views/activity/view#ActivityBlockView": ActivityBlockView_26009d63beeccdcdca84681195e52c7f,
-  "src/admin/views/activity/overview#ActivitiesView": ActivitiesView_6346ac03856a4eac78289520f54f25bf
+  '@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell':
+    RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
+  '@payloadcms/richtext-lexical/rsc#RscEntryLexicalField':
+    RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
+  '@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient':
+    FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  '@payloadcms/richtext-lexical/client#BoldFeatureClient':
+    BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  '@payloadcms/richtext-lexical/client#LinkFeatureClient':
+    LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  '@payloadcms/richtext-lexical/client#OrderedListFeatureClient':
+    OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  '@payloadcms/richtext-lexical/client#UnorderedListFeatureClient':
+    UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  'src/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField':
+    ActivityIOField_bccc8bb52fd2478fa9350f3c68a200f6,
+  'src/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField':
+    ActivityTaskField_a0957cc6c6bd29faf81e7216a2bd26dc,
+  'src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField':
+    ProcessInputOutputField_86f6546ccb9b4d404295b8a255596215,
+  'src/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField':
+    ProcessTaskField_4398cb30c934d5d1617717da8602ea32,
+  'src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField':
+    ProcessTestField_228a1d3d551a14020bbe557cc231c339,
+  'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField':
+    ProcessTaskParallelField_7e53e5f67e05b59712f3c0c3836b07aa,
+  'src/components/activity-landscape-link#ActivityLandscapeLink':
+    ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870,
+  'src/components/organisation-select#OrganisationSelect':
+    OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf,
+  'src/components/views/flow#FlowBlockView': FlowBlockView_b366da92bebaf7d6a5e4eaa1f457dca3,
+  'src/components/views/list#ListBlockView': ListBlockView_6b259556698f42eac9d0778fbbe1bee6,
+  'src/components/views/activity/view#ActivityBlockView':
+    ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0,
+  'src/components/views/activity/overview#ActivitiesView':
+    ActivitiesView_2138b93d2cc56d1df1bfad938b66afc7,
 }

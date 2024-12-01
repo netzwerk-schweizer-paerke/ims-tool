@@ -1,5 +1,5 @@
-import { I18nCollection } from '@/lib/i18nCollection';
-import { Field } from 'payload';
+import { I18nCollection } from '@/lib/i18nCollection'
+import { Field } from 'payload'
 
 export const filesArrayField: Field = {
   name: 'files',
@@ -20,4 +20,4 @@ export const filesArrayField: Field = {
       },
     },
   ],
-};
+}

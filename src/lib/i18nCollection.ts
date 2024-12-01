@@ -353,4 +353,4 @@ export const I18nCollection = {
       it: 'Utente',
     },
   },
-};
+}

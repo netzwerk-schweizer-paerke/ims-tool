@@ -1,10 +1,10 @@
-import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants';
-import { Access } from 'payload';
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
+import { Access } from 'payload'
 
 export const isAdminOrCreatedBy: Access = ({ req: { user } }) => {
   // Scenario #1 - Check if user has the 'admin' role
   if (user && user.roles.includes(ROLE_SUPER_ADMIN)) {
-    return true;
+    return true
   }
 
   // Scenario #2 - Allow only documents with the current user set to the 'createdBy' field
@@ -14,9 +14,9 @@ export const isAdminOrCreatedBy: Access = ({ req: { user } }) => {
       createdBy: {
         equals: user.id,
       },
-    };
+    }
   }
 
   // Scenario #3 - Disallow all others
-  return false;
-};
+  return false
+}

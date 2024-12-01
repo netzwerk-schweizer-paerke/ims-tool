@@ -1,14 +1,14 @@
-import type { Access, AccessResult } from 'payload';
+import type { Access, AccessResult } from 'payload'
 
-import { isAdmin } from '@/payload/utilities/isAdmin';
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation';
+import { isAdmin } from '@/payload/utilities/isAdmin'
+import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
 
 export const adminsAndSelf: Access = async ({ req: { user, payload } }): Promise<AccessResult> => {
-  if (!user) return false;
-  const isSuperAdmin = isAdmin(user);
+  if (!user) return false
+  const isSuperAdmin = isAdmin(user)
   if (isSuperAdmin) {
-    payload.logger.warn(`🔒adminsAndSelf: ${isSuperAdmin}`, { user: user?.id });
-    return true;
+    payload.logger.warn(`🔒adminsAndSelf: ${isSuperAdmin}`, { user: user?.id })
+    return true
   }
 
   if (!isSuperAdmin) {
@@ -16,7 +16,7 @@ export const adminsAndSelf: Access = async ({ req: { user, payload } }): Promise
       id: {
         equals: user.id,
       },
-    };
+    }
   }
 
   // allow users to read themselves and any users within the isCurrentlySelectedOrganisationAccess they are admins of
@@ -45,5 +45,5 @@ export const adminsAndSelf: Access = async ({ req: { user, payload } }): Promise
       //       },
       //     })) || []),
     ],
-  };
-};
+  }
+}

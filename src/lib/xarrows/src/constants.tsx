@@ -1,8 +1,8 @@
 // constants used for typescript and proptypes definitions
-import React from 'react';
+import React from 'react'
 
-export const cAnchorEdge = ['middle', 'left', 'right', 'top', 'bottom', 'auto'] as const;
-export const cPaths = ['smooth', 'grid', 'straight'] as const;
+export const cAnchorEdge = ['middle', 'left', 'right', 'top', 'bottom', 'auto'] as const
+export const cPaths = ['smooth', 'grid', 'straight'] as const
 export const cSvgElems = [
   'circle',
   'ellipse',
@@ -11,7 +11,7 @@ export const cSvgElems = [
   'polygon',
   'polyline',
   'rect',
-] as const;
+] as const
 
 //default arrows svgs
 export const arrowShapes = {
@@ -26,6 +26,6 @@ export const arrowShapes = {
     svgElem: <circle r={0.5} cx={0.5} cy={0.5} />,
     offsetForward: 0,
   },
-} as const;
+} as const
 
-export const cArrowShapes = Object.keys(arrowShapes) as Array<keyof typeof arrowShapes>;
+export const cArrowShapes = Object.keys(arrowShapes) as Array<keyof typeof arrowShapes>

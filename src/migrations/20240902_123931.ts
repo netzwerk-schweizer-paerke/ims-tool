@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres';
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
@@ -36,7 +36,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "task_lists_items" ADD COLUMN "topic" jsonb;
   ALTER TABLE "task_lists_items" ADD COLUMN "tools" jsonb;
   ALTER TABLE "task_lists_items" ADD COLUMN "responsibility" jsonb;
-  CREATE INDEX IF NOT EXISTS "activities_rels_locale_idx" ON "activities_rels" USING btree ("locale");`);
+  CREATE INDEX IF NOT EXISTS "activities_rels_locale_idx" ON "activities_rels" USING btree ("locale");`)
 }
 
 export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
@@ -174,5 +174,5 @@ export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
   ALTER TABLE "task_flows_blocks_proc_task_p" DROP COLUMN IF EXISTS "responsibility_responsibility";
   ALTER TABLE "task_lists_items" DROP COLUMN IF EXISTS "topic";
   ALTER TABLE "task_lists_items" DROP COLUMN IF EXISTS "tools";
-  ALTER TABLE "task_lists_items" DROP COLUMN IF EXISTS "responsibility";`);
+  ALTER TABLE "task_lists_items" DROP COLUMN IF EXISTS "responsibility";`)
 }

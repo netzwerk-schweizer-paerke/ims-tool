@@ -1,8 +1,8 @@
 // @ts-nocheck
-import PT from "prop-types";
-import { arrowShapes, cAnchorEdge, cPaths } from "../constants";
+import PT from 'prop-types'
+import { arrowShapes, cAnchorEdge, cPaths } from '../constants'
 
-const pAnchorPositionType = PT.oneOf(cAnchorEdge);
+const pAnchorPositionType = PT.oneOf(cAnchorEdge)
 
 const pAnchorCustomPositionType = PT.exact({
   position: pAnchorPositionType.isRequired,
@@ -10,32 +10,32 @@ const pAnchorCustomPositionType = PT.exact({
     x: PT.number,
     y: PT.number,
   }).isRequired,
-});
+})
 
-const _pAnchorType = PT.oneOfType([pAnchorPositionType, pAnchorCustomPositionType]);
+const _pAnchorType = PT.oneOfType([pAnchorPositionType, pAnchorCustomPositionType])
 
-const pAnchorType = PT.oneOfType([_pAnchorType, PT.arrayOf(_pAnchorType)]);
+const pAnchorType = PT.oneOfType([_pAnchorType, PT.arrayOf(_pAnchorType)])
 
-const pRefType = PT.oneOfType([PT.string, PT.exact({ current: PT.any })]);
+const pRefType = PT.oneOfType([PT.string, PT.exact({ current: PT.any })])
 
-const _pLabelType = PT.oneOfType([PT.element, PT.string]);
+const _pLabelType = PT.oneOfType([PT.element, PT.string])
 
 const pLabelsType = PT.exact({
   start: _pLabelType,
   middle: _pLabelType,
   end: _pLabelType,
-});
+})
 
-const pSvgEdgeShapeType = PT.oneOf(Object.keys(arrowShapes) as Array<keyof typeof arrowShapes>);
+const pSvgEdgeShapeType = PT.oneOf(Object.keys(arrowShapes) as Array<keyof typeof arrowShapes>)
 // const pSvgElemType = PT.oneOf(cSvgElems);
-const pSvgElemType = PT.any;
+const pSvgElemType = PT.any
 const pSvgEdgeType = PT.oneOfType([
   pSvgEdgeShapeType,
   PT.exact({
     svgElem: pSvgElemType,
     offsetForward: PT.number,
   }).isRequired,
-]);
+])
 
 const XarrowPropTypes = {
   start: pRefType.isRequired,
@@ -76,6 +76,6 @@ const XarrowPropTypes = {
   _cpy1Offset: PT.number,
   _cpx2Offset: PT.number,
   _cpy2Offset: PT.number,
-};
+}
 
-export default XarrowPropTypes;
+export default XarrowPropTypes

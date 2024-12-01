@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { anchorCustomPositionType } from "../types";
-import { dimensionType } from "../privateTypes";
+import { anchorCustomPositionType } from '../types'
+import { dimensionType } from '../privateTypes'
 
 const getAnchorsDefaultOffsets = (width: number, height: number) => {
   return {
@@ -9,8 +9,8 @@ const getAnchorsDefaultOffsets = (width: number, height: number) => {
     right: { x: width, y: height * 0.5 },
     top: { x: width * 0.5, y: 0 },
     bottom: { x: width * 0.5, y: height },
-  };
-};
+  }
+}
 
 export const calcAnchors = (anchors: anchorCustomPositionType[], anchorPos: dimensionType) => {
   // now prepare this list of anchors to object expected by the `getShortestLine` function
@@ -18,12 +18,12 @@ export const calcAnchors = (anchors: anchorCustomPositionType[], anchorPos: dime
     let defsOffsets = getAnchorsDefaultOffsets(
       anchorPos.right - anchorPos.x,
       anchorPos.bottom - anchorPos.y,
-    );
-    let { x, y } = defsOffsets[anchor.position];
+    )
+    let { x, y } = defsOffsets[anchor.position]
     return {
       x: anchorPos.x + x + anchor.offset.x,
       y: anchorPos.y + y + anchor.offset.y,
       anchor: anchor,
-    };
-  });
-};
+    }
+  })
+}

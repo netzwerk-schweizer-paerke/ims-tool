@@ -1,0 +1,13 @@
+.landscape-bg {
+  background-color: color-mix(in srgb, currentColor 19%, transparent);
+}
+
+.landscape-bg-arrow-right {
+  background-color: color-mix(in srgb, currentColor 19%, transparent);
+  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+}
+
+.landscape-bg-arrow-left {
+  background-color: color-mix(in srgb, currentColor 19%, transparent);
+  clip-path: polygon(100% 0%, 50% 50%, 100% 100%);
+}

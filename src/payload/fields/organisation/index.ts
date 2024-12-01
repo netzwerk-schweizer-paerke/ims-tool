@@ -1,8 +1,8 @@
-import type { Field } from 'payload';
+import type { Field } from 'payload'
 
-import { superAdminFieldAccess } from '../../access/superAdmins';
-import { organisationFieldAdminAccess } from './access/admin';
-import { beforeChangeHook } from '@/payload/fields/organisation/hooks/beforeChangeHook';
+import { superAdminFieldAccess } from '../../access/superAdmins'
+import { organisationFieldAdminAccess } from './access/admin'
+import { beforeChangeHook } from '@/payload/fields/organisation/hooks/beforeChangeHook'
 
 export const organisationField: Field = {
   name: 'organisation',
@@ -28,4 +28,4 @@ export const organisationField: Field = {
     // for super admins, allow them to set the organisation
     beforeChange: [beforeChangeHook],
   },
-};
+}

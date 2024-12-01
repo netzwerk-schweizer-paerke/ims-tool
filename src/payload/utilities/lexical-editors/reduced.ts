@@ -5,15 +5,15 @@ import {
   LinkFeature,
   OrderedListFeature,
   UnorderedListFeature,
-} from '@payloadcms/richtext-lexical';
-import { CollectionSlug } from 'payload';
+} from '@payloadcms/richtext-lexical'
+import { CollectionSlug } from 'payload'
 
 const enabledCollections: CollectionSlug[] = [
   'documents',
   'documents-public',
   'task-flows',
   'task-lists',
-];
+]
 
 export const lexicalEditorReducedFeatures = lexicalEditor({
   features: ({ defaultFeatures }) => [
@@ -25,4 +25,4 @@ export const lexicalEditorReducedFeatures = lexicalEditor({
     BoldFeature(),
     FixedToolbarFeature(),
   ],
-});
+})

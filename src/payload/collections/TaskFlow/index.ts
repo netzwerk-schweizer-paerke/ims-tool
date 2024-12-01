@@ -1,13 +1,13 @@
-import { CollectionConfig } from 'payload';
-import { I18nCollection } from '@/lib/i18nCollection';
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess';
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess';
-import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output';
-import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output';
-import { adminSettingsField } from '@/payload/fields/admin-settings';
-import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced';
-import { filesArrayField } from '@/payload/fields/files-array';
-import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel';
+import { CollectionConfig } from 'payload'
+import { I18nCollection } from '@/lib/i18nCollection'
+import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
+import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output'
+import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output'
+import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
+import { filesArrayField } from '@/payload/fields/files-array'
+import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel'
 
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
@@ -56,4 +56,4 @@ export const TaskFlows: CollectionConfig = {
     filesArrayField,
     adminSettingsField(),
   ],
-};
+}

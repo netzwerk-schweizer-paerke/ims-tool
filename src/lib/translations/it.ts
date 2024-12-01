@@ -62,4 +62,4 @@ export const it = {
       false: 'False',
     },
   },
-};
+}

@@ -1,8 +1,8 @@
-import type { Field } from 'payload';
+import type { Field } from 'payload'
 
-import { superAdminFieldAccess } from '../../access/superAdmins';
-import { organisationFieldAdminAccess } from './access/admin';
-import { beforeChangeHook } from './hooks/beforeChangeHook';
+import { superAdminFieldAccess } from '../../access/superAdmins'
+import { organisationFieldAdminAccess } from './access/admin'
+import { beforeChangeHook } from './hooks/beforeChangeHook'
 
 export const createdByField: Field = {
   name: 'createdBy',
@@ -17,4 +17,4 @@ export const createdByField: Field = {
   hooks: {
     beforeChange: [beforeChangeHook],
   },
-};
+}
