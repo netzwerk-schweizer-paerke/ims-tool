@@ -42,6 +42,9 @@ export const TaskLists: CollectionConfig = {
       index: true,
       name: 'docOrder',
       type: 'number',
+      admin: {
+        hidden: true,
+      },
     },
     {
       name: 'items',

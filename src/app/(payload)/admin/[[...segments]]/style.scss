@@ -1,7 +1,7 @@
 .collection-edit--task-flows {
   .field-type.blocks-field {
     .render-fields.row__fields {
-      @apply grid grid-cols-2 gap-4;
+      @apply grid grid-cols-[520px_auto] gap-1;
       .render-fields.row__fields {
         @apply grid grid-cols-2 gap-0;
       }
@@ -24,7 +24,7 @@
 .collection-edit--activities {
   .field-type.blocks-field {
     .render-fields.row__fields {
-      @apply grid grid-cols-[1fr_2fr] gap-4;
+      @apply grid grid-cols-[240px_auto] gap-4;
     }
   }
   .group-field__wrap,

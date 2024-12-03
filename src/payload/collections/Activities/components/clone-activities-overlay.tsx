@@ -61,6 +61,7 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
     { label: string; value: number } | undefined
   >()
   const [cloning, setCloning] = React.useState(false)
+  const [status, setStatus] = React.useState<'error' | 'success' | ''>('')
 
   const availableOptions = useMemo(() => {
     if (!isOpen) return []
@@ -99,11 +100,21 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
   const onSaveClick = async () => {
     setCloning(true)
     for (const key in formState) {
-      if (formState[key]) {
-        const activityId = key.split('-')[1]
-        const cloneEndpoint = `/api/activities/${activityId}/organisation/${selectedOption?.value}`
-        await ky.post(cloneEndpoint)
+      try {
+        if (formState[key]) {
+          const activityId = key.split('-')[1]
+          const cloneEndpoint = `/api/activities/${activityId}/organisation/${selectedOption?.value}`
+          await ky.post(cloneEndpoint)
+        }
+      } catch (error) {
+        console.error(error)
+        setStatus('error')
+        setCloning(false)
+        break
       }
+    }
+    if (status !== 'error') {
+      setStatus('success')
     }
     setCloning(false)
   }
@@ -120,70 +131,104 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
       <div className={'mt-12 grid grid-cols-[auto_min-content]'}>
         <div className={'flex flex-col gap-8'}>
           <h1 className={'text-2xl font-bold'}>Cloning an activity</h1>
-          <p>
-            <strong>Important:</strong> This action will clone the selected activities to the target
-            organisation. It will neither overwrite nor delete any existing activities.
-          </p>
-          <p>Select the activities you wish to clone and the target organisation below.</p>
-          <div>
-            {availableOptions?.map((section) => (
-              <div key={section.section} className={'mb-12'}>
-                <h2 className={'text-xl font-bold'}>{section.section}</h2>
-                <ul>
-                  {section.fields?.map((field) => (
-                    <li
-                      key={field.key}
-                      className={
-                        'flex select-none gap-2 p-2 hover:cursor-pointer hover:bg-emerald-200/15'
-                      }
-                      onClick={() => onCheckboxChange(field.key)}>
-                      <input
-                        type="checkbox"
-                        id={field.key}
-                        name={field.key}
-                        checked={formState[field.key]}
-                        onChange={() => onCheckboxChange(field.key)}
-                      />
-                      <label
-                        htmlFor={field.key}
-                        className={''}
-                        dangerouslySetInnerHTML={{ __html: field.label }}></label>
-                    </li>
-                  ))}
-                </ul>
+          {status === 'error' && (
+            <div>
+              <p>
+                There was an error cloning the activities. Check your console log and contact
+                support.
+              </p>
+            </div>
+          )}
+          {status === 'success' && (
+            <div>
+              <p>Activities cloned successfully!</p>
+            </div>
+          )}
+          {status === '' && (
+            <>
+              <p>
+                <strong>Important:</strong> This action will clone the selected activities to the
+                target organisation. It will neither overwrite nor delete any existing activities.
+              </p>
+              <p>Select the activities you wish to clone and the target organisation below.</p>
+            </>
+          )}
+          {status === '' && (
+            <>
+              <div>
+                {availableOptions?.map((section) => (
+                  <div key={section.section} className={'mb-12'}>
+                    <h2 className={'text-xl font-bold'}>{section.section}</h2>
+                    <ul>
+                      {section.fields?.map((field) => (
+                        <li
+                          key={field.key}
+                          className={
+                            'flex select-none gap-2 p-2 hover:cursor-pointer hover:bg-emerald-200/15'
+                          }
+                          onClick={() => onCheckboxChange(field.key)}>
+                          <input
+                            type="checkbox"
+                            id={field.key}
+                            name={field.key}
+                            checked={formState[field.key]}
+                            onChange={() => onCheckboxChange(field.key)}
+                          />
+                          <label
+                            htmlFor={field.key}
+                            className={''}
+                            dangerouslySetInnerHTML={{ __html: field.label }}></label>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div>
-            <h2 className={'text-xl font-bold'}>Select target organisation</h2>
-            <Select
-              options={targetOrganisations}
-              value={selectedOption}
-              onChange={onOrganisationChange as any}
-              isCreatable={false}
-              isClearable={false}
-            />
-          </div>
+              <div>
+                <h2 className={'text-xl font-bold'}>Select target organisation</h2>
+                <Select
+                  options={targetOrganisations}
+                  value={selectedOption}
+                  onChange={onOrganisationChange as any}
+                  isCreatable={false}
+                  isClearable={false}
+                />
+              </div>
+            </>
+          )}
           {cloning && (
             <div>
               <p>Cloning activities... Please wait!</p>
             </div>
           )}
-          <div className={'flex flex-row gap-4'}>
-            <Button
-              buttonStyle="primary"
-              className={`${baseClass}__save`}
-              disabled={disableSave}
-              onClick={onSaveClick}>
-              {t('general:save')}
-            </Button>
-            <Button
-              buttonStyle="secondary"
-              className={`${baseClass}__cancel`}
-              onClick={onCloseClick}>
-              {t('general:cancel')}
-            </Button>
-          </div>
+          {status === '' && (
+            <>
+              <div className={'flex flex-row gap-4'}>
+                <Button
+                  buttonStyle="primary"
+                  className={`${baseClass}__save`}
+                  disabled={disableSave}
+                  onClick={onSaveClick}>
+                  {t('general:save')}
+                </Button>
+                <Button
+                  buttonStyle="secondary"
+                  className={`${baseClass}__cancel`}
+                  onClick={onCloseClick}>
+                  {t('general:cancel')}
+                </Button>
+              </div>
+            </>
+          )}
+          {status === 'error' ||
+            (status === 'success' && (
+              <Button
+                buttonStyle="secondary"
+                className={`${baseClass}__cancel`}
+                onClick={onCloseClick}>
+                {t('general:close')}
+              </Button>
+            ))}
         </div>
         <div>
           <Button

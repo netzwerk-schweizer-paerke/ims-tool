@@ -45,6 +45,9 @@ export const TaskFlows: CollectionConfig = {
       index: true,
       name: 'docOrder',
       type: 'number',
+      admin: {
+        hidden: true,
+      },
     },
     {
       name: 'blocks',
