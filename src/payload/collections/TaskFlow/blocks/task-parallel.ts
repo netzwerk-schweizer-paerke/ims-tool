@@ -40,6 +40,7 @@ export const ProcessTaskParallelBlock: Block = {
                       Field:
                         'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
                     },
+                    hidden: true,
                   },
                   jsonSchema: connectionSchema,
                 },

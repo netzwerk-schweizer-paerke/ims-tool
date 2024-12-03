@@ -34,6 +34,7 @@ export const ActivityTaskBlock: Block = {
                   Field:
                     'src/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
                 },
+                hidden: true,
               },
               jsonSchema: connectionSchema,
             },

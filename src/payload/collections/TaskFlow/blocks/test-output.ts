@@ -40,6 +40,7 @@ export const ProcessTestOutputBlock: Block = {
                       Field:
                         'src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
+                    hidden: true,
                   },
                   jsonSchema: connectionSchema,
                 },

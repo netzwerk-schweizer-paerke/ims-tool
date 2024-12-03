@@ -30,7 +30,7 @@ export default buildConfig({
   }),
   logger: {
     options: {
-      level: process.env.NODE_ENV === 'production' ? 'debug' : 'warn',
+      level: process.env.NODE_ENV !== 'production' ? 'debug' : 'warn',
     },
   },
   collections: [

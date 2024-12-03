@@ -7,12 +7,20 @@ import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
 import { filesArrayField } from '@/payload/fields/files-array'
+import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone-activity'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
   admin: {
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
+    components: {
+      beforeListTable: [
+        {
+          path: 'src/payload/collections/Activities/components/clone-activity-button#CloneActivityButton',
+        },
+      ],
+    },
   },
   labels: {
     plural: I18nCollection.fieldLabel.activities,
@@ -75,4 +83,5 @@ export const Activities: CollectionConfig = {
     filesArrayField,
     adminSettingsField(),
   ],
+  endpoints: [cloneActivity],
 }
