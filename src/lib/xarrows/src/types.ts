@@ -34,11 +34,11 @@ export type xarrowPropsType = {
   tailShape?: svgEdgeShapeType | svgCustomEdgeType
   animateDrawing?: boolean | number
   zIndex?: number
-  passProps?: JSX.IntrinsicElements[svgElemType]
+  passProps?: React.JSX.IntrinsicElements[svgElemType]
   SVGcanvasProps?: React.SVGAttributes<SVGSVGElement>
   arrowBodyProps?: React.SVGProps<SVGPathElement>
-  arrowHeadProps?: JSX.IntrinsicElements[svgElemType]
-  arrowTailProps?: JSX.IntrinsicElements[svgElemType]
+  arrowHeadProps?: React.JSX.IntrinsicElements[svgElemType]
+  arrowTailProps?: React.JSX.IntrinsicElements[svgElemType]
   divContainerProps?: React.HTMLProps<HTMLDivElement>
   SVGcanvasStyle?: React.CSSProperties
   divContainerStyle?: React.CSSProperties
@@ -65,7 +65,7 @@ export type labelsType = {
   middle?: labelType
   end?: labelType
 }
-export type labelType = JSX.Element | string
+export type labelType = React.JSX.Element | string
 
 export type svgCustomEdgeType = {
   svgElem: React.SVGProps<SVGSVGElement>

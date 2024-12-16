@@ -1,7 +1,7 @@
-/** @type {import('tailwindcss').Config} */
+import { type Config } from 'tailwindcss'
 import typography from '@tailwindcss/typography'
 
-module.exports = {
+export default {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   plugins: [typography],
-}
+} satisfies Config
