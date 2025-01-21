@@ -93,6 +93,9 @@ export interface Media {
   id: number;
   name?: string | null;
   description?: string | null;
+  /**
+   * The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.
+   */
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
@@ -199,12 +202,21 @@ export interface Activity {
   variant: 'standard' | 'supportActivity' | 'strategyActivity';
   docOrder?: number | null;
   blocks?: (ActivityIOBlock | ActivityTaskBlock)[] | null;
+  /**
+   * Files: Choose or upload a new one or provide an external URL
+   */
   files?:
     | {
+        /**
+         * Choose an existing document or upload a new one
+         */
         document?: (number | null) | Document;
         id?: string | null;
       }[]
     | null;
+  /**
+   * The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.
+   */
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
@@ -341,12 +353,21 @@ export interface TaskFlow {
   } | null;
   docOrder?: number | null;
   blocks?: (ProcessTaskIOBlock | ProcessTestOutputBlock | ProcessTaskParallelBlock)[] | null;
+  /**
+   * Files: Choose or upload a new one or provide an external URL
+   */
   files?:
     | {
+        /**
+         * Choose an existing document or upload a new one
+         */
         document?: (number | null) | Document;
         id?: string | null;
       }[]
     | null;
+  /**
+   * The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.
+   */
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
@@ -632,6 +653,9 @@ export interface Document {
   id: number;
   name?: string | null;
   description?: string | null;
+  /**
+   * The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.
+   */
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
@@ -721,12 +745,21 @@ export interface TaskList {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Files: Choose or upload a new one or provide an external URL
+   */
   files?:
     | {
+        /**
+         * Choose an existing document or upload a new one
+         */
         document?: (number | null) | Document;
         id?: string | null;
       }[]
     | null;
+  /**
+   * The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.
+   */
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
@@ -1022,62 +1055,8 @@ export interface ActivitiesSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        'activity-io'?:
-          | T
-          | {
-              graph?:
-                | T
-                | {
-                    task?: T;
-                  };
-              relations?:
-                | T
-                | {
-                    tasks?: T;
-                  };
-              io?:
-                | T
-                | {
-                    input?: T;
-                    output?: T;
-                  };
-              infos?:
-                | T
-                | {
-                    norms?: T;
-                    support?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        'activity-task'?:
-          | T
-          | {
-              graph?:
-                | T
-                | {
-                    task?: T;
-                  };
-              relations?:
-                | T
-                | {
-                    tasks?: T;
-                  };
-              io?:
-                | T
-                | {
-                    input?: T;
-                    output?: T;
-                  };
-              infos?:
-                | T
-                | {
-                    norms?: T;
-                    support?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
+        'activity-io'?: T | ActivityIOBlockSelect<T>;
+        'activity-task'?: T | ActivityTaskBlockSelect<T>;
       };
   files?:
     | T
@@ -1090,6 +1069,66 @@ export interface ActivitiesSelect<T extends boolean = true> {
   updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ActivityIOBlock_select".
+ */
+export interface ActivityIOBlockSelect<T extends boolean = true> {
+  graph?:
+    | T
+    | {
+        task?: T;
+      };
+  relations?:
+    | T
+    | {
+        tasks?: T;
+      };
+  io?:
+    | T
+    | {
+        input?: T;
+        output?: T;
+      };
+  infos?:
+    | T
+    | {
+        norms?: T;
+        support?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ActivityTaskBlock_select".
+ */
+export interface ActivityTaskBlockSelect<T extends boolean = true> {
+  graph?:
+    | T
+    | {
+        task?: T;
+      };
+  relations?:
+    | T
+    | {
+        tasks?: T;
+      };
+  io?:
+    | T
+    | {
+        input?: T;
+        output?: T;
+      };
+  infos?:
+    | T
+    | {
+        norms?: T;
+        support?: T;
+      };
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1144,86 +1183,9 @@ export interface TaskFlowsSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        'proc-task-io'?:
-          | T
-          | {
-              graph?:
-                | T
-                | {
-                    io?: T;
-                    task?: T;
-                  };
-              keypoints?:
-                | T
-                | {
-                    keypoints?: T;
-                  };
-              tools?:
-                | T
-                | {
-                    tools?: T;
-                  };
-              responsibility?:
-                | T
-                | {
-                    responsibility?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        'proc-test'?:
-          | T
-          | {
-              graph?:
-                | T
-                | {
-                    output?: T;
-                    test?: T;
-                  };
-              keypoints?:
-                | T
-                | {
-                    keypoints?: T;
-                  };
-              tools?:
-                | T
-                | {
-                    tools?: T;
-                  };
-              responsibility?:
-                | T
-                | {
-                    responsibility?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        'proc-task-p'?:
-          | T
-          | {
-              graph?:
-                | T
-                | {
-                    task?: T;
-                  };
-              keypoints?:
-                | T
-                | {
-                    keypoints?: T;
-                  };
-              tools?:
-                | T
-                | {
-                    tools?: T;
-                  };
-              responsibility?:
-                | T
-                | {
-                    responsibility?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
+        'proc-task-io'?: T | ProcessTaskIOBlockSelect<T>;
+        'proc-test'?: T | ProcessTestOutputBlockSelect<T>;
+        'proc-task-p'?: T | ProcessTaskParallelBlockSelect<T>;
       };
   files?:
     | T
@@ -1236,6 +1198,92 @@ export interface TaskFlowsSelect<T extends boolean = true> {
   updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProcessTaskIOBlock_select".
+ */
+export interface ProcessTaskIOBlockSelect<T extends boolean = true> {
+  graph?:
+    | T
+    | {
+        io?: T;
+        task?: T;
+      };
+  keypoints?:
+    | T
+    | {
+        keypoints?: T;
+      };
+  tools?:
+    | T
+    | {
+        tools?: T;
+      };
+  responsibility?:
+    | T
+    | {
+        responsibility?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProcessTestOutputBlock_select".
+ */
+export interface ProcessTestOutputBlockSelect<T extends boolean = true> {
+  graph?:
+    | T
+    | {
+        output?: T;
+        test?: T;
+      };
+  keypoints?:
+    | T
+    | {
+        keypoints?: T;
+      };
+  tools?:
+    | T
+    | {
+        tools?: T;
+      };
+  responsibility?:
+    | T
+    | {
+        responsibility?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProcessTaskParallelBlock_select".
+ */
+export interface ProcessTaskParallelBlockSelect<T extends boolean = true> {
+  graph?:
+    | T
+    | {
+        task?: T;
+      };
+  keypoints?:
+    | T
+    | {
+        keypoints?: T;
+      };
+  tools?:
+    | T
+    | {
+        tools?: T;
+      };
+  responsibility?:
+    | T
+    | {
+        responsibility?: T;
+      };
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1273,13 +1321,7 @@ export interface UsersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
   roles?: T;
-  organisations?:
-    | T
-    | {
-        organisation?: T;
-        roles?: T;
-        id?: T;
-      };
+  organisations?: T | UserOrganisationsSelect<T>;
   selectedOrganisation?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1290,6 +1332,15 @@ export interface UsersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UserOrganisations_select".
+ */
+export interface UserOrganisationsSelect<T extends boolean = true> {
+  organisation?: T;
+  roles?: T;
+  id?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
