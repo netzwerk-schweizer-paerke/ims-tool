@@ -7,9 +7,10 @@ import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
 import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
 import { Xwrapper } from '@/lib/xarrows/src'
-import { useGraphFieldState } from '@/components/graph/fields/graph/hooks/use-graph-field-state'
 import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
-import { JSONFieldClientProps } from 'payload'
+import { JSONFieldClientComponent } from 'payload'
+import { useCallback } from 'react'
+import { useField } from '@payloadcms/ui'
 
 type ComponentState = {
   enabled: boolean
@@ -28,24 +29,41 @@ const initialState: ComponentState = {
   text: '',
 }
 
-export const ProcessInputOutputField: React.FC<JSONFieldClientProps> = ({ path }) => {
-  const { setText, state, setState } = useGraphFieldState<ComponentState>({
-    initialState,
+export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
+  const {
     path,
-  })
+    validate,
+    field: { required },
+  } = props
+
+  const memoizedValidate: any = useCallback(
+    (value: any, options: any) => {
+      if (typeof validate === 'function') {
+        return validate(value, { ...options, required })
+      }
+    },
+    [validate, required],
+  )
+
+  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const state = value ? value : initialState
+
+  const setText = (text: string) => {
+    setValue({ ...value, text })
+  }
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
-    setState,
+    setState: setValue,
     connections: processIoConnections,
   })
 
   const toggleEnabled = () => {
-    setState({ ...state, enabled: !state.enabled })
+    setValue({ ...value, enabled: !value.enabled })
   }
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className={'process-task-io-block relative h-full'}>
       <Xwrapper>
         <BlockTaskWrapper>
           {state.enabled && (

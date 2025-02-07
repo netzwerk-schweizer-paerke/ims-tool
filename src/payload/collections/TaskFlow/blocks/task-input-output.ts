@@ -52,6 +52,7 @@ export const ProcessTaskInputOutputBlock: Block = {
                       Field:
                         'src/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField',
                     },
+                    hidden: true,
                   },
                   jsonSchema: connectionSchema,
                 },

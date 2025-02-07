@@ -54,6 +54,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
       ...state,
       connections,
     })
+    updateXarrow()
   }
 
   const toggleConnectionType = (position: string) => {
@@ -88,7 +89,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
     const handleResize = debounce(() => {
       setIsLoaded(true)
       updateXarrow()
-    }, 100)
+    }, 250)
 
     const resizeObserver = new ResizeObserver(handleResize)
 
@@ -116,6 +117,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
       })
       .flat()
       .map((arrow, index) => {
+        if (!arrow) return null
         const start = `${arrowSetId}-${arrow.start}`
         const end = `${arrowSetId}-${arrow.end}`
         const props = { ...arrow, start, end, ...arrowStyle }
@@ -123,5 +125,5 @@ export const useArrows = ({ state, setState, connections }: Props) => {
       })
   }, [state.connections, connections, arrowSetId])
 
-  return { ref, toggleConnectionType, renderArrows, isLoaded, arrowSetId }
+  return { ref, toggleConnectionType, renderArrows, isLoaded, arrowSetId, updateXarrow }
 }

@@ -12,8 +12,9 @@ import { processTestConnections } from '@/components/graph/fields/graph/flows/te
 import { TestShapeWrapper } from '@/components/graph/wrappers/test-shape-wrapper'
 import { Xwrapper } from '@/lib/xarrows/src'
 import { BooleanButton } from '@/components/graph/fields/graph/components/boolean-button'
-import { useGraphFieldState } from '@/components/graph/fields/graph/hooks/use-graph-field-state'
-import { JSONFieldClientProps } from 'payload'
+import { JSONFieldClientComponent } from 'payload'
+import { useCallback } from 'react'
+import { useField } from '@payloadcms/ui'
 
 enum BooleanOutput {
   FALSE = 'false',
@@ -70,15 +71,32 @@ const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = ({ booleanOut
   )
 }
 
-export const ProcessTestField: React.FC<JSONFieldClientProps> = ({ path }) => {
-  const { setText, state, setState } = useGraphFieldState<ComponentState>({
-    initialState,
+export const ProcessTestField: JSONFieldClientComponent = (props) => {
+  const {
     path,
-  })
+    validate,
+    field: { required },
+  } = props
+
+  const memoizedValidate: any = useCallback(
+    (value: any, options: any) => {
+      if (typeof validate === 'function') {
+        return validate(value, { ...options, required })
+      }
+    },
+    [validate, required],
+  )
+
+  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const state = value ? value : initialState
+
+  const setText = (text: string) => {
+    setValue({ ...value, text })
+  }
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
-    setState,
+    setState: setValue,
     connections: processTestConnections,
   })
 
@@ -90,18 +108,18 @@ export const ProcessTestField: React.FC<JSONFieldClientProps> = ({ path }) => {
     } else if (currentBoolean === BooleanOutput.FALSE) {
       newBoolean = BooleanOutput.TRUE
     }
-    setState({ ...state, [position]: newBoolean })
+    setValue({ ...state, [position]: newBoolean })
   }
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className={'process-task-test-block relative h-full'}>
       <Xwrapper>
         <BlockTaskWrapper>
           <RootTarget id={arrowSetId}>
             <TestShapeWrapper mode={'edit'}>
               <textarea
                 className={
-                  'textarea-lg mx-12 flex size-full resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-10 text-center leading-snug focus:outline-none'
+                  'textarea-lg flex h-full w-9/12 resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-4 text-center leading-snug focus:outline-none'
                 }
                 onChange={(e) => setText(e.target.value)}
                 value={state.text}

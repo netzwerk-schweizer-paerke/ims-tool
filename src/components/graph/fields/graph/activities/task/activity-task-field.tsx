@@ -13,8 +13,9 @@ import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
 import { Xwrapper } from '@/lib/xarrows/src'
-import { useGraphFieldState } from '@/components/graph/fields/graph/hooks/use-graph-field-state'
-import { JSONFieldClientProps } from 'payload'
+import { JSONFieldClientComponent } from 'payload'
+import { useCallback } from 'react'
+import { useField } from '@payloadcms/ui'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -39,15 +40,32 @@ const initialState: ComponentState = {
   text: '',
 }
 
-export const ActivityTaskField: React.FC<JSONFieldClientProps> = ({ path }) => {
-  const { setText, state, setState } = useGraphFieldState<ComponentState>({
-    initialState,
+export const ActivityTaskField: JSONFieldClientComponent = (props) => {
+  const {
     path,
-  })
+    validate,
+    field: { required },
+  } = props
+
+  const memoizedValidate: any = useCallback(
+    (value: any, options: any) => {
+      if (typeof validate === 'function') {
+        return validate(value, { ...options, required })
+      }
+    },
+    [validate, required],
+  )
+
+  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const state = value ? value : initialState
+
+  const setText = (text: string) => {
+    setValue({ ...value, text })
+  }
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
-    setState,
+    setState: setValue,
     connections: activityTaskConnections,
   })
 

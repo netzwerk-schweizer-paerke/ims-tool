@@ -1,4 +1,6 @@
 .x-arrows {
+  position: absolute;
+  inset: 0 0 0 0;
   svg {
     > path {
       stroke: var(--theme-text);

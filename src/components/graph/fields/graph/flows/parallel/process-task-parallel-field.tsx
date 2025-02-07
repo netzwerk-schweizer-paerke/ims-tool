@@ -7,8 +7,9 @@ import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hook
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { Xwrapper } from '@/lib/xarrows/src'
 import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
-import { useGraphFieldState } from '@/components/graph/fields/graph/hooks/use-graph-field-state'
-import { JSONFieldClientProps } from 'payload'
+import { JSONFieldClientComponent } from 'payload'
+import { useCallback } from 'react'
+import { useField } from '@payloadcms/ui'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -35,30 +36,43 @@ const initialState: ComponentState = {
   textRight: '',
 }
 
-export const ProcessTaskParallelField: React.FC<JSONFieldClientProps> = ({ path }) => {
-  const { state, setState } = useGraphFieldState<ComponentState>({
-    initialState,
+export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
+  const {
     path,
-  })
+    validate,
+    field: { required },
+  } = props
+
+  const memoizedValidate: any = useCallback(
+    (value: any, options: any) => {
+      if (typeof validate === 'function') {
+        return validate(value, { ...options, required })
+      }
+    },
+    [validate, required],
+  )
+
+  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const state = value ? value : initialState
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state,
-    setState,
+    setState: setValue,
     connections: processTaskParallelConnections,
   })
 
   const setTextLeft = (text: string) => {
-    setState({ ...state, textLeft: text })
+    setValue({ ...state, textLeft: text })
   }
 
   const setTextRight = (text: string) => {
-    setState({ ...state, textRight: text })
+    setValue({ ...state, textRight: text })
   }
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className={'process-task-parallel-block relative h-full'}>
       <Xwrapper>
-        <div className={'grid w-full grid-cols-2'}>
+        <div className={'grid size-full grid-cols-2'}>
           <BlockTaskWrapper>
             <RootTarget id={arrowSetId} comboTarget={'left'}>
               <TaskShapeWrapper mode={'edit'}>

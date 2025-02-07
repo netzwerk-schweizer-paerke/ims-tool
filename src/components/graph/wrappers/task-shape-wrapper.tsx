@@ -11,11 +11,11 @@ export const TaskShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) =
 
   return (
     <div
-      className={`task-shape-wrapper relative rounded-xl border-2 bg-[--theme-bg] ${wrapperClasses}`}
-    >
+      className={`task-shape-wrapper relative rounded-xl border-2 bg-[--theme-bg] ${wrapperClasses}`}>
       <div
-        className={'relative z-10 flex size-full items-center justify-center px-2 py-5 text-center'}
-      >
+        className={
+          'relative z-10 flex size-full items-center justify-center px-1 py-4 text-center'
+        }>
         {children}
       </div>
     </div>
