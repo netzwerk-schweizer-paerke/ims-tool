@@ -13,7 +13,7 @@ import { TestShapeWrapper } from '@/components/graph/wrappers/test-shape-wrapper
 import { Xwrapper } from '@/lib/xarrows/src'
 import { BooleanButton } from '@/components/graph/fields/graph/components/boolean-button'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 
 enum BooleanOutput {
@@ -88,27 +88,32 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
   )
 
   const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
-  const state = value ? value : initialState
+
+  useEffect(() => {
+    if (!value) {
+      setValue(initialState)
+    }
+  }, [setValue, value])
 
   const setText = (text: string) => {
     setValue({ ...value, text })
   }
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state,
+    state: value,
     setState: setValue,
     connections: processTestConnections,
   })
 
   const toggleBoolean = (position: 'leftBoolean' | 'bottomBoolean' | 'rightBoolean') => {
-    const currentBoolean = state[position]
+    const currentBoolean = value[position]
     let newBoolean = BooleanOutput.None
     if (currentBoolean === BooleanOutput.None) {
       newBoolean = BooleanOutput.FALSE
     } else if (currentBoolean === BooleanOutput.FALSE) {
       newBoolean = BooleanOutput.TRUE
     }
-    setValue({ ...state, [position]: newBoolean })
+    setValue({ ...value, [position]: newBoolean })
   }
 
   return (
@@ -122,24 +127,24 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
                   'textarea-lg flex h-full w-9/12 resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-4 text-center leading-snug focus:outline-none'
                 }
                 onChange={(e) => setText(e.target.value)}
-                value={state.text}
+                value={value?.text}
               />
               <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
               <ButtonBottomCenter onClickFn={() => toggleConnectionType('bottom')} />
               <ButtonTopCenter onClickFn={() => toggleConnectionType('top')} />
               <div className={'absolute -bottom-1/3 left-1/2 z-10 -translate-x-1/2'}>
                 <BooleanButton onClick={() => toggleBoolean('bottomBoolean')}>
-                  <DisplayBoolean booleanOutput={state.bottomBoolean} />
+                  <DisplayBoolean booleanOutput={value?.bottomBoolean} />
                 </BooleanButton>
               </div>
               <div className={'absolute -right-2 bottom-4 z-10'}>
                 <BooleanButton onClick={() => toggleBoolean('rightBoolean')}>
-                  <DisplayBoolean booleanOutput={state.rightBoolean} />
+                  <DisplayBoolean booleanOutput={value?.rightBoolean} />
                 </BooleanButton>
               </div>
               <div className={'absolute -left-2 bottom-4 z-10'}>
                 <BooleanButton onClick={() => toggleBoolean('leftBoolean')}>
-                  <DisplayBoolean booleanOutput={state.leftBoolean} />
+                  <DisplayBoolean booleanOutput={value?.leftBoolean} />
                 </BooleanButton>
               </div>
             </TestShapeWrapper>

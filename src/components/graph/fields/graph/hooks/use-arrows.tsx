@@ -27,7 +27,7 @@ type ArrowConnections = {
 }[]
 
 type Props = {
-  state: ConnectionStateType
+  state?: ConnectionStateType
   setState: any
   connections: ArrowConnections
 }
@@ -39,11 +39,11 @@ export const useArrows = ({ state, setState, connections }: Props) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
   const setConnectionType = (type: string, position: string) => {
-    const connection = state.connections.find((connection) => connection.position === position)
+    const connection = state?.connections.find((connection) => connection.position === position)
     if (!connection) {
       throw new Error(`No connection found for arrow position: ${position}`)
     }
-    const connections = state.connections.map((connection) => {
+    const connections = state?.connections.map((connection) => {
       if (connection.position === position) {
         return { ...connection, type }
       }
@@ -64,7 +64,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
     }
     const option = options.find(
       (option) =>
-        option === state.connections.find((connection) => connection.position === position)?.type,
+        option === state?.connections.find((connection) => connection.position === position)?.type,
     )
     if (!option) {
       throw new Error(`No options found for arrow position: ${position}`)
@@ -107,6 +107,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
   }, [])
 
   const renderArrows = useCallback(() => {
+    if (!state?.connections) return null
     return state.connections
       .map((connection) => {
         const definition = connections.find((c) => c.position === connection.position)?.definitions
@@ -123,7 +124,7 @@ export const useArrows = ({ state, setState, connections }: Props) => {
         const props = { ...arrow, start, end, ...arrowStyle }
         return <Xarrow key={index} {...props} />
       })
-  }, [state.connections, connections, arrowSetId])
+  }, [state, connections, arrowSetId])
 
   return { ref, toggleConnectionType, renderArrows, isLoaded, arrowSetId, updateXarrow }
 }

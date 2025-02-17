@@ -9,7 +9,7 @@ import { processIoConnections } from '@/components/graph/fields/graph/flows/io/c
 import { Xwrapper } from '@/lib/xarrows/src'
 import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 
 type ComponentState = {
@@ -46,14 +46,19 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
   )
 
   const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
-  const state = value ? value : initialState
+
+  useEffect(() => {
+    if (!value) {
+      setValue(initialState)
+    }
+  }, [setValue, value])
 
   const setText = (text: string) => {
     setValue({ ...value, text })
   }
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state,
+    state: value,
     setState: setValue,
     connections: processIoConnections,
   })
@@ -66,7 +71,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
     <div ref={ref} className={'process-task-io-block relative h-full'}>
       <Xwrapper>
         <BlockTaskWrapper>
-          {state.enabled && (
+          {value?.enabled && (
             <>
               <RootTarget id={arrowSetId}>
                 <IOShapeWrapper mode={'edit'}>
@@ -75,7 +80,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
                       'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
                     }
                     onChange={(e) => setText(e.target.value)}
-                    value={state.text}
+                    value={value?.text}
                   />
                   <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
                 </IOShapeWrapper>
@@ -85,7 +90,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
             </>
           )}
           <div className={'absolute right-1/2 top-0 translate-x-1/2'}>
-            <ToggleSwitch checked={state.enabled} onChange={toggleEnabled} />
+            <ToggleSwitch checked={value?.enabled} onChange={toggleEnabled} />
           </div>
         </BlockTaskWrapper>
       </Xwrapper>

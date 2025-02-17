@@ -11,7 +11,7 @@ import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hook
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { Xwrapper } from '@/lib/xarrows/src'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import { processTaskConnections } from '@/components/graph/fields/graph/flows/task/connection-definitions'
 
@@ -55,14 +55,19 @@ export const ProcessTaskField: JSONFieldClientComponent = (props) => {
   )
 
   const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
-  const state = value ? value : initialState
+
+  useEffect(() => {
+    if (!value) {
+      setValue(initialState)
+    }
+  }, [setValue, value])
 
   const setText = (text: string) => {
     setValue({ ...value, text })
   }
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state,
+    state: value,
     setState: setValue,
     connections: processTaskConnections,
   })
@@ -78,7 +83,7 @@ export const ProcessTaskField: JSONFieldClientComponent = (props) => {
                   'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
                 }
                 onChange={(e) => setText(e.target.value)}
-                value={state.text}
+                value={value?.text}
               />
               <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
               <ButtonBottomCenter onClickFn={() => toggleConnectionType('bottom')} />

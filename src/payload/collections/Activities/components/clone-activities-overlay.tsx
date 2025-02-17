@@ -1,13 +1,5 @@
 'use client'
-import {
-  Button,
-  Drawer,
-  Select,
-  useDocumentInfo,
-  useLocale,
-  useModal,
-  useTranslation,
-} from '@payloadcms/ui'
+import { Button, Drawer, Select, useLocale, useModal, useTranslation } from '@payloadcms/ui'
 import { CloseIcon } from 'next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon'
 import React, { useMemo } from 'react'
 import { I18nCollection } from '@/lib/i18nCollection'
@@ -51,9 +43,8 @@ type Props = {
 }
 
 export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrganisations }) => {
-  const { id } = useDocumentInfo()
-  const locale = useLocale()
   const { closeModal, isModalOpen } = useModal()
+  const locale = useLocale()
   const { t } = useTranslation()
   const isOpen = isModalOpen(drawerSlug)
   const [formState, setFormState] = React.useState<Record<string, boolean>>({})
@@ -103,7 +94,8 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
       try {
         if (formState[key]) {
           const activityId = key.split('-')[1]
-          const cloneEndpoint = `/api/activities/${activityId}/organisation/${selectedOption?.value}`
+          const cloneEndpoint = `/api/activities/${activityId}/organisation/${selectedOption?.value}${locale?.code ? `?locale=${locale.code}` : ''}`
+          console.log(cloneEndpoint)
           await ky.post(cloneEndpoint)
         }
       } catch (error) {
@@ -122,8 +114,10 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
   const onCloseClick = () => {
     setCloning(false)
     setFormState({})
+    setStatus('')
     setSelectedOption(undefined)
     closeModal(drawerSlug)
+    window.location.reload()
   }
 
   return (
@@ -157,26 +151,21 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
             <>
               <div>
                 {availableOptions?.map((section) => (
-                  <div key={section.section} className={'mb-12'}>
+                  <div key={section.section} className={'mb-12 max-w-fit'}>
                     <h2 className={'text-xl font-bold'}>{section.section}</h2>
                     <ul>
                       {section.fields?.map((field) => (
-                        <li
-                          key={field.key}
-                          className={
-                            'flex select-none gap-2 p-2 hover:cursor-pointer hover:bg-emerald-200/15'
-                          }
-                          onClick={() => onCheckboxChange(field.key)}>
+                        <li key={field.key} className={'flex select-none gap-2 p-2'}>
                           <input
                             type="checkbox"
                             id={field.key}
                             name={field.key}
-                            checked={formState[field.key]}
-                            onChange={() => onCheckboxChange(field.key)}
+                            defaultChecked={formState[field.key]}
+                            onClick={() => onCheckboxChange(field.key)}
                           />
                           <label
                             htmlFor={field.key}
-                            className={''}
+                            className={'hover:cursor-pointer'}
                             dangerouslySetInnerHTML={{ __html: field.label }}></label>
                         </li>
                       ))}

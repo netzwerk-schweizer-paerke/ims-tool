@@ -15,7 +15,7 @@ export const ToggleSwitch: React.FC<Props> = ({ label, checked, onChange }) => {
         type="checkbox"
         role="switch"
         id={id}
-        checked={checked}
+        defaultChecked={checked}
         onChange={onChange}
       />
       {label && (

@@ -8,7 +8,7 @@ import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { Xwrapper } from '@/lib/xarrows/src'
 import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 
 type ComponentState = {
@@ -53,20 +53,25 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
   )
 
   const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
-  const state = value ? value : initialState
+
+  useEffect(() => {
+    if (!value) {
+      setValue(initialState)
+    }
+  }, [setValue, value])
 
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state,
+    state: value,
     setState: setValue,
     connections: processTaskParallelConnections,
   })
 
   const setTextLeft = (text: string) => {
-    setValue({ ...state, textLeft: text })
+    setValue({ ...value, textLeft: text })
   }
 
   const setTextRight = (text: string) => {
-    setValue({ ...state, textRight: text })
+    setValue({ ...value, textRight: text })
   }
 
   return (
@@ -81,7 +86,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
                     'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
                   }
                   onChange={(e) => setTextLeft(e.target.value)}
-                  value={state.textLeft}
+                  value={value?.textLeft}
                 />
               </TaskShapeWrapper>
             </RootTarget>
@@ -94,7 +99,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
                     'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
                   }
                   onChange={(e) => setTextRight(e.target.value)}
-                  value={state.textRight}
+                  value={value?.textRight}
                 />
                 <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
               </TaskShapeWrapper>
