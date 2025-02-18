@@ -1,7 +1,7 @@
-import { Endpoint, PayloadRequest } from 'payload'
+import { Endpoint } from 'payload'
 import { getRequestData } from '@/payload/utilities/endpoints/get-request-data'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
-import { isArray } from 'lodash-es'
+import { isArray, toNumber } from 'lodash-es'
 import {
   isActivityIOBlock,
   isActivityTaskBlock,
@@ -9,63 +9,11 @@ import {
   isTaskList,
 } from '@/payload/assertions'
 import { Activity, ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
-
-const stripDocument = <T>(obj: TaskFlow | TaskList | Activity) => {
-  const { id, createdAt, createdBy, updatedAt, updatedBy, ...stripped } = obj
-  if ('blocks' in stripped) {
-    // @ts-ignore
-    stripped.blocks = stripped.blocks.map((block) => {
-      const { id, ...strippedBlock } = block
-      return strippedBlock
-    })
-  }
-  if ('items' in stripped) {
-    // @ts-ignore
-    stripped.items = stripped.items.map((item) => {
-      const { id, ...strippedItem } = item
-      return strippedItem
-    })
-  }
-  return stripped as T
-}
-
-const createTaskFlow = async (req: PayloadRequest, task: TaskFlow, organisationId: number) => {
-  const locale = req.locale
-  req.payload.logger.debug({ msg: 'creating task-flow', sourceTaskId: task.id })
-  try {
-    const strippedTask = stripDocument<TaskFlow>(task)
-    const result = await req.payload.create({
-      req,
-      collection: 'task-flows',
-      data: strippedTask,
-      locale: locale as any,
-    })
-    req.payload.logger.debug({ msg: 'task-flow created', result })
-    return result
-  } catch (error) {
-    req.payload.logger.error({ msg: 'error creating task-flow', error })
-    throw error
-  }
-}
-
-const createTaskList = async (req: PayloadRequest, task: TaskList, organisationId: number) => {
-  const locale = req.locale
-  req.payload.logger.debug({ msg: 'creating task-list', sourceTaskId: task.id })
-  try {
-    const strippedTask = stripDocument<TaskList>(task)
-    const result = await req.payload.create({
-      req,
-      collection: 'task-lists',
-      data: strippedTask,
-      locale: locale as any,
-    })
-    req.payload.logger.debug({ msg: 'task-list created', result })
-    return result
-  } catch (error) {
-    req.payload.logger.error({ msg: 'error creating task-list', error })
-    throw error
-  }
-}
+import {
+  createTaskFlow,
+  createTaskList,
+  strippedEntry,
+} from '@/payload/collections/Activities/endpoints/strippedEntry'
 
 type SetPlacePayload = {
   params: {
@@ -83,11 +31,13 @@ export const cloneActivity: Endpoint = {
     const { activityId, organisationId } = params || {}
     const locale = req.locale
 
-    if (!activityId || !organisationId) {
+    const orgId = toNumber(organisationId)
+
+    if (!activityId || !orgId) {
       return Response.json({ error: 'Missing activityId or organisationId' }, { status: 400 })
     }
 
-    req.payload.logger.debug({ msg: 'cloning activity', activityId, organisationId, locale })
+    req.payload.logger.debug({ msg: 'cloning activity', activityId, orgId, locale })
 
     const sourceActivity = await req.payload.findByID({
       req,
@@ -102,7 +52,7 @@ export const cloneActivity: Endpoint = {
 
     req.payload.logger.debug({ msg: 'source activity found', sourceActivity: sourceActivity.id })
 
-    const strippedActivity = stripDocument<Activity>(sourceActivity)
+    const strippedActivity = strippedEntry<Activity>(sourceActivity, orgId)
 
     // Clone the activity
     const clonedActivity = await req.payload.create({
@@ -138,7 +88,7 @@ export const cloneActivity: Endpoint = {
             if (relationTo === 'task-flows' && isTaskFlow(value)) {
               try {
                 req.payload.logger.debug({ msg: 'before createTaskFlow', value: value.id })
-                const newTaskFlow = await createTaskFlow(req, value, organisationId)
+                const newTaskFlow = await createTaskFlow(req, value, orgId)
                 if (newTaskFlow) {
                   newRelations.push({ relationTo, value: newTaskFlow.id })
                 }
@@ -154,7 +104,7 @@ export const cloneActivity: Endpoint = {
             if (relationTo === 'task-lists' && isTaskList(value)) {
               try {
                 req.payload.logger.debug({ msg: 'before createTaskList', value: value.id })
-                const newTaskList = await createTaskList(req, value, organisationId)
+                const newTaskList = await createTaskList(req, value, orgId)
                 if (newTaskList) {
                   newRelations.push({ relationTo, value: newTaskList.id })
                 }
