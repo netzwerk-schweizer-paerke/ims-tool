@@ -12,6 +12,7 @@ import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
   admin: {
+    hideAPIURL: true,
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
   },

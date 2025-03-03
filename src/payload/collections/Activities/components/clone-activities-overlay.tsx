@@ -1,6 +1,13 @@
 'use client'
-import { Button, Drawer, Select, useLocale, useModal, useTranslation } from '@payloadcms/ui'
-import { CloseIcon } from 'next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon'
+import {
+  Button,
+  CloseMenuIcon,
+  Drawer,
+  Select,
+  useLocale,
+  useModal,
+  useTranslation,
+} from '@payloadcms/ui'
 import React, { useMemo } from 'react'
 import { I18nCollection } from '@/lib/i18nCollection'
 import {
@@ -224,7 +231,7 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
             buttonStyle="icon-label"
             className={`${baseClass}__cancel`}
             onClick={onCloseClick}>
-            <CloseIcon />
+            <CloseMenuIcon />
           </Button>
         </div>
       </div>

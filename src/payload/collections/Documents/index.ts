@@ -9,6 +9,7 @@ import { mimeTypes } from '@/config/file-upload-mime'
 export const Documents: CollectionConfig = {
   slug: 'documents',
   admin: {
+    hideAPIURL: true,
     group: I18nCollection.collectionGroup.files,
   },
   access: {

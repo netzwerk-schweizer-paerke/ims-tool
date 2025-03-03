@@ -13,6 +13,7 @@ export const Organisations: CollectionConfig = {
     singular: I18nCollection.fieldLabel.organisation,
   },
   admin: {
+    hideAPIURL: true,
     group: I18nCollection.collectionGroup.settings,
     useAsTitle: 'name',
     hidden: (user) => {

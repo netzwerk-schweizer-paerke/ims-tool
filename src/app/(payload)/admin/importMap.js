@@ -14,6 +14,7 @@ import { ProcessTestField as ProcessTestField_228a1d3d551a14020bbe557cc231c339 }
 import { ProcessTaskParallelField as ProcessTaskParallelField_7e53e5f67e05b59712f3c0c3836b07aa } from 'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field'
 import { ActivityLandscapeLink as ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870 } from 'src/components/activity-landscape-link'
 import { OrganisationSelect as OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf } from 'src/components/organisation-select'
+import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { FlowBlockView as FlowBlockView_b366da92bebaf7d6a5e4eaa1f457dca3 } from 'src/components/views/flow'
 import { ListBlockView as ListBlockView_6b259556698f42eac9d0778fbbe1bee6 } from 'src/components/views/list'
 import { ActivityBlockView as ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0 } from 'src/components/views/activity/view'
@@ -36,6 +37,7 @@ export const importMap = {
   "src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField": ProcessTaskParallelField_7e53e5f67e05b59712f3c0c3836b07aa,
   "src/components/activity-landscape-link#ActivityLandscapeLink": ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870,
   "src/components/organisation-select#OrganisationSelect": OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf,
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "src/components/views/flow#FlowBlockView": FlowBlockView_b366da92bebaf7d6a5e4eaa1f457dca3,
   "src/components/views/list#ListBlockView": ListBlockView_6b259556698f42eac9d0778fbbe1bee6,
   "src/components/views/activity/view#ActivityBlockView": ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0,

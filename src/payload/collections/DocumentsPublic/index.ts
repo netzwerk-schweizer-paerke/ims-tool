@@ -7,6 +7,7 @@ export const DocumentsPublic: CollectionConfig = {
   slug: 'documents-public',
   labels: I18nCollection.collectionLabel.documentsPublic,
   admin: {
+    hideAPIURL: true,
     group: I18nCollection.collectionGroup.files,
   },
   access: {

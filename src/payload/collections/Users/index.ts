@@ -12,6 +12,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
   admin: {
+    hideAPIURL: true,
     group: I18nCollection.collectionGroup.settings,
     useAsTitle: 'email',
     hidden: (user) => {

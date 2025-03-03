@@ -9,6 +9,7 @@ import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
+    hideAPIURL: true,
     group: I18nCollection.collectionGroup.files,
     hidden: true,
   },

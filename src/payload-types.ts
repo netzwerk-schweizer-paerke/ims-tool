@@ -75,6 +75,7 @@ export interface Config {
   auth: {
     users: UserAuthOperations;
   };
+  blocks: {};
   collections: {
     media: Media;
     organisations: Organisation;
@@ -202,9 +203,10 @@ export interface Organisation {
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
   orgActivities?: {
-    docs?: (number | Activity)[] | null;
-    hasNextPage?: boolean | null;
-  } | null;
+    docs?: (number | Activity)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }

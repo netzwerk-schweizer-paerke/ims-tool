@@ -13,6 +13,7 @@ export const Activities: CollectionConfig = {
   slug: 'activities',
   admin: {
     group: I18nCollection.collectionGroup.process,
+    hideAPIURL: true,
     useAsTitle: 'name',
     components: {
       beforeListTable: [
