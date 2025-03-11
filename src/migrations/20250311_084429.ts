@@ -1,9 +1,37 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import { MigrateDownArgs, MigrateUpArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
-  await db.execute(sql`
-   ALTER TYPE "public"."_locales" ADD VALUE 'fr';
-  ALTER TYPE "public"."_locales" ADD VALUE 'it';`)
+  // Check if 'fr' value exists in the enum
+  const frExists = await db.execute(sql`
+    SELECT 1 FROM pg_enum
+    WHERE enumlabel = 'fr'
+      AND enumtypid = (SELECT oid FROM pg_type WHERE typname = '_locales')
+  `)
+
+  // Check if 'it' value exists in the enum
+  const itExists = await db.execute(sql`
+    SELECT 1 FROM pg_enum
+    WHERE enumlabel = 'it'
+      AND enumtypid = (SELECT oid FROM pg_type WHERE typname = '_locales')
+  `)
+
+  console.log('frExists', { frExists })
+  console.log('itExists', { itExists })
+
+  // Add 'fr' if it doesn't exist
+  if (frExists.rowCount === 0) {
+    await db.execute(sql`ALTER TYPE "public"."_locales" ADD VALUE 'fr'`)
+  }
+
+  // Add 'it' if it doesn't exist
+  if (itExists.rowCount === 0) {
+    await db.execute(sql`ALTER TYPE "public"."_locales" ADD VALUE 'it'`)
+  }
+
+  // Original, generated migration that might fail in production or if an enum value is already present
+  // await db.execute(sql`
+  //  ALTER TYPE "public"."_locales" ADD VALUE 'fr';
+  // ALTER TYPE "public"."_locales" ADD VALUE 'it';`)
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
