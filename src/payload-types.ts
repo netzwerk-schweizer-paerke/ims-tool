@@ -112,7 +112,7 @@ export interface Config {
   };
   globals: {};
   globalsSelect: {};
-  locale: 'de';
+  locale: 'de' | 'fr' | 'it';
   user: User & {
     collection: 'users';
   };

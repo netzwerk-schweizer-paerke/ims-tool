@@ -54,14 +54,14 @@ export default buildConfig({
         label: 'Deutsch',
         code: 'de',
       },
-      // {
-      //   label: 'Français',
-      //   code: 'fr',
-      // },
-      // {
-      //   label: 'Italiano',
-      //   code: 'it',
-      // },
+      {
+        label: 'Français',
+        code: 'fr',
+      },
+      {
+        label: 'Italiano',
+        code: 'it',
+      },
     ],
     defaultLocale: 'de',
     fallback: true,

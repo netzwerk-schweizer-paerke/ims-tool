@@ -14,6 +14,7 @@ export const OrganisationSelect: React.FC = async () => {
 
   const organisations = await client.find({
     collection: 'organisations',
+    limit: 100,
   })
 
   const userOrganisations = compact(
