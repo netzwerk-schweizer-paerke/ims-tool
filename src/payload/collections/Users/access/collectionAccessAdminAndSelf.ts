@@ -1,13 +1,14 @@
 import type { Access, AccessResult } from 'payload'
-
-import { isAdmin } from '@/payload/utilities/isAdmin'
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { checkUserRoles } from '@/payload/utilities/checkUserRoles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 
-export const adminsAndSelf: Access = async ({ req: { user, payload } }): Promise<AccessResult> => {
+export const collectionAccessAdminAndSelf: Access = async ({
+  req: { user, payload },
+}): Promise<AccessResult> => {
   if (!user) return false
-  const isSuperAdmin = isAdmin(user)
+  const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
   if (isSuperAdmin) {
-    payload.logger.warn(`🔒adminsAndSelf: ${isSuperAdmin}`, { user: user?.id })
     return true
   }
 
@@ -34,16 +35,6 @@ export const adminsAndSelf: Access = async ({ req: { user, payload } }): Promise
           ),
         },
       },
-      // : user?.organisations
-      //     ?.map(({ organisation, roles }) =>
-      //       roles.includes(ROLE_SUPER_ADMIN) ? getIdFromRelation(organisation) : null,
-      //     )
-      //     .filter((id): id is string | number => id !== null)
-      //     .map((id) => ({
-      //       'organisations.organisation': {
-      //         in: [id],
-      //       },
-      //     })) || []),
     ],
   }
 }

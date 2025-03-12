@@ -1,12 +1,13 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { adminsAndSelf } from '@/payload/collections/Users/access/adminsAndSelf'
+import { collectionAccessAdminAndSelf } from '@/payload/collections/Users/access/collectionAccessAdminAndSelf'
 import { anyone } from '@/payload/access/anyone'
 import { loginAfterCreate } from '@/payload/collections/Users/hooks/loginAfterCreate'
 import { recordSelectedOrganisation } from '@/payload/collections/Users/hooks/recordSelectedOrganisation'
 import { superAdminFieldAccess } from '@/payload/access/superAdmins'
 import { organisationAdmins } from '@/payload/collections/Users/access/organisationAdmins'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
+import { fieldAccessAdminAndSelf } from '@/payload/collections/Users/access/fieldAccessAdminAndSelf'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -20,10 +21,10 @@ export const Users: CollectionConfig = {
     },
   },
   access: {
-    read: adminsAndSelf,
+    read: collectionAccessAdminAndSelf,
     create: anyone,
-    update: adminsAndSelf,
-    delete: adminsAndSelf,
+    update: collectionAccessAdminAndSelf,
+    delete: collectionAccessAdminAndSelf,
     // admin: isSuperOrOrganisationAdmin,
   },
   hooks: {
@@ -110,7 +111,7 @@ export const Users: CollectionConfig = {
       access: {
         create: () => false,
         read: organisationAdmins,
-        update: superAdminFieldAccess,
+        update: fieldAccessAdminAndSelf,
       },
       admin: {
         position: 'sidebar',
