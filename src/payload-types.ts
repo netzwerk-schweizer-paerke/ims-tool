@@ -65,6 +65,7 @@ export type SupportedTimezones =
   | 'Asia/Singapore'
   | 'Asia/Tokyo'
   | 'Asia/Seoul'
+  | 'Australia/Brisbane'
   | 'Australia/Sydney'
   | 'Pacific/Guam'
   | 'Pacific/Noumea'
@@ -200,6 +201,7 @@ export interface Organisation {
   id: number;
   name: string;
   description?: string | null;
+  organisationLanguage?: ('en' | 'fr' | 'de' | 'it') | null;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
   orgActivities?: {
@@ -1092,6 +1094,7 @@ export interface MediaSelect<T extends boolean = true> {
 export interface OrganisationsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  organisationLanguage?: T;
   createdBy?: T;
   updatedBy?: T;
   orgActivities?: T;

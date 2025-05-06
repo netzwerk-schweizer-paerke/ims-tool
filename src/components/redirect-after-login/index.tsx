@@ -3,10 +3,9 @@ import { payload } from '@/lib/payload'
 import { headers as getHeaders } from 'next/headers'
 import { compact } from 'lodash-es'
 import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
-import { UserOrganisationSelect } from '@/components/organisation-select/dropdown'
-import { Translate } from '@/lib/translate'
+import { logger } from '@/lib/logger'
 
-export const OrganisationSelect: React.FC = async () => {
+export const RedirectAfterLogin: React.FC = async () => {
   const headers = await getHeaders()
   const client = await payload()
 
@@ -29,26 +28,13 @@ export const OrganisationSelect: React.FC = async () => {
     }),
   )
 
-  const selectedOrg = userOrganisations.find(
-    (org) => org.id === getIdFromRelation(user?.selectedOrganisation),
-  )
-
   if (!userOrganisations || userOrganisations.length < 2) {
-    return null
+    logger.warn('User does not have a UserOrganisation, redirecting to dashboard')
   }
 
   return (
     <div className={'field-type mb-8 w-full'}>
-      <label className="field-label">
-        <Translate k={'admin:selectOrganisations:title'} />
-      </label>
-      <div className="field-type__wrap">
-        <UserOrganisationSelect
-          orgs={userOrganisations}
-          userId={user?.id}
-          selectedOrg={selectedOrg}
-        />
-      </div>
+      <p>One moment, please...</p>
     </div>
   )
 }

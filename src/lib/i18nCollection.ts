@@ -288,6 +288,36 @@ export const I18nCollection = {
       fr: 'Graphique',
       it: 'Grafico',
     },
+    organisationLanguage: {
+      en: 'Standard language of the organisation',
+      de: 'Standard-Sprache der Organisation',
+      fr: 'Langue standard de l’organisation',
+      it: 'Lingua standard dell’organizzazione',
+    },
+    english: {
+      en: 'English',
+      de: 'Englisch',
+      fr: 'Anglais',
+      it: 'Inglese',
+    },
+    french: {
+      en: 'French',
+      de: 'Französisch',
+      fr: 'Français',
+      it: 'Francese',
+    },
+    german: {
+      en: 'German',
+      de: 'Deutsch',
+      fr: 'Allemand',
+      it: 'Tedesco',
+    },
+    italian: {
+      en: 'Italian',
+      de: 'Italienisch',
+      fr: 'Italien',
+      it: 'Italiano',
+    },
   },
   fieldDescription: {
     file: {

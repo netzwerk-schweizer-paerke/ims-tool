@@ -7,6 +7,7 @@ export const it = {
     },
     selectOrganisations: {
       title: 'Choose active organisation',
+      orgLanguageMismatch: 'Organisation language does not match selected content language',
     },
   },
   activityLandscape: {

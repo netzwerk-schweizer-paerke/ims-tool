@@ -7,6 +7,8 @@ export const de = {
     },
     selectOrganisations: {
       title: 'Organisation auswählen',
+      orgLanguageMismatch:
+        'Organisationssprache stimmt nicht mit der gewählten Inhaltssprache überein',
     },
   },
   activityLandscape: {

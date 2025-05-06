@@ -38,6 +38,30 @@ export const Organisations: CollectionConfig = {
       label: I18nCollection.fieldLabel.description,
       type: 'textarea',
     },
+    {
+      name: 'organisationLanguage',
+      label: I18nCollection.fieldLabel.organisationLanguage,
+      type: 'select',
+      options: [
+        {
+          label: I18nCollection.fieldLabel.english,
+          value: 'en',
+        },
+        {
+          label: I18nCollection.fieldLabel.french,
+          value: 'fr',
+        },
+        {
+          label: I18nCollection.fieldLabel.german,
+          value: 'de',
+        },
+        {
+          label: I18nCollection.fieldLabel.italian,
+          value: 'it',
+        },
+      ],
+      defaultValue: 'de',
+    },
     createdByField,
     updatedByField,
     {
