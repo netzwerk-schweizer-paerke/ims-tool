@@ -2,7 +2,7 @@ import React from 'react'
 import { AdminViewProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { ActivityFlow } from '@/components/views/activity/overview/activity/activity-flow'
 import { ActivitySupport } from '@/components/views/activity/overview/activity/activity-support'
 import { ActivityStrategy } from '@/components/views/activity/overview/activity/activity-strategy'
@@ -49,8 +49,7 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
     <DefaultTemplate
       i18n={req.i18n}
       payload={req.payload}
-      visibleEntities={initPageResult.visibleEntities}
-    >
+      visibleEntities={initPageResult.visibleEntities}>
       <StepNav home={true} />
       <div className={''}>
         <div
@@ -59,13 +58,11 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
             marginTop: 'calc(var(--base) * 2)',
             paddingLeft: 'var(--gutter-h)',
             paddingRight: 'var(--gutter-h)',
-          }}
-        >
+          }}>
           <div
             className={
               'flex flex-row items-stretch justify-stretch gap-8 overflow-y-hidden overflow-x-scroll'
-            }
-          >
+            }>
             {!activities || activities?.length === 0 ? (
               <div>
                 <Translate k={'activityLandscape:noContent'} />
@@ -78,8 +75,7 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
                 {strategicActivity ? (
                   <div className={'flex shrink flex-row items-stretch justify-stretch'}>
                     <div
-                      className={'landscape-bg flex flex-row items-stretch justify-stretch pt-2'}
-                    >
+                      className={'landscape-bg flex flex-row items-stretch justify-stretch pt-2'}>
                       {strategicActivity.map((activity) => (
                         <ActivityStrategy key={activity.id} activity={activity} locale={locale} />
                       ))}
@@ -96,8 +92,7 @@ export const ActivitiesView: React.FC<AdminViewProps> = async ({ initPageResult 
                     style={{
                       gridTemplateColumns: `repeat(${standardActivities.length || 1}, minmax(185px, 1fr))`,
                     }}
-                    className={'mt-2 grid grow grid-rows-[min-content,auto] gap-4'}
-                  >
+                    className={'mt-2 grid grow grid-rows-[min-content,auto] gap-4'}>
                     <div className={'col-span-full grid grid-cols-subgrid'}>
                       {standardActivities.map((activity) => (
                         <ActivityTitles key={activity.id} activity={activity} locale={locale} />

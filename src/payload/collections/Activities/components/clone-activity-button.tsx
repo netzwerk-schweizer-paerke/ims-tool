@@ -2,14 +2,14 @@ import React from 'react'
 import { DrawerToggler } from '@payloadcms/ui'
 import { CloneActivitiesOverlay } from '@/payload/collections/Activities/components/clone-activities-overlay'
 import { User } from '@/payload-types'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { Payload } from 'payload'
 import { compact, toNumber } from 'lodash-es'
 import { isOrganisation } from '@/payload/assertions'
 
-export const baseClass = 'cv-pdf-generator'
-export const drawerSlug = 'cv-pdf-chooser'
+export const baseClass = 'clone-activity-button'
+export const drawerSlug = 'clone-activities'
 
 type Props = {
   user: User

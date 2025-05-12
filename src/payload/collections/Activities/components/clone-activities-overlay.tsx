@@ -36,14 +36,6 @@ type FormSection = {
   fields: FormField[]
 }
 
-// const fetchCv = async (id: any, serverURL: string) => {
-//   if (!id) {
-//     return;
-//   }
-//   const response = await ky.get<Cv>(`${serverURL}/api/cv/${id}`);
-//   return await response.json();
-// };
-
 type Props = {
   activities: Activity[]
   targetOrganisations: { label: string; value: number }[]

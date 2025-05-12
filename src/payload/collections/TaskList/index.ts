@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
+import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { filesArrayField } from '@/payload/fields/files-array'
@@ -18,10 +18,10 @@ export const TaskLists: CollectionConfig = {
     singular: I18nCollection.fieldLabel.taskList,
   },
   access: {
-    read: isCurrentlySelectedOrganisationAccess,
-    create: organisationAdminsAccess,
-    update: organisationAdminsAccess,
-    delete: organisationAdminsAccess,
+    read: currentOrganisationCollectionAccess,
+    create: organisationAdminsCollectionAccess,
+    update: organisationAdminsCollectionAccess,
+    delete: organisationAdminsCollectionAccess,
   },
   fields: [
     {

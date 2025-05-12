@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
+import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output'
 import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
@@ -21,10 +21,10 @@ export const TaskFlows: CollectionConfig = {
     singular: I18nCollection.fieldLabel.taskFlow,
   },
   access: {
-    read: isCurrentlySelectedOrganisationAccess,
-    create: organisationAdminsAccess,
-    update: organisationAdminsAccess,
-    delete: organisationAdminsAccess,
+    read: currentOrganisationCollectionAccess,
+    create: organisationAdminsCollectionAccess,
+    update: organisationAdminsCollectionAccess,
+    delete: organisationAdminsCollectionAccess,
   },
   fields: [
     {

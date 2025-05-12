@@ -1,6 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { loggedInAccess } from '@/payload/collections/access/loggedInAccess'
+import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
 import { mimeTypes } from '@/config/file-upload-mime'
 
 export const DocumentsPublic: CollectionConfig = {
@@ -11,10 +11,10 @@ export const DocumentsPublic: CollectionConfig = {
     group: I18nCollection.collectionGroup.files,
   },
   access: {
-    read: loggedInAccess,
-    create: loggedInAccess,
-    update: loggedInAccess,
-    delete: loggedInAccess,
+    read: authenticatedCollectionAccess,
+    create: authenticatedCollectionAccess,
+    update: authenticatedCollectionAccess,
+    delete: authenticatedCollectionAccess,
   },
   upload: {
     mimeTypes,

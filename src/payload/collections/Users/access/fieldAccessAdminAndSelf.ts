@@ -1,6 +1,6 @@
 import type { FieldAccess } from 'payload'
 
-import { isAdmin } from '@/payload/utilities/isAdmin'
+import { isAdmin } from '@/payload/utilities/is-admin'
 
 export const fieldAccessAdminAndSelf: FieldAccess = async ({
   req: { user, payload },

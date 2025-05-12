@@ -1,6 +1,6 @@
 import type { Access, AccessResult } from 'payload'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
-import { checkUserRoles } from '@/payload/utilities/checkUserRoles'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 
 export const collectionAccessAdminAndSelf: Access = async ({

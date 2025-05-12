@@ -1,4 +1,4 @@
-import { checkUserRoles } from './checkUserRoles'
+import { checkUserRoles } from './check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { User } from '@/payload-types'
 

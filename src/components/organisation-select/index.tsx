@@ -2,7 +2,7 @@ import React from 'react'
 import { payload } from '@/lib/payload'
 import { headers as getHeaders } from 'next/headers'
 import { compact } from 'lodash-es'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { UserOrganisationSelect } from '@/components/organisation-select/dropdown'
 import { Translate } from '@/lib/translate'
 

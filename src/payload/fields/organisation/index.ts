@@ -1,14 +1,14 @@
 import type { Field } from 'payload'
 
 import { superAdminFieldAccess } from '../../access/superAdmins'
-import { organisationFieldAdminAccess } from './access/admin'
-import { beforeChangeHook } from '@/payload/fields/organisation/hooks/beforeChangeHook'
+import { beforeChangeHook } from '@/payload/fields/organisation/hooks/before-change-hook'
+import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
 
 export const organisationField: Field = {
   name: 'organisation',
   type: 'relationship',
   relationTo: 'organisations',
-  // don't require this field because we need to auto-populate it, see below
+  // don't require this field because we need to autopopulate it, see below
   // required: true,
   // we also don't want to hide this field because super-admins may need to manage it
   // to achieve this, create a custom component that conditionally renders the field based on the user's role
@@ -20,7 +20,7 @@ export const organisationField: Field = {
   },
   access: {
     create: superAdminFieldAccess,
-    read: organisationFieldAdminAccess,
+    read: organisationAdminFieldAccess,
     update: superAdminFieldAccess,
   },
   hooks: {

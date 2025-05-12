@@ -1,8 +1,8 @@
 import type { PayloadRequest } from 'payload'
 
-import { isAdmin } from '@/payload/utilities/isAdmin'
+import { isAdmin } from '@/payload/utilities/is-admin'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 const logs = false
 

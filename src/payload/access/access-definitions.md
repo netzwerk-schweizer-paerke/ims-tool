@@ -1,0 +1,15 @@
+- Globale Berechtigungen
+  - Admin (Betreiber)
+    - Inhalte: Schreiben und lesen
+    - Verwaltung: User schreiben und lesen
+    - Verwaltung: Organisationen schreiben und lesen
+  - User (Pärke, und weitere Beobachter)
+    - Nur Zugriff auf Inhalte zugeordneter Organisationen
+    - Keine Verwaltungsfunktionen
+    - Berechtigungen in zugeordneter Organisation (+ Lese-Berechtigung Musterpark)
+- Organisations-Berechtigungen 
+  - Admin (Pärke-Admins und Global-Admins)
+    - Inhalte schreiben und lesen
+    - Prozessgruppe duplizieren/klonen, so wie aus Musterpark 
+  - User (Pärke-User, evtl. externe Beobachter wie BAFU)
+    - Inhalte lesen

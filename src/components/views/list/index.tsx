@@ -2,7 +2,7 @@ import React from 'react'
 import { AdminViewProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { toNumber } from 'lodash-es'
 import { assert } from 'ts-essentials'
 import { Translate } from '@/lib/translate'
@@ -115,15 +115,13 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
     <DefaultTemplate
       i18n={req.i18n}
       payload={req.payload}
-      visibleEntities={initPageResult.visibleEntities}
-    >
+      visibleEntities={initPageResult.visibleEntities}>
       <div
         style={{
           marginTop: 'calc(var(--base) * 2)',
           paddingLeft: 'var(--gutter-h)',
           paddingRight: 'var(--gutter-h)',
-        }}
-      >
+        }}>
         <StepNav
           activity={{ id: activity.id, title: activity.name, blockId: activity.blockId }}
           listBlock={{ id: listId, title: listBlock.name }}

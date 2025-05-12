@@ -46,10 +46,6 @@ export default buildConfig({
   globals: [],
   localization: {
     locales: [
-      // {
-      //   label: 'English',
-      //   code: 'en',
-      // },
       {
         label: 'Deutsch',
         code: 'de',

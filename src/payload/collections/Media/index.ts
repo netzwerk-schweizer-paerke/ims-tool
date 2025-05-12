@@ -1,8 +1,8 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
-import { loggedInAccess } from '@/payload/collections/access/loggedInAccess'
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
+import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
+import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload'
 
@@ -14,10 +14,10 @@ export const Media: CollectionConfig = {
     hidden: true,
   },
   access: {
-    read: isCurrentlySelectedOrganisationAccess,
-    create: loggedInAccess,
-    update: organisationAdminsAccess,
-    delete: organisationAdminsAccess,
+    read: currentOrganisationCollectionAccess,
+    create: authenticatedCollectionAccess,
+    update: organisationAdminsCollectionAccess,
+    delete: organisationAdminsCollectionAccess,
   },
   hooks: {
     beforeChange: [assignOrgToUpload],

@@ -1,6 +1,6 @@
 import type { Access, FieldAccess } from 'payload'
 
-import { checkUserRoles } from '@/payload/utilities/checkUserRoles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { User } from '@/payload-types'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { logger } from '@/lib/logger'

@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
+import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload'
 import { mimeTypes } from '@/config/file-upload-mime'
@@ -13,10 +13,10 @@ export const Documents: CollectionConfig = {
     group: I18nCollection.collectionGroup.files,
   },
   access: {
-    read: isCurrentlySelectedOrganisationAccess,
-    create: organisationAdminsAccess,
-    update: organisationAdminsAccess,
-    delete: organisationAdminsAccess,
+    read: currentOrganisationCollectionAccess,
+    create: organisationAdminsCollectionAccess,
+    update: organisationAdminsCollectionAccess,
+    delete: organisationAdminsCollectionAccess,
   },
   hooks: {
     beforeChange: [assignOrgToUpload],

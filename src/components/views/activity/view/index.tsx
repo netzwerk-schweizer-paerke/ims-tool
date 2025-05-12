@@ -1,7 +1,7 @@
 import React from 'react'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer'
 import { toNumber } from 'lodash-es'
 import { assert } from 'ts-essentials'
@@ -92,15 +92,13 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({ initPageResu
     <DefaultTemplate
       i18n={req.i18n}
       payload={req.payload}
-      visibleEntities={initPageResult.visibleEntities}
-    >
+      visibleEntities={initPageResult.visibleEntities}>
       <div
         style={{
           marginTop: 'calc(var(--base) * 2)',
           paddingLeft: 'var(--gutter-h)',
           paddingRight: 'var(--gutter-h)',
-        }}
-      >
+        }}>
         <StepNav
           activity={{ id: activityid, title: activity?.name, blockId: activityBlockId }}
           activityBlock={{
@@ -138,8 +136,7 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({ initPageResu
                 <div className={'landscape-bg relative p-4'}>
                   <div className={'prose prose-lg flex flex-col gap-16'}>
                     <div
-                      className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}
-                    >
+                      className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}>
                       <TasksGrid tasks={activityBlock?.relations?.tasks} />
                     </div>
                   </div>

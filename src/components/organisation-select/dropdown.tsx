@@ -2,7 +2,7 @@
 
 import { toNumber } from 'lodash-es'
 import ky from 'ky'
-import { getIdFromRelation } from '@/payload/utilities/getIdFromRelation'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { Organisation } from '@/payload-types'
 import { Select } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'

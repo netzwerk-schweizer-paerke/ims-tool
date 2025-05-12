@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { isCurrentlySelectedOrganisationAccess } from '@/payload/collections/access/isCurrentlySelectedOrganisationAccess'
-import { organisationAdminsAccess } from '@/payload/collections/access/organisationAdminsAccess'
+import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
+import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
@@ -28,10 +28,10 @@ export const Activities: CollectionConfig = {
     singular: I18nCollection.fieldLabel.activity,
   },
   access: {
-    read: isCurrentlySelectedOrganisationAccess,
-    create: organisationAdminsAccess,
-    update: organisationAdminsAccess,
-    delete: organisationAdminsAccess,
+    read: currentOrganisationCollectionAccess,
+    create: organisationAdminsCollectionAccess,
+    update: organisationAdminsCollectionAccess,
+    delete: organisationAdminsCollectionAccess,
   },
   fields: [
     {
