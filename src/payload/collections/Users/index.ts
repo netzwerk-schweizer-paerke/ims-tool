@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { I18nCollection } from '@/lib/i18nCollection'
+import { I18nCollection } from '@/lib/i18n-collection'
 import { anyone } from '@/payload/access/anyone'
 import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
 import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'

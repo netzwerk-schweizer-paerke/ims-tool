@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { I18nCollection } from '@/lib/i18nCollection'
+import { I18nCollection } from '@/lib/i18n-collection'
 import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
 import { mimeTypes } from '@/config/file-upload-mime'
 

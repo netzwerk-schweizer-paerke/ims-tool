@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { I18nCollection } from '@/lib/i18nCollection'
+import { I18nCollection } from '@/lib/i18n-collection'
 import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
 import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
 import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'

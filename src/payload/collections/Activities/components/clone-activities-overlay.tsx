@@ -9,7 +9,7 @@ import {
   useTranslation,
 } from '@payloadcms/ui'
 import React, { useMemo } from 'react'
-import { I18nCollection } from '@/lib/i18nCollection'
+import { I18nCollection } from '@/lib/i18n-collection'
 import {
   baseClass,
   drawerSlug,

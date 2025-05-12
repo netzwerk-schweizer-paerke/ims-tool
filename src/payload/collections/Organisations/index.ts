@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload'
-import { I18nCollection } from '@/lib/i18nCollection'
+import { I18nCollection } from '@/lib/i18n-collection'
 import { superAdmins } from '@/payload/access/superAdmins'
 import { organisationAdmins } from '@/payload/collections/Organisations/access/organisationAdmins'
 import { createdByField } from '@/payload/fields/created-by'

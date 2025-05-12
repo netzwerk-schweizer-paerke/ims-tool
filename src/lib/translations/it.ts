@@ -1,66 +1,68 @@
 export const it = {
   admin: {
     links: {
-      dashboard: 'Dashboard',
-      activityLandscape: 'Activity Landscape',
-      title: 'Links',
+      dashboard: 'Pannello di controllo',
+      activityLandscape: 'Panorama delle attività',
+      title: 'Collegamenti',
     },
     selectOrganisations: {
-      title: 'Choose active organisation',
-      orgLanguageMismatch: 'Organisation language does not match selected content language',
+      title: 'Scegli organizzazione attiva',
+      orgLanguageMismatch: 'La lingua dell\'organizzazione non corrisponde alla lingua del contenuto selezionata',
     },
   },
   activityLandscape: {
-    title: 'Activity Landscape',
-    blockHasNoName: 'Block has no name',
-    noBlocks: 'No blocks',
+    title: 'Panorama delle attività',
+    blockHasNoName: 'Il blocco non ha un nome',
+    noBlocks: 'Nessun blocco',
+    noContent: 'Nessuna attività o processo definito. Creane alcuni prima.',
   },
   activityBlock: {
-    title: 'Activity Block',
+    title: 'Blocco di attività',
     input: {
       title: 'Input',
     },
     tasks: {
-      title: 'Tasks',
-      noTasks: 'No tasks defined',
+      title: 'Compiti',
+      noTasks: 'Nessun compito definito',
     },
     output: {
       title: 'Output',
     },
     flows: {
-      title: 'Flows',
-      noFlows: 'No process flows defined',
+      title: 'Flussi',
+      noFlows: 'Nessun flusso di processo definito',
     },
     infos: {
-      norms: 'Norms',
-      support: 'Support',
+      norms: 'Norme',
+      support: 'Supporto',
     },
   },
   flowBlock: {
-    title: 'Flow',
+    title: 'Flusso',
     table: {
-      keypoints: 'Key Points',
-      tools: 'Tools',
-      responsibility: 'Responsibility',
+      keypoints: 'Punti chiave',
+      tools: 'Strumenti',
+      responsibility: 'Responsabilità',
     },
   },
   listBlock: {
-    title: 'List',
+    title: 'Lista',
     table: {
-      keypoints: 'Key Points',
-      tools: 'Tools',
-      responsibility: 'Responsibility',
+      keypoints: 'Punti chiave',
+      tools: 'Strumenti',
+      responsibility: 'Responsabilità',
     },
   },
   common: {
-    back: 'Back',
-    edit: 'Edit',
-    delete: 'Delete',
-    noContentDefined: 'No content defined',
-    lastUpdated: 'Last updated',
+    back: 'Indietro',
+    edit: 'Modifica',
+    delete: 'Elimina',
+    noContentDefined: 'Nessun contenuto definito',
+    continue: 'Continua',
+    lastUpdated: 'Ultimo aggiornamento',
     boolean: {
-      true: 'True',
-      false: 'False',
+      true: 'Vero',
+      false: 'Falso',
     },
   },
 }

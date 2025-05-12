@@ -1,4 +1,4 @@
-import { I18nCollection } from '@/lib/i18nCollection'
+import { I18nCollection } from '@/lib/i18n-collection'
 import { Field } from 'payload'
 
 export const filesArrayField: Field = {
