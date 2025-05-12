@@ -1,6 +1,7 @@
 import type { Access } from 'payload'
 
-import { isAdmin } from '@/payload/utilities/is-admin'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /**
@@ -29,7 +30,7 @@ export const currentOrganisationCollectionAccess: Access = ({ req: { user }, dat
   }
 
   // Case 2: User is an admin without a selected organization
-  if (!userLastLoggedInOrgId && isAdmin(user)) {
+  if (!userLastLoggedInOrgId && checkUserRoles([ROLE_SUPER_ADMIN], user)) {
     return true
   }
 

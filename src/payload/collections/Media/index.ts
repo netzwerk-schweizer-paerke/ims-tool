@@ -4,7 +4,7 @@ import { currentOrganisationCollectionAccess } from '@/payload/collections/acces
 import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
 import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
-import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload'
+import { assignOrgToUploadBeforeChangeHook } from '@/payload/collections/hooks/assign-org-to-upload-before-change-hook'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -20,7 +20,7 @@ export const Media: CollectionConfig = {
     delete: organisationAdminsCollectionAccess,
   },
   hooks: {
-    beforeChange: [assignOrgToUpload],
+    beforeChange: [assignOrgToUploadBeforeChangeHook],
   },
   upload: {
     imageSizes: [

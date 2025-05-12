@@ -1,13 +1,13 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18nCollection'
-import { collectionAccessAdminAndSelf } from '@/payload/collections/Users/access/collectionAccessAdminAndSelf'
 import { anyone } from '@/payload/access/anyone'
-import { loginAfterCreate } from '@/payload/collections/Users/hooks/loginAfterCreate'
-import { recordSelectedOrganisation } from '@/payload/collections/Users/hooks/recordSelectedOrganisation'
+import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
+import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
 import { superAdminFieldAccess } from '@/payload/access/superAdmins'
-import { organisationAdmins } from '@/payload/collections/Users/access/organisationAdmins'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
-import { fieldAccessAdminAndSelf } from '@/payload/collections/Users/access/fieldAccessAdminAndSelf'
+import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
+import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
+import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -21,15 +21,15 @@ export const Users: CollectionConfig = {
     },
   },
   access: {
-    read: collectionAccessAdminAndSelf,
+    read: adminAndSelfCollectionAccess,
     create: anyone,
-    update: collectionAccessAdminAndSelf,
-    delete: collectionAccessAdminAndSelf,
+    update: adminAndSelfCollectionAccess,
+    delete: adminAndSelfCollectionAccess,
     // admin: isSuperOrOrganisationAdmin,
   },
   hooks: {
-    afterChange: [loginAfterCreate],
-    afterLogin: [recordSelectedOrganisation],
+    afterChange: [loginAfterCreateUserAfterChangeHook],
+    afterLogin: [recordSelectedOrganisationAfterLoginHook],
   },
   fields: [
     {
@@ -74,9 +74,9 @@ export const Users: CollectionConfig = {
       label: 'Organisations',
       interfaceName: 'UserOrganisations',
       access: {
-        create: organisationAdmins,
-        update: organisationAdmins,
-        // read: organisationAdmins,
+        create: organisationAdminFieldAccess,
+        update: organisationAdminFieldAccess,
+        // read: organisationAdminFieldAccess,
       },
       fields: [
         {
@@ -110,8 +110,8 @@ export const Users: CollectionConfig = {
       index: true,
       access: {
         create: () => false,
-        read: organisationAdmins,
-        update: fieldAccessAdminAndSelf,
+        read: organisationAdminFieldAccess,
+        update: adminAndSelfFieldAccess,
       },
       admin: {
         position: 'sidebar',

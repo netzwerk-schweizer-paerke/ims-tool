@@ -3,7 +3,7 @@ import { I18nCollection } from '@/lib/i18nCollection'
 import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
 import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
-import { assignOrgToUpload } from '@/payload/collections/hooks/assignOrgToUpload'
+import { assignOrgToUploadBeforeChangeHook } from '@/payload/collections/hooks/assign-org-to-upload-before-change-hook'
 import { mimeTypes } from '@/config/file-upload-mime'
 
 export const Documents: CollectionConfig = {
@@ -19,7 +19,7 @@ export const Documents: CollectionConfig = {
     delete: organisationAdminsCollectionAccess,
   },
   hooks: {
-    beforeChange: [assignOrgToUpload],
+    beforeChange: [assignOrgToUploadBeforeChangeHook],
   },
   upload: {
     mimeTypes,

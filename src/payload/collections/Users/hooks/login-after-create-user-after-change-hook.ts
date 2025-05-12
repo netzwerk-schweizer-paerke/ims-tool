@@ -1,6 +1,6 @@
 import { CollectionAfterChangeHook } from 'payload'
 
-export const loginAfterCreate: CollectionAfterChangeHook = async ({
+export const loginAfterCreateUserAfterChangeHook: CollectionAfterChangeHook = async ({
   doc,
   req,
   req: { payload, body = {} },

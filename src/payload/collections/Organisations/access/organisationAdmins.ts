@@ -1,14 +1,13 @@
 import type { Access } from 'payload'
-
-import { isAdmin } from '@/payload/utilities/is-admin'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { logger } from '@/lib/logger'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 
 // the user must be an admin of the organisation being accessed
 export const organisationAdmins: Access = ({ req: { user } }) => {
-  if (isAdmin(user)) {
-    logger.debug(`🔒organisationAdmins: ${isAdmin(user)}`)
+  const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
+
+  if (isSuperAdmin) {
     return true
   }
 
