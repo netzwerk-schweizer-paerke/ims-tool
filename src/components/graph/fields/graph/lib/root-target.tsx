@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, memo } from 'react'
 
 type Props = PropsWithChildren & {
   id: string | null | undefined
@@ -9,7 +9,8 @@ export const RootTargetName = 'root-target'
 export const RootTargetLeftName = 'root-target-left'
 export const RootTargetRightName = 'root-target-right'
 
-export const RootTarget: React.FC<Props> = ({ children, id, comboTarget = false }) => {
+// Define the component
+const RootTargetComponent: React.FC<Props> = ({ children, id, comboTarget = false }) => {
   if (!id) {
     throw new Error('RootTarget requires an id prop')
   }
@@ -33,3 +34,6 @@ export const RootTarget: React.FC<Props> = ({ children, id, comboTarget = false 
     </div>
   )
 }
+
+// Export the memoized component
+export const RootTarget = memo(RootTargetComponent)

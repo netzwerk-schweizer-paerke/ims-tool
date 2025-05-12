@@ -1,10 +1,13 @@
+import { memo } from 'react'
+
 type Props = {
   children?: React.ReactNode
   onClick: () => void
   className?: string
 }
 
-export const NodeButton: React.FC<Props> = ({ children, onClick, className }) => {
+// Define the component
+const NodeButtonComponent: React.FC<Props> = ({ children, onClick, className }) => {
   return (
     <button
       type={'button'}
@@ -14,3 +17,6 @@ export const NodeButton: React.FC<Props> = ({ children, onClick, className }) =>
     </button>
   )
 }
+
+// Export the memoized component
+export const NodeButton = memo(NodeButtonComponent)

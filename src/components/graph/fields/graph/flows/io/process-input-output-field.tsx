@@ -9,8 +9,9 @@ import { processIoConnections } from '@/components/graph/fields/graph/flows/io/c
 import { Xwrapper } from '@/lib/xarrows/src'
 import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useField } from '@payloadcms/ui'
+import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 
 type ComponentState = {
   enabled: boolean
@@ -36,39 +37,52 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
     field: { required },
   } = props
 
-  const memoizedValidate: any = useCallback(
+  const memoizedValidate = useCallback(
     (value: any, options: any) => {
       if (typeof validate === 'function') {
         return validate(value, { ...options, required })
       }
+      return true // Validation passes when no validate function is provided
     },
     [validate, required],
   )
 
   const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
 
+  // Use the centralized text field hook instead of local implementation
+  const { localText, handleTextChange } = useTextField(value, setValue)
+
+  // Initialize state once
   useEffect(() => {
     if (!value) {
       setValue(initialState)
     }
   }, [setValue, value])
 
-  const setText = (text: string) => {
-    setValue({ ...value, text })
-  }
-
+  // Memoize arrow hook to prevent recreation
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state: value,
     setState: setValue,
     connections: processIoConnections,
   })
 
-  const toggleEnabled = () => {
-    setValue({ ...value, enabled: !value.enabled })
-  }
+  // Memoize toggleEnabled handler
+  const handleToggleEnabled = useCallback(() => {
+    if (value) {
+      setValue({ ...value, enabled: !value.enabled })
+    }
+  }, [value, setValue])
+
+  // Memoize button click handlers
+  const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
+
+  // Memoize arrows rendering to prevent recalculation
+  const arrowsContent = useMemo(() => {
+    return isLoaded ? renderArrows() : null
+  }, [isLoaded, renderArrows])
 
   return (
-    <div ref={ref} className={'process-task-io-block relative h-full'}>
+    <div ref={ref}>
       <Xwrapper>
         <BlockTaskWrapper>
           {value?.enabled && (
@@ -79,18 +93,18 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
                     className={
                       'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
                     }
-                    onChange={(e) => setText(e.target.value)}
-                    value={value?.text}
+                    onChange={(e) => handleTextChange(e.target.value)}
+                    value={localText}
                   />
-                  <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
+                  <ButtonCenterRight onClickFn={handleRightClick} />
                 </IOShapeWrapper>
               </RootTarget>
               <OuterTargets id={arrowSetId} />
-              <div className={'x-arrows'}>{isLoaded && renderArrows()}</div>
+              <div className={'x-arrows'}>{arrowsContent}</div>
             </>
           )}
-          <div className={'absolute right-1/2 top-0 translate-x-1/2'}>
-            <ToggleSwitch checked={value?.enabled} onChange={toggleEnabled} />
+          <div className="absolute bottom-16 w-full text-center">
+            <ToggleSwitch checked={value?.enabled} onChange={handleToggleEnabled} />
           </div>
         </BlockTaskWrapper>
       </Xwrapper>

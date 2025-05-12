@@ -1,10 +1,12 @@
+import { memo } from 'react'
 import { NodeButton } from '@/components/graph/fields/graph/components/node-button'
 
 type Props = {
   onClickFn: () => void
 }
 
-export const ButtonCenterRight: React.FC<Props> = ({ onClickFn }) => {
+// Define the component
+const ButtonCenterRightComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
       id={'inner-center-right'}
@@ -15,7 +17,8 @@ export const ButtonCenterRight: React.FC<Props> = ({ onClickFn }) => {
   )
 }
 
-export const ButtonBottomCenter: React.FC<Props> = ({ onClickFn }) => {
+// Define the component
+const ButtonBottomCenterComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
       id={'inner-bottom-center'}
@@ -26,7 +29,8 @@ export const ButtonBottomCenter: React.FC<Props> = ({ onClickFn }) => {
   )
 }
 
-export const ButtonCenterLeft: React.FC<Props> = ({ onClickFn }) => {
+// Define the component
+const ButtonCenterLeftComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
       id={'inner-center-left'}
@@ -37,7 +41,8 @@ export const ButtonCenterLeft: React.FC<Props> = ({ onClickFn }) => {
   )
 }
 
-export const ButtonTopCenter: React.FC<Props> = ({ onClickFn }) => {
+// Define the component
+const ButtonTopCenterComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
       id={'inner-top-center'}
@@ -47,3 +52,9 @@ export const ButtonTopCenter: React.FC<Props> = ({ onClickFn }) => {
     </div>
   )
 }
+
+// Export memoized components
+export const ButtonCenterRight = memo(ButtonCenterRightComponent)
+export const ButtonBottomCenter = memo(ButtonBottomCenterComponent) 
+export const ButtonCenterLeft = memo(ButtonCenterLeftComponent)
+export const ButtonTopCenter = memo(ButtonTopCenterComponent)

@@ -11,9 +11,10 @@ import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hook
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { Xwrapper } from '@/lib/xarrows/src'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useField } from '@payloadcms/ui'
 import { processTaskConnections } from '@/components/graph/fields/graph/flows/task/connection-definitions'
+import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -45,16 +46,20 @@ export const ProcessTaskField: JSONFieldClientComponent = (props) => {
     field: { required },
   } = props
 
-  const memoizedValidate: any = useCallback(
+  const memoizedValidate = useCallback(
     (value: any, options: any) => {
       if (typeof validate === 'function') {
         return validate(value, { ...options, required })
       }
+      return true // Validation passes when no validate function is provided
     },
     [validate, required],
   )
 
   const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+
+  // Use the centralized text field hook instead of local implementation
+  const { localText, handleTextChange } = useTextField(value, setValue)
 
   useEffect(() => {
     if (!value) {
@@ -62,15 +67,25 @@ export const ProcessTaskField: JSONFieldClientComponent = (props) => {
     }
   }, [setValue, value])
 
-  const setText = (text: string) => {
-    setValue({ ...value, text })
-  }
-
+  // Memoize arrow hook to prevent recreation
   const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
     state: value,
     setState: setValue,
     connections: processTaskConnections,
   })
+
+  // Memoize button click handlers
+  const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
+  const handleBottomClick = useCallback(
+    () => toggleConnectionType('bottom'),
+    [toggleConnectionType],
+  )
+  const handleTopClick = useCallback(() => toggleConnectionType('top'), [toggleConnectionType])
+
+  // Memoize arrows rendering to prevent recalculation
+  const arrowsContent = useMemo(() => {
+    return isLoaded ? renderArrows() : null
+  }, [isLoaded, renderArrows])
 
   return (
     <div ref={ref} className={'process-task-parallel-block relative h-full'}>
@@ -82,16 +97,16 @@ export const ProcessTaskField: JSONFieldClientComponent = (props) => {
                 className={
                   'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
                 }
-                onChange={(e) => setText(e.target.value)}
-                value={value?.text}
+                onChange={(e) => handleTextChange(e.target.value)}
+                value={localText}
               />
-              <ButtonCenterRight onClickFn={() => toggleConnectionType('right')} />
-              <ButtonBottomCenter onClickFn={() => toggleConnectionType('bottom')} />
-              <ButtonTopCenter onClickFn={() => toggleConnectionType('top')} />
+              <ButtonCenterRight onClickFn={handleRightClick} />
+              <ButtonBottomCenter onClickFn={handleBottomClick} />
+              <ButtonTopCenter onClickFn={handleTopClick} />
             </TaskShapeWrapper>
           </RootTarget>
           <OuterTargets id={arrowSetId} />
-          <div className={'x-arrows'}>{isLoaded && renderArrows()}</div>
+          <div className={'x-arrows'}>{arrowsContent}</div>
         </BlockTaskWrapper>
       </Xwrapper>
     </div>

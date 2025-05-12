@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 type Props = {
   id: string
 }
@@ -28,7 +30,8 @@ export enum OuterTargetsEnum {
   TOP_CENTER = 'top-center',
 }
 
-export const OuterTargets: React.FC<Props> = ({ id }) => {
+// Define the component
+const OuterTargetsComponent: React.FC<Props> = ({ id }) => {
   const debug = false
   const debugClass = debug ? 'bg-red-400' : ''
   const style = { width: '2px', height: '2px' }
@@ -78,3 +81,6 @@ export const OuterTargets: React.FC<Props> = ({ id }) => {
     </>
   )
 }
+
+// Export the memoized component
+export const OuterTargets = memo(OuterTargetsComponent)
