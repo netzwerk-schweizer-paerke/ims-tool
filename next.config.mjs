@@ -5,6 +5,7 @@ const nextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
+  output: 'standalone',
   experimental: {
     serverSourceMaps: false,
     webpackMemoryOptimizations: true,
