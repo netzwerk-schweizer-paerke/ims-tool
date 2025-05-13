@@ -1,13 +1,13 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
-import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
-import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output'
 import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel'
+import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
+import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
@@ -21,10 +21,10 @@ export const TaskFlows: CollectionConfig = {
     singular: I18nCollection.fieldLabel.taskFlow,
   },
   access: {
-    read: currentOrganisationCollectionAccess,
-    create: organisationAdminsCollectionAccess,
-    update: organisationAdminsCollectionAccess,
-    delete: organisationAdminsCollectionAccess,
+    read: currentOrganisationCollectionReadAccess,
+    create: currentOrganisationCollectionWriteAccess,
+    update: currentOrganisationCollectionWriteAccess,
+    delete: currentOrganisationCollectionWriteAccess,
   },
   fields: [
     {

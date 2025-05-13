@@ -1,10 +1,10 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
-import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
-import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { filesArrayField } from '@/payload/fields/files-array'
+import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
+import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 
 export const TaskLists: CollectionConfig = {
   slug: 'task-lists',
@@ -18,10 +18,10 @@ export const TaskLists: CollectionConfig = {
     singular: I18nCollection.fieldLabel.taskList,
   },
   access: {
-    read: currentOrganisationCollectionAccess,
-    create: organisationAdminsCollectionAccess,
-    update: organisationAdminsCollectionAccess,
-    delete: organisationAdminsCollectionAccess,
+    read: currentOrganisationCollectionReadAccess,
+    create: currentOrganisationCollectionWriteAccess,
+    update: currentOrganisationCollectionWriteAccess,
+    delete: currentOrganisationCollectionWriteAccess,
   },
   fields: [
     {

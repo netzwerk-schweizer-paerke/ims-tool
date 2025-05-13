@@ -30,13 +30,21 @@ type Roles = NonEmptyUserOrganisations[0]['roles']
 export const checkOrganisationRoles = (
   requiredRoles: Roles = [],
   user: User | null,
-  organisationId: number,
+  organisationId: number | string | null,
 ): boolean => {
   // Safety check: If no user or no required roles, return false immediately
   if (!user) {
     logger.debug('checkOrganisationRoles: No user provided', {
       requiredRoles,
       organisationId,
+    })
+    return false
+  }
+
+  if (!organisationId || typeof organisationId !== 'number') {
+    logger.debug('checkOrganisationRoles: No organisationId provided', {
+      userId: user.id,
+      requiredRoles,
     })
     return false
   }

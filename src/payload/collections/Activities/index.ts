@@ -1,13 +1,13 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
-import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
-import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
+import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
 import { filesArrayField } from '@/payload/fields/files-array'
-import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone-activity'
+import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone-activity/clone-activity'
+import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
@@ -28,10 +28,10 @@ export const Activities: CollectionConfig = {
     singular: I18nCollection.fieldLabel.activity,
   },
   access: {
-    read: currentOrganisationCollectionAccess,
-    create: organisationAdminsCollectionAccess,
-    update: organisationAdminsCollectionAccess,
-    delete: organisationAdminsCollectionAccess,
+    read: currentOrganisationCollectionReadAccess,
+    create: currentOrganisationCollectionWriteAccess,
+    update: currentOrganisationCollectionWriteAccess,
+    delete: currentOrganisationCollectionWriteAccess,
   },
   fields: [
     {

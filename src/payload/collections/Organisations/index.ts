@@ -1,7 +1,7 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
 import { superAdmins } from '@/payload/access/superAdmins'
-import { organisationAdmins } from '@/payload/collections/Organisations/access/organisationAdmins'
+import { organisationCollectionReadAccess } from '@/payload/collections/Organisations/access/organisation-collection-read-access'
 import { createdByField } from '@/payload/fields/created-by'
 import { updatedByField } from '@/payload/fields/updated-by'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
@@ -22,8 +22,8 @@ export const Organisations: CollectionConfig = {
   },
   access: {
     create: superAdmins,
-    read: organisationAdmins,
-    update: organisationAdmins,
+    read: organisationCollectionReadAccess,
+    update: organisationCollectionReadAccess,
     delete: superAdmins,
   },
   fields: [

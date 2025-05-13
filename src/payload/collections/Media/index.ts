@@ -1,10 +1,9 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
-import { currentOrganisationCollectionAccess } from '@/payload/collections/access/current-organisation-collection-access'
-import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
-import { organisationAdminsCollectionAccess } from '@/payload/collections/access/organisation-admin-collection-access'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { assignOrgToUploadBeforeChangeHook } from '@/payload/collections/hooks/assign-org-to-upload-before-change-hook'
+import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
+import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -14,10 +13,10 @@ export const Media: CollectionConfig = {
     hidden: true,
   },
   access: {
-    read: currentOrganisationCollectionAccess,
-    create: authenticatedCollectionAccess,
-    update: organisationAdminsCollectionAccess,
-    delete: organisationAdminsCollectionAccess,
+    read: currentOrganisationCollectionReadAccess,
+    create: currentOrganisationCollectionWriteAccess,
+    update: currentOrganisationCollectionWriteAccess,
+    delete: currentOrganisationCollectionWriteAccess,
   },
   hooks: {
     beforeChange: [assignOrgToUploadBeforeChangeHook],

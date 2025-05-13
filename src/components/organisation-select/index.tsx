@@ -6,6 +6,9 @@ import { UserOrganisationSelect } from '@/components/organisation-select/dropdow
 import { Translate } from '@/lib/translate'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
+import { redirect, RedirectType } from 'next/navigation'
 
 export const OrganisationSelect: React.FC = async () => {
   const headers = await getHeaders()
@@ -19,7 +22,7 @@ export const OrganisationSelect: React.FC = async () => {
     depth: 0,
   })
 
-  const userOrganisations = compact(
+  let userOrganisations = compact(
     user?.organisations?.map((userOrg) => {
       if (!userOrg) return
 
@@ -31,12 +34,28 @@ export const OrganisationSelect: React.FC = async () => {
     }),
   )
 
+  // if the user is a super admin, show all organisations
+  if (checkUserRoles([ROLE_SUPER_ADMIN], user)) {
+    userOrganisations = organisations.docs
+  }
+
   const selectedOrg = userOrganisations.find(
     (org) => org.id === getIdFromRelation(user?.selectedOrganisation),
   )
 
-  if (!userOrganisations || userOrganisations.length < 2) {
+  if (!userOrganisations) {
     return null
+  }
+
+  if (!selectedOrg && userOrganisations.length > 0 && user) {
+    await client.update({
+      collection: 'users',
+      id: user?.id,
+      data: {
+        selectedOrganisation: userOrganisations[0].id,
+      },
+    })
+    redirect('/admin', RedirectType.replace)
   }
 
   return (

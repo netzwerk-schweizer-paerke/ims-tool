@@ -8,12 +8,10 @@ import {
   isTaskFlow,
   isTaskList,
 } from '@/payload/assertions'
-import { Activity, ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
-import {
-  createTaskFlow,
-  createTaskList,
-  strippedEntry,
-} from '@/payload/collections/Activities/endpoints/strippedEntry'
+import { ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
+import { createTaskFlow } from '@/payload/collections/Activities/endpoints/clone-activity/utils/create-task-flow'
+import { createTaskList } from '@/payload/collections/Activities/endpoints/clone-activity/utils/create-task-list'
+import { stripActivity } from '@/payload/collections/Activities/endpoints/clone-activity/utils/strip-activity'
 
 type SetPlacePayload = {
   params: {
@@ -44,6 +42,7 @@ export const cloneActivity: Endpoint = {
       collection: 'activities',
       id: activityId,
       locale: locale as any,
+      depth: 50,
     })
 
     if (!sourceActivity) {
@@ -52,7 +51,7 @@ export const cloneActivity: Endpoint = {
 
     req.payload.logger.debug({ msg: 'source activity found', sourceActivity: sourceActivity.id })
 
-    const strippedActivity = strippedEntry<Activity>(sourceActivity, orgId)
+    const strippedActivity = stripActivity(sourceActivity, orgId)
 
     // Clone the activity
     const clonedActivity = await req.payload.create({
