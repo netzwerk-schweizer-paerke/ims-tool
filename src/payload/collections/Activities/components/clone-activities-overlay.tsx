@@ -8,7 +8,7 @@ import {
   useModal,
   useTranslation,
 } from '@payloadcms/ui'
-import React, { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { I18nCollection } from '@/lib/i18n-collection'
 import {
   baseClass,
@@ -46,12 +46,12 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
   const locale = useLocale()
   const { t } = useTranslation()
   const isOpen = isModalOpen(drawerSlug)
-  const [formState, setFormState] = React.useState<Record<string, boolean>>({})
-  const [selectedOption, setSelectedOption] = React.useState<
+  const [formState, setFormState] = useState<Record<string, boolean>>({})
+  const [selectedOption, setSelectedOption] = useState<
     { label: string; value: number } | undefined
   >()
-  const [cloning, setCloning] = React.useState(false)
-  const [status, setStatus] = React.useState<'error' | 'success' | ''>('')
+  const [cloning, setCloning] = useState(false)
+  const [status, setStatus] = useState<'error' | 'success' | ''>('')
 
   const availableOptions = useMemo(() => {
     if (!isOpen) return []

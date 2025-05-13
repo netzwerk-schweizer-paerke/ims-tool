@@ -1,14 +1,15 @@
 import React from 'react'
-import { payload } from '@/lib/payload'
 import { headers as getHeaders } from 'next/headers'
 import { compact } from 'lodash-es'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { UserOrganisationSelect } from '@/components/organisation-select/dropdown'
 import { Translate } from '@/lib/translate'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
 export const OrganisationSelect: React.FC = async () => {
   const headers = await getHeaders()
-  const client = await payload()
+  const client = await getPayload({ config })
 
   const { user } = await client.auth({ headers })
 

@@ -1,4 +1,3 @@
-import React from 'react'
 import { DrawerToggler } from '@payloadcms/ui'
 import { CloneActivitiesOverlay } from '@/payload/collections/Activities/components/clone-activities-overlay'
 import { User } from '@/payload-types'
