@@ -7,7 +7,11 @@ export const it = {
     },
     selectOrganisations: {
       title: 'Scegli organizzazione attiva',
-      orgLanguageMismatch: 'La lingua dell\'organizzazione non corrisponde alla lingua del contenuto selezionata',
+      orgLanguageMismatch:
+        'Si prega di notare che attualmente si stanno modificando contenuti non nella lingua dell\'organizzazione.',
+      noOrganisations:
+        'Nessuna organizzazione è stata assegnata al tuo utente. Contatta un amministratore.',
+      reset: 'Ripristina la lingua predefinita',
     },
   },
   activityLandscape: {

@@ -8,7 +8,10 @@ export const de = {
     selectOrganisations: {
       title: 'Organisation auswählen',
       orgLanguageMismatch:
-        'Organisationssprache stimmt nicht mit der gewählten Inhaltssprache überein',
+        'Bitte beachten Sie, dass Sie aktuell Inhalte nicht in der Organisationssprache bearbeiten.',
+      noOrganisations:
+        'Ihrem Benutzer wurden keine Organisationen zugewiesen. Bitte wenden Sie sich an Ihren Administrator.',
+      reset: 'Standardsprache wählen',
     },
   },
   activityLandscape: {

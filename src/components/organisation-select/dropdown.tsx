@@ -89,7 +89,7 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
             onClick={() => setLanguageParam(selectedOrg)}
             type={'button'}
             className={'btn btn--style-pill btn--size-small my-2'}>
-            Reset
+            <Translate k={'admin:selectOrganisations:reset'} />
           </button>
         </div>
       )}

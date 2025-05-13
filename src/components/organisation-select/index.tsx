@@ -16,6 +16,8 @@ export const OrganisationSelect: React.FC = async () => {
 
   const { user } = await client.auth({ headers })
 
+  const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
+
   const organisations = await client.find({
     collection: 'organisations',
     limit: 100,
@@ -35,7 +37,7 @@ export const OrganisationSelect: React.FC = async () => {
   )
 
   // if the user is a super admin, show all organisations
-  if (checkUserRoles([ROLE_SUPER_ADMIN], user)) {
+  if (isSuperAdmin) {
     userOrganisations = organisations.docs
   }
 
@@ -56,6 +58,18 @@ export const OrganisationSelect: React.FC = async () => {
       },
     })
     redirect('/admin', RedirectType.replace)
+  }
+
+  if (!isSuperAdmin && user?.organisations?.length === 0) {
+    return (
+      <div className={'field-type mb-8 w-full'}>
+        <div className={'rounded-lg border px-3 py-2'}>
+          <p>
+            <Translate k={'admin:selectOrganisations:noOrganisations'} />
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

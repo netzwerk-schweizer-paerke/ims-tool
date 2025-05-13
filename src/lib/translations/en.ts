@@ -7,7 +7,11 @@ export const en = {
     },
     selectOrganisations: {
       title: 'Choose active organisation',
-      orgLanguageMismatch: 'Organisation language does not match selected content language',
+      orgLanguageMismatch:
+        'Please note that you are currently editing content not in the organisation language.',
+      noOrganisations:
+        'No organisations have been assigned to you. Please contact an administrator.',
+      reset: 'Reset to default language',
     },
   },
   activityLandscape: {
