@@ -5,7 +5,8 @@ import { User } from '@/payload-types'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { logger } from '@/lib/logger'
 
-export const superAdmins: Access = ({ req: { user } }) => checkUserRoles([ROLE_SUPER_ADMIN], user)
+export const superAdminsCollectionAccess: Access = ({ req: { user } }) =>
+  checkUserRoles([ROLE_SUPER_ADMIN], user)
 
 export const superAdminFieldAccess: FieldAccess<User> = ({ req: { user, payload } }) => {
   const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)

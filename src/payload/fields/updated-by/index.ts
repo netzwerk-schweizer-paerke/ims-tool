@@ -1,6 +1,6 @@
 import type { Field } from 'payload'
 
-import { superAdminFieldAccess } from '../../access/superAdmins'
+import { superAdminFieldAccess } from '../../access/super-admins-collection-access'
 import { beforeChangeHook } from './hooks/before-change-hook'
 import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
 
