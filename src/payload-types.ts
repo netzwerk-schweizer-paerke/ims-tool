@@ -710,6 +710,7 @@ export interface Document {
   id: number;
   name?: string | null;
   description?: string | null;
+  itemType?: string | null;
   /**
    * The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.
    */
@@ -936,6 +937,7 @@ export interface ActivityTaskBlock {
 export interface DocumentsPublic {
   id: number;
   description?: string | null;
+  itemType?: string | null;
   prefix?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1195,6 +1197,7 @@ export interface ActivityTaskBlockSelect<T extends boolean = true> {
 export interface DocumentsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  itemType?: T;
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
@@ -1217,6 +1220,7 @@ export interface DocumentsSelect<T extends boolean = true> {
  */
 export interface DocumentsPublicSelect<T extends boolean = true> {
   description?: T;
+  itemType?: T;
   prefix?: T;
   updatedAt?: T;
   createdAt?: T;

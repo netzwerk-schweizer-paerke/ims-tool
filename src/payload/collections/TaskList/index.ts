@@ -11,7 +11,7 @@ export const TaskLists: CollectionConfig = {
   admin: {
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
-    hideAPIURL: true,
+    // hideAPIURL: true,
   },
   labels: {
     plural: I18nCollection.fieldLabel.taskLists,

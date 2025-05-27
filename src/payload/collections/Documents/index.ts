@@ -13,7 +13,18 @@ export const Documents: CollectionConfig = {
     group: I18nCollection.collectionGroup.files,
   },
   access: {
-    read: currentOrganisationCollectionReadAccess,
+    read: async (args) => {
+      const hasCollectionAccess = await currentOrganisationCollectionReadAccess(args)
+      const {
+        req: { headers, host },
+      } = args
+      const internalAccess = headers.has('X-Payload-Request') && host === 'localhost:3000'
+      if (internalAccess) {
+        return true
+      } else {
+        return hasCollectionAccess
+      }
+    },
     create: currentOrganisationCollectionWriteAccess,
     update: currentOrganisationCollectionWriteAccess,
     delete: currentOrganisationCollectionWriteAccess,
@@ -36,6 +47,12 @@ export const Documents: CollectionConfig = {
       label: I18nCollection.fieldLabel.description,
       localized: true,
       type: 'textarea',
+    },
+    {
+      name: 'itemType',
+      type: 'text',
+      virtual: true,
+      defaultValue: 'documents',
     },
     adminSettingsField({ sidebar: true }),
   ],

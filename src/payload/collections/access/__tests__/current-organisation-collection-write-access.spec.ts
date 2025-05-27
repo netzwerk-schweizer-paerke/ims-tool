@@ -14,7 +14,7 @@ describe('currentOrganisationCollectionWriteAccess', () => {
   // Test data
   const mockOrgId = mockOrganisations.org1.id
   const mockPayload = {
-    find: jest.fn(),
+    findByID: jest.fn(),
     logger: { debug: jest.fn() },
   }
 
@@ -24,12 +24,15 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     jest.mocked(checkUserRoles).mockReset()
     jest.mocked(checkOrganisationRoles).mockReset()
     jest.mocked(getIdFromRelation).mockReset()
-    mockPayload.find.mockReset()
+    mockPayload.findByID.mockReset()
   })
 
-  test('should grant access when user is a super admin', async () => {
+  test('should grant access when user is a system super admin', async () => {
     // Setup mocks
+    jest.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
     jest.mocked(checkUserRoles).mockReturnValue(true)
+    jest.mocked(checkOrganisationRoles).mockReturnValue(false)
+    mockPayload.findByID.mockResolvedValue(mockOrganisations.org1)
 
     // Call function with test data
     const result = await currentOrganisationCollectionWriteAccess({
@@ -40,15 +43,21 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     } as any)
 
     // Assertions
+    expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.admin.selectedOrganisation)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUsers.admin)
-    expect(result).toBe(true)
-    // Should not query for organization since user is super admin
-    expect(mockPayload.find).not.toHaveBeenCalled()
+    expect(mockPayload.findByID).toHaveBeenCalledWith({
+      collection: 'organisations',
+      id: mockOrgId,
+    })
+    expect(result).toEqual({
+      organisation: {
+        equals: mockOrgId,
+      },
+    })
   })
 
   test('should return false when user has no selected organization', async () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
     jest.mocked(getIdFromRelation).mockReturnValue(null)
 
     // Call function with test data
@@ -60,17 +69,18 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     } as any)
 
     // Assertions
-    expect(getIdFromRelation).toHaveBeenCalledWith(null) // regularUser has no selectedOrganisation in this context
+    expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.regularUser.selectedOrganisation)
     expect(result).toBe(false)
     // Should not query for organization since userLastLoggedInOrgId is null
-    expect(mockPayload.find).not.toHaveBeenCalled()
+    expect(mockPayload.findByID).not.toHaveBeenCalled()
   })
 
   test('should return false when selected organization does not exist', async () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
     jest.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
-    mockPayload.find.mockResolvedValue({ docs: [] }) // Empty result = org not found
+    jest.mocked(checkUserRoles).mockReturnValue(false)
+    jest.mocked(checkOrganisationRoles).mockReturnValue(false)
+    mockPayload.findByID.mockResolvedValue(null) // Org not found
 
     // Call function with test data
     const result = await currentOrganisationCollectionWriteAccess({
@@ -82,25 +92,19 @@ describe('currentOrganisationCollectionWriteAccess', () => {
 
     // Assertions
     expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.userWithOrg1.selectedOrganisation)
-    expect(mockPayload.find).toHaveBeenCalledWith({
+    expect(mockPayload.findByID).toHaveBeenCalledWith({
       collection: 'organisations',
-      where: {
-        id: {
-          equals: mockOrgId,
-        },
-      },
+      id: mockOrgId,
     })
     expect(result).toBe(false)
   })
 
-  test('should check organization roles when organization exists', async () => {
+  test('should grant access when user is organization super admin', async () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
     jest.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
-    jest.mocked(checkOrganisationRoles).mockReturnValue(true) // User has admin role in org
-    mockPayload.find.mockResolvedValue({
-      docs: [mockOrganisations.org1],
-    })
+    jest.mocked(checkUserRoles).mockReturnValue(false) // Not a system super admin
+    jest.mocked(checkOrganisationRoles).mockReturnValue(true) // User has super admin role in org
+    mockPayload.findByID.mockResolvedValue(mockOrganisations.org1)
 
     // Call function with test data
     const result = await currentOrganisationCollectionWriteAccess({
@@ -112,30 +116,28 @@ describe('currentOrganisationCollectionWriteAccess', () => {
 
     // Assertions
     expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.userWithOrg1.selectedOrganisation)
-    expect(mockPayload.find).toHaveBeenCalledWith({
+    expect(mockPayload.findByID).toHaveBeenCalledWith({
       collection: 'organisations',
-      where: {
-        id: {
-          equals: mockOrgId,
-        },
-      },
+      id: mockOrgId,
     })
     expect(checkOrganisationRoles).toHaveBeenCalledWith(
       [ROLE_SUPER_ADMIN],
       mockUsers.userWithOrg1,
       mockOrgId,
     )
-    expect(result).toBe(true)
+    expect(result).toEqual({
+      organisation: {
+        equals: mockOrgId,
+      },
+    })
   })
 
   test('should return false when user is not an admin in the organization', async () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
     jest.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
+    jest.mocked(checkUserRoles).mockReturnValue(false) // Not a system super admin
     jest.mocked(checkOrganisationRoles).mockReturnValue(false) // User does NOT have admin role in org
-    mockPayload.find.mockResolvedValue({
-      docs: [mockOrganisations.org1],
-    })
+    mockPayload.findByID.mockResolvedValue(mockOrganisations.org1)
 
     // Call function with test data
     const result = await currentOrganisationCollectionWriteAccess({
@@ -146,6 +148,7 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     } as any)
 
     // Assertions
+    expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUsers.userWithOrg1)
     expect(checkOrganisationRoles).toHaveBeenCalledWith(
       [ROLE_SUPER_ADMIN],
       mockUsers.userWithOrg1,

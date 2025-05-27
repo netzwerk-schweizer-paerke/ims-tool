@@ -1,21 +1,38 @@
 import { TaskList } from '@/payload-types'
+import { stripRichTextField } from './strip-richtext'
+import { PayloadRequest } from 'payload'
 
-export const stripTaskList = (obj: TaskList, organisationId: number) => {
+export const stripTaskList = async (obj: TaskList, req: PayloadRequest, organisationId: number) => {
   const { id, createdAt, createdBy, updatedAt, updatedBy, ...stripped } = obj
-  if ('blocks' in stripped) {
-    // @ts-ignore
-    stripped.blocks = stripped.blocks.map((block) => {
-      const { id, ...strippedBlock } = block
-      return strippedBlock
-    })
+
+  // Process description rich text field if it exists
+  if (stripped.description) {
+    stripped.description = await stripRichTextField(stripped.description, req, organisationId)
   }
-  if ('items' in stripped) {
-    // @ts-ignore
-    stripped.items = stripped.items.map((item) => {
-      const { id, ...strippedItem } = item
-      return strippedItem
-    })
+
+  if ('items' in stripped && stripped.items?.length) {
+    stripped.items = await Promise.all(
+      stripped.items.map(async (item) => {
+        const { id, ...strippedItem } = item
+
+        if (strippedItem.responsibility) {
+          strippedItem.responsibility = await stripRichTextField(
+            strippedItem.responsibility,
+            req,
+            organisationId,
+          )
+        }
+        if (strippedItem.tools) {
+          strippedItem.tools = await stripRichTextField(strippedItem.tools, req, organisationId)
+        }
+        if (strippedItem.topic) {
+          strippedItem.topic = await stripRichTextField(strippedItem.topic, req, organisationId)
+        }
+        return strippedItem
+      }),
+    )
   }
+
   stripped.organisation = organisationId
   return stripped
 }

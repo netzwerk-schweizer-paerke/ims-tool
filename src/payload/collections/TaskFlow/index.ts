@@ -12,7 +12,7 @@ import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
   admin: {
-    hideAPIURL: true,
+    // hideAPIURL: true,
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
   },

@@ -8,19 +8,26 @@ export const createTaskFlow = async (
   organisationId: number,
 ) => {
   const locale = req.locale
-  req.payload.logger.debug({ msg: 'creating task-flow', sourceTaskId: task.id })
+  req.payload.logger.debug({ msg: 'createTaskFlow: creating task-flow', sourceTaskId: task.id })
+  const strippedTask = await stripTaskFlow(task, req, organisationId)
   try {
-    const strippedTask = stripTaskFlow(task, organisationId)
-    const result = await req.payload.create({
+    const createdTaskFlow = await req.payload.create({
       req,
       collection: 'task-flows',
       data: strippedTask,
       locale: locale as any,
     })
-    req.payload.logger.debug({ msg: 'task-flow created', result })
-    return result
+    req.payload.logger.debug({
+      msg: 'createTaskFlow: task-flow created',
+      createdTaskFlow: createdTaskFlow.id,
+    })
+    return createdTaskFlow
   } catch (error) {
-    req.payload.logger.error({ msg: 'error creating task-flow', error })
+    req.payload.logger.error({ msg: 'createTaskFlow: error creating task-flow', error })
+    console.log('ERROR CREATING TASK LIST')
+    console.log(JSON.stringify(task, null, 2))
+    console.log('STRIPPED TASK')
+    console.log(JSON.stringify(strippedTask, null, 2))
     throw error
   }
 }

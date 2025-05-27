@@ -22,6 +22,7 @@
 # misc
 .DS_Store
 *.pem
+/bruno
 
 # debug
 npm-debug.log*

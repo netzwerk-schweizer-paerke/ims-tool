@@ -20,28 +20,26 @@ export const currentOrganisationCollectionWriteAccess: Access = async ({
 }) => {
   const userLastLoggedInOrgId = getIdFromRelation(user?.selectedOrganisation)
 
-  if (checkUserRoles([ROLE_SUPER_ADMIN], user)) {
-    return true
-  }
-
   if (!userLastLoggedInOrgId || !user || typeof userLastLoggedInOrgId !== 'number') {
     return false
   }
 
-  const selectedOrganisation = await payload.find({
+  const selectedOrganisation = await payload.findByID({
     collection: 'organisations',
-    where: {
-      id: {
-        equals: userLastLoggedInOrgId,
-      },
-    },
+    id: userLastLoggedInOrgId,
   })
 
-  if (!selectedOrganisation || selectedOrganisation.docs.length === 0) {
-    return false
+  const hasSelectedOrganisation = !!selectedOrganisation
+  const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
+  const isOrgSuperAdmin = checkOrganisationRoles([ROLE_SUPER_ADMIN], user, userLastLoggedInOrgId)
+
+  if (hasSelectedOrganisation && (isSuperAdmin || isOrgSuperAdmin)) {
+    return {
+      organisation: {
+        equals: userLastLoggedInOrgId,
+      },
+    }
   }
 
-  const selectedOrganisationId = selectedOrganisation.docs[0].id
-
-  return checkOrganisationRoles([ROLE_SUPER_ADMIN], user, selectedOrganisationId)
+  return false
 }

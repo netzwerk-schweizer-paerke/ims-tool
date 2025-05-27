@@ -51,7 +51,7 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
     { label: string; value: number } | undefined
   >()
   const [cloning, setCloning] = useState(false)
-  const [status, setStatus] = useState<'error' | 'success' | ''>('')
+  const [status, setStatus] = useState<'error' | 'success' | 'partial' | ''>('')
 
   const availableOptions = useMemo(() => {
     if (!isOpen) return []
@@ -89,24 +89,39 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
 
   const onSaveClick = async () => {
     setCloning(true)
-    for (const key in formState) {
-      try {
-        if (formState[key]) {
-          const activityId = key.split('-')[1]
-          const cloneEndpoint = `/api/activities/${activityId}/organisation/${selectedOption?.value}${locale?.code ? `?locale=${locale.code}` : ''}`
-          console.log(cloneEndpoint)
+    let errorCount = 0
+    let successCount = 0
+
+    // Get all activities to clone
+    const activitiesToClone = Object.entries(formState)
+      .filter(([_, selected]) => selected)
+      .map(([key]) => key.split('-')[1])
+
+    // Process each activity
+    await Promise.all(
+      activitiesToClone.map(async (activityId) => {
+        try {
+          const cloneEndpoint = `/api/activities/${activityId}/organisation/${selectedOption?.value}${
+            locale?.code ? `?locale=${locale.code}` : ''
+          }`
           await ky.post(cloneEndpoint)
+          successCount++
+        } catch (error) {
+          console.error(`Failed to clone activity ${activityId}`, error)
+          errorCount++
         }
-      } catch (error) {
-        console.error(error)
-        setStatus('error')
-        setCloning(false)
-        break
-      }
-    }
-    if (status !== 'error') {
+      }),
+    )
+
+    // Set status based on results
+    if (errorCount === 0) {
       setStatus('success')
+    } else if (successCount === 0) {
+      setStatus('error')
+    } else {
+      setStatus('partial')
     }
+
     setCloning(false)
   }
 
@@ -116,7 +131,9 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
     setStatus('')
     setSelectedOption(undefined)
     closeModal(drawerSlug)
-    window.location.reload()
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
   }
 
   return (
@@ -135,6 +152,14 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
           {status === 'success' && (
             <div>
               <p>Activities cloned successfully!</p>
+            </div>
+          )}
+          {status === 'partial' && (
+            <div>
+              <p>
+                Some activities were cloned successfully, but others failed. Check your console log
+                for more information.
+              </p>
             </div>
           )}
           {status === '' && (
@@ -217,6 +242,14 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
                 {t('general:close')}
               </Button>
             ))}
+          {status === 'partial' && (
+            <Button
+              buttonStyle="secondary"
+              className={`${baseClass}__cancel`}
+              onClick={onCloseClick}>
+              {t('general:close')}
+            </Button>
+          )}
         </div>
         <div>
           <Button

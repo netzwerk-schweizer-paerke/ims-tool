@@ -26,5 +26,11 @@ export const DocumentsPublic: CollectionConfig = {
       localized: true,
       type: 'textarea',
     },
+    {
+      name: 'itemType',
+      type: 'text',
+      virtual: true,
+      defaultValue: 'documentsPublic',
+    },
   ],
 }
