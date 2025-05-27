@@ -8,7 +8,9 @@ import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/
 
 const isLocalHost = (hostName: string) => {
   const localhostPatterns = ['localhost', '127.0.0.1', '0.0.0.0']
-  return localhostPatterns.includes(hostName)
+  // Extract hostname without port if port is present
+  const hostname = hostName.split(':')[0]
+  return localhostPatterns.includes(hostname)
 }
 
 export const Documents: CollectionConfig = {
