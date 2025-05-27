@@ -18,6 +18,7 @@ export const Documents: CollectionConfig = {
       const {
         req: { headers, host },
       } = args
+      console.log({ header: headers.has('X-Payload-Request'), host })
       const internalAccess = headers.has('X-Payload-Request') && host === 'localhost:3000'
       if (internalAccess) {
         return true

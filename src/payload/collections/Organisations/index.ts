@@ -64,12 +64,5 @@ export const Organisations: CollectionConfig = {
     },
     createdByField,
     updatedByField,
-    {
-      name: 'orgActivities',
-      type: 'join',
-      collection: 'activities',
-      on: 'organisation',
-      maxDepth: 2,
-    },
   ],
 }

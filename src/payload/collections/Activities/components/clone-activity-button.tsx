@@ -20,6 +20,7 @@ export const CloneActivityButton: React.FC<Props> = async ({ user, payload }) =>
   if (!user) return null
 
   const selectedOrgId = toNumber(getIdFromRelation(user.selectedOrganisation))
+  const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
 
   const organisations = await payload.find({
     collection: 'organisations',
@@ -46,7 +47,7 @@ export const CloneActivityButton: React.FC<Props> = async ({ user, payload }) =>
 
   if (
     !checkOrganisationRoles([ROLE_USER, ROLE_SUPER_ADMIN], user, selectedOrgId) &&
-    !checkUserRoles([ROLE_USER, ROLE_SUPER_ADMIN], user)
+    !isSuperAdmin
   ) {
     payload.logger.warn({
       msg: `CloneActivityButton: User ${user.id} does not have admin role in selected org or is not super admin`,
@@ -68,7 +69,7 @@ export const CloneActivityButton: React.FC<Props> = async ({ user, payload }) =>
   )
 
   const targetOrganisations = compact(
-    userOrganisations.map((org) => {
+    (isSuperAdmin ? organisations.docs : userOrganisations).map((org) => {
       if (isOrganisation(org)) {
         return {
           label: org.name,
