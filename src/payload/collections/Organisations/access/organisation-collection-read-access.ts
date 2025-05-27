@@ -16,7 +16,7 @@ import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-r
 export const organisationCollectionReadAccess: Access = ({ req: { payload, user } }) => {
   // Super admins always get full access
   if (checkUserRoles([ROLE_SUPER_ADMIN], user)) {
-    // payload.logger.debug({ msg: 'Super admin has full access to all organisations' })
+    payload.logger.debug({ msg: 'Super admin has full access to all organisations' })
     return true
   }
 
