@@ -6,6 +6,11 @@ import { mimeTypes } from '@/config/file-upload-mime'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 
+const isLocalHost = (hostName: string) => {
+  const localhostPatterns = ['localhost', '127.0.0.1', '0.0.0.0']
+  return localhostPatterns.includes(hostName)
+}
+
 export const Documents: CollectionConfig = {
   slug: 'documents',
   admin: {
@@ -18,8 +23,7 @@ export const Documents: CollectionConfig = {
       const {
         req: { headers, host },
       } = args
-      console.log({ header: headers.has('X-Payload-Request'), host })
-      const internalAccess = headers.has('X-Payload-Request') && host === 'localhost:3000'
+      const internalAccess = headers.has('X-Payload-Request') && isLocalHost(host)
       if (internalAccess) {
         return true
       } else {

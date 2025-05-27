@@ -90,10 +90,7 @@ const processRichTextNode = async (
     }
     // Other relationship types should be left unchanged
     else if (processedNode.fields.doc && processedNode.fields.doc.relationTo) {
-      console.log(
-        `Preserving relationship of type: ${processedNode.fields.doc.relationTo}`,
-        processedNode.fields,
-      )
+      console.log(`Preserving relationship of type: ${processedNode.fields.doc.relationTo}`)
       // No modification needed, keep the original relationship
     }
   }

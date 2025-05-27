@@ -55,8 +55,6 @@ export const cloneActivity: Endpoint = {
       msg: 'Activity stripped',
     })
 
-    console.log(JSON.stringify(strippedActivity, null, 2))
-
     // Step 3: Clone the activity (initial version without document relationships)
     const clonedActivity = await req.payload.create({
       req,
@@ -121,7 +119,6 @@ export const cloneActivity: Endpoint = {
       const updatedBlocks: (ActivityIOBlock | ActivityTaskBlock)[] = []
 
       for (const block of clonedActivity.blocks) {
-        console.log('block', block.id)
         const newRelations: (
           | { relationTo: 'task-flows'; value: number | TaskFlow }
           | { relationTo: 'task-lists'; value: number | TaskList }
@@ -133,14 +130,8 @@ export const cloneActivity: Endpoint = {
         ) {
           for (const task of block.relations.tasks) {
             const { relationTo, value } = task
-            console.log('task', task.value)
 
             req.payload.logger.debug({ msg: 'before createHandler', relationTo })
-
-            console.log({
-              relationTo,
-              value,
-            })
 
             if (relationTo === 'task-flows' && isNumber(value)) {
               // get the task flow
