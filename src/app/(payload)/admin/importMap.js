@@ -13,6 +13,8 @@ import { ProcessInputOutputField as ProcessInputOutputField_86f6546ccb9b4d404295
 import { ProcessTaskField as ProcessTaskField_4398cb30c934d5d1617717da8602ea32 } from 'src/components/graph/fields/graph/flows/task/process-task-field'
 import { ProcessTestField as ProcessTestField_228a1d3d551a14020bbe557cc231c339 } from 'src/components/graph/fields/graph/flows/test/process-test-field'
 import { ProcessTaskParallelField as ProcessTaskParallelField_7e53e5f67e05b59712f3c0c3836b07aa } from 'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field'
+import { Icon as Icon_ffffee7b89973490816d209c4fec3a29 } from 'src/components/icon'
+import { Logo as Logo_41750b0786ad8f0d7e0f700218d90b2f } from 'src/components/logo'
 import { ActivityLandscapeLink as ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870 } from 'src/components/activity-landscape-link'
 import { OrganisationSelect as OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf } from 'src/components/organisation-select'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
@@ -37,6 +39,8 @@ export const importMap = {
   "src/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField": ProcessTaskField_4398cb30c934d5d1617717da8602ea32,
   "src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField": ProcessTestField_228a1d3d551a14020bbe557cc231c339,
   "src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField": ProcessTaskParallelField_7e53e5f67e05b59712f3c0c3836b07aa,
+  "src/components/icon#Icon": Icon_ffffee7b89973490816d209c4fec3a29,
+  "src/components/logo#Logo": Logo_41750b0786ad8f0d7e0f700218d90b2f,
   "src/components/activity-landscape-link#ActivityLandscapeLink": ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870,
   "src/components/organisation-select#OrganisationSelect": OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,

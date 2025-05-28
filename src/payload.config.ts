@@ -87,6 +87,10 @@ export default buildConfig({
         }
       : {}),
     components: {
+      graphics: {
+        Logo: 'src/components/logo#Logo',
+        Icon: 'src/components/icon#Icon',
+      },
       beforeNavLinks: [
         'src/components/activity-landscape-link#ActivityLandscapeLink',
         'src/components/organisation-select#OrganisationSelect',

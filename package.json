@@ -54,6 +54,7 @@
     "tslog": "^4.9.3"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/jest": "^29.5.14",
     "@types/lodash-es": "^4.17.12",
