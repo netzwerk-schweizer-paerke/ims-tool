@@ -20,6 +20,7 @@ import { customI18nTranslations } from '@/lib/custom-i18n-translations'
 import { TaskLists } from '@/payload/collections/TaskList'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { DocumentsPublic } from '@/payload/collections/DocumentsPublic'
+import { deepLTranslate } from 'src/plugins/deeplTranslate'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -135,26 +136,11 @@ export default buildConfig({
     await seedDevUser(payload)
   },
   plugins: [
-    // https://github.com/r1tsuu/payload-enchants/tree/master/packages/docs-reorder
-    // docsReorder({
-    //   collections: [{ slug: Activities.slug }, { slug: TaskFlows.slug }, { slug: TaskLists.slug }],
-    // }),
-    // https://github.com/r1tsuu/payload-enchants/tree/master/packages/translator
-    // translator({
-    //   // collections with the enabled translator in the admin UI
-    //   collections: ['activities', 'task-flows', 'media', 'documents'],
-    //   // globals with the enabled translator in the admin UI
-    //   globals: [],
-    //   // add resolvers that you want to include, examples on how to write your own in ./plugin/src/resolvers
-    //   resolvers: [
-    //     copyResolver(),
-    //     openAIResolver({
-    //       apiKey: process.env.OPENAI_KEY || '',
-    //       model: 'gpt-4',
-    //     }),
-    //   ],
-    // }),
-    // betterLocalizedFields(),
+    deepLTranslate({
+      collections: ['activities'],
+      globals: [],
+      apiKey: process.env.DEEPL_API_KEY || '',
+    }),
     s3Storage({
       collections: {
         [Documents.slug]: { prefix: Documents.slug },

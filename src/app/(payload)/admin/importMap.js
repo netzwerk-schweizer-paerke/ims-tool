@@ -9,6 +9,7 @@ import { UnorderedListFeatureClient as UnorderedListFeatureClient_e70f5e05f09f93
 import { ActivityIOField as ActivityIOField_bccc8bb52fd2478fa9350f3c68a200f6 } from 'src/components/graph/fields/graph/activities/io/activity-i-o-field'
 import { ActivityTaskField as ActivityTaskField_a0957cc6c6bd29faf81e7216a2bd26dc } from 'src/components/graph/fields/graph/activities/task/activity-task-field'
 import { CloneActivityButton as CloneActivityButton_d2673fc183147d3776d235d858853e84 } from 'src/payload/collections/Activities/components/clone-activity-button'
+import { CustomButtonWithTranslator as CustomButtonWithTranslator_5cf97eb8801c0fd20ba599ca65829353 } from 'src/plugins/deeplTranslate/client/components/CustomButton/CustomButtonWithTranslator'
 import { ProcessInputOutputField as ProcessInputOutputField_86f6546ccb9b4d404295b8a255596215 } from 'src/components/graph/fields/graph/flows/io/process-input-output-field'
 import { ProcessTaskField as ProcessTaskField_4398cb30c934d5d1617717da8602ea32 } from 'src/components/graph/fields/graph/flows/task/process-task-field'
 import { ProcessTestField as ProcessTestField_228a1d3d551a14020bbe557cc231c339 } from 'src/components/graph/fields/graph/flows/test/process-test-field'
@@ -35,6 +36,7 @@ export const importMap = {
   "src/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField": ActivityIOField_bccc8bb52fd2478fa9350f3c68a200f6,
   "src/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField": ActivityTaskField_a0957cc6c6bd29faf81e7216a2bd26dc,
   "src/payload/collections/Activities/components/clone-activity-button#CloneActivityButton": CloneActivityButton_d2673fc183147d3776d235d858853e84,
+  "src/plugins/deeplTranslate/client/components/CustomButton/CustomButtonWithTranslator#CustomButtonWithTranslator": CustomButtonWithTranslator_5cf97eb8801c0fd20ba599ca65829353,
   "src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField": ProcessInputOutputField_86f6546ccb9b4d404295b8a255596215,
   "src/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField": ProcessTaskField_4398cb30c934d5d1617717da8602ea32,
   "src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField": ProcessTestField_228a1d3d551a14020bbe557cc231c339,
