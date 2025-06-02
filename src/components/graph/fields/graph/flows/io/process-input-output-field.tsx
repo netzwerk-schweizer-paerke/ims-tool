@@ -103,7 +103,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
               <div className={'x-arrows'}>{arrowsContent}</div>
             </>
           )}
-          <div className="absolute bottom-16 w-full text-center">
+          <div className="absolute -top-2 w-full text-center">
             <ToggleSwitch checked={value?.enabled} onChange={handleToggleEnabled} />
           </div>
         </BlockTaskWrapper>
