@@ -28,6 +28,18 @@
     h2 {
       margin: 0;
       text-align: center;
+      font-size: var(--body-font-size);
+      line-height: var(--body-line-height);
+    }
+  }
+
+  &__select-container {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+
+    .select {
+      width: 100%;
     }
   }
 
@@ -48,29 +60,7 @@
     right: 10px;
     transition: 0.25s;
     cursor: pointer;
-    width: 32px;
-    height: 32px;
-
-    &:hover {
-      opacity: 0.6;
-    }
-
-    &:before,
-    &:after {
-      position: absolute;
-      left: 15px;
-      background-color: var(--theme-elevation-800);
-      width: 2px;
-      height: 33px;
-      content: ' ';
-    }
-
-    &:before {
-      transform: rotate(45deg);
-    }
-
-    &:after {
-      transform: rotate(-45deg);
-    }
+    width: 24px;
+    height: 24px;
   }
 }

@@ -15,6 +15,7 @@ import { DeepLResolver } from '@/plugins/deeplTranslate'
 import { createClient } from '@/plugins/deeplTranslate/client/api'
 import { TranslatorContext } from './context'
 import { TranslateArgs } from '@/plugins/deeplTranslate/translate/types'
+import { TypedLocale } from 'payload'
 
 const modalSlug = 'deepltranslate-modal'
 
@@ -41,7 +42,8 @@ export const TranslatorProvider = ({ children }: { children: ReactNode }) => {
       | 'modalTitle'
       | 'submitButtonLabelEmpty'
       | 'submitButtonLabelFull'
-      | 'successMessage',
+      | 'successMessage'
+      | 'pleaseWait',
   ) => {
     return t(`plugin-deepltranslate:resolver_${resolver}_${key}` as Parameters<typeof t>[0])
   }
@@ -94,8 +96,8 @@ export const TranslatorProvider = ({ children }: { children: ReactNode }) => {
       data: reduceFieldsToValues(data, true),
       emptyOnly,
       globalSlug,
-      locale: locale.code,
-      localeFrom: localeToTranslateFrom,
+      locale: locale.code as TypedLocale,
+      localeFrom: localeToTranslateFrom as TypedLocale,
     }
 
     const result = await apiClient.translate(args)

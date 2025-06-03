@@ -137,7 +137,7 @@ export default buildConfig({
   },
   plugins: [
     deepLTranslate({
-      collections: ['activities'],
+      collections: ['activities', 'task-flows', 'task-lists'],
       globals: [],
       apiKey: process.env.DEEPL_API_KEY || '',
     }),

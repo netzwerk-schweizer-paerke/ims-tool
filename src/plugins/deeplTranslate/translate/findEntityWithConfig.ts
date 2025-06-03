@@ -4,21 +4,22 @@ import type {
   PayloadRequest,
   SanitizedCollectionConfig,
   SanitizedGlobalConfig,
+  TypedLocale,
   TypeWithID,
 } from 'payload'
 import { APIError } from 'payload'
 
 type Args = {
-  collectionSlug?: string
-  globalSlug?: string
+  collectionSlug?: CollectionSlug
+  globalSlug?: GlobalSlug
   id?: number | string
-  locale: string
+  locale: TypedLocale
   overrideAccess?: boolean
   req: PayloadRequest
 }
 
 const findConfigBySlug = (
-  slug: string,
+  slug: CollectionSlug | GlobalSlug,
   enities: SanitizedCollectionConfig[] | SanitizedGlobalConfig[],
 ) => enities.find((entity) => entity.slug === slug)
 
@@ -44,9 +45,13 @@ export const findEntityWithConfig = async (
     throw new APIError('Bad Request', 400)
   }
 
+  // Type guard for slug to avoid type errors
+  const currentSlug = isGlobal ? globalSlug : collectionSlug
+
+  // Safe cast using the type guard
   const entityConfig = isGlobal
-    ? findConfigBySlug(globalSlug, config.globals)
-    : findConfigBySlug(collectionSlug as string, config.collections)
+    ? findConfigBySlug(currentSlug as GlobalSlug, config.globals)
+    : findConfigBySlug(currentSlug as CollectionSlug, config.collections)
 
   if (!entityConfig) {
     throw new APIError('Bad Request', 400)
@@ -57,22 +62,22 @@ export const findEntityWithConfig = async (
         slug: args.globalSlug as GlobalSlug,
         depth: 0,
         fallbackLocale: undefined,
-        locale: locale as never,
+        locale,
         overrideAccess,
         req,
       })
     : await payload.findByID({
-        id: id as number | string,
+        id: id as string | number,
         collection: collectionSlug as CollectionSlug,
         depth: 0,
         fallbackLocale: undefined,
-        locale: locale as never,
+        locale,
         overrideAccess,
         req,
       })
 
   return {
     config: entityConfig,
-    doc: doc,
+    doc: doc as unknown as Record<string, unknown> & TypeWithID,
   }
 }

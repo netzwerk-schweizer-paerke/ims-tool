@@ -17,7 +17,8 @@ type TranslatorContextData = {
       | 'modalTitle'
       | 'submitButtonLabelEmpty'
       | 'submitButtonLabelFull'
-      | 'successMessage',
+      | 'successMessage'
+      | 'pleaseWait',
   ) => string
   setLocaleToTranslateFrom: (code: string) => void
   submit: (args: { emptyOnly: boolean }) => Promise<void>
