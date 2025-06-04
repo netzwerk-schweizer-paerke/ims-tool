@@ -4,10 +4,11 @@ import { toNumber } from 'lodash-es'
 import ky from 'ky'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { Organisation } from '@/payload-types'
-import { Select } from '@payloadcms/ui'
+import { Select, usePreferences } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'
 import { logger } from '@/lib/logger'
 import { Translate } from '@/lib/translate'
+import { useSearchParams } from 'next/navigation'
 
 type Props = {
   userId?: number
@@ -17,35 +18,42 @@ type Props = {
 
 export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selectedOrg }) => {
   const [orgLangMismatch, setOrgLangMismatch] = useState(false)
+  const { setPreference, getPreference } = usePreferences()
+  const params = useSearchParams()
+  const paramsLocale = params.get('locale')
+
+  const setLanguagePreference = async (selectedOrg?: Organisation) => {
+    if (!selectedOrg || !selectedOrg.organisationLanguage) return
+    await setPreference('locale', selectedOrg.organisationLanguage)
+    
+    // Remove the locale parameter from the URL if it exists
+    if (paramsLocale) {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('locale')
+      window.history.replaceState({}, '', url)
+    }
+    
+    window.location.reload()
+  }
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const locale = searchParams.get('locale')
-    if (locale) {
-      if (locale !== selectedOrg?.organisationLanguage) {
-        logger.debug('Selected locale does not match selected org', {
-          locale,
-          selectedOrg: selectedOrg?.organisationLanguage,
-        })
-        setOrgLangMismatch(true)
-      }
-    } else {
-      if (selectedOrg?.organisationLanguage !== 'de') {
-        setOrgLangMismatch(true)
-      }
-    }
-  }, [selectedOrg])
-
-  const setLanguageParam = (selectedOrg?: Organisation) => {
-    if (!selectedOrg || !selectedOrg.organisationLanguage) return
-    const searchParams = new URLSearchParams(window.location.search)
-    if (searchParams.has('locale')) {
-      searchParams.delete('locale')
-    }
-    searchParams.append('locale', selectedOrg?.organisationLanguage)
-    window.history.pushState(null, '', `${window.location.pathname}?${searchParams.toString()}`)
-    window.document.location.reload()
-  }
+    getPreference<string>('locale')
+      .then((locale) => {
+        if (paramsLocale && paramsLocale !== locale) {
+          window.location.reload()
+        }
+        if (locale && locale !== selectedOrg?.organisationLanguage) {
+          logger.debug('Selected locale does not match selected org', {
+            locale,
+            selectedOrg: selectedOrg?.organisationLanguage,
+          })
+          setOrgLangMismatch(true)
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching locale preference:', error)
+      })
+  }, [getPreference, paramsLocale, selectedOrg?.organisationLanguage])
 
   const onChange = async (option: { value: any }) => {
     const selectedId = toNumber(option.value)
@@ -56,7 +64,7 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
       credentials: 'include',
     })
     const selectedOrg = orgs?.find((org) => org.id === selectedId)
-    setLanguageParam(selectedOrg)
+    await setLanguagePreference(selectedOrg)
   }
 
   const currentOrgId = getIdFromRelation(selectedOrg) as number
@@ -86,7 +94,7 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
             <Translate k={'admin:selectOrganisations:orgLanguageMismatch'} />
           </p>
           <button
-            onClick={() => setLanguageParam(selectedOrg)}
+            onClick={() => setLanguagePreference(selectedOrg)}
             type={'button'}
             className={'btn btn--style-pill btn--size-small my-2'}>
             <Translate k={'admin:selectOrganisations:reset'} />
