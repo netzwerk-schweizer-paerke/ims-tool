@@ -11,12 +11,11 @@ export const TranslatorModal: React.FC = () => {
   return (
     <Modal className="deepltranslate__modal" slug={modalSlug}>
       <div className="deepltranslate__wrapper">
-        <button 
+        <button
           type="button"
-          aria-label="Close" 
-          className="deepltranslate__close" 
-          onClick={closeTranslator}
-        >
+          aria-label="Close"
+          className="deepltranslate__close"
+          onClick={closeTranslator}>
           <CloseMenuIcon />
         </button>
         <Content />
