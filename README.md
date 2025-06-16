@@ -126,6 +126,12 @@ Key configuration includes:
 - `yarn test:watch`: Run tests in watch mode
 - `yarn test:coverage`: Run tests with coverage reporting
 
+## Releasing
+
+1. Tag the main branch with a version number (e.g., `1.0.0`)
+2. Push the tag and wait for the GitHub action to complete, a new docker image will be created and pushed to ghcr.io
+3. Use the new image in your deployment
+
 ## License
 
 This application is based on Payload CMS 3.x and the code in this repository is hereby licensed under the MIT license.
