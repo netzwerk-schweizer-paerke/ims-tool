@@ -10,8 +10,7 @@ export const ActivityEditLink: React.FC<Props> = ({ id, locale }) => {
   return (
     <Link
       className={'link-hover link'}
-      href={`/admin/collections/activities/${id}?locale=${locale}`}
-    >
+      href={`/admin/collections/activities/${id}?locale=${locale}`}>
       <Translate k={'common:edit'} />
     </Link>
   )

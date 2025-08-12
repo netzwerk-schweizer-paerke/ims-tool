@@ -220,8 +220,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
               ...SVGcanvasStyle,
             }}
             overflow="auto"
-            {...SVGcanvasProps}
-          >
+            {...SVGcanvasProps}>
             {/* body of the arrow */}
             <path
               ref={lineRef}
@@ -233,8 +232,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
               fill="transparent"
               pointerEvents="visibleStroke"
               {...(passProps as any)}
-              {...arrowBodyProps}
-            >
+              {...arrowBodyProps}>
               <>
                 {drawAnimEnded ? (
                   <>
@@ -273,8 +271,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
                 pointerEvents="auto"
                 transform={`translate(${xOffsetTail},${yOffsetTail}) rotate(${st.tailOrient}) scale(${st.fTailSize})`}
                 {...(passProps as any)}
-                {...arrowTailProps}
-              >
+                {...arrowTailProps}>
                 {tailShape.svgElem}
               </g>
             ) : null}
@@ -289,8 +286,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
                 transform={`translate(${xOffsetHead},${yOffsetHead}) rotate(${st.headOrient}) scale(${st.fHeadSize})`}
                 opacity={animateDrawing && !drawAnimEnded ? 0 : 1}
                 {...(passProps as any)}
-                {...arrowHeadProps}
-              >
+                {...arrowHeadProps}>
                 <animate
                   ref={headOpacityAnimRef}
                   dur={'0.4'}
@@ -333,8 +329,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
                 position: 'absolute',
                 left: st.cx0 + st.labelStartPos.x,
                 top: st.cy0 + st.labelStartPos.y - strokeWidth - 5,
-              }}
-            >
+              }}>
               {labels.start}
             </div>
           ) : null}
@@ -347,8 +342,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
                 position: 'absolute',
                 left: st.cx0 + st.labelMiddlePos.x,
                 top: st.cy0 + st.labelMiddlePos.y,
-              }}
-            >
+              }}>
               {labels.middle}
             </div>
           ) : null}
@@ -360,8 +354,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
                 position: 'absolute',
                 left: st.cx0 + st.labelEndPos.x,
                 top: st.cy0 + st.labelEndPos.y + strokeWidth + 5,
-              }}
-            >
+              }}>
               {labels.end}
             </div>
           ) : null}

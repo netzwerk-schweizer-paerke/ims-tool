@@ -23,7 +23,7 @@ export const currentOrganisationCollectionReadAccess: Access = ({ req: { user } 
     if (checkUserRoles([ROLE_SUPER_ADMIN], user)) {
       return true
     }
-    
+
     // Regular users with no selected org only see content with no organization
     return {
       organisation: {

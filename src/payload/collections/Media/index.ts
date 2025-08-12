@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
+import { isProduction } from '@/lib/environment'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { assignOrgToUploadBeforeChangeHook } from '@/payload/collections/hooks/assign-org-to-upload-before-change-hook'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
@@ -8,7 +9,7 @@ import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
-    hideAPIURL: true,
+    hideAPIURL: isProduction,
     group: I18nCollection.collectionGroup.files,
     hidden: true,
   },

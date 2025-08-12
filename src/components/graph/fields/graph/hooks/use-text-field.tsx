@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
  * A hook for managing text field state with debounced updates to the parent state
  * This reduces re-renders by maintaining a local state that only updates the parent
  * state when necessary.
- * 
+ *
  * @param value The current field value from the parent component
  * @param setValue Function to update the parent value
  * @param initialText Initial text value (defaults to empty string)
@@ -17,7 +17,7 @@ export function useTextField<T extends Record<string, any>>(
   value: T | undefined,
   setValue: (value: T) => void,
   initialText: string = '',
-  fieldName: keyof T = 'text' as keyof T
+  fieldName: keyof T = 'text' as keyof T,
 ) {
   // Use local state to reduce re-renders
   const [localText, setLocalText] = useState(initialText)
@@ -41,12 +41,12 @@ export function useTextField<T extends Record<string, any>>(
         setValue({ ...value, [fieldName]: text })
       }
     },
-    [value, setValue, fieldName]
+    [value, setValue, fieldName],
   )
 
   return {
     localText,
-    handleTextChange
+    handleTextChange,
   }
 }
 

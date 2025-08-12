@@ -9,8 +9,7 @@ export const FlowBlockViewLink: React.FC<Props> = ({ flowId, children }) => {
   return (
     <Link
       className={'link hyphens-auto no-underline hover:underline'}
-      href={`/admin/flow/${flowId}`}
-    >
+      href={`/admin/flow/${flowId}`}>
       {children}
     </Link>
   )

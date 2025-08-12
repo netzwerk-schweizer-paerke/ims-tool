@@ -10,8 +10,7 @@ export const ListEditLink: React.FC<Props> = ({ id, locale }) => {
   return (
     <Link
       className={'link-hover link'}
-      href={`/admin/collections/task-lists/${id}?locale=${locale}`}
-    >
+      href={`/admin/collections/task-lists/${id}?locale=${locale}`}>
       <Translate k={'common:edit'} />
     </Link>
   )

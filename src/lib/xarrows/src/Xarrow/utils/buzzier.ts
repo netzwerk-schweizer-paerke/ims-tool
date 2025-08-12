@@ -4,8 +4,8 @@
  * Point in 2D space
  */
 interface Point2D {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 
 /**
@@ -19,13 +19,10 @@ interface Point2D {
  * @param p4 End point value
  * @returns Function that calculates a point on the curve at parameter t
  */
-export const bzFunction = (
-  p1: number,
-  p2: number,
-  p3: number,
-  p4: number
-): (t: number) => number => (t: number): number =>
-  (1 - t) ** 3 * p1 + 3 * (1 - t) ** 2 * t * p2 + 3 * (1 - t) * t ** 2 * p3 + t ** 3 * p4
+export const bzFunction =
+  (p1: number, p2: number, p3: number, p4: number): ((t: number) => number) =>
+  (t: number): number =>
+    (1 - t) ** 3 * p1 + 3 * (1 - t) ** 2 * t * p2 + 3 * (1 - t) * t ** 2 * p3 + t ** 3 * p4
 
 /**
  * Returns 2 solutions from extrema points for Bezier curve with 2 control points
@@ -40,7 +37,7 @@ export const buzzierMinSols = (
   p1: number,
   p2: number,
   p3: number,
-  p4: number
+  p4: number,
 ): [number, number] => {
   const bz = bzFunction(p1, p2, p3, p4)
   // dt(bz) = -3 p1 (1 - t)^2 + 3 p2 (1 - t)^2 - 6 p2 (1 - t) t + 6 p3 (1 - t) t - 3 p3 t^2 + 3 p4 t^2
@@ -57,7 +54,7 @@ export const buzzierMinSols = (
 
   // Safeguard against division by zero
   if (Math.abs(C) < Number.EPSILON) {
-    return [p1, p4]; // Return start and end points if C is close to zero
+    return [p1, p4] // Return start and end points if C is close to zero
   }
 
   const sol1 = bz((A + Math.sqrt(Math.max(0, B))) / C)

@@ -1,17 +1,17 @@
-import * as migration_20240715_102344 from './20240715_102344';
-import * as migration_20240716_082105 from './20240716_082105';
-import * as migration_20240717_053211 from './20240717_053211';
-import * as migration_20240717_112357 from './20240717_112357';
-import * as migration_20240805_062336 from './20240805_062336';
-import * as migration_20240812_082236 from './20240812_082236';
-import * as migration_20240813_071954 from './20240813_071954';
-import * as migration_20240902_123931 from './20240902_123931';
-import * as migration_20241007_081453 from './20241007_081453';
-import * as migration_20241101_053239 from './20241101_053239';
-import * as migration_20241101_054322 from './20241101_054322';
-import * as migration_20250121_081211 from './20250121_081211';
-import * as migration_20250311_084429 from './20250311_084429';
-import * as migration_20250506_115223 from './20250506_115223';
+import * as migration_20240715_102344 from './20240715_102344'
+import * as migration_20240716_082105 from './20240716_082105'
+import * as migration_20240717_053211 from './20240717_053211'
+import * as migration_20240717_112357 from './20240717_112357'
+import * as migration_20240805_062336 from './20240805_062336'
+import * as migration_20240812_082236 from './20240812_082236'
+import * as migration_20240813_071954 from './20240813_071954'
+import * as migration_20240902_123931 from './20240902_123931'
+import * as migration_20241007_081453 from './20241007_081453'
+import * as migration_20241101_053239 from './20241101_053239'
+import * as migration_20241101_054322 from './20241101_054322'
+import * as migration_20250121_081211 from './20250121_081211'
+import * as migration_20250311_084429 from './20250311_084429'
+import * as migration_20250506_115223 from './20250506_115223'
 
 export const migrations = [
   {
@@ -82,6 +82,6 @@ export const migrations = [
   {
     up: migration_20250506_115223.up,
     down: migration_20250506_115223.down,
-    name: '20250506_115223'
+    name: '20250506_115223',
   },
-];
+]

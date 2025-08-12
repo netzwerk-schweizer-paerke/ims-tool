@@ -25,14 +25,14 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
   const setLanguagePreference = async (selectedOrg?: Organisation) => {
     if (!selectedOrg || !selectedOrg.organisationLanguage) return
     await setPreference('locale', selectedOrg.organisationLanguage)
-    
+
     // Remove the locale parameter from the URL if it exists
     if (paramsLocale) {
       const url = new URL(window.location.href)
       url.searchParams.delete('locale')
       window.history.replaceState({}, '', url)
     }
-    
+
     window.location.reload()
   }
 

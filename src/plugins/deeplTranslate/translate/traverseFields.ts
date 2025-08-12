@@ -148,7 +148,7 @@ export const traverseFields = ({
 
         try {
           const jsonValue = siblingDataFrom[field.name]
-          
+
           // Check if the JSON value is an object with a text property
           if (isObject(jsonValue) && jsonValue !== null) {
             // Handle objects with a text property
@@ -159,10 +159,13 @@ export const traverseFields = ({
                     // Safely update the text property
                     const targetObject = siblingDataTranslated[field.name]
                     if (isObject(targetObject) && targetObject !== null) {
-                      (targetObject as any).text = translated
+                      ;(targetObject as any).text = translated
                     }
                   } catch (e) {
-                    console.warn(`Failed to update translated text for JSON field ${field.name}:`, e)
+                    console.warn(
+                      `Failed to update translated text for JSON field ${field.name}:`,
+                      e,
+                    )
                   }
                 },
                 value: jsonValue.text,

@@ -42,13 +42,13 @@ describe('adminAndSelfFieldAccess', () => {
     const mockUser = mockUsers.regularUser
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
-    
+
     ;(checkUserRoles as jest.Mock).mockReturnValue(false)
 
     const result = await adminAndSelfFieldAccess({
       req: mockReq,
       doc: { id: 123 },
-      data: { name: 'Updated Name' }
+      data: { name: 'Updated Name' },
     } as any)
 
     expect(result).toBe(true)
@@ -59,13 +59,13 @@ describe('adminAndSelfFieldAccess', () => {
     const mockUser = mockUsers.regularUser
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
-    
+
     ;(checkUserRoles as jest.Mock).mockReturnValue(false)
 
     const result = await adminAndSelfFieldAccess({
       req: mockReq,
       doc: { id: 456 },
-      data: { name: 'Another User' }
+      data: { name: 'Another User' },
     } as any)
 
     expect(result).toBe(false)
@@ -76,13 +76,13 @@ describe('adminAndSelfFieldAccess', () => {
     const mockUser = mockUsers.regularUser
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
-    
+
     ;(checkUserRoles as jest.Mock).mockReturnValue(false)
 
     const result = await adminAndSelfFieldAccess({
       req: mockReq,
       doc: null,
-      data: { name: 'Test' }
+      data: { name: 'Test' },
     } as any)
 
     expect(result).toBe(false)

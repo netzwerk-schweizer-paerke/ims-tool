@@ -19,8 +19,7 @@ export const ActivitySupport: React.FC<Props> = ({ activity, locale }) => {
         </p>
         <Link
           className={'link-hover link'}
-          href={`/admin/collections/activities/${activity.id}?locale=${locale}`}
-        >
+          href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
           View this activity in edit mode
         </Link>
       </div>

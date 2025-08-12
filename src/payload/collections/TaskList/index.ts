@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
+import { isProduction } from '@/lib/environment'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { filesArrayField } from '@/payload/fields/files-array'
@@ -11,7 +12,7 @@ export const TaskLists: CollectionConfig = {
   admin: {
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
-    hideAPIURL: true,
+    hideAPIURL: isProduction,
   },
   labels: {
     plural: I18nCollection.fieldLabel.taskLists,

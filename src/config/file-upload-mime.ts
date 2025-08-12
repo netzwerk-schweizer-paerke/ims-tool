@@ -3,6 +3,10 @@ export const mimeTypes = [
   'application/msword', // .doc
   'application/vnd.ms-excel', // .xls
   'application/vnd.ms-powerpoint', // .ppt
+
+  // Container formats detected when re-uploading old Office files
+  'application/x-cfb', // Compound File Binary - detected for .doc, .xls, .ppt when re-uploaded
+  'application/octet-stream', // Generic binary - sometimes detected for corrupted or unknown files
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
   'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx

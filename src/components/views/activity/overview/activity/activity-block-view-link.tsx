@@ -10,8 +10,7 @@ export const ActivityBlockViewLink: React.FC<Props> = ({ activityId, blockId, ch
   return (
     <Link
       className={'link hyphens-auto no-underline hover:underline'}
-      href={`/admin/activity/${activityId}/block/${blockId}`}
-    >
+      href={`/admin/activity/${activityId}/block/${blockId}`}>
       {children}
     </Link>
   )

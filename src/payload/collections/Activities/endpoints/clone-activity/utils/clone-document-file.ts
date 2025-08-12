@@ -13,7 +13,7 @@ const getErrorMessage = (error: unknown): string => {
  * If the document is part of DocumentsPublic, it won't be cloned
  * For regular documents, we download and re-upload the file
  */
-export const cloneDocument = async (
+export const cloneDocumentFile = async (
   req: PayloadRequest,
   documentId: number | string,
   organisationId: number,
@@ -82,16 +82,24 @@ export const cloneDocument = async (
     }
 
     // Construct the path for downloading the file
-    const downloadUrl = `http://localhost:3000${url}`
+    const serverUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
+    const downloadUrl = `${serverUrl}${url}`
 
-    // Download the file
+    // Download the file with timeout
     let fileResponse
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
       fileResponse = await fetch(downloadUrl, {
         headers: {
           'X-Payload-Request': 'true',
         },
+        signal: controller.signal,
       })
+
+      clearTimeout(timeoutId)
+
       if (!fileResponse.ok) {
         throw new Error(`HTTP error: ${fileResponse.status} ${fileResponse.statusText}`)
       }
@@ -144,15 +152,41 @@ export const cloneDocument = async (
         mimetype: sourceDocument.mimeType,
         size: sourceDocument.filesize,
       }
-      // Create new document with the file buffer
-      clonedDocument = await req.payload.create({
-        collection: 'documents',
-        data: {
-          description: sourceDocument.description,
-          organisation: organisationId,
-        },
-        file,
+
+      // Set context on req object before calling create
+      req.context = {
+        ...req.context,
+        targetOrganisationId: organisationId,
+      }
+
+      req.payload.logger.debug({
+        msg: 'Setting target organization context',
+        targetOrganisationId: organisationId,
       })
+
+      // Temporarily change user's selected organization as a fallback
+      const originalSelectedOrg = req.user?.selectedOrganisation
+      if (req.user) {
+        req.user.selectedOrganisation = { id: organisationId } as any
+      }
+
+      try {
+        // Create new document with the file buffer
+        clonedDocument = await req.payload.create({
+          collection: 'documents',
+          data: {
+            description: sourceDocument.description,
+            organisation: organisationId,
+          },
+          file,
+          req, // Pass req with context already set
+        })
+      } finally {
+        // Restore original selected organization
+        if (req.user && originalSelectedOrg !== undefined) {
+          req.user.selectedOrganisation = originalSelectedOrg
+        }
+      }
 
       req.payload.logger.debug({
         msg: 'Document created successfully',

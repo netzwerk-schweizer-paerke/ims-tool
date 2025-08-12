@@ -1,13 +1,24 @@
 import { TaskFlow } from '@/payload-types'
 import { stripRichTextField } from './strip-richtext'
 import { PayloadRequest } from 'payload'
+import { CloneStatisticsTracker } from './clone-statistics-tracker'
 
-export const stripTaskFlow = async (obj: TaskFlow, req: PayloadRequest, organisationId: number) => {
+export const stripTaskFlow = async (
+  obj: TaskFlow,
+  req: PayloadRequest,
+  organisationId: number,
+  locale?: string,
+  taskFlowName?: string,
+): Promise<any> => {
   const { id, createdAt, createdBy, updatedAt, updatedBy, ...stripped } = obj
+  const tracker = CloneStatisticsTracker.getInstance()
+  const locationPrefix = taskFlowName ? `Task Flow "${taskFlowName}"` : 'Task Flow'
 
   // Process description rich text field if it exists
   if (stripped.description) {
-    stripped.description = await stripRichTextField(stripped.description, req, organisationId)
+    const result = await stripRichTextField(stripped.description, req, organisationId, locale)
+    stripped.description = result.content
+    tracker.processRichTextResults(result, locationPrefix)
   }
 
   if ('blocks' in stripped && stripped.blocks?.length) {
@@ -17,27 +28,36 @@ export const stripTaskFlow = async (obj: TaskFlow, req: PayloadRequest, organisa
 
         // Process any rich text fields in blocks
         if (strippedBlock.keypoints?.keypoints) {
-          strippedBlock.keypoints.keypoints = await stripRichTextField(
+          const result = await stripRichTextField(
             strippedBlock.keypoints.keypoints,
             req,
             organisationId,
+            locale,
           )
+          strippedBlock.keypoints.keypoints = result.content
+          tracker.processRichTextResults(result, locationPrefix)
         }
 
         if (strippedBlock.tools?.tools) {
-          strippedBlock.tools.tools = await stripRichTextField(
+          const result = await stripRichTextField(
             strippedBlock.tools.tools,
             req,
             organisationId,
+            locale,
           )
+          strippedBlock.tools.tools = result.content
+          tracker.processRichTextResults(result, locationPrefix)
         }
 
         if (strippedBlock.responsibility?.responsibility) {
-          strippedBlock.responsibility.responsibility = await stripRichTextField(
+          const result = await stripRichTextField(
             strippedBlock.responsibility.responsibility,
             req,
             organisationId,
+            locale,
           )
+          strippedBlock.responsibility.responsibility = result.content
+          tracker.processRichTextResults(result, locationPrefix)
         }
 
         return strippedBlock
@@ -46,5 +66,6 @@ export const stripTaskFlow = async (obj: TaskFlow, req: PayloadRequest, organisa
   }
 
   stripped.organisation = organisationId
+
   return stripped
 }

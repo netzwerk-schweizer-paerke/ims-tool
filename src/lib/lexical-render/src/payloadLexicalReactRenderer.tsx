@@ -250,8 +250,7 @@ export const defaultElementRenderers: ElementRenderers = {
               href={`/admin/flow/${doc.id}`}
               title={doc.name}
               target={element.fields.newTab ? '_blank' : '_self'}
-              style={getElementStyle<'link'>(element)}
-            >
+              style={getElementStyle<'link'>(element)}>
               {linkTextReplacer(element.children)}
             </Link>
           )
@@ -263,8 +262,7 @@ export const defaultElementRenderers: ElementRenderers = {
               href={`/admin/list/${doc.id}`}
               title={doc.name}
               target={element.fields.newTab ? '_blank' : '_self'}
-              style={getElementStyle<'link'>(element)}
-            >
+              style={getElementStyle<'link'>(element)}>
               {linkTextReplacer(element.children)}
             </Link>
           )
@@ -285,8 +283,7 @@ export const defaultElementRenderers: ElementRenderers = {
               href={url}
               title={filename || ''}
               target={element.fields.newTab ? '_blank' : '_self'}
-              style={getElementStyle<'link'>(element)}
-            >
+              style={getElementStyle<'link'>(element)}>
               {linkTextReplacer(element.children)}
             </Link>
           )
@@ -296,8 +293,7 @@ export const defaultElementRenderers: ElementRenderers = {
             <a
               href={element.fields.url}
               target={element.fields.newTab ? '_blank' : '_self'}
-              style={getElementStyle<'link'>(element)}
-            >
+              style={getElementStyle<'link'>(element)}>
               {linkTextReplacer(element.children)}
             </a>
           )
@@ -308,8 +304,7 @@ export const defaultElementRenderers: ElementRenderers = {
       <a
         href={element.fields.url}
         target={element.fields.newTab ? '_blank' : '_self'}
-        style={getElementStyle<'link'>(element)}
-      >
+        style={getElementStyle<'link'>(element)}>
         {linkTextReplacer(element.children)}
       </a>
     )
@@ -318,8 +313,7 @@ export const defaultElementRenderers: ElementRenderers = {
     <a
       href={element.fields.url}
       target={element.fields.newTab ? '_blank' : '_self'}
-      style={getElementStyle<'autolink'>(element)}
-    >
+      style={getElementStyle<'autolink'>(element)}>
       {linkTextReplacer(element.children)}
     </a>
   ),

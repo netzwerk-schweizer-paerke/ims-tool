@@ -1412,8 +1412,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               style={{
                 display: 'flex',
                 alignSelf: props.fields.position === 'left' ? 'flex-start' : 'flex-end',
-              }}
-            >
+              }}>
               {props.fields.position}
             </div>
           )

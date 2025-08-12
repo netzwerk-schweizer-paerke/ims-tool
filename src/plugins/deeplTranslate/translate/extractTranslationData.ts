@@ -11,7 +11,7 @@ const removeI18nKeys = (data: any): any => {
 
   // Handle arrays
   if (Array.isArray(data)) {
-    return data.map(item => removeI18nKeys(item))
+    return data.map((item) => removeI18nKeys(item))
   }
 
   // Handle objects
@@ -43,7 +43,7 @@ const removeI18nKeys = (data: any): any => {
 export const extractTranslationData = (
   dataFrom: Record<string, any>,
   configFields: any,
-  baseName = 'translation-data'
+  baseName = 'translation-data',
 ): string => {
   // Remove i18n keys from the data
   const cleanedDataFrom = removeI18nKeys(dataFrom)
@@ -51,17 +51,13 @@ export const extractTranslationData = (
 
   const extractedData = {
     dataFrom: cleanedDataFrom,
-    configFields: cleanedConfigFields
+    configFields: cleanedConfigFields,
   }
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const filename = path.join(__dirname, `${baseName}-${timestamp}.json`)
 
-  fs.writeFileSync(
-    filename,
-    JSON.stringify(extractedData, null, 2),
-    'utf8'
-  )
+  fs.writeFileSync(filename, JSON.stringify(extractedData, null, 2), 'utf8')
 
   console.log(`Extracted translation data saved to ${filename}`)
   return filename

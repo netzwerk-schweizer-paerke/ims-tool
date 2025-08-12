@@ -1,10 +1,12 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
+import { isProduction } from '@/lib/environment'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { assignOrgToUploadBeforeChangeHook } from '@/payload/collections/hooks/assign-org-to-upload-before-change-hook'
 import { mimeTypes } from '@/config/file-upload-mime'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
+import { addUsageInfoAfterReadHook } from './hooks/add-usage-info'
 
 const isLocalHost = (hostName: string) => {
   const localhostPatterns = ['localhost', '127.0.0.1', '0.0.0.0']
@@ -16,7 +18,7 @@ const isLocalHost = (hostName: string) => {
 export const Documents: CollectionConfig = {
   slug: 'documents',
   admin: {
-    hideAPIURL: true,
+    hideAPIURL: isProduction,
     group: I18nCollection.collectionGroup.files,
   },
   access: {
@@ -38,9 +40,10 @@ export const Documents: CollectionConfig = {
   },
   hooks: {
     beforeChange: [assignOrgToUploadBeforeChangeHook],
+    afterRead: [addUsageInfoAfterReadHook],
   },
   upload: {
-    mimeTypes,
+    mimeTypes, // Use the configured MIME types for validation
   },
   fields: [
     {
@@ -62,5 +65,26 @@ export const Documents: CollectionConfig = {
       defaultValue: 'documents',
     },
     adminSettingsField({ sidebar: true }),
+    // Virtual fields to display usage information
+    {
+      name: 'usageCount',
+      type: 'number',
+      virtual: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Number of places this document is used',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'usedIn',
+      type: 'json',
+      virtual: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Where this document is referenced',
+        readOnly: true,
+      },
+    },
   ],
 }

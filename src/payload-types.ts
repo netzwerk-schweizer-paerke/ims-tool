@@ -223,6 +223,13 @@ export interface User {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
   password?: string | null;
 }
 /**
@@ -708,6 +715,22 @@ export interface Document {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  /**
+   * Number of places this document is used
+   */
+  usageCount?: number | null;
+  /**
+   * Where this document is referenced
+   */
+  usedIn?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   prefix?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -929,6 +952,22 @@ export interface DocumentsPublic {
   id: number;
   description?: string | null;
   itemType?: string | null;
+  /**
+   * Number of places this document is used
+   */
+  usageCount?: number | null;
+  /**
+   * Where this document is referenced
+   */
+  usedIn?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   prefix?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1191,6 +1230,8 @@ export interface DocumentsSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  usageCount?: T;
+  usedIn?: T;
   prefix?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1211,6 +1252,8 @@ export interface DocumentsSelect<T extends boolean = true> {
 export interface DocumentsPublicSelect<T extends boolean = true> {
   description?: T;
   itemType?: T;
+  usageCount?: T;
+  usedIn?: T;
   prefix?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1384,6 +1427,13 @@ export interface UsersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

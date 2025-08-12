@@ -1,13 +1,24 @@
 import { TaskList } from '@/payload-types'
 import { stripRichTextField } from './strip-richtext'
 import { PayloadRequest } from 'payload'
+import { CloneStatisticsTracker } from './clone-statistics-tracker'
 
-export const stripTaskList = async (obj: TaskList, req: PayloadRequest, organisationId: number) => {
+export const stripTaskList = async (
+  obj: TaskList,
+  req: PayloadRequest,
+  organisationId: number,
+  locale?: string,
+  taskListName?: string,
+): Promise<any> => {
   const { id, createdAt, createdBy, updatedAt, updatedBy, ...stripped } = obj
+  const tracker = CloneStatisticsTracker.getInstance()
+  const locationPrefix = taskListName ? `Task List "${taskListName}"` : 'Task List'
 
   // Process description rich text field if it exists
   if (stripped.description) {
-    stripped.description = await stripRichTextField(stripped.description, req, organisationId)
+    const result = await stripRichTextField(stripped.description, req, organisationId, locale)
+    stripped.description = result.content
+    tracker.processRichTextResults(result, locationPrefix)
   }
 
   if ('items' in stripped && stripped.items?.length) {
@@ -16,17 +27,24 @@ export const stripTaskList = async (obj: TaskList, req: PayloadRequest, organisa
         const { id, ...strippedItem } = item
 
         if (strippedItem.responsibility) {
-          strippedItem.responsibility = await stripRichTextField(
+          const result = await stripRichTextField(
             strippedItem.responsibility,
             req,
             organisationId,
+            locale,
           )
+          strippedItem.responsibility = result.content
+          tracker.processRichTextResults(result, locationPrefix)
         }
         if (strippedItem.tools) {
-          strippedItem.tools = await stripRichTextField(strippedItem.tools, req, organisationId)
+          const result = await stripRichTextField(strippedItem.tools, req, organisationId, locale)
+          strippedItem.tools = result.content
+          tracker.processRichTextResults(result, locationPrefix)
         }
         if (strippedItem.topic) {
-          strippedItem.topic = await stripRichTextField(strippedItem.topic, req, organisationId)
+          const result = await stripRichTextField(strippedItem.topic, req, organisationId, locale)
+          strippedItem.topic = result.content
+          tracker.processRichTextResults(result, locationPrefix)
         }
         return strippedItem
       }),
@@ -34,5 +52,6 @@ export const stripTaskList = async (obj: TaskList, req: PayloadRequest, organisa
   }
 
   stripped.organisation = organisationId
+
   return stripped
 }

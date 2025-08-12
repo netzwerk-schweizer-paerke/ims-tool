@@ -1,5 +1,6 @@
 import { DrawerToggler } from '@payloadcms/ui'
 import { CloneActivitiesOverlay } from '@/payload/collections/Activities/components/clone-activities-overlay'
+import { Translate } from '@/lib/translate'
 import { User } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
@@ -88,7 +89,7 @@ export const CloneActivityButton: React.FC<Props> = async ({ user, payload }) =>
         <DrawerToggler
           className={`${baseClass}__edit btn btn--size-small btn--style-secondary`}
           slug={drawerSlug}>
-          Clone activities
+          <Translate k={'cloneActivity:button'} />
         </DrawerToggler>
       </div>
       <CloneActivitiesOverlay

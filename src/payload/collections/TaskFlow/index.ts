@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
+import { isProduction } from '@/lib/environment'
 import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output'
 import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
@@ -12,7 +13,7 @@ import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
   admin: {
-    hideAPIURL: true,
+    hideAPIURL: isProduction,
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
   },

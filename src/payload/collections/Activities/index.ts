@@ -1,19 +1,20 @@
 import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
+import { isProduction } from '@/lib/environment'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
 import { filesArrayField } from '@/payload/fields/files-array'
-import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone-activity/clone-activity'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
+import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone-activity/clone-activity-transactional'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
   admin: {
     group: I18nCollection.collectionGroup.process,
-    hideAPIURL: true,
+    hideAPIURL: isProduction,
     useAsTitle: 'name',
     components: {
       beforeListTable: [
@@ -84,5 +85,5 @@ export const Activities: CollectionConfig = {
     filesArrayField,
     adminSettingsField(),
   ],
-  endpoints: [cloneActivity],
+  endpoints: [cloneActivityTransactional],
 }
