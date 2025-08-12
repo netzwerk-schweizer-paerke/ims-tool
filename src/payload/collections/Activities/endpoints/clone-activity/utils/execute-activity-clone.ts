@@ -23,7 +23,7 @@ type ExecuteActivityCloneResult = {
 /**
  * Main execution function that orchestrates the entire activity cloning process
  * This function should be called within a transaction context
- * 
+ *
  * Steps:
  * 1. Initialize statistics tracking
  * 2. Collect source activity statistics
@@ -51,12 +51,7 @@ export async function executeActivityClone(
   })
 
   // Step 2: Strip activity data for initial clone
-  const strippedActivity = await stripActivity(
-    sourceActivity,
-    req,
-    targetOrgId,
-    locale as string,
-  )
+  const strippedActivity = await stripActivity(sourceActivity, req, targetOrgId, locale as string)
 
   req.payload.logger.debug({ msg: 'Activity stripped' })
 

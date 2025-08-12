@@ -1,13 +1,15 @@
-import { Config, SanitizedConfig } from 'payload'
-import { isObject } from 'lodash-es'
+import { ClientConfig, SanitizedConfig } from 'payload'
+import { isArray, isObject, isString } from 'lodash-es'
+
+type Configs = SanitizedConfig | ClientConfig
 
 /**
  * Extract locale codes from Payload configuration
  * @param config - Payload configuration object
  * @returns Array of locale codes, defaults to ['en'] if no localization configured
  */
-export function getLocaleCodes(config: SanitizedConfig): string[] {
-  if (!config.localization || !config.localization.locales) {
+export function getLocaleCodes(config: Configs): string[] {
+  if (!hasLocalization(config)) {
     return ['en']
   }
 
@@ -20,7 +22,15 @@ export function getLocaleCodes(config: SanitizedConfig): string[] {
     })
     .filter((code): code is string => code !== null)
 
-  return codes.length > 0 ? codes : ['en']
+  return codes.length > 0 ? codes : [getDefaultLocaleCode(config)]
+}
+
+export function getDefaultLocaleCode(config: Configs): string {
+  if (hasLocalization(config)) {
+    return config.localization.defaultLocale
+  }
+
+  return 'en'
 }
 
 /**
@@ -29,7 +39,7 @@ export function getLocaleCodes(config: SanitizedConfig): string[] {
  * @returns Array of locale codes
  */
 export function getLocaleCodesFromRequest(
-  req: { payload: { config: SanitizedConfig } } | { payload: any },
+  req: { payload: { config: Configs } } | { payload: any },
 ): string[] {
   return getLocaleCodes(req.payload.config)
 }
@@ -69,14 +79,21 @@ export function getLocalizedValue(field: any, locales: string[], preferredLocale
 }
 
 /**
- * Check if a configuration has localization enabled
+ * Check if a configuration has localization enabled, locales defined and a defaultLocale
  * @param config - Payload configuration object
  * @returns True if localization is configured, false otherwise
  */
-export function hasLocalization(config: Config): boolean {
-  return !!(
-    config.localization &&
-    config.localization.locales &&
-    config.localization.locales.length > 0
+export function hasLocalization(config: Configs): config is Configs & {
+  localization: {
+    locales: Array<{ code: string; label: any }>
+    defaultLocale: string
+    [key: string]: any
+  }
+} {
+  return (
+    isObject(config.localization) &&
+    isArray(config.localization.locales) &&
+    config.localization.locales.length > 0 &&
+    isString(config.localization.defaultLocale)
   )
 }

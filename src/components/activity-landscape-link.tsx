@@ -10,9 +10,6 @@ export const ActivityLandscapeLink: React.FC = () => {
   const isActivityDetailRoute =
     pathname.includes('/admin/activity/') && pathname.includes('/block/')
 
-  const isAdminDashboard =
-    pathname.startsWith('/admin') && !isActivityRoute && !isActivityDetailRoute
-
   return (
     <div className={'nav-group pb-8'}>
       <div className={'nav-group__toggle'}>

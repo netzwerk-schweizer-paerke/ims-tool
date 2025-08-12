@@ -6,7 +6,11 @@ import { usePreferences } from '@payloadcms/ui'
 import { Organisation } from '@/payload-types'
 
 type UseOrganisationSwitchResult = {
-  switchOrganisation: (userId: number, targetOrgId: number, targetOrg?: Organisation) => Promise<void>
+  switchOrganisation: (
+    userId: number,
+    targetOrgId: number,
+    targetOrg?: Organisation,
+  ) => Promise<void>
   isSwitching: boolean
   error: string | null
 }
@@ -23,7 +27,7 @@ export function useOrganisationSwitch(): UseOrganisationSwitchResult {
   const switchOrganisation = async (
     userId: number,
     targetOrgId: number,
-    targetOrg?: Organisation
+    targetOrg?: Organisation,
   ) => {
     setIsSwitching(true)
     setError(null)

@@ -18,9 +18,7 @@ type CloneActivityBlocksParams = {
  * Updates the cloned activity with new task references
  * Tracks statistics for cloned blocks
  */
-export async function cloneActivityBlocks(
-  params: CloneActivityBlocksParams,
-): Promise<void> {
+export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Promise<void> {
   const { req, clonedActivity, targetOrgId, tracker, locale } = params
 
   if (!clonedActivity.blocks) {
@@ -59,12 +57,7 @@ export async function cloneActivityBlocks(
           })
 
           req.payload.logger.debug({ msg: 'before createTaskFlow', value: taskFlow.id })
-          const newTaskFlow = await createTaskFlow(
-            req,
-            taskFlow,
-            targetOrgId,
-            locale as string,
-          )
+          const newTaskFlow = await createTaskFlow(req, taskFlow, targetOrgId, locale as string)
 
           if (newTaskFlow) {
             newRelations.push({ relationTo, value: newTaskFlow.id })
@@ -92,12 +85,7 @@ export async function cloneActivityBlocks(
           })
 
           req.payload.logger.debug({ msg: 'before createTaskList', value: taskList.id })
-          const newTaskList = await createTaskList(
-            req,
-            taskList,
-            targetOrgId,
-            locale as string,
-          )
+          const newTaskList = await createTaskList(req, taskList, targetOrgId, locale as string)
 
           if (newTaskList) {
             newRelations.push({ relationTo, value: newTaskList.id })

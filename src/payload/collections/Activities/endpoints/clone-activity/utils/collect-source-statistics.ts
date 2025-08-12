@@ -13,9 +13,7 @@ type CollectSourceStatsParams = {
  * Collects comprehensive statistics from the source activity
  * including blocks, tasks, documents, and field population
  */
-export async function collectSourceStatistics(
-  params: CollectSourceStatsParams,
-): Promise<void> {
+export async function collectSourceStatistics(params: CollectSourceStatsParams): Promise<void> {
   const { req, sourceActivity, tracker } = params
 
   // Collect basic source statistics
@@ -34,8 +32,8 @@ export async function collectSourceStatistics(
     blocksCount: sourceActivity.blocks?.length || 0,
     // Only count files that actually have documents attached (not null)
     filesCount:
-      sourceActivity.files?.filter((f) => f.document !== null && f.document !== undefined)
-        .length || 0,
+      sourceActivity.files?.filter((f) => f.document !== null && f.document !== undefined).length ||
+      0,
     fieldsPopulated: populatedFields,
   })
 

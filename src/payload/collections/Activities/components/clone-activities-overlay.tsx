@@ -1,5 +1,13 @@
 'use client'
-import { Button, CloseMenuIcon, Drawer, useLocale, useModal, useTranslation, useAuth } from '@payloadcms/ui'
+import {
+  Button,
+  CloseMenuIcon,
+  Drawer,
+  useLocale,
+  useModal,
+  useTranslation,
+  useAuth,
+} from '@payloadcms/ui'
 import { I18nObject, I18nKeys } from '@/lib/useTranslation-custom-types'
 import { useState } from 'react'
 import {
@@ -183,17 +191,23 @@ export const CloneActivitiesOverlay: React.FC<Props> = ({ activities, targetOrga
 
   const onSwitchToTargetOrg = async () => {
     if (!user?.id || !targetOrgId) return
-    
+
     try {
       // Find the target organization object
-      const targetOrg = targetOrganisations.find(org => org.value === targetOrgId)
-      
+      const targetOrg = targetOrganisations.find((org) => org.value === targetOrgId)
+
       // Use the hook to switch organization - this will reload the page
-      await switchOrganisation(user.id, targetOrgId, targetOrg ? { 
-        id: targetOrg.value, 
-        name: targetOrg.label,
-        organisationLanguage: locale?.code
-      } as any : undefined)
+      await switchOrganisation(
+        typeof user.id === 'string' ? parseInt(user.id, 10) : user.id,
+        targetOrgId,
+        targetOrg
+          ? ({
+              id: targetOrg.value,
+              name: targetOrg.label,
+              organisationLanguage: locale?.code,
+            } as any)
+          : undefined,
+      )
     } catch (error) {
       console.error('Failed to switch organization:', error)
     }

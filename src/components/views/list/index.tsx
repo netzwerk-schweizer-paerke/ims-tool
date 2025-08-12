@@ -1,5 +1,5 @@
 import React from 'react'
-import { AdminViewProps } from 'payload'
+import { AdminViewProps, AdminViewServerProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { headers as getHeaders } from 'next/headers'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
@@ -17,7 +17,7 @@ function isTaskFlowArray(listRelation: any): listRelation is TaskFlow[] {
   return Array.isArray(listRelation) && listRelation.every((list) => typeof list.id === 'number')
 }
 
-export const ListBlockView: React.FC<AdminViewProps> = async ({
+export const ListBlockView: React.FC<AdminViewServerProps> = async ({
   initPageResult,
   params,
   searchParams,
@@ -113,8 +113,13 @@ export const ListBlockView: React.FC<AdminViewProps> = async ({
 
   return (
     <DefaultTemplate
-      i18n={req.i18n}
-      payload={req.payload}
+      i18n={initPageResult.req.i18n}
+      locale={initPageResult.locale}
+      params={params}
+      payload={initPageResult.req.payload}
+      permissions={initPageResult.permissions}
+      searchParams={searchParams}
+      user={initPageResult.req.user || undefined}
       visibleEntities={initPageResult.visibleEntities}>
       <div
         style={{

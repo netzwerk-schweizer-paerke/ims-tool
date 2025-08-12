@@ -11,9 +11,13 @@ import { ActivityEditLink } from '@/components/views/activity/overview/activity/
 import { TasksGrid } from '@/components/views/activity/view/tasks-grid'
 import './landscape-bg.css'
 import { LastUpdated } from '@/components/last-updated'
-import { AdminViewProps } from 'payload'
+import { AdminViewProps, AdminViewServerProps } from 'payload'
 
-export const ActivityBlockView: React.FC<AdminViewProps> = async ({ initPageResult, params }) => {
+export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
+  initPageResult,
+  params,
+  searchParams,
+}) => {
   const headers = await getHeaders()
   const { req } = initPageResult
   const { user } = await req.payload.auth({ headers })
@@ -90,8 +94,13 @@ export const ActivityBlockView: React.FC<AdminViewProps> = async ({ initPageResu
 
   return (
     <DefaultTemplate
-      i18n={req.i18n}
-      payload={req.payload}
+      i18n={initPageResult.req.i18n}
+      locale={initPageResult.locale}
+      params={params}
+      payload={initPageResult.req.payload}
+      permissions={initPageResult.permissions}
+      searchParams={searchParams}
+      user={initPageResult.req.user || undefined}
       visibleEntities={initPageResult.visibleEntities}>
       <div
         style={{

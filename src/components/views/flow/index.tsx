@@ -1,5 +1,5 @@
 import React from 'react'
-import { AdminViewProps } from 'payload'
+import { AdminViewServerProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { headers as getHeaders } from 'next/headers'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
@@ -18,7 +18,11 @@ function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
   return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number')
 }
 
-export const FlowBlockView: React.FC<AdminViewProps> = async ({ initPageResult, params }) => {
+export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
+  initPageResult,
+  params,
+  searchParams,
+}) => {
   const headers = await getHeaders()
   const { req } = initPageResult
   const { user } = await req.payload.auth({ headers })
@@ -113,8 +117,13 @@ export const FlowBlockView: React.FC<AdminViewProps> = async ({ initPageResult, 
 
   return (
     <DefaultTemplate
-      i18n={req.i18n}
-      payload={req.payload}
+      i18n={initPageResult.req.i18n}
+      locale={initPageResult.locale}
+      params={params}
+      payload={initPageResult.req.payload}
+      permissions={initPageResult.permissions}
+      searchParams={searchParams}
+      user={initPageResult.req.user || undefined}
       visibleEntities={initPageResult.visibleEntities}>
       <div
         style={{
