@@ -10,6 +10,7 @@ type Args = {
   locale: TypedLocale
   overrideAccess?: boolean
   req: PayloadRequest
+  context?: Record<string, any> // Add context for hooks
 }
 
 export const updateEntity = ({
@@ -21,6 +22,7 @@ export const updateEntity = ({
   locale,
   overrideAccess,
   req,
+  context,
 }: Args): Promise<Record<string, unknown> & TypeWithID> => {
   if (!collectionSlug && !globalSlug) {
     throw new APIError('Bad Request', 400)
@@ -44,6 +46,7 @@ export const updateEntity = ({
         locale: locale as any,
         overrideAccess,
         req,
+        context,
       })
     : req.payload.update({
         id: id as number | string,
@@ -53,6 +56,7 @@ export const updateEntity = ({
         locale: locale as any,
         overrideAccess,
         req,
+        context,
       })
 
   return promise as any

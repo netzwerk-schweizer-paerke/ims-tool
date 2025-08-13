@@ -3,10 +3,10 @@ import type { Field } from 'payload'
 import ObjectID from 'bson-objectid'
 import { tabHasName } from 'payload/shared'
 
-import type { ValueToTranslate } from './types'
+import type { ValueToTranslate } from '../types'
 
-import { isEmpty } from '../utils/isEmpty'
-import { traverseRichText } from './traverseRichText'
+import { isEmpty } from '../../utils/isEmpty'
+import { traverseRichText } from './traverse-rich-text'
 import { isObject } from 'lodash-es'
 
 export const traverseFields = ({
@@ -137,11 +137,15 @@ export const traverseFields = ({
       case 'number':
       case 'point':
       case 'radio':
-      case 'relationship':
       case 'select':
       case 'upload':
         siblingDataTranslated[field.name] = siblingDataFrom[field.name]
+        break
 
+      case 'relationship':
+        // Copy the relationship reference as-is
+        // Relationship translation will be handled separately in the operation
+        siblingDataTranslated[field.name] = siblingDataFrom[field.name]
         break
       case 'json':
         siblingDataTranslated[field.name] = siblingDataFrom[field.name]
@@ -231,51 +235,36 @@ export const traverseFields = ({
 
         const richTextDataFrom = siblingDataFrom[field.name] as object
 
-        siblingDataTranslated[field.name] = richTextDataFrom
-
         if (!richTextDataFrom) {
           break
         }
 
-        const isSlate = Array.isArray(richTextDataFrom)
-
-        const isLexical = 'root' in richTextDataFrom
-
-        if (!isSlate && !isLexical) {
+        // Only handle Lexical editor content (has root property)
+        if (!('root' in richTextDataFrom)) {
           break
         }
 
-        if (isLexical) {
-          const root = (siblingDataTranslated[field.name] as Record<string, unknown>)
-            ?.root as Record<string, unknown>
+        // Deep clone the Lexical content to avoid reference issues
+        const clonedRichText = JSON.parse(JSON.stringify(richTextDataFrom))
+        siblingDataTranslated[field.name] = clonedRichText
 
-          if (root) {
-            traverseRichText({
-              onText: (siblingData) => {
+        const root = clonedRichText.root as Record<string, unknown>
+
+        if (root) {
+          traverseRichText({
+            onText: (siblingData) => {
+              // Make sure we're getting the text value correctly
+              if (siblingData.text && typeof siblingData.text === 'string') {
                 valuesToTranslate.push({
                   onTranslate: (translated: string) => {
                     siblingData.text = translated
                   },
                   value: siblingData.text,
                 })
-              },
-              root,
-            })
-          }
-        } else {
-          for (const root of siblingDataTranslated[field.name] as unknown[]) {
-            traverseRichText({
-              onText: (siblingData) => {
-                valuesToTranslate.push({
-                  onTranslate: (translated: string) => {
-                    siblingData.text = translated
-                  },
-                  value: siblingData.text,
-                })
-              },
-              root: root as Record<string, unknown>,
-            })
-          }
+              }
+            },
+            root,
+          })
         }
 
         break
@@ -337,7 +326,7 @@ export const traverseFields = ({
           onTranslate: (translated: string) => {
             siblingDataTranslated[field.name] = translated
           },
-          value: siblingDataFrom[field.name],
+          value: siblingDataFrom[field.name] as string | undefined,
         })
         break
 

@@ -7,6 +7,8 @@ export type DeepLResolverArgs = {
   localeTo: string
   req: PayloadRequest
   texts: string[]
+  /** Optional DeepL API options (e.g., tag_handling for HTML) */
+  options?: any
 }
 
 export type DeepLResolverResponse =

@@ -17,4 +17,18 @@ export type DeepLTranslateConfig = {
    * DeepL API key
    */
   apiKey: string
+  /**
+   * Track outdated translations (optional)
+   */
+  trackOutdated?: {
+    /**
+     * Enable tracking of outdated translations
+     */
+    enabled: boolean
+    /**
+     * Field name to store translation metadata
+     * @default 'translationMeta'
+     */
+    fieldName?: string
+  }
 }

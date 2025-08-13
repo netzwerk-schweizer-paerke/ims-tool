@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nObject, I18nKeys } from '@/lib/useTranslation-custom-types'
+import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
 import { CloneStatistics } from '@/payload/collections/Activities/types/clone-statistics'
 
 interface ClonePartialResultsTableProps {
@@ -13,7 +13,7 @@ export const ClonePartialResultsTable: React.FC<ClonePartialResultsTableProps> =
   const { t } = useTranslation<I18nObject, I18nKeys>()
 
   return (
-    <table className="ml-4 min-w-[400px] border-collapse text-sm">
+    <table className="ml-4 min-w-[400px] border-collapse">
       <thead>
         <tr className="border-b border-gray-300">
           <th className="p-2 text-left font-medium">{t('cloneActivity:table:metric' as any)}</th>

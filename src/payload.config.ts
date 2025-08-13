@@ -140,6 +140,9 @@ export default buildConfig({
       collections: ['activities', 'task-flows', 'task-lists'],
       globals: [],
       apiKey: process.env.DEEPL_API_KEY || '',
+      trackOutdated: {
+        enabled: true,
+      },
     }),
     s3Storage({
       collections: {

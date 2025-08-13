@@ -4,12 +4,19 @@ import { deepMerge } from 'payload/shared'
 
 import type { DeepLTranslateConfig } from './types'
 
-import { CustomButton } from './client/components/CustomButton'
+import { CustomButton } from './client/components/buttons/custom-button'
 import { translations } from './i18n-translations'
-import { translateEndpoint } from './translate/endpoint'
-import { translateOperation } from './translate/operation'
+import { translateEndpoint } from './server/endpoints/translate'
+import { translateOperation } from './server/operations/translate-operation'
+import { translationMetaField } from './fields/translation-meta-field'
+import {
+  createTrackTranslationChangesHookForCollection,
+  createTrackTranslationChangesHookForGlobal,
+  createClearOutdatedHookForCollection,
+  createClearOutdatedHookForGlobal,
+} from './hooks/track-translation-changes'
 
-export * from './resolvers/types'
+export * from './server/services/resolver-types'
 
 export { translateOperation }
 
@@ -18,6 +25,10 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
     if (pluginConfig.disabled || !config.localization || config.localization.locales.length < 2) {
       return config
     }
+
+    // Setup tracking configuration
+    const trackingEnabled = pluginConfig.trackOutdated?.enabled ?? false
+    const metaFieldName = pluginConfig.trackOutdated?.fieldName ?? 'translationMeta'
 
     const updatedConfig: Config = {
       ...config,
@@ -30,7 +41,7 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
             return collection
           }
 
-          return {
+          const collectionWithTranslation = {
             ...collection,
             admin: {
               ...(collection.admin ?? {}),
@@ -44,6 +55,27 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
               },
             },
           }
+
+          // Add tracking field and hooks if enabled
+          if (trackingEnabled) {
+            // Add the metadata field
+            collectionWithTranslation.fields = [
+              ...collection.fields,
+              translationMetaField(metaFieldName),
+            ]
+
+            // Add hooks
+            collectionWithTranslation.hooks = {
+              ...collection.hooks,
+              beforeChange: [
+                ...(collection.hooks?.beforeChange || []),
+                createTrackTranslationChangesHookForCollection(metaFieldName),
+                createClearOutdatedHookForCollection(metaFieldName),
+              ],
+            }
+          }
+
+          return collectionWithTranslation
         }) ?? [],
       custom: {
         ...(config.custom ?? {}),
@@ -63,7 +95,7 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
             return global
           }
 
-          return {
+          const globalWithTranslation = {
             ...global,
             admin: {
               ...(global.admin ?? {}),
@@ -77,6 +109,24 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
               },
             },
           }
+
+          // Add tracking field and hooks if enabled
+          if (trackingEnabled) {
+            // Add the metadata field
+            globalWithTranslation.fields = [...global.fields, translationMetaField(metaFieldName)]
+
+            // Add hooks
+            globalWithTranslation.hooks = {
+              ...global.hooks,
+              beforeChange: [
+                ...(global.hooks?.beforeChange || []),
+                createTrackTranslationChangesHookForGlobal(metaFieldName),
+                createClearOutdatedHookForGlobal(metaFieldName),
+              ],
+            }
+          }
+
+          return globalWithTranslation
         }) ?? [],
       i18n: {
         ...config.i18n,

@@ -13,7 +13,7 @@ import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admi
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: {
-    useAPIKey: false,
+    useAPIKey: true,
   },
   admin: {
     hideAPIURL: isProduction,

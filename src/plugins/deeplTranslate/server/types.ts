@@ -1,8 +1,8 @@
 import { CollectionSlug, GlobalSlug, TypedLocale } from 'payload'
 
 export type ValueToTranslate = {
-  onTranslate: (translatedValue: any) => void
-  value: any
+  onTranslate: (translatedValue: string) => void
+  value: string | undefined
 }
 
 export type TranslateArgs = {

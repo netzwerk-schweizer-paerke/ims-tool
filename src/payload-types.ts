@@ -216,6 +216,9 @@ export interface User {
   selectedOrganisation?: (number | null) | Organisation;
   updatedAt: string;
   createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -275,6 +278,15 @@ export interface Activity {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  translationMeta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -426,6 +438,15 @@ export interface TaskFlow {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  translationMeta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -835,6 +856,15 @@ export interface TaskList {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  translationMeta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1156,6 +1186,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  translationMeta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1291,6 +1322,7 @@ export interface TaskFlowsSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  translationMeta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1405,6 +1437,7 @@ export interface TaskListsSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  translationMeta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1420,6 +1453,9 @@ export interface UsersSelect<T extends boolean = true> {
   selectedOrganisation?: T;
   updatedAt?: T;
   createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;

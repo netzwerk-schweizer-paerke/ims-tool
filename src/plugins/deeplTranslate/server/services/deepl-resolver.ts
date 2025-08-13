@@ -2,7 +2,7 @@ import type { PayloadRequest } from 'payload'
 
 import * as deepl from 'deepl-node'
 
-import type { DeepLResolver, DeepLResolverArgs } from './types'
+import type { DeepLResolver, DeepLResolverArgs } from './resolver-types'
 import { logger } from '@/lib/logger'
 
 export interface DeeplResolverConfig {
@@ -27,6 +27,7 @@ async function processChunksSequentially(
   sourceLanguage: deepl.SourceLanguageCode,
   targetLanguage: deepl.TargetLanguageCode,
   req: PayloadRequest,
+  options?: any,
 ): Promise<string[]> {
   const results: string[] = []
 
@@ -52,6 +53,7 @@ async function processChunksSequentially(
         textsToTranslate,
         sourceLanguage,
         targetLanguage,
+        options,
       )) as deepl.TextResult[]
 
       // Create a map of translations indexed by their original position
@@ -93,11 +95,18 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
 
     const DeepL = new deepl.Translator(apiKey, options)
 
-    const { localeFrom, localeTo, req, texts } = args as {
+    const {
+      localeFrom,
+      localeTo,
+      req,
+      texts,
+      options: translationOptions,
+    } = args as {
       localeFrom: deepl.SourceLanguageCode
       localeTo: deepl.TargetLanguageCode
       req: PayloadRequest
       texts: string[]
+      options?: any
     }
 
     logger.debug({ msg: 'DeepL resolver called', localeFrom, localeTo, entries: texts.length })
@@ -110,6 +119,7 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
       localeFrom,
       localeTo,
       req,
+      translationOptions,
     )
 
     return {

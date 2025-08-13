@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nObject, I18nKeys } from '@/lib/useTranslation-custom-types'
+import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
 import { CloneStatistics } from '@/payload/collections/Activities/types/clone-statistics'
 
 interface CloneResultsTableProps {
@@ -11,7 +11,7 @@ export const CloneResultsTable: React.FC<CloneResultsTableProps> = ({ statistics
   const { t } = useTranslation<I18nObject, I18nKeys>()
 
   return (
-    <table className="ml-4 min-w-[400px] border-collapse text-sm">
+    <table className="min-w-full border-collapse">
       <thead>
         <tr className="border-b border-gray-300">
           <th className="p-2 text-left font-medium">{t('cloneActivity:table:metric' as any)}</th>
@@ -24,21 +24,6 @@ export const CloneResultsTable: React.FC<CloneResultsTableProps> = ({ statistics
           <td className="p-2">{t('cloneActivity:table:activityId' as any)}</td>
           <td className="p-2 text-center">{statistics.source.id}</td>
           <td className="p-2 text-center">{statistics.cloned.id}</td>
-        </tr>
-        <tr className="border-b border-gray-200">
-          <td className="p-2">{t('cloneActivity:table:name' as any)}</td>
-          <td className="p-2 text-center">{statistics.source.name}</td>
-          <td className="p-2 text-center">{statistics.cloned.name}</td>
-        </tr>
-        <tr className="border-b border-gray-200">
-          <td className="p-2">{t('cloneActivity:table:hasDescription' as any)}</td>
-          <td className="p-2 text-center">{statistics.source.hasDescription ? '✓' : '✗'}</td>
-          <td className="p-2 text-center">{statistics.cloned.hasDescription ? '✓' : '✗'}</td>
-        </tr>
-        <tr className="border-b border-gray-200">
-          <td className="p-2">{t('cloneActivity:table:variant' as any)}</td>
-          <td className="p-2 text-center">{statistics.source.variant || '-'}</td>
-          <td className="p-2 text-center">{statistics.cloned.variant || '-'}</td>
         </tr>
         <tr className="border-b border-gray-200">
           <td className="p-2">{t('cloneActivity:table:blocksCount' as any)}</td>
