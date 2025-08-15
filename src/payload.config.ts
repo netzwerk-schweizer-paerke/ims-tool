@@ -21,6 +21,7 @@ import { TaskLists } from '@/payload/collections/TaskList'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { DocumentsPublic } from '@/payload/collections/DocumentsPublic'
 import { deepLTranslate } from 'src/plugins/deeplTranslate'
+import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -45,6 +46,7 @@ export default buildConfig({
     Users,
   ],
   globals: [],
+  endpoints: [s3OrphanDetectionEndpoint],
   localization: {
     locales: [
       {

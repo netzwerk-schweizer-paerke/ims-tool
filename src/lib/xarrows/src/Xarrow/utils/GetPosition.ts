@@ -5,7 +5,7 @@ import { calcAnchors } from '../anchors'
 import { getShortestLine, getSvgPos } from './index'
 import { cPaths } from '../../constants'
 import { buzzierMinSols, bzFunction } from './buzzier'
-import { pick } from 'lodash-es'
+import { pick } from 'es-toolkit'
 
 const getRoundedEdge = (
   gridRadius: number,

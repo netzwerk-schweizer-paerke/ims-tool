@@ -8,7 +8,8 @@ import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
-import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone-activity/clone-activity-transactional'
+import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone/clone-activity-transactional'
+import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
@@ -19,7 +20,7 @@ export const Activities: CollectionConfig = {
     components: {
       beforeListTable: [
         {
-          path: 'src/payload/collections/Activities/components/clone-activity-button#CloneActivityButton',
+          path: 'src/payload/collections/Activities/components/before-list-table-wrapper.tsx#BeforeListTableWrapper',
         },
       ],
     },
@@ -85,5 +86,5 @@ export const Activities: CollectionConfig = {
     filesArrayField,
     adminSettingsField(),
   ],
-  endpoints: [cloneActivityTransactional],
+  endpoints: [cloneActivityTransactional, fetchLegacyDocsTransactional],
 }

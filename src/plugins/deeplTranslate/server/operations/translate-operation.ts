@@ -94,6 +94,7 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
   if (!resolveResult.success) {
     result = {
       success: false,
+      error: resolveResult.error,
     }
   } else {
     resolveResult.translatedTexts.forEach((translated, index) => {

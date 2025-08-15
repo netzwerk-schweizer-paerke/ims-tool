@@ -26,15 +26,6 @@ const nextConfig = {
   },
   experimental: {
     serverSourceMaps: false,
-    webpackMemoryOptimizations: true,
-    // turbo: {
-    //   rules: {
-    //     '*.svg': {
-    //       loaders: ['@svgr/webpack'],
-    //       as: '*.js',
-    //     },
-    //   },
-    // },
   },
   async redirects() {
     return [

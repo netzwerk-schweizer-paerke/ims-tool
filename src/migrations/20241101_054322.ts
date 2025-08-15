@@ -1,6 +1,6 @@
 import { MigrateDownArgs, MigrateUpArgs } from '@payloadcms/db-postgres'
 import { integer, pgTable, serial, varchar } from 'drizzle-orm/pg-core'
-import { groupBy, orderBy } from 'lodash-es'
+import { groupBy, orderBy } from 'es-toolkit'
 import { eq } from 'drizzle-orm'
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
@@ -23,6 +23,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   const relationsGrouped = groupBy(relations, (item) => item.parent_id)
 
   Object.keys(relationsGrouped).forEach((k) => {
+    // @ts-expect-error legacy
     const groupedByBlockId = groupBy(relationsGrouped[k], (item) => item.path.split('.')[1])
     const newItems: {
       path: string
@@ -37,7 +38,9 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     Object.keys(groupedByBlockId).forEach((kkk) => {
       groupedByBlockId[kkk].forEach((item, idx) => {
         newItems.push({
+          // @ts-expect-error legacy
           ...item,
+          // @ts-expect-error legacy
           path: item.path.replace('flowRelation', 'tasks').replace('listRelation', 'tasks'),
           order: idx + 1,
         })

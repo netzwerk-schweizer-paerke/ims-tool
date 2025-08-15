@@ -1,26 +1,16 @@
 import type {
   CollectionSlug,
-  GlobalSlug,
   PayloadHandler,
   PayloadRequest,
-  TypedLocale,
 } from 'payload'
 import { APIError } from 'payload'
+import { ZodError } from 'zod'
 
 import { translateOperation } from '../operations/translate-operation'
 import { relationshipCollector } from '../collectors/relationship-collector'
 import { collectRelationships } from '../operations/collect-relationships'
 import { findEntityWithConfig } from '../utilities/find-entity-with-config'
-
-type SimpleTranslateArgs = {
-  id: string | number
-  collectionSlug?: CollectionSlug
-  globalSlug?: GlobalSlug
-  fromLocale: TypedLocale
-  toLocale: TypedLocale
-  includeRelationships?: boolean
-  relationshipDepth?: number
-}
+import { validateTranslateArgs, type ValidatedTranslateArgs } from '../schemas/translate-endpoint'
 
 /**
  * Transaction-safe translation endpoint
@@ -34,7 +24,24 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     throw new APIError('Content-Type should be json')
   }
 
-  const args: SimpleTranslateArgs = await req.json()
+  // Parse and validate request body with Zod schema
+  let validatedArgs: ValidatedTranslateArgs
+  try {
+    const rawArgs = await req.json()
+    validatedArgs = await validateTranslateArgs(rawArgs)
+  } catch (error) {
+    if (error instanceof ZodError) {
+      // Format Zod validation errors into a user-friendly message
+      const errorMessages = error.issues.map((err: any) => {
+        const path = err.path.length > 0 ? ` (${err.path.join('.')})` : ''
+        return `${err.message}${path}`
+      }).join('; ')
+      
+      throw new APIError(`Validation failed: ${errorMessages}`, 400)
+    }
+    // Re-throw other errors (JSON parsing, etc.)
+    throw error
+  }
 
   const {
     id,
@@ -42,17 +49,9 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     globalSlug,
     fromLocale,
     toLocale,
-    includeRelationships = false,
-    relationshipDepth = 1,
-  } = args
-
-  if (!collectionSlug && !globalSlug) {
-    throw new APIError('Either collectionSlug or globalSlug is required', 400)
-  }
-
-  if (!fromLocale || !toLocale) {
-    throw new APIError('Both fromLocale and toLocale are required', 400)
-  }
+    includeRelationships,
+    relationshipDepth,
+  } = validatedArgs
 
   // Start a database transaction
   const transactionID = await req.payload.db.beginTransaction()
@@ -72,8 +71,8 @@ export const translateEndpoint: PayloadHandler = async (req) => {
 
     const result = await translateOperation({
       id,
-      collectionSlug,
-      globalSlug,
+      collectionSlug: collectionSlug as CollectionSlug | undefined,
+      globalSlug: globalSlug as any, // GlobalSlug type is not available, using any
       locale: toLocale,
       localeFrom: fromLocale,
       overrideAccess: true,
@@ -85,7 +84,16 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     })
 
     if (!result.success) {
-      throw new APIError('Main document translation failed', 500)
+      // Handle different error types with appropriate HTTP status codes
+      if (result.error?.type === 'quota_exceeded') {
+        throw new APIError(result.error.message, 429) // Too Many Requests for quota
+      } else if (result.error?.type === 'authentication') {
+        throw new APIError(result.error.message, 401) // Unauthorized
+      } else if (result.error?.type === 'network') {
+        throw new APIError(result.error.message, 502) // Bad Gateway for network issues
+      } else {
+        throw new APIError(result.error?.message || 'Main document translation failed', 500)
+      }
     }
 
     // Step 2: If relationships should be included, collect and translate them
@@ -103,8 +111,8 @@ export const translateEndpoint: PayloadHandler = async (req) => {
       // Fetch the source document with minimal depth for relationship IDs
       const { config, doc: sourceDoc } = await findEntityWithConfig({
         id,
-        collectionSlug,
-        globalSlug,
+        collectionSlug: collectionSlug as CollectionSlug | undefined,
+        globalSlug: globalSlug as any,
         locale: fromLocale,
         req: transactionalReq, // Use transactional request
         depth: 1, // Only need depth 1 to get relationship IDs, not full population
@@ -126,7 +134,7 @@ export const translateEndpoint: PayloadHandler = async (req) => {
       // Step 3: Translate each collected document within the transaction
       for (const relatedDoc of relatedDocuments) {
         try {
-          await translateOperation({
+          const relationshipResult = await translateOperation({
             id: relatedDoc.id,
             collectionSlug: relatedDoc.collectionSlug as CollectionSlug,
             locale: toLocale,
@@ -139,16 +147,37 @@ export const translateEndpoint: PayloadHandler = async (req) => {
             relationshipDepth: 0,
           })
 
+          if (!relationshipResult.success) {
+            // Handle different error types for relationships
+            if (relationshipResult.error?.type === 'quota_exceeded') {
+              throw new APIError(relationshipResult.error.message, 429)
+            } else if (relationshipResult.error?.type === 'authentication') {
+              throw new APIError(relationshipResult.error.message, 401)
+            } else if (relationshipResult.error?.type === 'network') {
+              throw new APIError(relationshipResult.error.message, 502)
+            } else {
+              throw new APIError(
+                relationshipResult.error?.message || `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}`,
+                500,
+              )
+            }
+          }
+
           relationshipStats.success++
         } catch (error: any) {
           relationshipStats.failed++
           relationshipStats.failedDocs.push(`${relatedDoc.collectionSlug}/${relatedDoc.id}`)
 
           // ANY failure should trigger rollback to ensure data consistency
-          throw new APIError(
-            `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}: ${error.message}`,
-            500,
-          )
+          // Preserve the original error message and status code if it's an APIError
+          if (error instanceof APIError) {
+            throw error
+          } else {
+            throw new APIError(
+              `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}: ${error.message}`,
+              500,
+            )
+          }
         }
       }
 

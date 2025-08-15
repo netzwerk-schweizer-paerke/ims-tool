@@ -4,7 +4,7 @@ import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { checkOrganisationRoles } from '../../../utilities/check-organisation-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { User } from '@/payload-types'
-import { isNumber } from 'lodash-es'
+import { isNumber } from 'es-toolkit/compat'
 
 /**
  * Field access control that grants access to organization administrators.

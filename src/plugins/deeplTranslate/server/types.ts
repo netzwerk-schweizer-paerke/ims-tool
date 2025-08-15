@@ -21,6 +21,11 @@ export type TranslateArgs = {
 export type TranslateResult =
   | {
       success: false
+      error?: {
+        type: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
+        message: string
+        details?: any
+      }
     }
   | {
       success: true

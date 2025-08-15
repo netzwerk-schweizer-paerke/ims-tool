@@ -11,7 +11,7 @@ import {
   xarrowPropsType,
 } from '../types'
 import { getElementByPropGiven, getElemPos, xStr2absRelative } from './utils'
-import _ from 'lodash'
+import { isEqual, isArray, isObject } from 'es-toolkit/compat'
 import { arrowShapes, cAnchorEdge, cArrowShapes } from '../constants'
 import { anchorEdgeType, dimensionType } from '../privateTypes'
 
@@ -35,7 +35,7 @@ interface anchorCustomPositionType2 extends Omit<Required<anchorCustomPositionTy
 
 const parseAnchor = (anchor: anchorType) => {
   // convert to array
-  let anchorChoice = Array.isArray(anchor) ? anchor : [anchor]
+  let anchorChoice = isArray(anchor) ? anchor : [anchor]
 
   //convert to array of objects
   let anchorChoice2 = anchorChoice.map((anchorChoice) => {
@@ -63,7 +63,7 @@ const parseAnchor = (anchor: anchorType) => {
 
   // default values
   let anchorChoice3 = anchorChoice2.map((anchorChoice) => {
-    if (typeof anchorChoice === 'object') {
+    if (isObject(anchorChoice)) {
       let anchorChoiceCustom = anchorChoice as anchorCustomPositionType
       if (!anchorChoiceCustom.position) anchorChoiceCustom.position = 'auto'
       if (!anchorChoiceCustom.offset) anchorChoiceCustom.offset = { x: 0, y: 0 }
@@ -82,7 +82,7 @@ const parseDashness = (dashness, props) => {
     dashNone = 0,
     animDashSpeed,
     animDirection = 1
-  if (typeof dashness === 'object') {
+  if (isObject(dashness)) {
     dashStroke = dashness.strokeLen || props.strokeWidth * 2
     dashNone = dashness.strokeLen ? dashness.nonStrokeLen : props.strokeWidth
     animDashSpeed = dashness.animation ? dashness.animation : null
@@ -104,7 +104,7 @@ const parseDashness = (dashness, props) => {
 }
 
 const parseEdgeShape = (svgEdge): svgCustomEdgeType => {
-  if (typeof svgEdge == 'string') {
+  if (typeof svgEdge === 'string') {
     if (svgEdge in arrowShapes) svgEdge = arrowShapes[svgEdge as svgEdgeShapeType]
     else {
       console.warn(
@@ -305,7 +305,7 @@ const initialValVars = {
 // const parseAllProps = () => parseGivenProps(defaultProps, initialParsedProps);
 
 function deepCompareEquals(a, b) {
-  return _.isEqual(a, b)
+  return isEqual(a, b)
 }
 
 function useDeepCompareMemoize(value) {

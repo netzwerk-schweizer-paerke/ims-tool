@@ -1,5 +1,5 @@
 import { ClientConfig, SanitizedConfig } from 'payload'
-import { isArray, isObject, isString } from 'lodash-es'
+import { isArray, isObject, isString } from 'es-toolkit/compat'
 
 type Configs = SanitizedConfig | ClientConfig
 

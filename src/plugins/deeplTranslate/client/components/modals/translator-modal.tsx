@@ -40,6 +40,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
   const [translationResult, setTranslationResult] = React.useState<{
     success: boolean
     error?: string
+    errorType?: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
   } | null>(null)
 
   const { id, collectionSlug, globalSlug } = useDocumentInfo()
@@ -150,6 +151,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
         setTranslationResult({
           success: false,
           error: result.error || t('plugin-deepltranslate:resolver_deepl_errorMessage' as any),
+          errorType: result.errorType || 'generic',
         })
       }
     } catch (error) {
@@ -158,6 +160,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
       setTranslationResult({
         success: false,
         error: t('plugin-deepltranslate:resolver_deepl_errorMessage' as any),
+        errorType: 'generic',
       })
     }
   }
@@ -187,6 +190,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
             <TranslationResult
               success={translationResult.success}
               error={translationResult.error}
+              errorType={translationResult.errorType}
               selectedFromLabel={selectedFromOption?.label}
               selectedToLabel={selectedToOption?.label}
               onViewTranslation={onViewTranslation}

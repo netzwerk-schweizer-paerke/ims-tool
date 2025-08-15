@@ -13,8 +13,8 @@ jest.mock('@/payload/utilities/check-organisation-roles', () => ({
   checkOrganisationRoles: jest.fn(),
 }))
 
-// Mock the lodash-es module
-jest.mock('lodash-es', () => ({
+// Mock the es-toolkit module
+jest.mock('es-toolkit/predicate', () => ({
   isNumber: jest.fn((val) => typeof val === 'number'),
 }))
 
@@ -120,7 +120,7 @@ describe('organisationAdmins', () => {
     ;(checkUserRoles as jest.Mock).mockReturnValue(false)
 
     // Mock isNumber to return false for this test
-    const { isNumber } = require('lodash-es')
+    const { isNumber } = require('es-toolkit/predicate')
     ;(isNumber as jest.Mock).mockReturnValue(false)
 
     expect(() =>

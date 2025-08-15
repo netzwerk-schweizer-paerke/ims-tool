@@ -7,14 +7,14 @@ export const beforeChangeHook: FieldHook = async ({ req, req: { user }, data, co
   if (!user || !req.user) return undefined
 
   // Debug logging
-  console.log('[Organisation Hook] Context:', context)
-  console.log('[Organisation Hook] req.context:', req.context)
+  req.payload.logger.info('[Organisation Hook] Context:', context?.targetOrganisationId)
+  req.payload.logger.info('[Organisation Hook] req.context:', req.context?.targetOrganisationId)
 
   // Check for context override (used in cloning operations)
   // Try both context and req.context
   const targetOrgId = context?.targetOrganisationId || req.context?.targetOrganisationId
   if (targetOrgId) {
-    console.log(`[Organisation Hook] Using context override: ${targetOrgId}`)
+    req.payload.logger.info(`[Organisation Hook] Using context override: ${targetOrgId}`)
     return targetOrgId
   }
 

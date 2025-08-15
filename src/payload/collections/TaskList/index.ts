@@ -6,6 +6,7 @@ import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editor
 import { filesArrayField } from '@/payload/fields/files-array'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
+import { cloneTaskListTransactional } from './endpoints/clone-task-list/clone-task-list-transactional'
 
 export const TaskLists: CollectionConfig = {
   slug: 'task-lists',
@@ -13,7 +14,15 @@ export const TaskLists: CollectionConfig = {
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
     hideAPIURL: isProduction,
+    components: {
+      beforeListTable: [
+        {
+          path: 'src/payload/collections/TaskList/components/clone-task-lists-button#CloneTaskListsButton',
+        },
+      ],
+    },
   },
+  endpoints: [cloneTaskListTransactional],
   labels: {
     plural: I18nCollection.fieldLabel.taskLists,
     singular: I18nCollection.fieldLabel.taskList,

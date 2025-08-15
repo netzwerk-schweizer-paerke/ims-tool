@@ -22,18 +22,7 @@ export const Documents: CollectionConfig = {
     group: I18nCollection.collectionGroup.files,
   },
   access: {
-    read: async (args) => {
-      const hasCollectionAccess = await currentOrganisationCollectionReadAccess(args)
-      const {
-        req: { headers, host },
-      } = args
-      const internalAccess = headers.has('X-Payload-Request') && isLocalHost(host)
-      if (internalAccess) {
-        return true
-      } else {
-        return hasCollectionAccess
-      }
-    },
+    read: currentOrganisationCollectionReadAccess,
     create: currentOrganisationCollectionWriteAccess,
     update: currentOrganisationCollectionWriteAccess,
     delete: currentOrganisationCollectionWriteAccess,

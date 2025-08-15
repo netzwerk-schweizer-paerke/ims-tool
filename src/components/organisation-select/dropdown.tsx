@@ -1,6 +1,6 @@
 'use client'
 
-import { toNumber } from 'lodash-es'
+import { toNumber } from 'es-toolkit/compat'
 import ky from 'ky'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { Organisation } from '@/payload-types'

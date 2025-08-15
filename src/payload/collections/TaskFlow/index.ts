@@ -7,8 +7,13 @@ import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel'
-import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
-import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
+import {
+  currentOrganisationCollectionReadAccess
+} from '@/payload/collections/access/current-organisation-collection-read-access'
+import {
+  currentOrganisationCollectionWriteAccess
+} from '@/payload/collections/access/current-organisation-collection-write-access'
+import { cloneTaskFlowTransactional } from './endpoints/clone-task-flow/clone-task-flow-transactional'
 
 export const TaskFlows: CollectionConfig = {
   slug: 'task-flows',
@@ -16,7 +21,15 @@ export const TaskFlows: CollectionConfig = {
     hideAPIURL: isProduction,
     group: I18nCollection.collectionGroup.process,
     useAsTitle: 'name',
+    components: {
+      beforeListTable: [
+        {
+          path: 'src/payload/collections/TaskFlow/components/clone-task-flows-button#CloneTaskFlowsButton',
+        },
+      ],
+    },
   },
+  endpoints: [cloneTaskFlowTransactional],
   labels: {
     plural: I18nCollection.fieldLabel.taskFlows,
     singular: I18nCollection.fieldLabel.taskFlow,

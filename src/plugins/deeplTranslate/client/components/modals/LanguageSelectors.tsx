@@ -32,7 +32,7 @@ export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
   return (
     <div className="mb-4 flex w-full items-center gap-4">
       <div className="flex-1">
-        <label className="mb-2 block text-sm font-medium">
+        <label className="mb-2 block font-medium">
           {t('plugin-deepltranslate:resolver_deepl_translateFrom' as any)}
         </label>
         <Select
@@ -50,7 +50,7 @@ export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
       <div className="p-2 text-center text-2xl">→</div>
 
       <div className="flex-1">
-        <label className="mb-2 block text-sm font-medium">
+        <label className="mb-2 block font-medium">
           {t('plugin-deepltranslate:resolver_deepl_translateTo' as any)}
         </label>
         <Select

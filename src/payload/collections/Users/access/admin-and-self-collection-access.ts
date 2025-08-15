@@ -45,7 +45,7 @@ export const adminAndSelfCollectionAccess: Access = async ({
       {
         'organisations.organisation': {
           in: [getIdFromRelation(user.selectedOrganisation)].filter(
-            (id): id is string | number => id !== null,
+            (id): id is number => id !== null,
           ),
         },
       },

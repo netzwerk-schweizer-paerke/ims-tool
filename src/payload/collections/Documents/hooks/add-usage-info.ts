@@ -1,5 +1,6 @@
 import { CollectionAfterReadHook } from 'payload'
 import { getLocaleCodesFromRequest, getLocalizedValue } from '@/lib/locale-utils'
+import { isArray, isObject } from 'es-toolkit/compat'
 
 /**
  * Get the name from a potentially localized field
@@ -45,7 +46,7 @@ function checkForDocumentReference(value: any, documentId: number): boolean {
   }
 
   // If it's an array, check each item
-  if (Array.isArray(value)) {
+  if (isArray(value)) {
     return value.some((item) => checkForDocumentReference(item, documentId))
   }
 
@@ -89,7 +90,7 @@ function isDocumentReferencedInRichText(richText: any, documentId: number): bool
     }
 
     // Check children nodes
-    if (node.children && Array.isArray(node.children)) {
+    if (node.children && isArray(node.children)) {
       for (const child of node.children) {
         if (searchNode(child)) return true
       }
@@ -254,7 +255,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           blocks: any,
           locale?: string,
         ): { found: boolean; details?: any } => {
-          if (!blocks || !Array.isArray(blocks)) return { found: false }
+          if (!blocks || !isArray(blocks)) return { found: false }
 
           for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i]
@@ -307,7 +308,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
         // Check blocks - might be localized
         let blockDetails: any = null
-        if (typeof activity.blocks === 'object' && !Array.isArray(activity.blocks)) {
+        if (typeof activity.blocks === 'object' && !isArray(activity.blocks)) {
           // Localized blocks - check all locales
           // Use locales from config
           for (const locale of locales) {
@@ -418,7 +419,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
       if (!foundInTaskFlow && taskFlow.blocks) {
         // Helper to find block with document reference and get details
         const findBlockWithDoc = (blocks: any[], locale?: string): any => {
-          if (!Array.isArray(blocks)) return null
+          if (!isArray(blocks)) return null
           for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i]
             if (checkForDocumentReference(block, doc.id)) {
@@ -434,7 +435,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           return null
         }
 
-        if (typeof taskFlow.blocks === 'object' && !Array.isArray(taskFlow.blocks)) {
+        if (typeof taskFlow.blocks === 'object' && !isArray(taskFlow.blocks)) {
           // Localized blocks
           // Use locales from config
           for (const locale of locales) {
@@ -448,7 +449,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
               }
             }
           }
-        } else if (Array.isArray(taskFlow.blocks)) {
+        } else if (isArray(taskFlow.blocks)) {
           blockDetails = findBlockWithDoc(taskFlow.blocks)
           if (blockDetails) {
             foundInTaskFlow = true
@@ -556,11 +557,11 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
       let itemIndex: number | undefined
 
       if (!foundInTaskList && taskList.items) {
-        if (typeof taskList.items === 'object' && !Array.isArray(taskList.items)) {
+        if (typeof taskList.items === 'object' && !isArray(taskList.items)) {
           // Localized items
           // Use locales from config
           for (const locale of locales) {
-            if (taskList.items[locale] && Array.isArray(taskList.items[locale])) {
+            if (taskList.items[locale] && isArray(taskList.items[locale])) {
               const items = taskList.items[locale] as any[]
               for (let i = 0; i < items.length; i++) {
                 if (checkForDocumentReference(items[i], doc.id)) {
@@ -574,7 +575,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
               if (foundInTaskList) break
             }
           }
-        } else if (Array.isArray(taskList.items)) {
+        } else if (isArray(taskList.items)) {
           for (let i = 0; i < taskList.items.length; i++) {
             if (checkForDocumentReference(taskList.items[i], doc.id)) {
               foundInTaskList = true

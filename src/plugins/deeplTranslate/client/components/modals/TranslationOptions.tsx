@@ -24,11 +24,9 @@ export const TranslationOptions: React.FC<TranslationOptionsProps> = ({
           className="cursor-pointer"
           disabled={disabled}
         />
-        <span className="text-sm">
-          {t('plugin-deepltranslate:resolver_deepl_includeRelated' as any)}
-        </span>
+        <span className="">{t('plugin-deepltranslate:resolver_deepl_includeRelated' as any)}</span>
       </label>
-      <p className="ml-6 mt-1 text-xs italic text-[var(--theme-elevation-600)]">
+      <p className="ml-6 mt-1 italic text-[var(--theme-elevation-600)]">
         {t('plugin-deepltranslate:resolver_deepl_includeRelatedHelp' as any)}
       </p>
     </div>

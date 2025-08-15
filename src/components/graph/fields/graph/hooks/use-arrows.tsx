@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { debounce } from 'lodash-es'
+import { debounce } from 'es-toolkit'
 import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
 import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 

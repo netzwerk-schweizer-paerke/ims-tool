@@ -7,7 +7,7 @@ import type { ValueToTranslate } from '../types'
 
 import { isEmpty } from '../../utils/isEmpty'
 import { traverseRichText } from './traverse-rich-text'
-import { isObject } from 'lodash-es'
+import { isObject } from 'es-toolkit/compat'
 
 export const traverseFields = ({
   dataFrom,

@@ -1,11 +1,11 @@
-export const getIdFromRelation = (
-  record: number | string | Record<string, any> | null | undefined,
-): string | number | null => {
-  if (typeof record === 'number' || typeof record === 'string') {
+import { isNumber, isObject } from 'es-toolkit/compat'
+
+export const getIdFromRelation = (record: any): number | null => {
+  if (isNumber(record)) {
     return record
   }
-  if (record && typeof record === 'object' && 'id' in record) {
-    return record.id as string | number
+  if (isObject(record) && 'id' in record && isNumber(record.id)) {
+    return record.id as number
   }
   return null
 }

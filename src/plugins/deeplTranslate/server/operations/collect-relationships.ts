@@ -4,6 +4,7 @@
  */
 
 import { relationshipCollector } from '../collectors/relationship-collector'
+import { isArray, isObject } from 'es-toolkit/compat'
 
 // Helper function to extract ID from polymorphic relationships
 function extractIdFromPolymorphicRelation(relation: any): string | number | null {
@@ -43,10 +44,10 @@ export async function collectRelationships(args: {
     // Handle relationship fields
     if (field.type === 'relationship' && doc[field.name]) {
       const relationValue = doc[field.name]
-      const relationTo = Array.isArray(field.relationTo) ? field.relationTo : [field.relationTo]
+      const relationTo = isArray(field.relationTo) ? field.relationTo : [field.relationTo]
 
       // Handle single or multiple relationships
-      const relations = Array.isArray(relationValue) ? relationValue : [relationValue]
+      const relations = isArray(relationValue) ? relationValue : [relationValue]
 
       for (const relation of relations) {
         if (!relation) continue
@@ -106,7 +107,7 @@ export async function collectRelationships(args: {
     // Handle blocks - each block can have different fields
     if (field.type === 'blocks' && doc[field.name]) {
       const blocks = doc[field.name]
-      if (Array.isArray(blocks)) {
+      if (isArray(blocks)) {
         for (let i = 0; i < blocks.length; i++) {
           const block = blocks[i]
           if (!block || !block.blockType) continue
@@ -128,7 +129,7 @@ export async function collectRelationships(args: {
     // Handle arrays - all items have the same fields
     if (field.type === 'array' && field.fields && doc[field.name]) {
       const arrayItems = doc[field.name]
-      if (Array.isArray(arrayItems)) {
+      if (isArray(arrayItems)) {
         for (let i = 0; i < arrayItems.length; i++) {
           const item = arrayItems[i]
           if (!item) continue

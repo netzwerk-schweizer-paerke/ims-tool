@@ -5,6 +5,65 @@ import * as deepl from 'deepl-node'
 import type { DeepLResolver, DeepLResolverArgs } from './resolver-types'
 import { logger } from '@/lib/logger'
 
+// Helper function to detect and categorize DeepL API errors
+function categorizeDeepLError(error: any): { type: 'quota_exceeded' | 'generic' | 'network' | 'authentication', message: string, details?: any } {
+  // Check for DeepL specific error types based on error status codes
+  if (error?.status) {
+    switch (error.status) {
+      case 456: // Quota exceeded
+        return {
+          type: 'quota_exceeded',
+          message: 'Translation quota exceeded. Please check your DeepL account limits.',
+          details: error
+        }
+      case 403: // Forbidden/Authentication
+        return {
+          type: 'authentication',
+          message: 'DeepL authentication failed. Please check your API key.',
+          details: error
+        }
+      case 400: // Bad request
+        return {
+          type: 'generic',
+          message: 'Invalid request to DeepL API.',
+          details: error
+        }
+      default:
+        return {
+          type: 'generic',
+          message: 'DeepL API error occurred.',
+          details: error
+        }
+    }
+  }
+  
+  // Check for network-related errors
+  if (error?.code === 'ECONNABORTED' || error?.code === 'ENOTFOUND' || error?.code === 'ECONNREFUSED') {
+    return {
+      type: 'network',
+      message: 'Network error connecting to DeepL API.',
+      details: error
+    }
+  }
+  
+  // Check error message for quota-related keywords
+  const errorMessage = error?.message?.toLowerCase() || ''
+  if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
+    return {
+      type: 'quota_exceeded',
+      message: 'Translation quota exceeded. Please check your DeepL account limits.',
+      details: error
+    }
+  }
+  
+  // Default to generic error
+  return {
+    type: 'generic',
+    message: error?.message || 'Unknown translation error occurred.',
+    details: error
+  }
+}
+
 export interface DeeplResolverConfig {
   apiKey: string
   chunkLength?: number
@@ -69,14 +128,23 @@ async function processChunksSequentially(
 
       results.push(...chunkResults)
     } catch (error) {
+      const categorizedError = categorizeDeepLError(error)
+      
       logger.error({
         error,
         message: 'DeepL translation failed for chunk',
         chunkSize: chunk.length,
         chunk,
+        errorType: categorizedError.type,
+        errorMessage: categorizedError.message,
       })
 
-      // Return original texts for this chunk on error
+      // For quota exceeded errors, we should propagate the error instead of continuing
+      if (categorizedError.type === 'quota_exceeded') {
+        throw categorizedError
+      }
+
+      // For other errors, return original texts for this chunk
       results.push(...chunk)
     }
   }
@@ -113,18 +181,36 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
 
     const chunks = chunkArray(texts, chunkLength)
 
-    const translatedTexts = await processChunksSequentially(
-      chunks,
-      DeepL,
-      localeFrom,
-      localeTo,
-      req,
-      translationOptions,
-    )
+    try {
+      const translatedTexts = await processChunksSequentially(
+        chunks,
+        DeepL,
+        localeFrom,
+        localeTo,
+        req,
+        translationOptions,
+      )
 
-    return {
-      success: true,
-      translatedTexts,
+      return {
+        success: true,
+        translatedTexts,
+      }
+    } catch (error) {
+      const categorizedError = categorizeDeepLError(error)
+      
+      logger.error({
+        msg: 'DeepL resolver failed',
+        localeFrom,
+        localeTo,
+        entriesCount: texts.length,
+        errorType: categorizedError.type,
+        errorMessage: categorizedError.message,
+      })
+
+      return {
+        success: false,
+        error: categorizedError,
+      }
     }
   },
 })

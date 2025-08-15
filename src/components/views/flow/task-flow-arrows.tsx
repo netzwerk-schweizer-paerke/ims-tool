@@ -1,5 +1,5 @@
 'use client'
-import { debounce } from 'lodash-es'
+import { debounce } from 'es-toolkit'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
 import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'

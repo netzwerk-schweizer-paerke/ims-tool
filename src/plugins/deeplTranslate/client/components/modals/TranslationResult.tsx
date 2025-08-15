@@ -4,6 +4,7 @@ import { Button, useTranslation } from '@payloadcms/ui'
 interface TranslationResultProps {
   success: boolean
   error?: string
+  errorType?: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
   selectedFromLabel?: string
   selectedToLabel?: string
   onViewTranslation: () => void
@@ -14,6 +15,7 @@ interface TranslationResultProps {
 export const TranslationResult: React.FC<TranslationResultProps> = ({
   success,
   error,
+  errorType,
   selectedFromLabel,
   selectedToLabel,
   onViewTranslation,
@@ -29,7 +31,7 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
           ✓ {t('plugin-deepltranslate:resolver_deepl_successMessage' as any)}
         </div>
         {selectedFromLabel && selectedToLabel && (
-          <div className="mb-4 text-sm">
+          <div className="mb-4">
             <div>
               {t('plugin-deepltranslate:resolver_deepl_translateFrom' as any)}:{' '}
               <strong>{selectedFromLabel}</strong>
@@ -55,10 +57,24 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
     )
   }
 
+  // Helper function to get the appropriate error message
+  const getErrorMessage = () => {
+    switch (errorType) {
+      case 'quota_exceeded':
+        return 'Translation quota exceeded. Please check your DeepL account limits.'
+      case 'authentication':
+        return 'DeepL authentication failed. Please check your API key.'
+      case 'network':
+        return 'Network error connecting to DeepL API. Please try again.'
+      default:
+        return error || t('plugin-deepltranslate:resolver_deepl_errorMessage' as any)
+    }
+  }
+
   return (
     <div>
       <div className="mb-4 rounded border border-[var(--theme-error-200)] bg-[var(--theme-error-50)] p-4 text-[var(--theme-error-600)]">
-        ✕ {error}
+        ✕ {getErrorMessage()}
       </div>
       <div className="deepltranslate__buttons">
         <Button onClick={onTryAgain} buttonStyle="secondary">
