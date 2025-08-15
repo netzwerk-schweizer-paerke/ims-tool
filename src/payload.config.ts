@@ -22,6 +22,7 @@ import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { DocumentsPublic } from '@/payload/collections/DocumentsPublic'
 import { deepLTranslate } from 'src/plugins/deeplTranslate'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
+import { migrations } from '@/migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -78,6 +79,8 @@ export default buildConfig({
     pool: {
       connectionString: process.env.POSTGRES_URI || '',
     },
+    // Using standalone mode, so we need to make sure the migrations are bundled
+    prodMigrations: migrations,
   }),
   admin: {
     ...(process.env.NODE_ENV !== 'production'
