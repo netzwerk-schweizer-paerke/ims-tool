@@ -19,14 +19,14 @@ export const CloneLoadingOverlay: React.FC<CloneLoadingOverlayProps> = ({
   if (!isVisible) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--theme-elevation-1000)]/50 backdrop-blur-sm">
-      <div className="rounded-lg bg-[var(--theme-bg)] p-8 shadow-xl border border-[var(--theme-border-color)]">
+    <div className="bg-[var(--theme-elevation-1000)]/50 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+      <div className="rounded-lg border border-[var(--theme-border-color)] bg-[var(--theme-bg)] p-8 shadow-xl">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--theme-border-color)] border-t-[var(--theme-elevation-400)]" />
           <p className="text-lg font-medium text-[var(--theme-text)]">
             {title || t('cloneActivity:processing' as any)}
           </p>
-          <p className="text-sm text-[var(--theme-text)]/70">
+          <p className="text-[var(--theme-text)]/70 text-sm">
             {subtitle || t('cloning:loadingMessage' as any)}
           </p>
         </div>

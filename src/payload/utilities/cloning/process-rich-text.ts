@@ -7,7 +7,6 @@ import {
 } from '@/payload/utilities/cloning/types'
 import { normalizeRichText } from '@/payload/utilities/cloning/normalize-rich-text'
 
-
 export async function processRichTextField(
   richText: any,
   req: PayloadRequest,
@@ -122,12 +121,16 @@ async function processNode(
 
         if (!clonedId) {
           tracker.addSourceDocument()
-          
+
           // Use pre-loaded document if available
           if (documentPreloader && documentPreloader.preloadedDocuments.has(docId)) {
             const preloadedDoc = documentPreloader.preloadedDocuments.get(docId)!
             const { createClonedDocumentFromPreloaded } = await import('./document-preloader')
-            const clonedDoc = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
+            const clonedDoc = await createClonedDocumentFromPreloaded(
+              req,
+              preloadedDoc,
+              targetOrgId,
+            )
             clonedId = clonedDoc.id
           } else {
             // Fallback to original method (will cause transaction timeout risk)
@@ -135,7 +138,7 @@ async function processNode(
             const clonedDoc = await cloneDocumentFile(req, docId, targetOrgId)
             clonedId = clonedDoc.id
           }
-          
+
           tracker.addClonedDocument()
         }
 

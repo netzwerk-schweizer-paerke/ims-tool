@@ -105,9 +105,13 @@ export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results 
                 : 'text-[var(--theme-error)]'
 
           return (
-            <div key={idx} className="rounded-lg border border-[var(--theme-border)] bg-[var(--theme-elevation-0)] p-4">
+            <div
+              key={idx}
+              className="rounded-lg border border-[var(--theme-border)] bg-[var(--theme-elevation-0)] p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-lg font-medium text-[var(--theme-text)]">{entity.source.name}</h4>
+                <h4 className="text-lg font-medium text-[var(--theme-text)]">
+                  {entity.source.name}
+                </h4>
                 <div className="flex items-center gap-2">
                   {completionIcon}
                   <span className={`font-semibold ${completionColor}`}>

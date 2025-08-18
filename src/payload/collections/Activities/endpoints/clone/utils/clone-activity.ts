@@ -19,7 +19,13 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
 
   req.payload.logger.debug({ msg: 'Source activity found', sourceActivity: sourceActivity.id })
 
-  const strippedActivity = await stripActivity(sourceActivity, req, targetOrgId, locale, documentPreloader)
+  const strippedActivity = await stripActivity(
+    sourceActivity,
+    req,
+    targetOrgId,
+    locale,
+    documentPreloader,
+  )
 
   req.payload.logger.debug({ msg: 'Activity stripped' })
 

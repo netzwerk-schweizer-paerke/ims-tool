@@ -49,14 +49,12 @@ export const translateEndpointSchema = z
     /**
      * Source locale - required, must be one of supported locales
      */
-    fromLocale: z.enum(SUPPORTED_LOCALES)
-      .describe('The source locale to translate from'),
+    fromLocale: z.enum(SUPPORTED_LOCALES).describe('The source locale to translate from'),
 
     /**
      * Target locale - required, must be one of supported locales
      */
-    toLocale: z.enum(SUPPORTED_LOCALES)
-      .describe('The target locale to translate to'),
+    toLocale: z.enum(SUPPORTED_LOCALES).describe('The target locale to translate to'),
 
     /**
      * Include relationships flag - optional, defaults to false
@@ -80,27 +78,18 @@ export const translateEndpointSchema = z
       .describe('The depth of relationships to traverse for translation'),
   })
   .strict() // Reject unknown fields
-  .refine(
-    (data) => Boolean(data.collectionSlug) || Boolean(data.globalSlug),
-    {
-      message: 'Either collectionSlug or globalSlug must be provided',
-      path: ['collectionSlug', 'globalSlug'],
-    },
-  )
-  .refine(
-    (data) => !(Boolean(data.collectionSlug) && Boolean(data.globalSlug)),
-    {
-      message: 'Cannot provide both collectionSlug and globalSlug',
-      path: ['collectionSlug', 'globalSlug'],
-    },
-  )
-  .refine(
-    (data) => data.fromLocale !== data.toLocale,
-    {
-      message: 'fromLocale and toLocale must be different',
-      path: ['toLocale'],
-    },
-  )
+  .refine((data) => Boolean(data.collectionSlug) || Boolean(data.globalSlug), {
+    message: 'Either collectionSlug or globalSlug must be provided',
+    path: ['collectionSlug', 'globalSlug'],
+  })
+  .refine((data) => !(Boolean(data.collectionSlug) && Boolean(data.globalSlug)), {
+    message: 'Cannot provide both collectionSlug and globalSlug',
+    path: ['collectionSlug', 'globalSlug'],
+  })
+  .refine((data) => data.fromLocale !== data.toLocale, {
+    message: 'fromLocale and toLocale must be different',
+    path: ['toLocale'],
+  })
 
 /**
  * Inferred TypeScript type from the Zod schema
@@ -133,15 +122,16 @@ export async function validateTranslateArgs(data: unknown): Promise<ValidatedTra
  * @param data - Raw request data to validate
  * @returns Object with success flag and either data or error
  */
-export async function safeValidateTranslateArgs(data: unknown): Promise<
-  | { success: true; data: ValidatedTranslateArgs }
-  | { success: false; error: z.ZodError }
+export async function safeValidateTranslateArgs(
+  data: unknown,
+): Promise<
+  { success: true; data: ValidatedTranslateArgs } | { success: false; error: z.ZodError }
 > {
   const result = await translateEndpointSchema.safeParseAsync(data)
-  
+
   if (result.success) {
     return { success: true, data: result.data }
   }
-  
+
   return { success: false, error: result.error }
 }

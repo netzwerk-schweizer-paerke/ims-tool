@@ -5,7 +5,7 @@
 
 export function scanForDocumentIds(content: any): number[] {
   const documentIds: number[] = []
-  
+
   if (!content || typeof content !== 'object') {
     return documentIds
   }
@@ -49,7 +49,8 @@ function scanNode(node: any): number[] {
     const relationship = node.fields.doc
 
     if (relationship.relationTo === 'documents' && relationship.value) {
-      const docId = typeof relationship.value === 'object' ? relationship.value.id : relationship.value
+      const docId =
+        typeof relationship.value === 'object' ? relationship.value.id : relationship.value
       if (typeof docId === 'number') {
         documentIds.push(docId)
       }

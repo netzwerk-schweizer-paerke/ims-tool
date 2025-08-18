@@ -255,12 +255,12 @@ export class CloneStatisticsTracker {
     }
 
     // Check if entities were successfully cloned (have valid cloned IDs)
-    const successfullyClonedEntities = entities.filter(entity => 
-      entity.cloned.id && entity.cloned.id !== 0 && entity.cloned.id !== '0'
+    const successfullyClonedEntities = entities.filter(
+      (entity) => entity.cloned.id && entity.cloned.id !== 0 && entity.cloned.id !== '0',
     )
 
-    const failedEntities = entities.filter(entity => 
-      !entity.cloned.id || entity.cloned.id === 0 || entity.cloned.id === '0'
+    const failedEntities = entities.filter(
+      (entity) => !entity.cloned.id || entity.cloned.id === 0 || entity.cloned.id === '0',
     )
 
     // If no entities were cloned successfully, it's a complete failure

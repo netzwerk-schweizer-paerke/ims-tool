@@ -64,7 +64,13 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
           })
 
           req.payload.logger.debug({ msg: 'before createTaskFlow', value: taskFlow.id })
-          const newTaskFlow = await createTaskFlow(req, taskFlow, targetOrgId, locale as string, documentPreloader)
+          const newTaskFlow = await createTaskFlow(
+            req,
+            taskFlow,
+            targetOrgId,
+            locale as string,
+            documentPreloader,
+          )
 
           if (newTaskFlow) {
             newRelations.push({ relationTo, value: newTaskFlow.id })
@@ -90,7 +96,13 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
           })
 
           req.payload.logger.debug({ msg: 'before createTaskList', value: taskList.id })
-          const newTaskList = await createTaskList(req, taskList, targetOrgId, locale as string, documentPreloader)
+          const newTaskList = await createTaskList(
+            req,
+            taskList,
+            targetOrgId,
+            locale as string,
+            documentPreloader,
+          )
 
           if (newTaskList) {
             newRelations.push({ relationTo, value: newTaskList.id })

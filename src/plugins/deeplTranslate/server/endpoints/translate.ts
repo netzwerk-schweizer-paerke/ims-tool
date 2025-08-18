@@ -1,8 +1,4 @@
-import type {
-  CollectionSlug,
-  PayloadHandler,
-  PayloadRequest,
-} from 'payload'
+import type { CollectionSlug, PayloadHandler, PayloadRequest } from 'payload'
 import { APIError } from 'payload'
 import { ZodError } from 'zod'
 
@@ -32,11 +28,13 @@ export const translateEndpoint: PayloadHandler = async (req) => {
   } catch (error) {
     if (error instanceof ZodError) {
       // Format Zod validation errors into a user-friendly message
-      const errorMessages = error.issues.map((err: any) => {
-        const path = err.path.length > 0 ? ` (${err.path.join('.')})` : ''
-        return `${err.message}${path}`
-      }).join('; ')
-      
+      const errorMessages = error.issues
+        .map((err: any) => {
+          const path = err.path.length > 0 ? ` (${err.path.join('.')})` : ''
+          return `${err.message}${path}`
+        })
+        .join('; ')
+
       throw new APIError(`Validation failed: ${errorMessages}`, 400)
     }
     // Re-throw other errors (JSON parsing, etc.)
@@ -157,7 +155,8 @@ export const translateEndpoint: PayloadHandler = async (req) => {
               throw new APIError(relationshipResult.error.message, 502)
             } else {
               throw new APIError(
-                relationshipResult.error?.message || `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}`,
+                relationshipResult.error?.message ||
+                  `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}`,
                 500,
               )
             }

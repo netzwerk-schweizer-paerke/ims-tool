@@ -6,7 +6,11 @@ import type { DeepLResolver, DeepLResolverArgs } from './resolver-types'
 import { logger } from '@/lib/logger'
 
 // Helper function to detect and categorize DeepL API errors
-function categorizeDeepLError(error: any): { type: 'quota_exceeded' | 'generic' | 'network' | 'authentication', message: string, details?: any } {
+function categorizeDeepLError(error: any): {
+  type: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
+  message: string
+  details?: any
+} {
   // Check for DeepL specific error types based on error status codes
   if (error?.status) {
     switch (error.status) {
@@ -14,53 +18,57 @@ function categorizeDeepLError(error: any): { type: 'quota_exceeded' | 'generic' 
         return {
           type: 'quota_exceeded',
           message: 'Translation quota exceeded. Please check your DeepL account limits.',
-          details: error
+          details: error,
         }
       case 403: // Forbidden/Authentication
         return {
           type: 'authentication',
           message: 'DeepL authentication failed. Please check your API key.',
-          details: error
+          details: error,
         }
       case 400: // Bad request
         return {
           type: 'generic',
           message: 'Invalid request to DeepL API.',
-          details: error
+          details: error,
         }
       default:
         return {
           type: 'generic',
           message: 'DeepL API error occurred.',
-          details: error
+          details: error,
         }
     }
   }
-  
+
   // Check for network-related errors
-  if (error?.code === 'ECONNABORTED' || error?.code === 'ENOTFOUND' || error?.code === 'ECONNREFUSED') {
+  if (
+    error?.code === 'ECONNABORTED' ||
+    error?.code === 'ENOTFOUND' ||
+    error?.code === 'ECONNREFUSED'
+  ) {
     return {
       type: 'network',
       message: 'Network error connecting to DeepL API.',
-      details: error
+      details: error,
     }
   }
-  
+
   // Check error message for quota-related keywords
   const errorMessage = error?.message?.toLowerCase() || ''
   if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
     return {
       type: 'quota_exceeded',
       message: 'Translation quota exceeded. Please check your DeepL account limits.',
-      details: error
+      details: error,
     }
   }
-  
+
   // Default to generic error
   return {
     type: 'generic',
     message: error?.message || 'Unknown translation error occurred.',
-    details: error
+    details: error,
   }
 }
 
@@ -129,7 +137,7 @@ async function processChunksSequentially(
       results.push(...chunkResults)
     } catch (error) {
       const categorizedError = categorizeDeepLError(error)
-      
+
       logger.error({
         error,
         message: 'DeepL translation failed for chunk',
@@ -197,7 +205,7 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
       }
     } catch (error) {
       const categorizedError = categorizeDeepLError(error)
-      
+
       logger.error({
         msg: 'DeepL resolver failed',
         localeFrom,

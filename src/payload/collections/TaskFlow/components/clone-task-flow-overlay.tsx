@@ -106,9 +106,7 @@ export const CloneTaskFlowOverlay: React.FC<Props> = ({
                       {t('general:switching' as any)}
                     </span>
                   ) : (
-                    <span>
-{t('cloneActivity:switchToTarget' as any)}
-                    </span>
+                    <span>{t('cloneActivity:switchToTarget' as any)}</span>
                   )}
                 </Button>
               )}

@@ -158,10 +158,10 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
             {isCloning ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--theme-elevation-0)] border-t-transparent" />
-{t('cloneActivity:cloning' as any)}
+                {t('cloneActivity:cloning' as any)}
               </span>
             ) : (
-t('cloneActivity:clone' as any)
+              t('cloneActivity:clone' as any)
             )}
           </Button>
           <Button
@@ -169,7 +169,7 @@ t('cloneActivity:clone' as any)
             className={`${baseClass}__cancel`}
             onClick={onCancel}
             disabled={isCloning}>
-{t('general:cancel' as any)}
+            {t('general:cancel' as any)}
           </Button>
         </div>
       </div>

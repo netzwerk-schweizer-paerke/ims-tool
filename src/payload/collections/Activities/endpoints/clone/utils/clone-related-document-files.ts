@@ -19,7 +19,15 @@ type CloneActivityDocumentsParams = {
 export async function cloneRelatedDocumentFiles(
   params: CloneActivityDocumentsParams,
 ): Promise<void> {
-  const { req, sourceEntity, targetEntityId, targetOrgId, collectionName, locale, documentPreloader } = params
+  const {
+    req,
+    sourceEntity,
+    targetEntityId,
+    targetOrgId,
+    collectionName,
+    locale,
+    documentPreloader,
+  } = params
 
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
 
@@ -62,7 +70,9 @@ export async function cloneRelatedDocumentFiles(
         // Use pre-loaded document if available
         if (documentPreloader && documentPreloader.preloadedDocuments.has(documentId)) {
           const preloadedDoc = documentPreloader.preloadedDocuments.get(documentId)!
-          const { createClonedDocumentFromPreloaded } = await import('@/payload/utilities/cloning/document-preloader')
+          const { createClonedDocumentFromPreloaded } = await import(
+            '@/payload/utilities/cloning/document-preloader'
+          )
           clonedDoc = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
         } else {
           // Fallback to original method (will cause transaction timeout risk)

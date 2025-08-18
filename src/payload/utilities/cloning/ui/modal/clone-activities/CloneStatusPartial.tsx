@@ -47,12 +47,16 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
 
           <div className="space-y-4">
             {successfulEntities.map((entity, idx) => (
-              <div key={idx} className="rounded border border-[var(--theme-success-light)] bg-[var(--theme-elevation-0)] p-3">
+              <div
+                key={idx}
+                className="rounded border border-[var(--theme-success-light)] bg-[var(--theme-elevation-0)] p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h4 className="font-medium text-[var(--theme-text)]">{entity.source.name}</h4>
                   <div className="flex items-center gap-1">
                     <CheckCircle className="h-4 w-4 text-[var(--theme-success)]" />
-                    <span className="text-sm font-semibold text-[var(--theme-success)]">100% {t('cloneActivity:results:complete')}</span>
+                    <span className="text-sm font-semibold text-[var(--theme-success)]">
+                      100% {t('cloneActivity:results:complete')}
+                    </span>
                   </div>
                 </div>
                 <CloneResultsTable statistics={entity} />
@@ -82,10 +86,14 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
                 )
 
               const completionColor =
-                entity.percentComplete >= 80 ? 'text-[var(--theme-warning)]' : 'text-[var(--theme-error)]'
+                entity.percentComplete >= 80
+                  ? 'text-[var(--theme-warning)]'
+                  : 'text-[var(--theme-error)]'
 
               return (
-                <div key={idx} className="rounded border border-[var(--theme-warning-light)] bg-[var(--theme-elevation-0)] p-3">
+                <div
+                  key={idx}
+                  className="rounded border border-[var(--theme-warning-light)] bg-[var(--theme-elevation-0)] p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <h4 className="font-medium text-[var(--theme-text)]">{entity.source.name}</h4>
                     <div className="flex items-center gap-1">

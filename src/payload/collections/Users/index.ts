@@ -2,12 +2,8 @@ import { CollectionConfig } from 'payload'
 import { I18nCollection } from '@/lib/i18n-collection'
 import { isProduction } from '@/lib/environment'
 import { anyone } from '@/payload/access/anyone'
-import {
-  loginAfterCreateUserAfterChangeHook
-} from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
-import {
-  recordSelectedOrganisationAfterLoginHook
-} from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
+import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
+import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
 import { superAdminFieldAccess } from '@/payload/access/super-admins-collection-access'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
@@ -33,12 +29,12 @@ export const Users: CollectionConfig = {
         }
 
         const systemLocales = req?.payload.config ? getLocaleCodes(req?.payload.config) : false
-        const defaultLocale= 'en'
+        const defaultLocale = 'en'
 
         // Determine user's preferred locale (fallback to 'en')
         const acceptLanguage = req?.headers?.get?.('accept-language') || ''
         const locale = acceptLanguage.split(',')[0]?.split('-')[0]
-        const supportedLocales= systemLocales || [defaultLocale]
+        const supportedLocales = systemLocales || [defaultLocale]
         const userLocale = supportedLocales.includes(locale) ? locale : defaultLocale
 
         // Generate the HTML using React Email

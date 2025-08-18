@@ -7,12 +7,8 @@ import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel'
-import {
-  currentOrganisationCollectionReadAccess
-} from '@/payload/collections/access/current-organisation-collection-read-access'
-import {
-  currentOrganisationCollectionWriteAccess
-} from '@/payload/collections/access/current-organisation-collection-write-access'
+import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
+import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 import { cloneTaskFlowTransactional } from './endpoints/clone-task-flow/clone-task-flow-transactional'
 
 export const TaskFlows: CollectionConfig = {

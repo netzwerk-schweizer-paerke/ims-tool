@@ -37,11 +37,11 @@ export async function translateDocument(options: TranslateOptions): Promise<Tran
     // Handle HTTP errors with structured response
     if (error && typeof error === 'object' && 'response' in error) {
       const httpError = error as { response: Response }
-      
+
       try {
         // Try to parse the error response as JSON
         const errorData = await httpError.response.json()
-        
+
         // Determine error type based on HTTP status code
         let errorType: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
         switch (httpError.response.status) {
@@ -57,7 +57,7 @@ export async function translateDocument(options: TranslateOptions): Promise<Tran
           default:
             errorType = 'generic'
         }
-        
+
         return {
           success: false,
           error: errorData.message || 'Translation failed',
@@ -67,7 +67,7 @@ export async function translateDocument(options: TranslateOptions): Promise<Tran
         // If we can't parse the error response, fall back to status-based error
         let errorType: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
         let errorMessage: string
-        
+
         switch (httpError.response.status) {
           case 429:
             errorType = 'quota_exceeded'
@@ -85,7 +85,7 @@ export async function translateDocument(options: TranslateOptions): Promise<Tran
             errorType = 'generic'
             errorMessage = 'Translation failed'
         }
-        
+
         return {
           success: false,
           error: errorMessage,
