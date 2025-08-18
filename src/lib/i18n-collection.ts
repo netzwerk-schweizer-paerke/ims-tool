@@ -383,4 +383,50 @@ export const I18nCollection = {
       it: 'Utente',
     },
   },
+  email: {
+    passwordReset: {
+      subject: {
+        en: 'Reset your password',
+        de: 'Passwort zurücksetzen',
+        fr: 'Réinitialisez votre mot de passe',
+        it: 'Reimposta la tua password',
+      },
+      greeting: {
+        en: 'Hello',
+        de: 'Hallo',
+        fr: 'Bonjour',
+        it: 'Ciao',
+      },
+      instructions: {
+        en: 'You recently requested to reset your password. Click the button below to reset it. This link will expire in 24 hours.',
+        de: 'Sie haben kürzlich eine Passwort-Zurücksetzung angefordert. Klicken Sie auf die Schaltfläche unten, um es zurückzusetzen. Dieser Link läuft in 24 Stunden ab.',
+        fr: 'Vous avez récemment demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour le réinitialiser. Ce lien expirera dans 24 heures.',
+        it: 'Hai recentemente richiesto di reimpostare la tua password. Clicca il pulsante qui sotto per reimpostarla. Questo link scadrà tra 24 ore.',
+      },
+      buttonText: {
+        en: 'Reset Password',
+        de: 'Passwort zurücksetzen',
+        fr: 'Réinitialiser le mot de passe',
+        it: 'Reimposta Password',
+      },
+      alternativeText: {
+        en: "If the button above doesn't work, copy and paste the following URL into your browser:",
+        de: 'Wenn die Schaltfläche oben nicht funktioniert, kopieren Sie die folgende URL und fügen Sie sie in Ihren Browser ein:',
+        fr: "Si le bouton ci-dessus ne fonctionne pas, copiez et collez l'URL suivante dans votre navigateur:",
+        it: 'Se il pulsante sopra non funziona, copia e incolla il seguente URL nel tuo browser:',
+      },
+      noRequestMessage: {
+        en: "If you didn't request a password reset, please ignore this email.",
+        de: 'Wenn Sie keine Passwort-Zurücksetzung angefordert haben, ignorieren Sie bitte diese E-Mail.',
+        fr: "Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet e-mail.",
+        it: 'Se non hai richiesto una reimpostazione della password, ignora questa email.',
+      },
+      footer: {
+        en: 'Best regards,<br/>Network Swiss Parcs',
+        de: 'Beste Grüsse,<br/>Netzwerk Schweizer Pärke',
+        fr: "Cordialement,<br/>L'équipe Swiss Parcs",
+        it: 'Cordiali saluti,<br/>Il team Swiss Parcs',
+      },
+    },
+  },
 }

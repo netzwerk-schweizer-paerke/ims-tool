@@ -135,7 +135,10 @@ export default buildConfig({
         user: process.env.SMTP_USER || '',
         pass: process.env.SMTP_PASS || '',
       },
+      logger: true,
+      transactionLog: true,
     },
+    skipVerify: true,
   }),
   async onInit(payload) {
     await seedDevUser(payload)
