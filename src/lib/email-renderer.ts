@@ -13,11 +13,9 @@ export async function renderPasswordResetEmail({
   token,
   locale = 'en',
   baseUrl = process.env.ORIGIN ||
-    process.env.PAYLOAD_PUBLIC_URL ||
-    process.env.NEXTAUTH_URL ||
     'http://localhost:3000',
 }: RenderPasswordResetEmailParams): Promise<string> {
-  const resetUrl = `${baseUrl.replace(/\/$/, '')}/admin/reset?token=${token}`
+  const resetUrl = `${baseUrl.replace(/\/$/, '')}/admin/reset/${token}`
 
   return await render(
     PasswordResetEmail({
