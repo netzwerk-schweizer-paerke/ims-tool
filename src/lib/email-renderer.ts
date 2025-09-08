@@ -12,8 +12,7 @@ export async function renderPasswordResetEmail({
   userEmail,
   token,
   locale = 'en',
-  baseUrl = process.env.ORIGIN ||
-    'http://localhost:3000',
+  baseUrl = process.env.ORIGIN || 'http://localhost:3000',
 }: RenderPasswordResetEmailParams): Promise<string> {
   const resetUrl = `${baseUrl.replace(/\/$/, '')}/admin/reset/${token}`
 
