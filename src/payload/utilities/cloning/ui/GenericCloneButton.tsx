@@ -49,6 +49,7 @@ export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
       },
     },
     depth: 0,
+    limit: 0,
   })
 
   if (!selectedOrgId) {
