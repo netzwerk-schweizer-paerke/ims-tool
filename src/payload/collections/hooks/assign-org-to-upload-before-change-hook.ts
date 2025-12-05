@@ -8,8 +8,8 @@ export const assignOrgToUploadBeforeChangeHook: CollectionBeforeChangeHook = asy
   context,
 }) => {
   // Debug logging
-  req.payload.logger.info('[Upload Hook] Context:', context?.targetOrganisationId)
-  req.payload.logger.info('[Upload Hook] req.context:', req.context?.targetOrganisationId)
+  req.payload.logger.info({ targetOrganisationId: context?.targetOrganisationId }, '[Upload Hook] Context')
+  req.payload.logger.info({ targetOrganisationId: req.context?.targetOrganisationId }, '[Upload Hook] req.context')
 
   // Allow override for cloning operations - check both context and req.context
   const targetOrgId =
@@ -19,7 +19,7 @@ export const assignOrgToUploadBeforeChangeHook: CollectionBeforeChangeHook = asy
 
   // Log for debugging during testing
   if (context?.targetOrganisationId || req.context?.targetOrganisationId) {
-    req.payload.logger.info(`[Upload Hook] Using context override for org: ${targetOrgId}`)
+    req.payload.logger.info({ targetOrgId }, '[Upload Hook] Using context override for org')
   }
 
   data.prefix = `${data.prefix}/${targetOrgId}`

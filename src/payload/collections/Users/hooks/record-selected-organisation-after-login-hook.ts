@@ -4,7 +4,7 @@ export const recordSelectedOrganisationAfterLoginHook: CollectionAfterLoginHook 
   req,
   user,
 }) => {
-  req.payload.logger.info(`Setting selected organisation for user ${user.id}`)
+  req.payload.logger.info({ userId: user.id }, 'Setting selected organisation for user')
   try {
     let selectedOrgId = user.selectedOrganisation
 
@@ -29,7 +29,7 @@ export const recordSelectedOrganisationAfterLoginHook: CollectionAfterLoginHook 
       req,
     })
   } catch (err: unknown) {
-    req.payload.logger.error(`Error recording selected organisation for user ${user.id}: ${err}`)
+    req.payload.logger.error({ userId: user.id, err }, 'Error recording selected organisation for user')
   }
 
   return user
