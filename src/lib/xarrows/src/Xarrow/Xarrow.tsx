@@ -5,8 +5,6 @@ import { xarrowPropsType } from '../types'
 import useXarrowProps from './useXarrowProps'
 import { XarrowContext } from '../Xwrapper'
 import { getPosition } from './utils/GetPosition'
-import XarrowPropTypes from '@/lib/xarrows/src/Xarrow/propTypes'
-
 const log = console.log
 
 const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
@@ -386,10 +384,5 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
     </div>
   )
 }
-
-//////////////////////////////
-// propTypes
-
-Xarrow.propTypes = XarrowPropTypes
 
 export default Xarrow

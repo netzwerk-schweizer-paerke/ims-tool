@@ -1,12 +1,4 @@
-// Buzier curve calculations
-
-/**
- * Point in 2D space
- */
-interface Point2D {
-  x: number
-  y: number
-}
+// Bezier curve calculations
 
 /**
  * Returns a Bezier curve function with 2 control points

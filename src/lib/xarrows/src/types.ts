@@ -21,8 +21,8 @@ export type xarrowPropsType = {
   curveness?: number
   gridBreak?: string
   gridRadius?: number
-  tailTransformOffsetX: number
-  tailTransformOffsetY: number
+  tailTransformOffsetX?: number
+  tailTransformOffsetY?: number
   dashness?:
     | boolean
     | {
