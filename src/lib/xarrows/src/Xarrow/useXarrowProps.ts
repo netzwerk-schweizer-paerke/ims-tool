@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useLayoutEffect, useRef, useState } from 'react'
 import {
   anchorCustomPositionType,
@@ -16,12 +15,12 @@ import { arrowShapes, cAnchorEdge, cArrowShapes } from '../constants'
 import { anchorEdgeType, dimensionType } from '../privateTypes'
 
 const parseLabels = (label: xarrowPropsType['labels']): labelsType => {
-  let parsedLabel = { start: null, middle: null, end: null }
+  const parsedLabel: labelsType = { start: undefined, middle: undefined, end: undefined }
   if (label) {
     if (typeof label === 'string' || React.isValidElement(label)) parsedLabel.middle = label
     else {
-      for (let key in label) {
-        parsedLabel[key] = label[key]
+      for (const key in label) {
+        parsedLabel[key as keyof labelsType] = (label as labelsType)[key as keyof labelsType]
       }
     }
   }
@@ -77,15 +76,19 @@ const parseAnchor = (anchor: anchorType) => {
   return anchorChoice3 as anchorCustomPositionType2[]
 }
 
-const parseDashness = (dashness, props) => {
+type DashnessInput = xarrowPropsType['dashness']
+type DashnessObj = Exclude<DashnessInput, boolean | undefined>
+
+const parseDashness = (dashness: DashnessInput, props: { strokeWidth: number }) => {
   let dashStroke = 0,
     dashNone = 0,
     animDashSpeed,
     animDirection = 1
   if (isObject(dashness)) {
-    dashStroke = dashness.strokeLen || props.strokeWidth * 2
-    dashNone = dashness.strokeLen ? dashness.nonStrokeLen : props.strokeWidth
-    animDashSpeed = dashness.animation ? dashness.animation : null
+    const d = dashness as DashnessObj
+    dashStroke = d.strokeLen || props.strokeWidth * 2
+    dashNone = d.strokeLen ? (d.nonStrokeLen ?? props.strokeWidth) : props.strokeWidth
+    animDashSpeed = d.animation ? d.animation : null
   } else if (typeof dashness === 'boolean' && dashness) {
     dashStroke = props.strokeWidth * 2
     dashNone = props.strokeWidth
@@ -103,7 +106,7 @@ const parseDashness = (dashness, props) => {
   }
 }
 
-const parseEdgeShape = (svgEdge): svgCustomEdgeType => {
+const parseEdgeShape = (svgEdge: xarrowPropsType['headShape']): svgCustomEdgeType => {
   if (typeof svgEdge === 'string') {
     if (svgEdge in arrowShapes) svgEdge = arrowShapes[svgEdge as svgEdgeShapeType]
     else {
@@ -116,7 +119,7 @@ const parseEdgeShape = (svgEdge): svgCustomEdgeType => {
   }
   svgEdge = svgEdge as svgCustomEdgeType
   if (svgEdge?.offsetForward === undefined) svgEdge.offsetForward = 0.25
-  if (svgEdge?.svgElem === undefined) svgEdge.svgElem = 'path'
+  if (svgEdge?.svgElem === undefined) (svgEdge as svgCustomEdgeType).svgElem = null as unknown as svgCustomEdgeType['svgElem']
   // if (svgEdge?.svgProps === undefined) svgEdge.svgProps = arrowShapes.arrow1.svgProps;
   return svgEdge
 }
@@ -132,22 +135,24 @@ const parseGridBreak = (gridBreak: string): { relative: number; abs: number } =>
  * @param propVal
  * @param updateRef
  */
-const withUpdate = (propVal, updateRef) => {
+const withUpdate = <T>(propVal: T, updateRef: React.MutableRefObject<boolean> | undefined): T => {
   if (updateRef) updateRef.current = true
   return propVal
 }
 
-const noParse = (userProp) => userProp
-const noParseWithUpdatePos = (userProp, _, updatePos) => withUpdate(userProp, updatePos)
-const parseNumWithUpdatePos = (userProp, _, updatePos) => withUpdate(Number(userProp), updatePos)
-const parseNum = (userProp) => Number(userProp)
+type ParseFunc = (userProp: unknown, propsRefs: Record<string, unknown>, updatePos?: React.MutableRefObject<boolean>) => unknown
 
-const parsePropsFuncs: Required<{ [key in keyof xarrowPropsType]: Function }> = {
-  start: (userProp) => getElementByPropGiven(userProp),
-  end: (userProp) => getElementByPropGiven(userProp),
-  startAnchor: (userProp, _, updatePos) => withUpdate(parseAnchor(userProp), updatePos),
-  endAnchor: (userProp, _, updatePos) => withUpdate(parseAnchor(userProp), updatePos),
-  labels: (userProp) => parseLabels(userProp),
+const noParse: ParseFunc = (userProp) => userProp
+const noParseWithUpdatePos: ParseFunc = (userProp, _, updatePos) => withUpdate(userProp, updatePos)
+const parseNumWithUpdatePos: ParseFunc = (userProp, _, updatePos) => withUpdate(Number(userProp), updatePos)
+const parseNum: ParseFunc = (userProp) => Number(userProp)
+
+const parsePropsFuncs: Record<keyof xarrowPropsType, ParseFunc> = {
+  start: (userProp) => getElementByPropGiven(userProp as xarrowPropsType['start']),
+  end: (userProp) => getElementByPropGiven(userProp as xarrowPropsType['end']),
+  startAnchor: (userProp, _, updatePos) => withUpdate(parseAnchor(userProp as anchorType), updatePos),
+  endAnchor: (userProp, _, updatePos) => withUpdate(parseAnchor(userProp as anchorType), updatePos),
+  labels: (userProp) => parseLabels(userProp as xarrowPropsType['labels']),
   color: noParse,
   lineColor: (userProp, propsRefs) => userProp || propsRefs.color,
   headColor: (userProp, propsRefs) => userProp || propsRefs.color,
@@ -159,13 +164,13 @@ const parsePropsFuncs: Required<{ [key in keyof xarrowPropsType]: Function }> = 
   tailSize: parseNumWithUpdatePos,
   path: noParseWithUpdatePos,
   curveness: parseNumWithUpdatePos,
-  gridBreak: (userProp, _, updatePos) => withUpdate(parseGridBreak(userProp), updatePos),
+  gridBreak: (userProp, _, updatePos) => withUpdate(parseGridBreak(userProp as string), updatePos),
   gridRadius: parseNum,
   tailTransformOffsetX: parseNumWithUpdatePos,
   tailTransformOffsetY: parseNumWithUpdatePos,
-  dashness: (userProp, propsRefs) => parseDashness(userProp, propsRefs),
-  headShape: (userProp) => parseEdgeShape(userProp),
-  tailShape: (userProp) => parseEdgeShape(userProp),
+  dashness: (userProp, propsRefs) => parseDashness(userProp as DashnessInput, propsRefs as { strokeWidth: number }),
+  headShape: (userProp) => parseEdgeShape(userProp as xarrowPropsType['headShape']),
+  tailShape: (userProp) => parseEdgeShape(userProp as xarrowPropsType['tailShape']),
   showXarrow: noParse,
   animateDrawing: noParse,
   zIndex: parseNum,
@@ -186,29 +191,30 @@ const parsePropsFuncs: Required<{ [key in keyof xarrowPropsType]: Function }> = 
 }
 
 //build dependencies
-const propsDeps = {}
+const propsDeps: Record<string, string[]> = {}
 //each prop depends on himself
-for (let propName in parsePropsFuncs) {
+for (const propName in parsePropsFuncs) {
   propsDeps[propName] = [propName]
 }
 // 'lineColor', 'headColor', 'tailColor' props also depends on 'color' prop
-for (let propName of ['lineColor', 'headColor', 'tailColor']) {
+for (const propName of ['lineColor', 'headColor', 'tailColor']) {
   propsDeps[propName].push('color')
 }
 
-const parseGivenProps = (props: xarrowPropsType, propsRef) => {
-  for (let [name, val] of Object.entries(props)) {
-    propsRef[name] = parsePropsFuncs?.[name]?.(val, propsRef)
+const parseGivenProps = (props: xarrowPropsType, propsRef: Record<string, unknown>): Record<string, unknown> => {
+  for (const [name, val] of Object.entries(props)) {
+    const fn = parsePropsFuncs[name as keyof xarrowPropsType]
+    if (fn) propsRef[name] = fn(val, propsRef)
   }
   return propsRef
 }
 
-const defaultProps: Required<xarrowPropsType> = {
-  start: null,
-  end: null,
-  startAnchor: 'auto',
-  endAnchor: 'auto',
-  labels: null,
+const defaultProps = {
+  start: null as unknown as xarrowPropsType['start'],
+  end: null as unknown as xarrowPropsType['end'],
+  startAnchor: 'auto' as const,
+  endAnchor: 'auto' as const,
+  labels: undefined as xarrowPropsType['labels'],
   color: 'CornflowerBlue',
   lineColor: null,
   headColor: null,
@@ -244,7 +250,7 @@ const defaultProps: Required<xarrowPropsType> = {
   _cpy1Offset: 0,
   _cpx2Offset: 0,
   _cpy2Offset: 0,
-} as const
+} as const satisfies xarrowPropsType
 
 type parsedXarrowProps = {
   shouldUpdatePosition: React.MutableRefObject<boolean>
@@ -278,11 +284,11 @@ type parsedXarrowProps = {
   tailShape: svgCustomEdgeType
   animateDrawing: number
   zIndex: number
-  passProps: JSX.IntrinsicElements[svgElemType]
+  passProps: React.JSX.IntrinsicElements[svgElemType]
   SVGcanvasProps: React.SVGAttributes<SVGSVGElement>
   arrowBodyProps: React.SVGProps<SVGPathElement>
-  arrowHeadProps: JSX.IntrinsicElements[svgElemType]
-  arrowTailProps: JSX.IntrinsicElements[svgElemType]
+  arrowHeadProps: React.JSX.IntrinsicElements[svgElemType]
+  arrowTailProps: React.JSX.IntrinsicElements[svgElemType]
   divContainerProps: React.HTMLProps<HTMLDivElement>
   SVGcanvasStyle: React.CSSProperties
   divContainerStyle: React.CSSProperties
@@ -294,8 +300,7 @@ type parsedXarrowProps = {
   _cpy2Offset: number
 }
 
-let initialParsedProps = {} as parsedXarrowProps
-initialParsedProps = parseGivenProps(defaultProps, initialParsedProps)
+const initialParsedProps = parseGivenProps(defaultProps, {} as Record<string, unknown>) as unknown as parsedXarrowProps
 
 const initialValVars = {
   startPos: { x: 0, y: 0, right: 0, bottom: 0 } as dimensionType,
@@ -304,12 +309,12 @@ const initialValVars = {
 
 // const parseAllProps = () => parseGivenProps(defaultProps, initialParsedProps);
 
-function deepCompareEquals(a, b) {
+function deepCompareEquals<T>(a: T, b: T): boolean {
   return isEqual(a, b)
 }
 
-function useDeepCompareMemoize(value) {
-  const ref = useRef()
+function useDeepCompareMemoize<T>(value: T): T {
+  const ref = useRef<T>(value)
   // it can be done by using useMemo as well
   // but useRef is rather cleaner and easier
 
@@ -320,7 +325,8 @@ function useDeepCompareMemoize(value) {
   return ref.current
 }
 
-function useDeepCompareEffect(callback, dependencies) {
+function useDeepCompareEffect(callback: React.EffectCallback, dependencies: unknown[]): void {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(callback, dependencies.map(useDeepCompareMemoize))
 }
 
@@ -346,18 +352,23 @@ const useXarrowProps = (
   // for example: if given 'start' prop would change call getElementByPropGiven(props.start) and save value into propsRefs.start.current
   // why to save refs to props parsed values? some of the props require relatively expensive computations(like 'start' and 'startAnchor').
   // this will always run in the same order and THAT'S WAY ITS LEGAL
-  for (let propName in defaultProps) {
+  for (const propName of Object.keys(defaultProps) as (keyof xarrowPropsType)[]) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useLayoutEffect(
       () => {
-        propsRefs[propName] = parsePropsFuncs?.[propName]?.(
-          curProps[propName],
-          propsRefs,
-          shouldUpdatePosition,
-        )
+        const fn = parsePropsFuncs[propName]
+        if (fn) {
+          ;(propsRefs as Record<string, unknown>)[propName] = fn(
+            curProps[propName],
+            propsRefs as Record<string, unknown>,
+            shouldUpdatePosition,
+          )
+        }
         // console.log('prop update:', propName, 'with value', propsRefs[propName]);
         setPropsRefs({ ...propsRefs })
       },
-      propsDeps[propName].map((name) => userProps[name]),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      propsDeps[propName].map((name) => userProps[name as keyof xarrowPropsType]),
     )
   }
 

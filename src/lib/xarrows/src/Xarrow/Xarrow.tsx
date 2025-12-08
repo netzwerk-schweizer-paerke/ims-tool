@@ -1,10 +1,9 @@
-// @ts-nocheck
 'use client'
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { xarrowPropsType } from '../types'
 import useXarrowProps from './useXarrowProps'
 import { XarrowContext } from '../Xwrapper'
-import { getPosition } from './utils/GetPosition'
+import { getPosition, PositionResult } from './utils/GetPosition'
 const log = console.log
 
 const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
@@ -64,7 +63,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
   const [, setRender] = useState({})
   const forceRerender = () => setRender({})
 
-  const [st, setSt] = useState({
+  const [st, setSt] = useState<PositionResult>({
     //initial state
     cx0: 0, //x start position of the canvas
     cy0: 0, //y start position of the canvas
@@ -174,7 +173,9 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
         // @ts-ignore
         lineDashAnimRef.current?.beginElement()
       }
-      const handleDrawAmimBegin = () => (headRef.current.style.opacity = '0')
+      const handleDrawAmimBegin = () => {
+        if (headRef.current) headRef.current.style.opacity = '0'
+      }
       if (lineDrawAnimRef.current && headRef.current) {
         lineDrawAnimRef.current.addEventListener('endEvent', handleDrawAmimEnd)
         lineDrawAnimRef.current.addEventListener('beginEvent', handleDrawAmimBegin)
@@ -214,7 +215,7 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
               left: st.cx0,
               top: st.cy0,
               pointerEvents: 'none',
-              border: _debug ? '1px dashed yellow' : null,
+              border: _debug ? '1px dashed yellow' : undefined,
               ...SVGcanvasStyle,
             }}
             overflow="auto"
