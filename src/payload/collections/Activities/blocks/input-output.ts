@@ -34,7 +34,6 @@ export const ActivityIOBlock: Block = {
                   Field:
                     'src/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
                 },
-                hidden: true,
               },
               jsonSchema: connectionSchema,
             },

@@ -32,7 +32,7 @@ export const assignActivityBlockArrows = (activity: Activity) => {
           return
         }
         // @ts-ignore
-        const displayArrows = definition[arrow.type].flat()
+        const displayArrows = definition[arrow.type]?.flat() || []
         if (displayArrows.length > 0) {
           arrowSet.push({ arrows: displayArrows, id: compoundBlock.id })
         }

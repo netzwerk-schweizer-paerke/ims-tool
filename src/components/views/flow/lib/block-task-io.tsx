@@ -1,9 +1,11 @@
+'use client'
 import { ProcessTaskIOBlock } from '@/payload-types'
 import { BlockWrapper } from '@/components/views/flow/block-wrapper'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { TaskFlowArrows } from '@/components/views/flow/task-flow-arrows'
 import { BlockMetadata } from '@/components/views/flow/lib/block-metadata'
+import { Xwrapper } from '@/lib/xarrows/src'
 
 type Props = {
   block: ProcessTaskIOBlock
@@ -23,7 +25,7 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
   }
 
   return (
-    <>
+    <Xwrapper>
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           {isIoEnabled && (
@@ -40,6 +42,6 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
         <TaskFlowArrows taskFlowBlock={block} />
       </div>
       <BlockMetadata block={block} />
-    </>
+    </Xwrapper>
   )
 }

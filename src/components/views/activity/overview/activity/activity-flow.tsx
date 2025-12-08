@@ -1,8 +1,10 @@
+'use client'
 import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
 import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 import Link from 'next/link'
 import { Translate } from '@/lib/translate'
+import { Xwrapper } from '@/lib/xarrows/src'
 
 type Props = {
   locale: string
@@ -67,30 +69,32 @@ export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
   }, blocksDisplay)
 
   return (
-    <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
-      <div className={'relative flex w-min grow flex-col'}>
-        {blocksDisplay.input.length === 0 ? (
-          <ActivityBlock type={'empty'} activityId={activity.id} />
-        ) : (
-          blocksDisplay.input.map((block) => (
-            <ActivityBlock block={block} activityId={activity.id} type={'input'} key={block.id} />
-          ))
-        )}
-        {blocksDisplay.tasks.map((block) => (
-          <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
-        ))}
-        <div className={'relative grow'}>
-          <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
+    <Xwrapper>
+      <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
+        <div className={'relative flex w-min grow flex-col'}>
+          {blocksDisplay.input.length === 0 ? (
+            <ActivityBlock type={'empty'} activityId={activity.id} />
+          ) : (
+            blocksDisplay.input.map((block) => (
+              <ActivityBlock block={block} activityId={activity.id} type={'input'} key={block.id} />
+            ))
+          )}
+          {blocksDisplay.tasks.map((block) => (
+            <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
+          ))}
+          <div className={'relative grow'}>
+            <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
+          </div>
+          {blocksDisplay.output.length === 0 ? (
+            <ActivityBlock activityId={activity.id} type={'empty'} />
+          ) : (
+            blocksDisplay.output.map((block) => (
+              <ActivityBlock activityId={activity.id} block={block} type={'output'} key={block.id} />
+            ))
+          )}
+          <ActivityFlowArrows activity={activity} />
         </div>
-        {blocksDisplay.output.length === 0 ? (
-          <ActivityBlock activityId={activity.id} type={'empty'} />
-        ) : (
-          blocksDisplay.output.map((block) => (
-            <ActivityBlock activityId={activity.id} block={block} type={'output'} key={block.id} />
-          ))
-        )}
-        <ActivityFlowArrows activity={activity} />
       </div>
-    </div>
+    </Xwrapper>
   )
 }
