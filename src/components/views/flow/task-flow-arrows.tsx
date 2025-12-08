@@ -1,8 +1,7 @@
 'use client'
 import { debounce } from 'es-toolkit'
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
-import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
 import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
 import { assignBlockArrows } from '@/components/views/flow/lib/assign-block-arrows'
 import {
@@ -11,6 +10,18 @@ import {
   RootTargetRightName,
 } from '@/components/graph/fields/graph/lib/root-target'
 import Xarrow, { useXarrow } from '@/lib/xarrows/src'
+
+// Pre-compiled regex for parallel block ID transformations (avoids 6 replace calls per arrow)
+const parallelBlockRegex = new RegExp(
+  `right-${RootTargetLeftName}|${RootTargetLeftName}|${RootTargetRightName}`,
+  'g',
+)
+
+// Replacement function for parallel block transformations
+const parallelBlockReplacer = (match: string): string => {
+  if (match === `right-${RootTargetLeftName}`) return `left-${RootTargetName}`
+  return RootTargetName
+}
 
 type Props = {
   taskFlowBlock: ProcessTaskCompoundBlock
@@ -45,8 +56,10 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Memoize arrow set calculation - only recalculate when block data changes
+  const arrowSet = useMemo(() => assignBlockArrows(taskFlowBlock), [taskFlowBlock])
+
   const renderArrows = useCallback(() => {
-    const arrowSet = assignBlockArrows(taskFlowBlock)
     return arrowSet.map(({ arrows, id, leftId, rightId, blockType }, index) => (
       <Fragment key={id + index}>
         {arrows.map((arrow, index) => {
@@ -67,29 +80,21 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
             if (id === leftId) {
               return null
             }
-            startPrefix = startPrefix.replace(
-              `right-${RootTargetLeftName}`,
-              `left-${RootTargetName}`,
-            )
-            endPrefix = endPrefix.replace(`right-${RootTargetLeftName}`, `left-${RootTargetName}`)
-            startPrefix = startPrefix
-              .replace(RootTargetLeftName, RootTargetName)
-              .replace(RootTargetRightName, RootTargetName)
-            endPrefix = endPrefix
-              .replace(RootTargetLeftName, RootTargetName)
-              .replace(RootTargetRightName, RootTargetName)
+            // Single regex replacement instead of 6 separate .replace() calls
+            startPrefix = startPrefix.replace(parallelBlockRegex, parallelBlockReplacer)
+            endPrefix = endPrefix.replace(parallelBlockRegex, parallelBlockReplacer)
           }
+          // arrowStyle is already merged in assignBlockArrows
           const props = {
             ...arrow,
             start: startPrefix,
             end: endPrefix,
-            ...arrowStyle,
           }
           return <Xarrow key={startPrefix + endPrefix + index} {...props} />
         })}
       </Fragment>
     ))
-  }, [taskFlowBlock])
+  }, [arrowSet])
 
   return (
     <div ref={ref} className={'x-arrows absolute inset-0'}>

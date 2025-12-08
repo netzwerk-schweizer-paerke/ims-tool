@@ -2,8 +2,8 @@ import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
 import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
 import { processTaskConnections } from '@/components/graph/fields/graph/flows/task/connection-definitions'
 import { processTestConnections } from '@/components/graph/fields/graph/flows/test/connection-definitions'
-import { connectionTypes } from '@/components/graph/fields/graph/hooks/use-arrows'
 import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
+import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
 
 type ArrowType = {
   start: string
@@ -12,6 +12,10 @@ type ArrowType = {
     position: string
     type: string
   }
+  // arrowStyle properties
+  path: 'smooth' | 'grid' | 'straight'
+  color: string
+  strokeWidth: number
 }
 
 type AccumulatorItem = {
@@ -22,17 +26,36 @@ type AccumulatorItem = {
   blockType: string
 }
 
+type ConnectionDefinition = {
+  position: string
+  options: readonly string[]
+  definitions: Record<string, unknown[]>
+}
+
+type DefinitionsByPosition = Map<string, Record<string, unknown[]>>
+
 type ReturnObject = {
   id: string
-  arrows: any[]
-  connections: any[]
+  arrows: Array<{ position: string; type: string }>
+  definitionsByPosition: DefinitionsByPosition
   leftId: string
   rightId: string
 }
 
 type ReturnTuple = [ReturnObject | undefined, ReturnObject]
 
-const connectionTypesSet = new Set(connectionTypes)
+// Pre-index connection definitions by position for O(1) lookup instead of O(n) find()
+const createDefinitionIndex = (connections: ConnectionDefinition[]): DefinitionsByPosition => {
+  return new Map(connections.map((c) => [c.position, c.definitions]))
+}
+
+// Module-level cached indexes - created once at import time
+const processIoDefinitionsByPosition = createDefinitionIndex(processIoConnections)
+const processTaskDefinitionsByPosition = createDefinitionIndex(processTaskConnections)
+const processTestDefinitionsByPosition = createDefinitionIndex(processTestConnections)
+const processTaskParallelDefinitionsByPosition = createDefinitionIndex(
+  processTaskParallelConnections,
+)
 
 export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
   let blockLeft, blockRight
@@ -46,7 +69,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
         blockLeft = {
           id: leftId,
           arrows: block.graph?.io?.connections,
-          connections: processIoConnections,
+          definitionsByPosition: processIoDefinitionsByPosition,
           leftId,
           rightId,
         }
@@ -54,7 +77,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
       blockRight = {
         id: rightId,
         arrows: block.graph?.task?.connections,
-        connections: processTaskConnections,
+        definitionsByPosition: processTaskDefinitionsByPosition,
         leftId,
         rightId,
       }
@@ -64,7 +87,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
         blockLeft = {
           id: leftId,
           arrows: block.graph?.output?.connections,
-          connections: processIoConnections,
+          definitionsByPosition: processIoDefinitionsByPosition,
           leftId,
           rightId,
         }
@@ -72,7 +95,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
       blockRight = {
         id: rightId,
         arrows: block.graph?.test?.connections,
-        connections: processTestConnections,
+        definitionsByPosition: processTestDefinitionsByPosition,
         leftId,
         rightId,
       }
@@ -81,14 +104,14 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
       blockLeft = {
         id: leftId,
         arrows: block.graph?.task?.connections,
-        connections: processTaskParallelConnections,
+        definitionsByPosition: processTaskParallelDefinitionsByPosition,
         leftId,
         rightId,
       }
       blockRight = {
         id: rightId,
         arrows: block.graph?.task?.connections,
-        connections: processTaskParallelConnections,
+        definitionsByPosition: processTaskParallelDefinitionsByPosition,
         leftId,
         rightId,
       }
@@ -101,9 +124,7 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
     throw new Error('Block right should not be undefined')
   }
 
-  // @ts-ignore
-  const result: ReturnTuple = [blockLeft, blockRight as ReturnObject]
-
+  const result: ReturnTuple = [blockLeft as ReturnObject | undefined, blockRight as ReturnObject]
   const blockType = block.blockType
 
   return result.reduce<AccumulatorItem[]>((acc, block) => {
@@ -112,23 +133,28 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
       return acc
     }
 
-    const { connections, arrows, id, leftId, rightId } = block
+    const { definitionsByPosition, arrows, id, leftId, rightId } = block
 
     arrows?.forEach((arrow) => {
-      const definition = connections.find((c) => c.position === arrow.position)?.definitions
-      if (!definition) {
+      // O(1) Map lookup instead of O(n) array.find()
+      const definitions = definitionsByPosition.get(arrow.position)
+      if (!definitions) {
         return
       }
-      const displayArrows = definition[arrow.type]?.flat().map((a: any) => {
-        return {
-          ...a,
-          originalArrow: arrow,
-        }
-      })
-
-      if (displayArrows && displayArrows.length > 0) {
-        acc.push({ arrows: displayArrows, id, leftId, rightId, blockType })
+      // Definitions are already flat arrays, no need for .flat()
+      const arrowDefinitions = definitions[arrow.type]
+      if (!arrowDefinitions || arrowDefinitions.length === 0) {
+        return
       }
+
+      // Pre-merge arrowStyle here instead of spreading on every render
+      const displayArrows = arrowDefinitions.map((a) => ({
+        ...(a as Record<string, unknown>),
+        ...arrowStyle,
+        originalArrow: arrow,
+      }))
+
+      acc.push({ arrows: displayArrows as ArrowType[], id, leftId, rightId, blockType })
     })
     return acc
   }, [])

@@ -1,63 +1,36 @@
 'use client'
-import React, { FC, MutableRefObject, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { FC, ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 
-interface UpdateRef {
-  [key: number]: () => void
-}
-
-const updateRef: UpdateRef = {}
-let updateRefCount = 0
-
-interface XarrowProviderProps {
-  children: ReactNode
-  instanceCount: MutableRefObject<number>
-}
-
-const XarrowProvider: FC<XarrowProviderProps> = ({ children, instanceCount }) => {
-  const [, setRender] = useState({})
-  const updateXarrow = () => setRender({})
-  useEffect(() => {
-    instanceCount.current = updateRefCount
-    updateRef[instanceCount.current] = updateXarrow
-  }, [])
-  return <XarrowContext.Provider value={updateXarrow}>{children}</XarrowContext.Provider>
-}
-
-interface XelemProviderProps {
-  children: ReactNode
-  instanceCount: MutableRefObject<number>
-}
-
-const XelemProvider: FC<XelemProviderProps> = ({ children, instanceCount }) => {
-  return (
-    <XelemContext.Provider value={updateRef[instanceCount.current]}>
-      {children}
-    </XelemContext.Provider>
-  )
-}
+// Contexts for arrow update coordination
+export const XelemContext = React.createContext<() => void>(() => {})
+export const XarrowContext = React.createContext<() => void>(() => {})
 
 interface XwrapperProps {
   children: ReactNode
 }
 
 const Xwrapper: FC<XwrapperProps> = ({ children }) => {
-  const instanceCount = useRef(updateRefCount)
   const [, setRender] = useState({})
+  const updateXarrow = useCallback(() => setRender({}), [])
+
+  // Use React's useId for stable instance identification (SSR-safe)
+  const instanceId = useId()
+  const updateRefMap = useRef<Map<string, () => void>>(new Map())
+
   useEffect(() => {
-    updateRefCount++
-    setRender({})
+    updateRefMap.current.set(instanceId, updateXarrow)
     return () => {
-      delete updateRef[instanceCount.current]
+      updateRefMap.current.delete(instanceId)
     }
-  }, [])
+  }, [instanceId, updateXarrow])
+
+  // Get the update function for XelemContext (defaults to updateXarrow)
+  const xelemUpdate = updateRefMap.current.get(instanceId) ?? updateXarrow
 
   return (
-    <XelemProvider instanceCount={instanceCount}>
-      <XarrowProvider instanceCount={instanceCount}>{children}</XarrowProvider>
-    </XelemProvider>
+    <XelemContext.Provider value={xelemUpdate}>
+      <XarrowContext.Provider value={updateXarrow}>{children}</XarrowContext.Provider>
+    </XelemContext.Provider>
   )
 }
-
-export const XelemContext = React.createContext<() => void>(() => {})
-export const XarrowContext = React.createContext<() => void>(() => {})
 export default Xwrapper

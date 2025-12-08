@@ -4,7 +4,6 @@ import { calcAnchors } from '../anchors'
 import { getShortestLine, getSvgPos } from './index'
 import { cPaths } from '../../constants'
 import { buzzierMinSols, bzFunction } from './buzzier'
-import { pick } from 'es-toolkit'
 import { anchorCustomPositionType, pathType } from '../../types'
 
 type Point = { x: number; y: number }
@@ -13,6 +12,14 @@ type AnchorPoint = { x: number; y: number; anchor: anchorCustomPositionType }
 
 type CurvePossibilities = {
   [key: string]: () => void
+}
+
+// Module-level helper for anchor direction - optimized with direct equality checks
+const getAnchorDir = (pos: string): string => {
+  if (pos === 'left' || pos === 'right') return 'h'
+  if (pos === 'bottom' || pos === 'top') return 'v'
+  if (pos === 'middle') return 'm'
+  return ''
 }
 
 const getRoundedEdge = (
@@ -25,6 +32,7 @@ const getRoundedEdge = (
   let cornerStartYOffset = 0
   let cornerEndXOffset = 0
   let cornerEndYOffset = 0
+
   if (corner.x === start.x) {
     // line up/down then left/right
     cornerStartYOffset = corner.y > start.y ? -gridRadius : gridRadius
@@ -34,6 +42,7 @@ const getRoundedEdge = (
     cornerStartXOffset = corner.x > start.x ? -gridRadius : gridRadius
     cornerEndYOffset = end.y > start.y ? gridRadius : -gridRadius
   }
+
   return (
     `L ${corner.x + cornerStartXOffset} ${corner.y + cornerStartYOffset} ` +
     `Q ${corner.x} ${corner.y} ${corner.x + cornerEndXOffset} ${corner.y + cornerEndYOffset}`
@@ -91,8 +100,8 @@ export const getPosition = (
     lineRef: React.MutableRefObject<SVGPathElement | null>
   }>,
 ): PositionResult => {
-  let [propsRefs, valVars] = xProps
-  let {
+  const [propsRefs, valVars] = xProps
+  const {
     startAnchor,
     endAnchor,
     strokeWidth,
@@ -100,7 +109,7 @@ export const getPosition = (
     headSize,
     showTail,
     tailSize,
-    path,
+    path: pathProp,
     curveness,
     gridBreak,
     headShape,
@@ -121,30 +130,32 @@ export const getPosition = (
   let tailOrient: number = 0
 
   // convert startAnchor and endAnchor to list of objects represents allowed anchors.
-  let startPoints = calcAnchors(startAnchor, startPos)
-  let endPoints = calcAnchors(endAnchor, endPos)
+  const startPoints = calcAnchors(startAnchor, startPos)
+  const endPoints = calcAnchors(endAnchor, endPos)
 
   // choose the smallest path for 2 points from these possibilities.
-  let { chosenStart, chosenEnd } = getShortestLine(startPoints, endPoints)
+  const { chosenStart, chosenEnd } = getShortestLine(startPoints, endPoints)
 
-  let startAnchorPosition = chosenStart.anchor.position,
-    endAnchorPosition = chosenEnd.anchor.position
-  let startPoint = pick(chosenStart, ['x', 'y']),
-    endPoint = pick(chosenEnd, ['x', 'y'])
+  const startAnchorPosition = chosenStart.anchor.position
+  let endAnchorPosition = chosenEnd.anchor.position
+  const startPoint = { x: chosenStart.x, y: chosenStart.y }
+  const endPoint = { x: chosenEnd.x, y: chosenEnd.y }
 
-  let mainDivPos = getSvgPos(svgRef)
+  const mainDivPos = getSvgPos(svgRef)
+  const dx = endPoint.x - startPoint.x
+  const dy = endPoint.y - startPoint.y
+  const absDx = Math.abs(endPoint.x - startPoint.x)
+  const absDy = Math.abs(endPoint.y - startPoint.y)
+  const xSign = dx > 0 ? 1 : -1
+  const ySign = dy > 0 ? 1 : -1
+  const headOffset = headShape.offsetForward as number
+  const tailOffset = tailShape.offsetForward as number
+  const fHeadSize = headSize * strokeWidth // factored head size
+  const fTailSize = tailSize * strokeWidth // factored tail size
+
+  // These get modified during canvas adjustments
   let cx0 = Math.min(startPoint.x, endPoint.x) - mainDivPos.x
   let cy0 = Math.min(startPoint.y, endPoint.y) - mainDivPos.y
-  let dx = endPoint.x - startPoint.x
-  let dy = endPoint.y - startPoint.y
-  let absDx = Math.abs(endPoint.x - startPoint.x)
-  let absDy = Math.abs(endPoint.y - startPoint.y)
-  let xSign = dx > 0 ? 1 : -1
-  let ySign = dy > 0 ? 1 : -1
-  let headOffset = headShape.offsetForward as number
-  let tailOffset = tailShape.offsetForward as number
-  let fHeadSize = headSize * strokeWidth //factored head size
-  let fTailSize = tailSize * strokeWidth //factored head size
 
   // const { current: _headBox } = headBox;
   let xHeadOffset = 0
@@ -152,27 +163,22 @@ export const getPosition = (
   let xTailOffset = 0
   let yTailOffset = 0
 
-  let _headOffset = fHeadSize * headOffset
-  let _tailOffset = fTailSize * tailOffset
+  const _headOffset = fHeadSize * headOffset
+  const _tailOffset = fTailSize * tailOffset
 
-  let cu = Number(curveness)
-  // gridRadius = Number(gridRadius);
-  if (!cPaths.includes(path as typeof cPaths[number])) path = 'smooth'
-  if (path === 'straight') {
-    cu = 0
-    path = 'smooth'
-  }
+  // Normalize path - default to 'smooth', treat 'straight' as smooth with no curveness
+  const path = (!cPaths.includes(pathProp as typeof cPaths[number]) || pathProp === 'straight')
+    ? 'smooth'
+    : pathProp
+  const cu = pathProp === 'straight' ? 0 : Number(curveness)
 
-  let biggerSide = headSize > tailSize ? headSize : tailSize
-  let _calc = strokeWidth + (strokeWidth * biggerSide) / 2
-  let excRight = _calc
-  let excLeft = _calc
-  let excUp = _calc
-  let excDown = _calc
-  excLeft += Number(_extendSVGcanvas)
-  excRight += Number(_extendSVGcanvas)
-  excUp += Number(_extendSVGcanvas)
-  excDown += Number(_extendSVGcanvas)
+  const biggerSide = headSize > tailSize ? headSize : tailSize
+  const _calc = strokeWidth + (strokeWidth * biggerSide) / 2
+  const extendCanvas = Number(_extendSVGcanvas)
+  let excRight = _calc + extendCanvas
+  let excLeft = _calc + extendCanvas
+  let excUp = _calc + extendCanvas
+  let excDown = _calc + extendCanvas
 
   ////////////////////////////////////
   // arrow point to point calculations
@@ -274,8 +280,8 @@ export const getPosition = (
     }
   }
 
-  let arrowHeadOffset = { x: xHeadOffset, y: yHeadOffset }
-  let arrowTailOffset = { x: xTailOffset, y: yTailOffset }
+  const arrowHeadOffset = { x: xHeadOffset, y: yHeadOffset }
+  const arrowTailOffset = { x: xTailOffset, y: yTailOffset }
 
   let cpx1 = x1,
     cpy1 = y1,
@@ -343,15 +349,12 @@ export const getPosition = (
     }
   }
   // smart select best curve for the current anchors
-  let selectedCurviness = ''
-  if (['left', 'right'].includes(startAnchorPosition)) selectedCurviness += 'h'
-  else if (['bottom', 'top'].includes(startAnchorPosition)) selectedCurviness += 'v'
-  else if (startAnchorPosition === 'middle') selectedCurviness += 'm'
-  if (['left', 'right'].includes(endAnchorPosition)) selectedCurviness += 'h'
-  else if (['bottom', 'top'].includes(endAnchorPosition)) selectedCurviness += 'v'
-  else if (endAnchorPosition === 'middle') selectedCurviness += 'm'
-  if (absDx > absDy) selectedCurviness = selectedCurviness.replace(/m/g, 'h')
-  else selectedCurviness = selectedCurviness.replace(/m/g, 'v')
+  const startDir = getAnchorDir(startAnchorPosition)
+  const endDir = getAnchorDir(endAnchorPosition)
+  const rawCurviness = startDir + endDir
+  const selectedCurviness = absDx > absDy
+    ? rawCurviness.replace(/m/g, 'h')
+    : rawCurviness.replace(/m/g, 'v')
   curvesPossibilities[selectedCurviness]?.()
 
   cpx1 += _cpx1Offset
@@ -396,42 +399,40 @@ export const getPosition = (
   const labelMiddlePos = { x: bzx(0.5), y: bzy(0.5) }
   const labelEndPos = { x: bzx(0.99), y: bzy(0.99) }
 
-  let arrowPath: string = ''
-  if (path === 'grid') {
-    // todo: support gridRadius
-    //  arrowPath = `M ${x1} ${y1} L  ${cpx1 - 10} ${cpy1} a10,10 0 0 1 10,10
-    // L ${cpx2} ${cpy2 - 10} a10,10 0 0 0 10,10 L  ${x2} ${y2}`;
-    if (gridRadius && !(cpx1 === cpx2 && cpy1 === cpy2)) {
-      if (x2 === cpx2 && y2 === cpy2) {
-        // 2 lines, 1 corner
-        const roundedEdge = getRoundedEdge(
-          gridRadius,
-          { x: x1, y: y1 },
-          { x: cpx1, y: cpy1 },
-          { x: x2, y: y2 },
-        )
-        arrowPath = `M ${x1} ${y1} ${roundedEdge} L ${x2} ${y2}`
-      } else {
-        // 3 lines, 2 corners
-        const roundedEdge1 = getRoundedEdge(
-          gridRadius,
-          { x: x1, y: y1 },
-          { x: cpx1, y: cpy1 },
-          { x: cpx2, y: cpy2 },
-        )
-        const roundedEdge2 = getRoundedEdge(
-          gridRadius,
-          { x: cpx1, y: cpy1 },
-          { x: cpx2, y: cpy2 },
-          { x: x2, y: y2 },
-        )
-        arrowPath = `M ${x1} ${y1} ${roundedEdge1} ${roundedEdge2} L ${x2} ${y2}`
+  const arrowPath = ((): string => {
+    if (path === 'grid') {
+      if (gridRadius && !(cpx1 === cpx2 && cpy1 === cpy2)) {
+        if (x2 === cpx2 && y2 === cpy2) {
+          // 2 lines, 1 corner
+          const roundedEdge = getRoundedEdge(
+            gridRadius,
+            { x: x1, y: y1 },
+            { x: cpx1, y: cpy1 },
+            { x: x2, y: y2 },
+          )
+          return `M ${x1} ${y1} ${roundedEdge} L ${x2} ${y2}`
+        } else {
+          // 3 lines, 2 corners
+          const roundedEdge1 = getRoundedEdge(
+            gridRadius,
+            { x: x1, y: y1 },
+            { x: cpx1, y: cpy1 },
+            { x: cpx2, y: cpy2 },
+          )
+          const roundedEdge2 = getRoundedEdge(
+            gridRadius,
+            { x: cpx1, y: cpy1 },
+            { x: cpx2, y: cpy2 },
+            { x: x2, y: y2 },
+          )
+          return `M ${x1} ${y1} ${roundedEdge1} ${roundedEdge2} L ${x2} ${y2}`
+        }
       }
-    } else {
-      arrowPath = `M ${x1} ${y1} L  ${cpx1} ${cpy1} L ${cpx2} ${cpy2} ${x2} ${y2}`
+      return `M ${x1} ${y1} L  ${cpx1} ${cpy1} L ${cpx2} ${cpy2} ${x2} ${y2}`
     }
-  } else if (path === 'smooth')
-    arrowPath = `M ${x1} ${y1} C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${x2} ${y2}`
+    // smooth path
+    return `M ${x1} ${y1} C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${x2} ${y2}`
+  })()
   return {
     cx0,
     cy0,

@@ -68,7 +68,7 @@ export type labelsType = {
 export type labelType = React.JSX.Element | string
 
 export type svgCustomEdgeType = {
-  svgElem: React.SVGProps<SVGSVGElement>
+  svgElem: React.ReactNode
   offsetForward?: number
 }
 
