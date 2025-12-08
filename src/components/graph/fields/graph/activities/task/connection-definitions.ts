@@ -22,30 +22,40 @@ const taskArrowRightDef: Record<
     {
       start: OuterTargetsEnum.TOP_RIGHT,
       end: RootTargetName,
+      startAnchor: 'bottom',
+      endAnchor: 'right',
     },
   ],
   'in-bottom': [
     {
       start: OuterTargetsEnum.BOTTOM_RIGHT,
       end: RootTargetName,
+      startAnchor: 'top',
+      endAnchor: 'right',
     },
   ],
   'in-pass-by': [
     {
       start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
     {
       start: OuterTargetsEnum.TOP_RIGHT,
       end: RootTargetName,
+      startAnchor: 'left',
+      endAnchor: 'right',
     },
   ],
   'out-top': [
     {
       start: RootTargetName,
       end: OuterTargetsEnum.TOP_RIGHT,
+      startAnchor: 'right',
+      endAnchor: 'bottom',
       showHead: false,
       showTail: false,
     },
@@ -54,6 +64,8 @@ const taskArrowRightDef: Record<
     {
       start: RootTargetName,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'right',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
@@ -62,12 +74,16 @@ const taskArrowRightDef: Record<
     {
       start: RootTargetName,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'right',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
     {
       start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
@@ -76,6 +92,8 @@ const taskArrowRightDef: Record<
     {
       start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
@@ -93,6 +111,8 @@ const taskArrowBottomDef: Record<
     {
       start: RootTargetName,
       end: OuterTargetsEnum.BOTTOM_CENTER,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
@@ -107,6 +127,8 @@ const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarr
     {
       start: OuterTargetsEnum.TOP_CENTER,
       end: RootTargetName,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
     },
   ],
 }

@@ -32,7 +32,7 @@ export enum OuterTargetsEnum {
 
 // Define the component
 const OuterTargetsComponent: React.FC<Props> = ({ id }) => {
-  const debug = false
+  const debug = process.env.NODE_ENV === 'development'
   const debugClass = debug ? 'bg-red-400' : ''
   const style = { width: '2px', height: '2px' }
 

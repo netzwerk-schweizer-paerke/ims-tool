@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useXarrowPropsResType } from '../useXarrowProps'
 import React from 'react'
 import { calcAnchors } from '../anchors'
@@ -6,13 +5,22 @@ import { getShortestLine, getSvgPos } from './index'
 import { cPaths } from '../../constants'
 import { buzzierMinSols, bzFunction } from './buzzier'
 import { pick } from 'es-toolkit'
+import { anchorCustomPositionType, pathType } from '../../types'
+
+type Point = { x: number; y: number }
+
+type AnchorPoint = { x: number; y: number; anchor: anchorCustomPositionType }
+
+type CurvePossibilities = {
+  [key: string]: () => void
+}
 
 const getRoundedEdge = (
   gridRadius: number,
-  start: { x: number; y: number },
-  corner: { x: number; y: number },
-  end: { x: number; y: number },
-) => {
+  start: Point,
+  corner: Point,
+  end: Point,
+): string => {
   let cornerStartXOffset = 0
   let cornerStartYOffset = 0
   let cornerEndXOffset = 0
@@ -32,14 +40,57 @@ const getRoundedEdge = (
   )
 }
 
+export type PositionResult = {
+  cx0: number
+  cy0: number
+  x1: number
+  x2: number
+  y1: number
+  y2: number
+  cw: number
+  ch: number
+  cpx1: number
+  cpy1: number
+  cpx2: number
+  cpy2: number
+  dx: number
+  dy: number
+  absDx: number
+  absDy: number
+  headOrient: number
+  tailOrient: number
+  labelStartPos: Point
+  labelMiddlePos: Point
+  labelEndPos: Point
+  excLeft: number
+  excRight: number
+  excUp: number
+  excDown: number
+  headOffset: number
+  arrowHeadOffset: Point
+  arrowTailOffset: Point
+  startPoints: AnchorPoint[]
+  endPoints: AnchorPoint[]
+  mainDivPos: Point
+  xSign: number
+  ySign: number
+  lineLength: number
+  fHeadSize: number
+  fTailSize: number
+  arrowPath: string
+}
+
 /**
  * The Main logic of path calculation for the arrow.
  * calculate new path, adjusting canvas, and set state based on given properties.
  * */
 export const getPosition = (
   xProps: useXarrowPropsResType,
-  mainRef: React.MutableRefObject<any>,
-) => {
+  mainRef: React.MutableRefObject<{
+    svgRef: React.MutableRefObject<SVGSVGElement | null>
+    lineRef: React.MutableRefObject<SVGPathElement | null>
+  }>,
+): PositionResult => {
   let [propsRefs, valVars] = xProps
   let {
     startAnchor,
@@ -90,7 +141,8 @@ export const getPosition = (
   let absDy = Math.abs(endPoint.y - startPoint.y)
   let xSign = dx > 0 ? 1 : -1
   let ySign = dy > 0 ? 1 : -1
-  let [headOffset, tailOffset] = [headShape.offsetForward, tailShape.offsetForward]
+  let headOffset = headShape.offsetForward as number
+  let tailOffset = tailShape.offsetForward as number
   let fHeadSize = headSize * strokeWidth //factored head size
   let fTailSize = tailSize * strokeWidth //factored head size
 
@@ -105,7 +157,7 @@ export const getPosition = (
 
   let cu = Number(curveness)
   // gridRadius = Number(gridRadius);
-  if (!cPaths.includes(path)) path = 'smooth'
+  if (!cPaths.includes(path as typeof cPaths[number])) path = 'smooth'
   if (path === 'straight') {
     cu = 0
     path = 'smooth'
@@ -230,7 +282,7 @@ export const getPosition = (
     cpx2 = x2,
     cpy2 = y2
 
-  let curvesPossibilities = {}
+  let curvesPossibilities: CurvePossibilities = {}
   if (path === 'smooth')
     curvesPossibilities = {
       hh: () => {
@@ -300,7 +352,7 @@ export const getPosition = (
   else if (endAnchorPosition === 'middle') selectedCurviness += 'm'
   if (absDx > absDy) selectedCurviness = selectedCurviness.replace(/m/g, 'h')
   else selectedCurviness = selectedCurviness.replace(/m/g, 'v')
-  curvesPossibilities[selectedCurviness]()
+  curvesPossibilities[selectedCurviness]?.()
 
   cpx1 += _cpx1Offset
   cpy1 += _cpy1Offset
@@ -344,7 +396,7 @@ export const getPosition = (
   const labelMiddlePos = { x: bzx(0.5), y: bzy(0.5) }
   const labelEndPos = { x: bzx(0.99), y: bzy(0.99) }
 
-  let arrowPath
+  let arrowPath: string = ''
   if (path === 'grid') {
     // todo: support gridRadius
     //  arrowPath = `M ${x1} ${y1} L  ${cpx1 - 10} ${cpy1} a10,10 0 0 1 10,10

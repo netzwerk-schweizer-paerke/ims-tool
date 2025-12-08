@@ -15,6 +15,8 @@ const taskArrowRightDef: Record<
     {
       start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
@@ -31,12 +33,15 @@ const taskArrowBottomDef: Record<
       start: RootTargetLeftName,
       end: OuterTargetsEnum.BOTTOM_CENTER,
       startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
     {
       start: RootTargetRightName,
       end: OuterTargetsEnum.BOTTOM_CENTER,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
       showHead: false,
       showTail: false,
     },
@@ -49,11 +54,14 @@ const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarr
     {
       start: OuterTargetsEnum.TOP_CENTER,
       end: RootTargetLeftName,
+      startAnchor: 'bottom',
       endAnchor: 'top',
     },
     {
       start: OuterTargetsEnum.TOP_CENTER,
       end: RootTargetRightName,
+      startAnchor: 'bottom',
+      endAnchor: 'top',
     },
   ],
 }

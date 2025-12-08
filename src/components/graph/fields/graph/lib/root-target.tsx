@@ -11,25 +11,33 @@ export const RootTargetRightName = 'root-target-right'
 
 // Define the component
 const RootTargetComponent: React.FC<Props> = ({ children, id, comboTarget = false }) => {
+  const debug = process.env.NODE_ENV === 'development'
+  const debugIndicator = debug && (
+    <div className="pointer-events-none absolute left-1/2 top-1/2 z-50 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500" />
+  )
+
   if (!id) {
     throw new Error('RootTarget requires an id prop')
   }
   if (comboTarget === 'left') {
     return (
-      <div id={`${id}-${RootTargetLeftName}`} className={'root-target root-target__left'}>
+      <div id={`${id}-${RootTargetLeftName}`} className={'root-target root-target__left relative'}>
+        {debugIndicator}
         {children}
       </div>
     )
   }
   if (comboTarget === 'right') {
     return (
-      <div id={`${id}-${RootTargetRightName}`} className={'root-target root-target__right'}>
+      <div id={`${id}-${RootTargetRightName}`} className={'root-target root-target__right relative'}>
+        {debugIndicator}
         {children}
       </div>
     )
   }
   return (
-    <div id={`${id}-${RootTargetName}`} className={'root-target'}>
+    <div id={`${id}-${RootTargetName}`} className={'root-target relative'}>
+      {debugIndicator}
       {children}
     </div>
   )

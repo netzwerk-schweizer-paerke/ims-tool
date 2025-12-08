@@ -12,12 +12,16 @@ export const taskArrowRightDef: Record<
     {
       start: OuterTargetsEnum.CENTER_RIGHT,
       end: RootTargetName,
+      startAnchor: 'left',
+      endAnchor: 'right',
     },
   ],
   out: [
     {
       start: RootTargetName,
       end: OuterTargetsEnum.CENTER_RIGHT,
+      startAnchor: 'right',
+      endAnchor: 'left',
     },
   ],
 }
