@@ -1,14 +1,14 @@
 'use client'
-import { useField } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback } from 'react'
 
+import { activityConnections } from '@/components/graph/fields/graph/activities/connection-definitions'
 import {
   ButtonBottomCenter,
   ButtonCenterRight,
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
-import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useGraphField } from '@/components/graph/fields/graph/hooks/use-graph-field'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
@@ -17,8 +17,6 @@ import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { Xwrapper } from '@/lib/xarrows/src'
-
-import { activityTaskConnections } from './connection-definitions'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -44,53 +42,21 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ActivityTaskField: JSONFieldClientComponent = (props) => {
-  const {
-    field: { required },
-    path,
-    validate,
-  } = props
+  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+    useGraphField<ComponentState>({
+      connections: activityConnections,
+      createInitialState,
+      props,
+    })
 
-  const memoizedValidate = useCallback(
-    (value: any, options: any) => {
-      if (typeof validate === 'function') {
-        return validate(value, { ...options, required })
-      }
-      return true // Validation passes when no validate function is provided
-    },
-    [validate, required],
-  )
-
-  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
-
-  // Use the centralized text field hook instead of local implementation
   const { handleTextChange, localText } = useTextField(value, setValue)
 
-  useEffect(() => {
-    if (!value) {
-      // `true` keeps the form clean — applying a default is not a user edit
-      setValue(createInitialState(), true)
-    }
-  }, [setValue, value])
-
-  // Memoize arrow hook to prevent recreation
-  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
-    connections: activityTaskConnections,
-    setState: setValue,
-    state: value,
-  })
-
-  // Memoize button click handlers
   const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
   const handleBottomClick = useCallback(
     () => toggleConnectionType('bottom'),
     [toggleConnectionType],
   )
   const handleTopClick = useCallback(() => toggleConnectionType('top'), [toggleConnectionType])
-
-  // Memoize arrows rendering to prevent recalculation
-  const arrowsContent = useMemo(() => {
-    return isLoaded ? renderArrows() : null
-  }, [isLoaded, renderArrows])
 
   return (
     <div ref={ref}>

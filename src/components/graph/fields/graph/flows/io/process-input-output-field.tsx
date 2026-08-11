@@ -1,11 +1,11 @@
 'use client'
-import { useField } from '@payloadcms/ui'
+import { useTranslation } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback } from 'react'
 
 import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
 import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
-import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useGraphField } from '@/components/graph/fields/graph/hooks/use-graph-field'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
@@ -13,6 +13,7 @@ import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { Xwrapper } from '@/lib/xarrows/src'
 
 type ComponentState = {
@@ -33,56 +34,23 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
-  const {
-    field: { required },
-    path,
-    validate,
-  } = props
+  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+    useGraphField<ComponentState>({
+      connections: processIoConnections,
+      createInitialState,
+      props,
+    })
+  const { t } = useTranslation<I18nObject, I18nKeys>()
 
-  const memoizedValidate = useCallback(
-    (value: any, options: any) => {
-      if (typeof validate === 'function') {
-        return validate(value, { ...options, required })
-      }
-      return true // Validation passes when no validate function is provided
-    },
-    [validate, required],
-  )
-
-  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
-
-  // Use the centralized text field hook instead of local implementation
   const { handleTextChange, localText } = useTextField(value, setValue)
 
-  // Initialize state once
-  useEffect(() => {
-    if (!value) {
-      // `true` keeps the form clean — applying a default is not a user edit
-      setValue(createInitialState(), true)
-    }
-  }, [setValue, value])
-
-  // Memoize arrow hook to prevent recreation
-  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
-    connections: processIoConnections,
-    setState: setValue,
-    state: value,
-  })
-
-  // Memoize toggleEnabled handler
   const handleToggleEnabled = useCallback(() => {
     if (value) {
       setValue({ ...value, enabled: !value.enabled })
     }
   }, [value, setValue])
 
-  // Memoize button click handlers
   const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
-
-  // Memoize arrows rendering to prevent recalculation
-  const arrowsContent = useMemo(() => {
-    return isLoaded ? renderArrows() : null
-  }, [isLoaded, renderArrows])
 
   return (
     <div ref={ref}>
@@ -107,7 +75,11 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
             </>
           )}
           <div className="absolute -top-2 w-full text-center">
-            <ToggleSwitch checked={value?.enabled} onChange={handleToggleEnabled} />
+            <ToggleSwitch
+              ariaLabel={t('common:enableBlock')}
+              checked={value?.enabled}
+              onChange={handleToggleEnabled}
+            />
           </div>
         </BlockTaskWrapper>
       </Xwrapper>

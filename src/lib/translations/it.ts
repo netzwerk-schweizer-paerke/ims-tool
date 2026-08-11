@@ -272,6 +272,7 @@ export const it = {
     continue: 'Continua',
     delete: 'Elimina',
     edit: 'Modifica',
+    enableBlock: 'Attiva blocco',
     lastUpdated: 'Ultimo aggiornamento',
     noContentDefined: 'Nessun contenuto definito',
   },

@@ -288,6 +288,7 @@ export const de = {
     continue: 'Weiter',
     delete: 'Löschen',
     edit: 'Bearbeiten',
+    enableBlock: 'Block aktivieren',
     lastUpdated: 'Zuletzt aktualisiert',
     noContentDefined: 'Kein Inhalt definiert',
   },

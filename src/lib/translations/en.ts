@@ -287,6 +287,7 @@ export const en = {
     continue: 'Continue',
     delete: 'Delete',
     edit: 'Edit',
+    enableBlock: 'Enable block',
     lastUpdated: 'Last updated',
     noContentDefined: 'No content defined',
   },

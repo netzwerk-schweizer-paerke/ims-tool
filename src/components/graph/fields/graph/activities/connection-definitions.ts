@@ -134,7 +134,9 @@ const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarr
   none: [],
 }
 
-export const activityTaskConnections = [
+// Shared by both activity blocks (io and task) — the two definition files were byte
+// identical apart from the export name. Split them again if they ever need to diverge.
+export const activityConnections = [
   {
     definitions: taskArrowTopDef,
     options: taskArrowTopOptions,

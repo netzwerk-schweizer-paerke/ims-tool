@@ -1,7 +1,6 @@
 'use client'
-import { useField } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
-import { memo, useCallback, useEffect, useMemo } from 'react'
+import { memo, useCallback } from 'react'
 
 import { BooleanButton } from '@/components/graph/fields/graph/components/boolean-button'
 import {
@@ -10,7 +9,7 @@ import {
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
 import { processTestConnections } from '@/components/graph/fields/graph/flows/test/connection-definitions'
-import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useGraphField } from '@/components/graph/fields/graph/hooks/use-graph-field'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
@@ -54,25 +53,19 @@ const createInitialState = (): ComponentState => ({
   text: '',
 })
 
+const booleanOutputMap = {
+  [BooleanOutput.FALSE]: 'False',
+  [BooleanOutput.None]: 'None',
+  [BooleanOutput.TRUE]: 'True',
+}
+
+const booleanOutputCssMap = {
+  [BooleanOutput.FALSE]: 'text-red-600',
+  [BooleanOutput.None]: '',
+  [BooleanOutput.TRUE]: 'text-green-600',
+}
+
 const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = memo(({ booleanOutput }) => {
-  const booleanOutputMap = useMemo(
-    () => ({
-      [BooleanOutput.FALSE]: 'False',
-      [BooleanOutput.None]: 'None',
-      [BooleanOutput.TRUE]: 'True',
-    }),
-    [],
-  )
-
-  const booleanOutputCssMap = useMemo(
-    () => ({
-      [BooleanOutput.FALSE]: 'text-red-600',
-      [BooleanOutput.None]: '',
-      [BooleanOutput.TRUE]: 'text-green-600',
-    }),
-    [],
-  )
-
   return (
     <div className={`text-center text-sm font-bold ${booleanOutputCssMap[booleanOutput]}`}>
       {booleanOutputMap[booleanOutput]}
@@ -83,43 +76,15 @@ const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = memo(({ boole
 DisplayBoolean.displayName = 'DisplayBoolean'
 
 export const ProcessTestField: JSONFieldClientComponent = (props) => {
-  const {
-    field: { required },
-    path,
-    validate,
-  } = props
+  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+    useGraphField<ComponentState>({
+      connections: processTestConnections,
+      createInitialState,
+      props,
+    })
 
-  const memoizedValidate = useCallback(
-    (value: any, options: any) => {
-      if (typeof validate === 'function') {
-        return validate(value, { ...options, required })
-      }
-      return true // Validation passes when no validate function is provided
-    },
-    [validate, required],
-  )
-
-  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
-
-  // Use the centralized text field hook instead of local implementation
   const { handleTextChange, localText } = useTextField(value, setValue)
 
-  // Initialize state only once
-  useEffect(() => {
-    if (!value) {
-      // `true` keeps the form clean — applying a default is not a user edit
-      setValue(createInitialState(), true)
-    }
-  }, [setValue, value])
-
-  // Memoize arrow hook to prevent recreation
-  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
-    connections: processTestConnections,
-    setState: setValue,
-    state: value,
-  })
-
-  // Memoize toggleBoolean handler
   const toggleBoolean = useCallback(
     (position: 'bottomBoolean' | 'leftBoolean' | 'rightBoolean') => {
       if (!value) return
@@ -136,7 +101,6 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
     [value, setValue],
   )
 
-  // Memoize button click handlers
   const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
   const handleBottomClick = useCallback(
     () => toggleConnectionType('bottom'),
@@ -144,18 +108,12 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
   )
   const handleTopClick = useCallback(() => toggleConnectionType('top'), [toggleConnectionType])
 
-  // Memoize boolean button handlers
   const handleBottomBooleanClick = useCallback(
     () => toggleBoolean('bottomBoolean'),
     [toggleBoolean],
   )
   const handleRightBooleanClick = useCallback(() => toggleBoolean('rightBoolean'), [toggleBoolean])
   const handleLeftBooleanClick = useCallback(() => toggleBoolean('leftBoolean'), [toggleBoolean])
-
-  // Memoize arrows rendering to prevent recalculation
-  const arrowsContent = useMemo(() => {
-    return isLoaded ? renderArrows() : null
-  }, [isLoaded, renderArrows])
 
   return (
     <div className={'process-task-test-block relative h-full'} ref={ref}>

@@ -1,7 +1,6 @@
 'use client'
-import { useField } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback } from 'react'
 
 import {
   ButtonBottomCenter,
@@ -9,7 +8,7 @@ import {
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
 import { processTaskConnections } from '@/components/graph/fields/graph/flows/task/connection-definitions'
-import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useGraphField } from '@/components/graph/fields/graph/hooks/use-graph-field'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
@@ -42,53 +41,21 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessTaskField: JSONFieldClientComponent = (props) => {
-  const {
-    field: { required },
-    path,
-    validate,
-  } = props
+  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+    useGraphField<ComponentState>({
+      connections: processTaskConnections,
+      createInitialState,
+      props,
+    })
 
-  const memoizedValidate = useCallback(
-    (value: any, options: any) => {
-      if (typeof validate === 'function') {
-        return validate(value, { ...options, required })
-      }
-      return true // Validation passes when no validate function is provided
-    },
-    [validate, required],
-  )
-
-  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
-
-  // Use the centralized text field hook instead of local implementation
   const { handleTextChange, localText } = useTextField(value, setValue)
 
-  useEffect(() => {
-    if (!value) {
-      // `true` keeps the form clean — applying a default is not a user edit
-      setValue(createInitialState(), true)
-    }
-  }, [setValue, value])
-
-  // Memoize arrow hook to prevent recreation
-  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
-    connections: processTaskConnections,
-    setState: setValue,
-    state: value,
-  })
-
-  // Memoize button click handlers
   const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
   const handleBottomClick = useCallback(
     () => toggleConnectionType('bottom'),
     [toggleConnectionType],
   )
   const handleTopClick = useCallback(() => toggleConnectionType('top'), [toggleConnectionType])
-
-  // Memoize arrows rendering to prevent recalculation
-  const arrowsContent = useMemo(() => {
-    return isLoaded ? renderArrows() : null
-  }, [isLoaded, renderArrows])
 
   return (
     <div className={'process-task-parallel-block relative h-full'} ref={ref}>

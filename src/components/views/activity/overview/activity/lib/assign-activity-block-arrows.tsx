@@ -1,5 +1,4 @@
-import { activityIOFieldConnections } from '@/components/graph/fields/graph/activities/io/connection-definitions'
-import { activityTaskConnections } from '@/components/graph/fields/graph/activities/task/connection-definitions'
+import { activityConnections } from '@/components/graph/fields/graph/activities/connection-definitions'
 import { ActivityTaskCompoundBlock } from '@/components/views/activity/overview/activity/block'
 import { Activity } from '@/payload-types'
 
@@ -18,16 +17,15 @@ export const assignActivityBlockArrows = (activity: Activity) => {
 
   const arrowSet: { arrows: any; id: string }[] = []
 
-  for (const [blockType, blocks] of Object.entries(categorizedBlocks)) {
-    const connections =
-      blockType === 'activity-task' ? activityTaskConnections : activityIOFieldConnections
-
+  for (const blocks of Object.values(categorizedBlocks)) {
     for (const block of blocks) {
       const compoundBlock = block as ActivityTaskCompoundBlock
       const arrows = compoundBlock.graph?.task?.connections
 
       for (const arrow of arrows ?? []) {
-        const definition = connections.find((c) => c.position === arrow.position)?.definitions
+        const definition = activityConnections.find(
+          (c) => c.position === arrow.position,
+        )?.definitions
         if (!definition) {
           continue
         }

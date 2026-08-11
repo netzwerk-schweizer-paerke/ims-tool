@@ -270,6 +270,7 @@ export const fr = {
     continue: 'Continuer',
     delete: 'Supprimer',
     edit: 'Modifier',
+    enableBlock: 'Activer le bloc',
     lastUpdated: 'Dernière mise à jour',
     noContentDefined: 'Aucun contenu défini',
   },

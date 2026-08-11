@@ -23,34 +23,44 @@ export const useArrows = ({ connections, setState, state }: Props) => {
   const updateXarrow = useXarrow()
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const setConnectionType = (type: ConnectionType, position: ConnectionPosition) => {
-    if (!state) return
+  const setConnectionType = useCallback(
+    (type: ConnectionType, position: ConnectionPosition) => {
+      if (!state) return
 
-    // A stored state that predates this position simply has no entry for it yet —
-    // add one rather than refusing to switch the connection.
-    const hasPosition = state.connections.some((connection) => connection.position === position)
-    const connections = hasPosition
-      ? state.connections.map((connection) =>
-          connection.position === position ? { ...connection, type } : connection,
-        )
-      : [...state.connections, { position, type }]
+      // A stored state that predates this position simply has no entry for it yet —
+      // add one rather than refusing to switch the connection.
+      const hasPosition = state.connections.some((connection) => connection.position === position)
+      const nextConnections = hasPosition
+        ? state.connections.map((connection) =>
+            connection.position === position ? { ...connection, type } : connection,
+          )
+        : [...state.connections, { position, type }]
 
-    setState({
-      ...state,
-      connections,
-    })
-    updateXarrow()
-  }
+      setState({
+        ...state,
+        connections: nextConnections,
+      })
+      updateXarrow()
+    },
+    [state, setState, updateXarrow],
+  )
 
-  const toggleConnectionType = (position: ConnectionPosition) => {
-    const options = connections.find((connection) => connection.position === position)?.options
-    if (!options?.length) return
+  // Memoised so the memo()'d node buttons only re-render when the block's own value
+  // changes, not on every resize- or arrow-driven render of the field.
+  const toggleConnectionType = useCallback(
+    (position: ConnectionPosition) => {
+      const options = connections.find((connection) => connection.position === position)?.options
+      if (!options?.length) return
 
-    const current = state?.connections.find((connection) => connection.position === position)?.type
-    // A missing or no-longer-supported stored type restarts the cycle at the first option.
-    const currentIndex = current ? options.indexOf(current) : -1
-    setConnectionType(options[(currentIndex + 1) % options.length], position)
-  }
+      const current = state?.connections.find(
+        (connection) => connection.position === position,
+      )?.type
+      // A missing or no-longer-supported stored type restarts the cycle at the first option.
+      const currentIndex = current ? options.indexOf(current) : -1
+      setConnectionType(options[(currentIndex + 1) % options.length], position)
+    },
+    [connections, state, setConnectionType],
+  )
 
   useEffect(() => {
     const reference = ref.current
