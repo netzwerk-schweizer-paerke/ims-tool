@@ -292,6 +292,74 @@ export const de = {
     lastUpdated: 'Zuletzt aktualisiert',
     noContentDefined: 'Kein Inhalt definiert',
   },
+  dataHealth: {
+    blocking: 'Blockierend',
+    blockingHint: 'Das Klonen bricht bei diesen Punkten mit einem Fehler ab.',
+    blockNumber: 'Block {{number}}',
+    button: 'Daten prüfen',
+    checking: 'Prüfung läuft...',
+    checkThisItem: 'Diesen Eintrag prüfen',
+    counts:
+      'Geprüft: {{activities}} Prozessgruppen, {{taskFlows}} Prozesse, {{taskLists}} Listen, {{documents}} Dokumente',
+    degrading: 'Beeinträchtigend',
+    degradingHint:
+      'Das Klonen gelingt, aber die Kopie kommt unvollständig an — meist ohne die betroffene Datei.',
+    field: {
+      description: 'Beschreibung',
+      document: 'Dokument',
+      files: 'Dateien',
+      infos: 'Aktivitätsinfos',
+      io: 'Eingabe / Ausgabe',
+      keypoints: 'Merkpunkte',
+      relations: 'Verknüpfte Aufgaben',
+      responsibility: 'Verantwortung',
+      tools: 'Werkzeuge',
+    },
+    fileNumber: 'Datei {{number}}',
+    finding: {
+      crossOrgReference:
+        'Verweist auf {{collection}} {{id}} aus Organisation {{owner}} statt {{organisation}}. Inhalte eines anderen Parks sind hier verlinkt, und eine Kopie zeigt weiterhin darauf.',
+      crossOrgReferenceFollowed:
+        'Verweist auf {{collection}} {{id}} aus Organisation {{owner}} statt {{organisation}}. Das Klonen liest diesen Datensatz mit den Rechten des Aufrufers und bricht deshalb mit einem 404 ab.',
+      danglingReference:
+        'Verweist auf {{collection}} {{id}}, das nicht existiert. Das Klonen folgt diesem Link nicht, die Kopie erbt also einen toten Verweis.',
+      danglingReferenceFollowed:
+        'Verweist auf {{collection}} {{id}}, das nicht existiert. Das Klonen folgt diesem Verweis und bricht mit einem 404 ab.',
+      documentIncomplete:
+        'Es fehlt: {{fields}}. Das Klonen meldet diese Datei als fehlend und kopiert die Aktivität ohne sie.',
+      malformedRichTextNoChildren: 'Rich-Text-Feld: "root" enthält kein "children"-Array.',
+      malformedRichTextRoot: 'Rich-Text-Feld: "root" ist kein Objekt.',
+      missingRequiredField:
+        'Pflichtfeld "{{field}}" ist in der Standardsprache ({{locale}}) leer. Das Klonen scheitert an der Validierung.',
+      prefixOrganisationMismatch:
+        'Liegt unter "{{prefix}}", erwartet wäre "{{expected}}". Die Datei ist weiterhin erreichbar, aber die S3-Ablage passt nicht mehr zum Park.',
+      s3ObjectMissing:
+        'Kein Objekt unter "{{key}}". Der Datensatz existiert, die Datei fehlt — Kopien kommen ohne sie an.',
+      s3ObjectUnreadable: '"{{key}}" konnte nicht gelesen werden: {{error}}',
+    },
+    healthy: 'Keine Probleme gefunden. Die Daten dieses Parks sind vollständig klonbar.',
+    healthyDocument: 'Keine Probleme in diesem Eintrag gefunden.',
+    itemNumber: 'Eintrag {{number}}',
+    jumpToBlock: 'Zum Block springen',
+    noFindings: 'Keine Befunde',
+    openRelated: 'Betroffener Verweis',
+    openSource: 'Öffnen',
+    precondition: {
+      apiKeyInvalid:
+        'PAYLOAD_API_KEY authentifiziert nicht — /api/users/me liefert keinen Benutzer. Jeder Datei-Download beim Klonen scheitert, und jede Aktivität wird ohne ihre Anhänge kopiert. Schlüssel sind mit PAYLOAD_SECRET verschlüsselt; ein geändertes Secret macht sie ungültig.',
+      apiKeyMissing: 'PAYLOAD_API_KEY ist nicht gesetzt.',
+      apiKeyUnreachable: 'Der Server war für die Schlüsselprüfung nicht erreichbar.',
+      s3BucketMissing: 'S3_BUCKET ist nicht gesetzt.',
+      s3Unreachable:
+        'S3 ist nicht erreichbar oder falsch konfiguriert. Dateiprüfungen wurden übersprungen.',
+    },
+    preconditionFailed: 'Voraussetzung nicht erfüllt',
+    preconditionHint:
+      'Diese Prüfungen gelten für die gesamte Installation, nicht für einen einzelnen Park.',
+    run: 'Prüfung starten',
+    title: 'Datenprüfung',
+    titleDocument: 'Prüfung dieses Eintrags',
+  },
   flowBlock: {
     table: {
       keypoints: 'Merkpunkte',

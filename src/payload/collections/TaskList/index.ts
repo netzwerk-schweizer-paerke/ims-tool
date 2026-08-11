@@ -24,6 +24,13 @@ export const TaskLists: CollectionConfig = {
           path: 'src/payload/collections/TaskList/components/clone-task-lists-button#CloneTaskListsButton',
         },
       ],
+      edit: {
+        beforeDocumentControls: [
+          {
+            path: 'src/payload/components/health/document-health-button.tsx#DocumentHealthButton',
+          },
+        ],
+      },
     },
     group: I18nCollection.collectionGroup.process,
     hideAPIURL: isProduction,

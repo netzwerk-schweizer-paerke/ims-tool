@@ -26,6 +26,13 @@ export const Activities: CollectionConfig = {
           path: 'src/payload/collections/Activities/components/before-list-table-wrapper.tsx#BeforeListTableWrapper',
         },
       ],
+      edit: {
+        beforeDocumentControls: [
+          {
+            path: 'src/payload/components/health/document-health-button.tsx#DocumentHealthButton',
+          },
+        ],
+      },
     },
     group: I18nCollection.collectionGroup.process,
     hideAPIURL: isProduction,

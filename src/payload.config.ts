@@ -14,6 +14,7 @@ import { deepLTranslate } from 'src/plugins/deeplTranslate'
 
 import { seedDevUser } from '@/config/seed/dev-user'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
+import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
 import { customI18nTranslations } from '@/lib/custom-i18n-translations'
 import { migrations } from '@/migrations'
 import { Activities } from '@/payload/collections/Activities'
@@ -105,7 +106,7 @@ export default buildConfig({
       transactionLog: true,
     },
   }),
-  endpoints: [s3OrphanDetectionEndpoint],
+  endpoints: [s3OrphanDetectionEndpoint, tenantHealthEndpoint],
   globals: [],
   i18n: {
     fallbackLanguage: 'de',

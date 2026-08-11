@@ -291,6 +291,72 @@ export const en = {
     lastUpdated: 'Last updated',
     noContentDefined: 'No content defined',
   },
+  dataHealth: {
+    blocking: 'Blocking',
+    blockingHint: 'Cloning aborts with an error on these.',
+    blockNumber: 'Block {{number}}',
+    button: 'Check data',
+    checking: 'Checking...',
+    checkThisItem: 'Check this item',
+    counts:
+      'Checked: {{activities}} activities, {{taskFlows}} processes, {{taskLists}} lists, {{documents}} documents',
+    degrading: 'Degrading',
+    degradingHint:
+      'Cloning succeeds, but the copy arrives incomplete — usually without the affected file.',
+    field: {
+      description: 'Description',
+      document: 'Document',
+      files: 'Files',
+      infos: 'Activity info',
+      io: 'Input / Output',
+      keypoints: 'Key points',
+      relations: 'Linked tasks',
+      responsibility: 'Responsibility',
+      tools: 'Tools',
+    },
+    fileNumber: 'File {{number}}',
+    finding: {
+      crossOrgReference:
+        'References {{collection}} {{id}} from organisation {{owner}}, not {{organisation}}. Another park’s content is linked from here, and a copy keeps pointing at it.',
+      crossOrgReferenceFollowed:
+        'References {{collection}} {{id}} from organisation {{owner}}, not {{organisation}}. Cloning reads it with the caller’s access, so the clone aborts with a 404.',
+      danglingReference:
+        'References {{collection}} {{id}}, which does not exist. Cloning does not follow this link, so the copy inherits a dead reference.',
+      danglingReferenceFollowed:
+        'References {{collection}} {{id}}, which does not exist. Cloning follows this reference and aborts with a 404.',
+      documentIncomplete:
+        'Missing {{fields}}. Cloning reports this file as missing and copies the activity without it.',
+      malformedRichTextNoChildren: 'Rich text field: "root" has no "children" array.',
+      malformedRichTextRoot: 'Rich text field: "root" is not an object.',
+      missingRequiredField:
+        'Required field "{{field}}" is empty in the default locale ({{locale}}). Cloning fails validation.',
+      prefixOrganisationMismatch:
+        'Stored under "{{prefix}}", expected "{{expected}}". The file still resolves, but the S3 layout no longer matches the park.',
+      s3ObjectMissing:
+        'No object at "{{key}}". The row exists but its file is gone — copies arrive without it.',
+      s3ObjectUnreadable: 'Could not read "{{key}}": {{error}}',
+    },
+    healthy: 'No problems found. This park’s data is fully cloneable.',
+    healthyDocument: 'No problems found in this item.',
+    itemNumber: 'Entry {{number}}',
+    jumpToBlock: 'Jump to block',
+    noFindings: 'No findings',
+    openRelated: 'Referenced item',
+    openSource: 'Open',
+    precondition: {
+      apiKeyInvalid:
+        'PAYLOAD_API_KEY does not authenticate — /api/users/me returns no user. Every file download during cloning fails and every activity is copied without its attachments. Keys are encrypted with PAYLOAD_SECRET, so a rotated secret invalidates them.',
+      apiKeyMissing: 'PAYLOAD_API_KEY is not set.',
+      apiKeyUnreachable: 'The server could not be reached to verify the key.',
+      s3BucketMissing: 'S3_BUCKET is not set.',
+      s3Unreachable: 'S3 is unreachable or misconfigured. File checks were skipped.',
+    },
+    preconditionFailed: 'Precondition not met',
+    preconditionHint: 'These checks apply to the whole installation, not to a single park.',
+    run: 'Run check',
+    title: 'Data health check',
+    titleDocument: 'Check of this item',
+  },
   flowBlock: {
     table: {
       keypoints: 'Key Points',

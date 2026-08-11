@@ -276,6 +276,74 @@ export const it = {
     lastUpdated: 'Ultimo aggiornamento',
     noContentDefined: 'Nessun contenuto definito',
   },
+  dataHealth: {
+    blocking: 'Bloccante',
+    blockingHint: 'La clonazione si interrompe con un errore su questi punti.',
+    blockNumber: 'Blocco {{number}}',
+    button: 'Verifica dati',
+    checking: 'Verifica in corso...',
+    checkThisItem: 'Verifica questo elemento',
+    counts:
+      'Verificato: {{activities}} gruppi di processi, {{taskFlows}} processi, {{taskLists}} elenchi, {{documents}} documenti',
+    degrading: 'Degradante',
+    degradingHint:
+      'La clonazione riesce, ma la copia arriva incompleta — di solito senza il file interessato.',
+    field: {
+      description: 'Descrizione',
+      document: 'Documento',
+      files: 'File',
+      infos: 'Informazioni',
+      io: 'Input / Output',
+      keypoints: 'Punti chiave',
+      relations: 'Attività collegate',
+      responsibility: 'Responsabilità',
+      tools: 'Strumenti',
+    },
+    fileNumber: 'File {{number}}',
+    finding: {
+      crossOrgReference:
+        'Fa riferimento a {{collection}} {{id}} dell’organizzazione {{owner}} e non {{organisation}}. Il contenuto di un altro parco è collegato qui e una copia continua a puntarvi.',
+      crossOrgReferenceFollowed:
+        'Fa riferimento a {{collection}} {{id}} dell’organizzazione {{owner}} e non {{organisation}}. La clonazione lo legge con i permessi del chiamante e si interrompe con un 404.',
+      danglingReference:
+        'Fa riferimento a {{collection}} {{id}}, che non esiste. La clonazione non segue questo collegamento, quindi la copia eredita un riferimento morto.',
+      danglingReferenceFollowed:
+        'Fa riferimento a {{collection}} {{id}}, che non esiste. La clonazione segue questo riferimento e si interrompe con un 404.',
+      documentIncomplete:
+        'Mancante: {{fields}}. La clonazione segnala questo file come mancante e copia l’attività senza di esso.',
+      malformedRichTextNoChildren:
+        'Campo di testo formattato: «root» non contiene un array «children».',
+      malformedRichTextRoot: 'Campo di testo formattato: «root» non è un oggetto.',
+      missingRequiredField:
+        'Il campo obbligatorio «{{field}}» è vuoto nella lingua predefinita ({{locale}}). La clonazione fallisce la validazione.',
+      prefixOrganisationMismatch:
+        'Archiviato sotto «{{prefix}}», atteso «{{expected}}». Il file è ancora raggiungibile, ma la struttura S3 non corrisponde più al parco.',
+      s3ObjectMissing:
+        'Nessun oggetto in «{{key}}». Il record esiste ma il file non c’è più — le copie arrivano senza di esso.',
+      s3ObjectUnreadable: 'Impossibile leggere «{{key}}»: {{error}}',
+    },
+    healthy: 'Nessun problema rilevato. I dati di questo parco sono completamente clonabili.',
+    healthyDocument: 'Nessun problema rilevato in questo elemento.',
+    itemNumber: 'Voce {{number}}',
+    jumpToBlock: 'Vai al blocco',
+    noFindings: 'Nessun risultato',
+    openRelated: 'Elemento referenziato',
+    openSource: 'Apri',
+    precondition: {
+      apiKeyInvalid:
+        'PAYLOAD_API_KEY non autentica — /api/users/me non restituisce alcun utente. Ogni download di file durante la clonazione fallisce e ogni attività viene copiata senza i suoi allegati. Le chiavi sono cifrate con PAYLOAD_SECRET; un secret modificato le invalida.',
+      apiKeyMissing: 'PAYLOAD_API_KEY non è impostato.',
+      apiKeyUnreachable: 'Non è stato possibile contattare il server per verificare la chiave.',
+      s3BucketMissing: 'S3_BUCKET non è impostato.',
+      s3Unreachable: 'S3 non è raggiungibile o è configurato male. I controlli dei file sono stati saltati.',
+    },
+    preconditionFailed: 'Prerequisito non soddisfatto',
+    preconditionHint:
+      'Questi controlli riguardano l’intera installazione, non un singolo parco.',
+    run: 'Avvia verifica',
+    title: 'Controllo dei dati',
+    titleDocument: 'Controllo di questo elemento',
+  },
   flowBlock: {
     table: {
       keypoints: 'Punti chiave',

@@ -27,6 +27,13 @@ export const TaskFlows: CollectionConfig = {
           path: 'src/payload/collections/TaskFlow/components/clone-task-flows-button#CloneTaskFlowsButton',
         },
       ],
+      edit: {
+        beforeDocumentControls: [
+          {
+            path: 'src/payload/components/health/document-health-button.tsx#DocumentHealthButton',
+          },
+        ],
+      },
     },
     group: I18nCollection.collectionGroup.process,
     hideAPIURL: isProduction,

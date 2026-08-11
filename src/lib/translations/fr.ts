@@ -274,6 +274,75 @@ export const fr = {
     lastUpdated: 'Dernière mise à jour',
     noContentDefined: 'Aucun contenu défini',
   },
+  dataHealth: {
+    blocking: 'Bloquant',
+    blockingHint: 'Le clonage s’interrompt avec une erreur sur ces points.',
+    blockNumber: 'Bloc {{number}}',
+    button: 'Vérifier les données',
+    checking: 'Vérification en cours...',
+    checkThisItem: 'Vérifier cet élément',
+    counts:
+      'Vérifié : {{activities}} groupes de processus, {{taskFlows}} processus, {{taskLists}} listes, {{documents}} documents',
+    degrading: 'Dégradant',
+    degradingHint:
+      'Le clonage réussit, mais la copie arrive incomplète — généralement sans le fichier concerné.',
+    field: {
+      description: 'Description',
+      document: 'Document',
+      files: 'Fichiers',
+      infos: 'Informations',
+      io: 'Entrée / Sortie',
+      keypoints: 'Points clés',
+      relations: 'Tâches liées',
+      responsibility: 'Responsabilité',
+      tools: 'Outils',
+    },
+    fileNumber: 'Fichier {{number}}',
+    finding: {
+      crossOrgReference:
+        'Référence {{collection}} {{id}} de l’organisation {{owner}} et non {{organisation}}. Le contenu d’un autre parc est lié ici, et une copie continue de pointer dessus.',
+      crossOrgReferenceFollowed:
+        'Référence {{collection}} {{id}} de l’organisation {{owner}} et non {{organisation}}. Le clonage le lit avec les droits de l’appelant et s’interrompt donc avec une erreur 404.',
+      danglingReference:
+        'Référence {{collection}} {{id}}, qui n’existe pas. Le clonage ne suit pas ce lien, la copie hérite donc d’une référence morte.',
+      danglingReferenceFollowed:
+        'Référence {{collection}} {{id}}, qui n’existe pas. Le clonage suit cette référence et s’interrompt avec une erreur 404.',
+      documentIncomplete:
+        'Manquant : {{fields}}. Le clonage signale ce fichier comme manquant et copie l’activité sans lui.',
+      malformedRichTextNoChildren:
+        'Champ de texte enrichi : « root » ne contient pas de tableau « children ».',
+      malformedRichTextRoot: 'Champ de texte enrichi : « root » n’est pas un objet.',
+      missingRequiredField:
+        'Le champ obligatoire « {{field}} » est vide dans la langue par défaut ({{locale}}). Le clonage échoue à la validation.',
+      prefixOrganisationMismatch:
+        'Stocké sous « {{prefix}} », attendu « {{expected}} ». Le fichier reste accessible, mais l’organisation S3 ne correspond plus au parc.',
+      s3ObjectMissing:
+        'Aucun objet sous « {{key}} ». L’enregistrement existe mais le fichier a disparu — les copies arrivent sans lui.',
+      s3ObjectUnreadable: 'Impossible de lire « {{key}} » : {{error}}',
+    },
+    healthy: 'Aucun problème détecté. Les données de ce parc sont entièrement clonables.',
+    healthyDocument: 'Aucun problème détecté dans cet élément.',
+    itemNumber: 'Entrée {{number}}',
+    jumpToBlock: 'Aller au bloc',
+    noFindings: 'Aucun résultat',
+    openRelated: 'Élément référencé',
+    openSource: 'Ouvrir',
+    precondition: {
+      apiKeyInvalid:
+        'PAYLOAD_API_KEY n’authentifie pas — /api/users/me ne renvoie aucun utilisateur. Chaque téléchargement de fichier lors du clonage échoue et chaque activité est copiée sans ses pièces jointes. Les clés sont chiffrées avec PAYLOAD_SECRET ; un secret modifié les invalide.',
+      apiKeyMissing: 'PAYLOAD_API_KEY n’est pas défini.',
+      apiKeyUnreachable: 'Le serveur n’a pas pu être contacté pour vérifier la clé.',
+      s3BucketMissing: 'S3_BUCKET n’est pas défini.',
+      s3Unreachable:
+        'S3 est inaccessible ou mal configuré. Les vérifications de fichiers ont été ignorées.',
+    },
+    preconditionFailed: 'Condition préalable non remplie',
+    preconditionHint:
+      'Ces vérifications concernent l’ensemble de l’installation, pas un parc en particulier.',
+    run: 'Lancer la vérification',
+    title: 'Contrôle des données',
+    titleDocument: 'Contrôle de cet élément',
+  },
   flowBlock: {
     table: {
       keypoints: 'Points clés',
