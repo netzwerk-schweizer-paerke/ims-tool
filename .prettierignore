@@ -8,3 +8,5 @@ public
 .yarn
 dist
 build
+importMap.js
+src/payload-types.ts
