@@ -9,6 +9,36 @@ interface SVGAnimationElement extends SVGElement {
   beginElement(): void
 }
 
+// One window listener for all arrows instead of one per arrow, coalesced into a single
+// animation frame — a page with N arrows used to run N synchronous re-renders per resize event.
+const resizeSubscribers = new Set<() => void>()
+let resizeFrame: number | null = null
+
+const flushResizeSubscribers = () => {
+  resizeFrame = null
+  for (const subscriber of resizeSubscribers) subscriber()
+}
+
+const onWindowResize = () => {
+  if (resizeFrame !== null) return
+  resizeFrame = requestAnimationFrame(flushResizeSubscribers)
+}
+
+const subscribeToWindowResize = (subscriber: () => void) => {
+  if (resizeSubscribers.size === 0) window.addEventListener('resize', onWindowResize)
+  resizeSubscribers.add(subscriber)
+
+  return () => {
+    resizeSubscribers.delete(subscriber)
+    if (resizeSubscribers.size > 0) return
+    window.removeEventListener('resize', onWindowResize)
+    if (resizeFrame !== null) {
+      cancelAnimationFrame(resizeFrame)
+      resizeFrame = null
+    }
+  }
+}
+
 const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
   const mainRef = useRef({
     svgRef: useRef<SVGSVGElement>(null),
@@ -153,19 +183,22 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
 
   const { dashArray, animation, animStartValue, animEndValue, animRepeatCount } = animationConfig
 
-  // handle draw animation - update line length when path changes
+  // handle draw animation - update line length when path changes.
+  // getTotalLength forces a layout pass, and lineLength is only read by the draw animation,
+  // so this whole extra render per path change is skipped when the animation is off.
   useLayoutEffect(() => {
-    if (lineRef.current) {
-      const length = lineRef.current.getTotalLength()
-      setSt((prevSt) => ({ ...prevSt, lineLength: length }))
-    }
-  }, [st.arrowPath])
+    if (!animateDrawingValue || !lineRef.current) return
+    const length = lineRef.current.getTotalLength()
+    setSt((prevSt) => (prevSt.lineLength === length ? prevSt : { ...prevSt, lineLength: length }))
+  }, [st.arrowPath, animateDrawingValue])
+
+  // repositioning on window resize is driven by the shared listener above; the re-render is
+  // enough, because useXarrowProps re-reads the element positions during render
+  useEffect(() => subscribeToWindowResize(forceRerender), [])
 
   // set all props on first render
   useEffect(() => {
     const monitorDOMchanges = () => {
-      window.addEventListener('resize', forceRerender)
-
       const handleDrawAmimEnd = () => {
         setDrawAnimEnded(true)
         headOpacityAnimRef.current?.beginElement()
@@ -179,7 +212,6 @@ const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
         lineDrawAnimRef.current.addEventListener('beginEvent', handleDrawAmimBegin)
       }
       return () => {
-        window.removeEventListener('resize', forceRerender)
         if (lineDrawAnimRef.current) {
           lineDrawAnimRef.current.removeEventListener('endEvent', handleDrawAmimEnd)
           if (headRef.current)

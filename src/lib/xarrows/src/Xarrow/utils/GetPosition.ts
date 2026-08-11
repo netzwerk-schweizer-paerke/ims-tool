@@ -102,6 +102,7 @@ export const getPosition = (
 ): PositionResult => {
   const [propsRefs, valVars] = xProps
   const {
+    animateDrawing,
     startAnchor,
     endAnchor,
     strokeWidth,
@@ -470,7 +471,9 @@ export const getPosition = (
     mainDivPos,
     xSign,
     ySign,
-    lineLength: lineRef.current?.getTotalLength() ?? 0,
+    // getTotalLength forces a layout pass and is only consumed by the draw animation.
+    // Note it would read the *previous* path here anyway — the DOM has not been updated yet.
+    lineLength: animateDrawing ? (lineRef.current?.getTotalLength() ?? 0) : 0,
     fHeadSize,
     fTailSize,
     arrowPath,

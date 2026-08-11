@@ -300,12 +300,17 @@ type parsedXarrowProps = {
   _cpy2Offset: number
 }
 
-const initialParsedProps = parseGivenProps(defaultProps, {} as Record<string, unknown>) as unknown as parsedXarrowProps
+// Both of these are per-instance factories, NOT shared constants. The hook below mutates
+// `propsRefs` and `valVars` in place before cloning them into state, so a module-level object
+// would be written to by every mounting Xarrow — leaving the previous arrow's parsed props
+// (and its detached start/end elements) as the starting state of the next one.
+const createParsedProps = () =>
+  parseGivenProps(defaultProps, {} as Record<string, unknown>) as unknown as parsedXarrowProps
 
-const initialValVars = {
+const createValVars = () => ({
   startPos: { x: 0, y: 0, right: 0, bottom: 0 } as dimensionType,
   endPos: { x: 0, y: 0, right: 0, bottom: 0 } as dimensionType,
-}
+})
 
 // const parseAllProps = () => parseGivenProps(defaultProps, initialParsedProps);
 
@@ -337,7 +342,7 @@ const useXarrowProps = (
   userProps: xarrowPropsType,
   refs: { headRef: React.MutableRefObject<any>; tailRef: React.MutableRefObject<any> },
 ) => {
-  const [propsRefs, setPropsRefs] = useState(initialParsedProps)
+  const [propsRefs, setPropsRefs] = useState(createParsedProps)
   const shouldUpdatePosition = useRef(false)
   // const _propsRefs = useRef(initialParsedProps);
   // const propsRefs = _propsRefs.current;
@@ -373,7 +378,7 @@ const useXarrowProps = (
   }
 
   // rerender whenever position of start element or end element changes
-  const [valVars, setValVars] = useState(initialValVars)
+  const [valVars, setValVars] = useState(createValVars)
   const startPos = getElemPos(propsRefs.start)
   useDeepCompareEffect(() => {
     valVars.startPos = startPos
