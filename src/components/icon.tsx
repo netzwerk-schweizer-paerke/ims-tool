@@ -1,11 +1,10 @@
-// @ts-ignore
-import logoSrc from './nsp-small.svg?url'
-import Image from 'next/image'
+import { NspSmall } from './nsp-small'
 
 export const Icon = () => {
   return (
     <div>
-      <Image src={logoSrc} width={32} height={32} alt="NSP logo" />
+      {/* role/aria-label preserve the accessible name the previous <Image alt> provided. */}
+      <NspSmall aria-label="NSP logo" height={32} role="img" width={32} />
     </div>
   )
 }
