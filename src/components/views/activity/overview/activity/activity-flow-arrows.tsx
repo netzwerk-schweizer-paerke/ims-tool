@@ -1,6 +1,6 @@
 'use client'
 import { debounce } from 'es-toolkit'
-import { Key, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
 import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
@@ -45,14 +45,13 @@ export const ActivityFlowArrows: React.FC<Props> = ({ activity }) => {
     const arrowSet = assignActivityBlockArrows(activity)
 
     return arrowSet.map(({ arrows, id }) => {
-      return arrows.map((arrow: xarrowPropsType, index: Key | null | undefined) => {
-        const props = {
-          ...arrow,
-          end: `${id}-${arrow.end}`,
-          start: `${id}-${arrow.start}`,
-          ...arrowStyle,
-        }
-        return <Xarrow key={index} {...props} />
+      return arrows.map((arrow: xarrowPropsType, index: number) => {
+        const end = `${id}-${arrow.end}`
+        const start = `${id}-${arrow.start}`
+        const props = { ...arrow, end, start, ...arrowStyle }
+        // Keyed by the endpoints, not the index: Xarrow holds position state, so an index
+        // key lets React reuse one instance for a different start/end pair.
+        return <Xarrow key={`${start}-${end}-${index}`} {...props} />
       })
     })
   }, [activity])
