@@ -107,10 +107,13 @@ export const useArrows = ({ connections, setState, state }: Props) => {
         }
         return arrows.map((arrow, arrowIndex) => ({
           arrow,
-          // Position is unique within a block, so this key survives a type change and the
-          // skip path above. Xarrow holds position state, so an index key would let React
-          // reuse one instance for a completely different start/end pair.
-          key: `${connection.position}-${connection.type}-${arrowIndex}`,
+          // Keyed by the endpoints, deliberately NOT by connection.type. Xarrow holds
+          // position state, so a bare index would let React reuse one instance for a
+          // different start/end pair — but including the type would force a remount on
+          // every switch, and a remount costs ~4 render passes and several forced layout
+          // reads before the arrow is visible again. Endpoints give both: stable identity
+          // when the geometry is unchanged, a fresh instance when it genuinely differs.
+          key: `${connection.position}-${arrow.start}-${arrow.end}-${arrowIndex}`,
         }))
       })
       .map(({ arrow, key }) => {
