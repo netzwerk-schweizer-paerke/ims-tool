@@ -39,7 +39,7 @@ export interface UseCloneApiResult {
     formData: CloneFormData,
     locale: string,
   ) => Promise<GenericCloneStatisticsFinalized>
-  processError: (error: any) => string
+  processError: (error: any) => Promise<string>
 }
 
 export interface UseCloneFormSubmitResult {

@@ -2,7 +2,9 @@ import { Endpoint, PayloadRequest } from 'payload'
 import { z } from 'zod'
 
 import { createTaskFlow } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
+import { CloneHttpError, getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
@@ -92,8 +94,9 @@ export const cloneTaskFlowTransactional: Endpoint = {
         })
 
         if (!accessValidation.isValid) {
-          throw new Error(
-            `Access denied for task flow ${taskFlowId}: ${accessValidation.error?.message}`,
+          throw new CloneHttpError(
+            `Task flow ${taskFlowId}: ${accessValidation.error?.message ?? 'access denied'}`,
+            accessValidation.error?.status ?? 403,
           )
         }
 
@@ -152,19 +155,21 @@ export const cloneTaskFlowTransactional: Endpoint = {
     } catch (error) {
       await req.payload.db.rollbackTransaction(transactionID)
 
+      const status = getErrorStatus(error)
+
       req.payload.logger.error({
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: getErrorMessage(error),
         msg: 'Failed to clone task flows - transaction rolled back',
+        stack: error instanceof Error ? error.stack : undefined,
+        status,
         targetOrgId: targetOrganisationId,
         taskFlowIds,
         transactionID,
       })
 
       return Response.json(
-        {
-          error: `Failed to clone task flows: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        },
-        { status: 500 },
+        { error: `Failed to clone task flows: ${getErrorMessage(error)}` },
+        { status },
       )
     }
   },

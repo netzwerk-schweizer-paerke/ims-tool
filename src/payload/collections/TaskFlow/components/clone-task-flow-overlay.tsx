@@ -24,10 +24,12 @@ type Props = {
 const cloneConfig: CloneConfig = {
   endpoint: '/api/task-flows/clone',
   resourceName: 'task flows',
+  // Cloning is not idempotent — never retry a 5xx, the server may have committed
+  // before failing to respond. See use-clone-api.ts.
   retryConfig: {
     limit: 2,
     methods: ['post'],
-    statusCodes: [408, 413, 429, 500, 502, 503, 504],
+    statusCodes: [429],
   },
   timeoutMultiplier: 120_000,
 }

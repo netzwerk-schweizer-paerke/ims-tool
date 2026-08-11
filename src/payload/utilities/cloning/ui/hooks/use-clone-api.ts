@@ -16,10 +16,14 @@ export function useCloneApi(): UseCloneApiResult {
     const { endpoint, retryConfig, timeoutMultiplier = 120_000 } = config
     const { selectedItems, targetOrganisation } = formData
 
+    // Cloning is not idempotent: a retried request runs the whole clone again.
+    // 5xx is excluded because the server may have committed before failing to
+    // respond, which would leave duplicate activities behind. 429 is safe — the
+    // request was rejected before any work started.
     const defaultRetryConfig = {
       limit: 2,
       methods: ['post'],
-      statusCodes: [408, 413, 429, 500, 502, 503, 504],
+      statusCodes: [429],
     }
 
     const response = await ky
@@ -42,29 +46,43 @@ export function useCloneApi(): UseCloneApiResult {
     return response.results
   }
 
-  const processError = (error: any): string => {
-    let errorMessage = 'Unknown error occurred'
-
-    // Handle different error types
-    if (error.name === 'HTTPError') {
-      if (error.response?.status === 403) {
-        errorMessage =
-          '🚫 Access Denied: You do not have the required permissions for this operation'
-      } else {
-        try {
-          // This is async but we can't await here, so we'll use a fallback
-          errorMessage = `HTTP ${error.response?.status || 'unknown'} error`
-        } catch {
-          errorMessage = `HTTP ${error.response?.status || 'unknown'} error`
-        }
-      }
-    } else if (error.name === 'TimeoutError') {
-      errorMessage = '⏱️ Request timed out. The items may be too large to clone.'
-    } else if (error.message) {
-      errorMessage = error.message
+  const processError = async (error: any): Promise<string> => {
+    if (error?.name === 'TimeoutError') {
+      return '⏱️ Request timed out. The items may be too large to clone.'
     }
 
-    return errorMessage
+    if (error?.name !== 'HTTPError' || !error.response) {
+      return error?.message || 'Unknown error occurred'
+    }
+
+    const { status } = error.response
+
+    if (status === 401 || status === 403) {
+      return '🚫 Access Denied: You do not have the required permissions for this operation'
+    }
+
+    // The endpoints put the actual cause in the body. Without reading it the
+    // user only ever sees "HTTP 500 error", which is not actionable.
+    try {
+      const body = await error.response.clone().json()
+
+      if (typeof body?.error === 'string') {
+        return body.error
+      }
+
+      if (Array.isArray(body?.errors) && body.errors.length > 0) {
+        const issues = body.errors as { field?: string; message?: string }[]
+        const details = issues
+          .map((issue) => [issue.field, issue.message].filter(Boolean).join(': '))
+          .join(', ')
+
+        return [body.message, details].filter(Boolean).join(' — ')
+      }
+    } catch {
+      // Body was absent or not JSON — fall through to the status-only message.
+    }
+
+    return `HTTP ${status} error`
   }
 
   return {

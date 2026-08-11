@@ -4,6 +4,8 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 
 import { TaskFlow, TaskList } from '@/payload-types'
 import { cloneRelatedDocumentFiles } from '@/payload/collections/Activities/endpoints/clone/utils/clone-related-document-files'
+import { getValidationDetails } from '@/payload/utilities/cloning/clone-http-error'
+import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 
 import { stripTaskFlow } from '../../../../../utilities/cloning/strip-task-flow'
@@ -69,7 +71,8 @@ export const cloneTaskFlowOrList = async ({
     return createdTask
   } catch (error) {
     req.payload.logger.error({
-      error: error instanceof Error ? error.message : 'Unknown error',
+      details: getValidationDetails(error),
+      error: getErrorMessage(error),
       msg: `Error creating ${collectionName}`,
       sourceTaskId: task.id,
     })
