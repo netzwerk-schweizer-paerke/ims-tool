@@ -28,7 +28,8 @@ export const SimpleTranslateButton: React.FC = () => {
 
   return (
     <>
-      <Button buttonStyle="secondary" onClick={openTranslator} size="small">
+      {/* Medium to match the other document controls (health check, Save). */}
+      <Button buttonStyle="secondary" onClick={openTranslator} size="medium">
         {t('plugin-deepltranslate:resolver_deepl_buttonLabel' as any)}
       </Button>
       <StandaloneTranslatorModal modalSlug={modalSlug} onClose={closeTranslator} />
