@@ -1,8 +1,9 @@
 'use client'
-import { Button, CloseMenuIcon, Drawer, useTranslation } from '@payloadcms/ui'
+import { Button, Drawer, useTranslation } from '@payloadcms/ui'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { TaskFlow } from '@/payload-types'
+import { DrawerHeader } from '@/payload/components/drawer-header'
 import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
 import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
 import {
@@ -67,10 +68,12 @@ export const CloneTaskFlowOverlay: React.FC<Props> = ({
   }
 
   return (
-    <Drawer Header={null} slug={drawerSlug}>
-      <div className={'mt-12 grid grid-cols-[auto_min-content]'}>
-        <div className={'flex flex-col gap-8'}>
-          <h1 className={'text-2xl font-bold'}>{t('cloneTaskFlow:title' as any)}</h1>
+    <Drawer
+      Header={
+        <DrawerHeader onClose={handleClose} title={t('cloneTaskFlow:title' as any)} />
+      }
+      slug={drawerSlug}>
+      <div className={'flex w-full flex-col gap-8'}>
           {status === 'error' && (
             <>
               {errorMessage && (
@@ -121,12 +124,6 @@ export const CloneTaskFlowOverlay: React.FC<Props> = ({
               </Button>
             </div>
           )}
-        </div>
-        <div>
-          <Button buttonStyle="icon-label" className={`${baseClass}__cancel`} onClick={handleClose}>
-            <CloseMenuIcon />
-          </Button>
-        </div>
       </div>
     </Drawer>
   )

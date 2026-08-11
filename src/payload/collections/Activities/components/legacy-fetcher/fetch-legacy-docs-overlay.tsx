@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { Activity } from '@/payload-types'
+import { DrawerHeader } from '@/payload/components/drawer-header'
 
 import { drawerSlug } from './fetch-legacy-docs-button'
 
@@ -192,9 +193,10 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
   }
 
   return (
-    <Drawer Header={null} slug={drawerSlug}>
-      <div className="mt-12 flex flex-col gap-4">
-        <h2 className="text-2xl font-bold">Fetch Legacy Documents</h2>
+    <Drawer
+      Header={<DrawerHeader onClose={handleClose} title="Fetch Legacy Documents" />}
+      slug={drawerSlug}>
+      <div className="flex flex-col gap-4">
 
         {/* Configuration */}
         {processResults.length === 0 && (
