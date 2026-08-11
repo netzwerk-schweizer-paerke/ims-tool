@@ -113,9 +113,10 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: 'de' | 'fr' | 'it';
-  user: User & {
-    collection: 'users';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -237,6 +238,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -300,20 +302,20 @@ export interface Activity {
 export interface ActivityIOBlock {
   graph?: {
     task?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
   };
@@ -460,37 +462,37 @@ export interface TaskFlow {
 export interface ProcessTaskIOBlock {
   graph?: {
     io?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
     task?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
   };
@@ -556,37 +558,37 @@ export interface ProcessTaskIOBlock {
 export interface ProcessTestOutputBlock {
   graph?: {
     output?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
     test?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
   };
@@ -652,20 +654,20 @@ export interface ProcessTestOutputBlock {
 export interface ProcessTaskParallelBlock {
   graph?: {
     task?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
   };
@@ -878,20 +880,20 @@ export interface TaskList {
 export interface ActivityTaskBlock {
   graph?: {
     task?: {
+      bottomBoolean?: 'false' | 'true' | 'none';
       connections: {
         position: string;
         type: string;
         [k: string]: unknown;
       }[];
+      enabled?: boolean;
+      leftBoolean?: 'false' | 'true' | 'none';
+      rightBoolean?: 'false' | 'true' | 'none';
       text?: string;
       textBottom?: string;
-      textTop?: string;
       textLeft?: string;
       textRight?: string;
-      enabled?: boolean;
-      rightBoolean?: 'false' | 'true' | 'none';
-      leftBoolean?: 'false' | 'true' | 'none';
-      bottomBoolean?: 'false' | 'true' | 'none';
+      textTop?: string;
       [k: string]: unknown;
     };
   };
@@ -1539,6 +1541,16 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

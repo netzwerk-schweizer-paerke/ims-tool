@@ -45,6 +45,8 @@ export const createMockUser = (options: {
     selectedOrganisation,
     updatedAt: '',
     createdAt: '',
+    // Payload 3.87 adds a literal `collection` discriminator to auth user types.
+    collection: 'users',
   }
 }
 
