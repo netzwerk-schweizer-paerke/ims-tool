@@ -1,7 +1,6 @@
 'use client'
 import { PropsWithChildren } from 'react'
 
-import './shapestyle.css'
 import './test-shape-wrapper.css'
 
 type Props = PropsWithChildren & {

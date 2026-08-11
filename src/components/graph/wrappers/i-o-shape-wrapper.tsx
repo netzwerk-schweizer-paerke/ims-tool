@@ -1,8 +1,6 @@
 'use client'
 import { PropsWithChildren } from 'react'
 
-import './shapestyle.css'
-
 type Props = PropsWithChildren & {
   mode?: 'edit' | 'view'
 }
