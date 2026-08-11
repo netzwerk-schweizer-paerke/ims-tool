@@ -1,0 +1,25 @@
+# Garage S3-compatible object storage — local development config.
+# Docs: https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/
+#
+# Local dev only. The secrets below are not sensitive — Garage binds to localhost
+# and holds nothing but development media.
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "19bfadbf46b154ef652da11bd6b38f22d903f4c8bde9de06c61ad970033f51f9"
+
+[s3_api]
+# Must match S3_REGION in .env — SigV4 signs with the client's region and Garage
+# rejects a mismatch with SignatureDoesNotMatch.
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+
+[admin]
+api_bind_addr = "[::]:3903"
+admin_token = "uYuDOyo7yZdJ160UCj09tV7znWcYuSUxOg41b0qF7dE="

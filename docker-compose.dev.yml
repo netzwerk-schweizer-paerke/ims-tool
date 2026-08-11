@@ -23,18 +23,24 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
 
-  minio:
-    image: minio/minio:latest
-    container_name: ims-tool-minio
+  # S3-compatible object storage. Credentials are not set here — the bucket and
+  # API key are provisioned by scripts/garage-init.sh, which writes them to .env.
+  garage:
+    image: dxflrs/garage:v2.2.0
+    container_name: ims-tool-garage
+    restart: unless-stopped
     ports:
-      - '9000:9000'
-      - '9001:9001'
-    environment:
-      MINIO_ROOT_USER: swiss-parcs-ims
-      MINIO_ROOT_PASSWORD: swiss-parcs-ims
+      - '3900:3900' # S3 API
+      - '3903:3903' # admin API (no web console — Garage has none)
     volumes:
-      - minio-data:/data
-    command: server /data --console-address ":9001"
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage-data:/var/lib/garage/data
+      - garage-meta:/var/lib/garage/meta
+    healthcheck:
+      test: ['CMD', '/garage', 'status']
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   mailpit:
     image: axllent/mailpit
@@ -56,7 +62,9 @@ volumes:
     driver: local
   postgres-data:
     driver: local
-  minio-data:
+  garage-data:
+    driver: local
+  garage-meta:
     driver: local
   pgadmin-data:
     driver: local
