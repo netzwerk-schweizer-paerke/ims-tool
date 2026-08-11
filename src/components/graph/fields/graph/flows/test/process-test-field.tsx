@@ -123,7 +123,7 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
             <TestShapeWrapper mode={'edit'}>
               <textarea
                 className={
-                  'textarea-lg flex h-full w-9/12 resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-4 text-center leading-snug focus:outline-none'
+                  'textarea-lg flex h-full w-10/12 resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-4 text-center leading-snug focus:outline-none'
                 }
                 onChange={(e) => handleTextChange(e.target.value)}
                 value={localText}

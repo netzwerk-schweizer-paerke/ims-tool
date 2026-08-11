@@ -14,7 +14,7 @@ export const TestShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) =
   // therefore sets its own width and centres on the diamond instead of inheriting 40px.
   const wrapperClasses =
     mode === 'edit'
-      ? 'left-1/2 top-1/2 h-32 w-48 -translate-x-1/2 -translate-y-1/2'
+      ? 'left-1/2 top-1/2 h-32 w-52 -translate-x-1/2 -translate-y-1/2'
       : 'left-0 top-0 w-full -translate-y-1/2'
 
   return (
