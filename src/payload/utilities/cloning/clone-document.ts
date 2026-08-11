@@ -1,30 +1,32 @@
-import { CollectionSlug, File, PayloadRequest } from 'payload'
-import fetch from 'node-fetch'
-import { getErrorMessage } from './error-utils'
-import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 import { assert } from 'es-toolkit'
+import fetch from 'node-fetch'
+import { CollectionSlug, File, PayloadRequest } from 'payload'
+
+import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+
+import { getErrorMessage } from './error-utils'
 
 export const cloneDocumentFile = async (
   req: PayloadRequest,
   documentId: number | string,
   targetOrgId: number,
-): Promise<{ id: number; collection: CollectionSlug }> => {
+): Promise<{ collection: CollectionSlug; id: number; }> => {
   try {
     if (!documentId) {
       throw new Error('No document ID provided for cloning')
     }
 
     req.payload.logger.debug({
-      msg: 'Cloning document',
       documentId,
+      msg: 'Cloning document',
       targetOrgId,
     })
 
     const sourceDocument = await req.payload.findByID({
-      req,
       collection: 'documents',
-      id: documentId,
       depth: 0,
+      id: documentId,
+      req,
     })
 
     if (!sourceDocument) {
@@ -40,7 +42,7 @@ export const cloneDocumentFile = async (
     const downloadUrl = `${serverUrl}${url}`
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000)
+    const timeoutId = setTimeout(() => controller.abort(), 30_000)
 
     assert(process.env.PAYLOAD_API_KEY, 'PAYLOAD_API_KEY not set')
 
@@ -72,8 +74,8 @@ export const cloneDocumentFile = async (
     const filename = `${Date.now()}-${sourceDocument.filename}`
     const file: File = {
       data: fileBuffer,
-      name: filename,
       mimetype: sourceDocument.mimeType,
+      name: filename,
       size: sourceDocument.filesize,
     }
 
@@ -92,13 +94,13 @@ export const cloneDocumentFile = async (
 
       req.payload.logger.debug({
         msg: 'Document cloned successfully',
-        originalId: documentId,
         newId: clonedDocument.id,
+        originalId: documentId,
       })
 
       return {
-        id: clonedDocument.id,
         collection: 'documents',
+        id: clonedDocument.id,
       }
     } finally {
       if (req.user && originalSelectedOrg !== undefined) {
@@ -107,9 +109,9 @@ export const cloneDocumentFile = async (
     }
   } catch (error) {
     req.payload.logger.error({
-      msg: 'Error cloning document',
       documentId,
       error: getErrorMessage(error),
+      msg: 'Error cloning document',
     })
     throw error
   }

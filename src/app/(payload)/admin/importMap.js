@@ -21,11 +21,13 @@ import { Logo as Logo_41750b0786ad8f0d7e0f700218d90b2f } from 'src/components/lo
 import { ActivityLandscapeLink as ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870 } from 'src/components/activity-landscape-link'
 import { OrganisationSelect as OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf } from 'src/components/organisation-select'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
+import { ActivitiesView as ActivitiesView_2138b93d2cc56d1df1bfad938b66afc7 } from 'src/components/views/activity/overview'
+import { ActivityBlockView as ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0 } from 'src/components/views/activity/view'
 import { FlowBlockView as FlowBlockView_b366da92bebaf7d6a5e4eaa1f457dca3 } from 'src/components/views/flow'
 import { ListBlockView as ListBlockView_6b259556698f42eac9d0778fbbe1bee6 } from 'src/components/views/list'
-import { ActivityBlockView as ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0 } from 'src/components/views/activity/view'
-import { ActivitiesView as ActivitiesView_2138b93d2cc56d1df1bfad938b66afc7 } from 'src/components/views/activity/overview'
+import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
+/** @type import('payload').ImportMap */
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -50,8 +52,9 @@ export const importMap = {
   "src/components/activity-landscape-link#ActivityLandscapeLink": ActivityLandscapeLink_082780cf9027ba13a23f29fe079da870,
   "src/components/organisation-select#OrganisationSelect": OrganisationSelect_281bbc373a891bfc2595a57cfb5a69cf,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
+  "src/components/views/activity/overview#ActivitiesView": ActivitiesView_2138b93d2cc56d1df1bfad938b66afc7,
+  "src/components/views/activity/view#ActivityBlockView": ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0,
   "src/components/views/flow#FlowBlockView": FlowBlockView_b366da92bebaf7d6a5e4eaa1f457dca3,
   "src/components/views/list#ListBlockView": ListBlockView_6b259556698f42eac9d0778fbbe1bee6,
-  "src/components/views/activity/view#ActivityBlockView": ActivityBlockView_4cab46728cc1ee02ddfbd1d7770f2ef0,
-  "src/components/views/activity/overview#ActivitiesView": ActivitiesView_2138b93d2cc56d1df1bfad938b66afc7
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

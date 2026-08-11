@@ -1,40 +1,26 @@
 import { Block } from 'payload'
-import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
+
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
+import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
 export const ProcessTaskInputOutputBlock: Block = {
-  slug: 'proc-task-io',
-  labels: {
-    singular: 'Task with optional input/output',
-    plural: 'TaskFlows with optional input/output',
-  },
-  imageURL: '/process-block-shapes/block-start.svg',
-  imageAltText: 'Task with optional input/output',
-  interfaceName: 'ProcessTaskIOBlock',
   fields: [
     {
-      type: 'row',
       admin: {
         className: 'process-task-io-block process-block-row',
       },
       fields: [
         {
-          type: 'group',
-          name: 'graph',
-          label: false,
           admin: {
             className: 'graph-fields-group',
           },
           fields: [
             {
-              type: 'row',
               admin: {
                 className: 'graph-fields-row',
               },
               fields: [
                 {
-                  name: 'io',
-                  type: 'json',
                   admin: {
                     components: {
                       Field:
@@ -42,10 +28,10 @@ export const ProcessTaskInputOutputBlock: Block = {
                     },
                   },
                   jsonSchema: connectionSchema,
+                  name: 'io',
+                  type: 'json',
                 },
                 {
-                  name: 'task',
-                  type: 'json',
                   admin: {
                     components: {
                       Field:
@@ -53,13 +39,28 @@ export const ProcessTaskInputOutputBlock: Block = {
                     },
                   },
                   jsonSchema: connectionSchema,
+                  name: 'task',
+                  type: 'json',
                 },
               ],
+              type: 'row',
             },
           ],
+          label: false,
+          name: 'graph',
+          type: 'group',
         },
         ...tabsMetadata,
       ],
+      type: 'row',
     },
   ],
+  imageAltText: 'Task with optional input/output',
+  imageURL: '/process-block-shapes/block-start.svg',
+  interfaceName: 'ProcessTaskIOBlock',
+  labels: {
+    plural: 'TaskFlows with optional input/output',
+    singular: 'Task with optional input/output',
+  },
+  slug: 'proc-task-io',
 }

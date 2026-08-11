@@ -1,14 +1,15 @@
-import React from 'react'
+import config from '@payload-config'
+import { compact } from 'es-toolkit'
 import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { redirect, RedirectType } from 'next/navigation'
+import { getPayload } from 'payload'
+import React from 'react'
+
 import { UserOrganisationSelect } from '@/components/organisation-select/dropdown'
 import { Translate } from '@/lib/translate'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
-import { redirect, RedirectType } from 'next/navigation'
-import { compact } from 'es-toolkit'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 export const OrganisationSelect: React.FC = async () => {
   const headers = await getHeaders()
@@ -20,8 +21,8 @@ export const OrganisationSelect: React.FC = async () => {
 
   const organisations = await client.find({
     collection: 'organisations',
-    limit: 100,
     depth: 0,
+    limit: 100,
   })
 
   let userOrganisations = compact(
@@ -51,10 +52,10 @@ export const OrganisationSelect: React.FC = async () => {
   if (!selectedOrg && user) {
     await client.update({
       collection: 'users',
-      id: user?.id,
       data: {
         selectedOrganisation: userOrganisations[0].id,
       },
+      id: user?.id,
     })
     redirect('/admin', RedirectType.replace)
   }
@@ -73,14 +74,17 @@ export const OrganisationSelect: React.FC = async () => {
 
   return (
     <div className={'field-type mb-8 w-full'}>
-      <label className="field-label">
+      {/* Not a <label>: UserOrganisationSelect wraps Payload's own <Select> and exposes no
+          id to point htmlFor at, so a <label> here would associate with nothing. Proper fix
+          is to thread an id through the dropdown and restore the label element. */}
+      <div className="field-label">
         <Translate k={'admin:selectOrganisations:title'} />
-      </label>
+      </div>
       <div className="field-type__wrap">
         <UserOrganisationSelect
           orgs={userOrganisations}
-          userId={user?.id}
           selectedOrg={selectedOrg}
+          userId={user?.id}
         />
       </div>
     </div>

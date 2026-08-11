@@ -1,21 +1,24 @@
 import { PayloadRequest } from 'payload'
+
 import { Activity } from '@/payload-types'
-import { stripActivity } from '../../../../../utilities/cloning/strip-activity'
-import { cloneRelatedDocumentFiles } from './clone-related-document-files'
-import { cloneActivityBlocks } from './clone-activity-blocks'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+
 import type { DocumentPreloader } from '../../../../../utilities/cloning/document-preloader'
 
+import { stripActivity } from '../../../../../utilities/cloning/strip-activity'
+import { cloneActivityBlocks } from './clone-activity-blocks'
+import { cloneRelatedDocumentFiles } from './clone-related-document-files'
+
 type ExecuteActivityCloneParams = {
+  documentPreloader?: DocumentPreloader
+  locale: string
   req: PayloadRequest
   sourceActivity: Activity
   targetOrgId: number
-  locale: string
-  documentPreloader?: DocumentPreloader
 }
 
 export async function cloneActivity(params: ExecuteActivityCloneParams): Promise<Activity> {
-  const { req, sourceActivity, targetOrgId, locale, documentPreloader } = params
+  const { documentPreloader, locale, req, sourceActivity, targetOrgId } = params
 
   req.payload.logger.debug({ msg: 'Source activity found', sourceActivity: sourceActivity.id })
 
@@ -30,11 +33,11 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
   req.payload.logger.debug({ msg: 'Activity stripped' })
 
   const clonedActivity = await req.payload.create({
-    req: mergeReqContextTargetOrgId(req, targetOrgId),
     collection: 'activities',
     data: strippedActivity,
-    locale: locale as any,
     depth: 0,
+    locale: locale as any,
+    req: mergeReqContextTargetOrgId(req, targetOrgId),
   })
 
   if (!clonedActivity) {
@@ -42,34 +45,34 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
   }
 
   req.payload.logger.debug({
-    msg: 'Cloned activity created',
     clonedActivity: clonedActivity.id,
+    msg: 'Cloned activity created',
   })
 
   await cloneRelatedDocumentFiles({
+    collectionName: 'activities',
+    documentPreloader,
+    locale,
     req,
     sourceEntity: sourceActivity,
     targetEntityId: clonedActivity.id,
-    collectionName: 'activities',
     targetOrgId,
-    locale,
-    documentPreloader,
   })
 
   await cloneActivityBlocks({
-    req,
     clonedActivity,
-    targetOrgId,
-    locale,
     documentPreloader,
+    locale,
+    req,
+    targetOrgId,
   })
 
   // Fetch the updated cloned activity to get accurate statistics after block updates
   const updatedClonedActivity = await req.payload.findByID({
-    req,
     collection: 'activities',
-    id: clonedActivity.id,
     depth: 0,
+    id: clonedActivity.id,
+    req,
   })
 
   return updatedClonedActivity

@@ -1,10 +1,5 @@
 import { CollectionSlug, GlobalSlug, TypedLocale } from 'payload'
 
-export type ValueToTranslate = {
-  onTranslate: (translatedValue: string) => void
-  value: string | undefined
-}
-
 export type TranslateArgs = {
   collectionSlug?: CollectionSlug
   data?: Record<string, any>
@@ -18,18 +13,23 @@ export type TranslateArgs = {
   update?: boolean
 }
 
+export type TranslateEndpointArgs = Omit<TranslateArgs, 'update'>
+
 export type TranslateResult =
   | {
-      success: false
       error?: {
-        type: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
-        message: string
         details?: any
+        message: string
+        type: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
       }
+      success: false
     }
   | {
       success: true
       translatedData: Record<string, any>
     }
 
-export type TranslateEndpointArgs = Omit<TranslateArgs, 'update'>
+export type ValueToTranslate = {
+  onTranslate: (translatedValue: string) => void
+  value: string | undefined
+}

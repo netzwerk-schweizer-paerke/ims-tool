@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
  * A hook for managing text field state with debounced updates to the parent state
@@ -26,7 +26,8 @@ export function useTextField<T extends Record<string, any>>(
   useEffect(() => {
     if (!value) {
       return
-    } else if (value[fieldName] !== localText) {
+    }
+    if (value[fieldName] !== localText) {
       // Only update local text if it differs from the field value
       setLocalText((value[fieldName] as string) || '')
     }
@@ -45,8 +46,8 @@ export function useTextField<T extends Record<string, any>>(
   )
 
   return {
-    localText,
     handleTextChange,
+    localText,
   }
 }
 

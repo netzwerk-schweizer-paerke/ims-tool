@@ -1,7 +1,15 @@
-import { ClientConfig, SanitizedConfig } from 'payload'
 import { isArray, isObject, isString } from 'es-toolkit/compat'
+import { ClientConfig, SanitizedConfig } from 'payload'
 
-type Configs = SanitizedConfig | ClientConfig
+type Configs = ClientConfig | SanitizedConfig
+
+export function getDefaultLocaleCode(config: Configs): string {
+  if (hasLocalization(config)) {
+    return config.localization.defaultLocale
+  }
+
+  return 'en'
+}
 
 /**
  * Extract locale codes from Payload configuration
@@ -25,21 +33,13 @@ export function getLocaleCodes(config: Configs): string[] {
   return codes.length > 0 ? codes : [getDefaultLocaleCode(config)]
 }
 
-export function getDefaultLocaleCode(config: Configs): string {
-  if (hasLocalization(config)) {
-    return config.localization.defaultLocale
-  }
-
-  return 'en'
-}
-
 /**
  * Get locale codes from a Payload request
  * @param req - Payload request object with config
  * @returns Array of locale codes
  */
 export function getLocaleCodesFromRequest(
-  req: { payload: { config: Configs } } | { payload: any },
+  req: { payload: any } | { payload: { config: Configs } },
 ): string[] {
   return getLocaleCodes(req.payload.config)
 }
@@ -85,9 +85,9 @@ export function getLocalizedValue(field: any, locales: string[], preferredLocale
  */
 export function hasLocalization(config: Configs): config is Configs & {
   localization: {
-    locales: Array<{ code: string; label: any }>
-    defaultLocale: string
     [key: string]: any
+    defaultLocale: string
+    locales: Array<{ code: string; label: any }>
   }
 } {
   return (

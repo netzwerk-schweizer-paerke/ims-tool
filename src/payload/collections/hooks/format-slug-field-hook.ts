@@ -2,13 +2,13 @@ import type { FieldHook } from 'payload'
 
 const format = (val: string): string =>
   val
-    .replace(/ /g, '-')
-    .replace(/[^\w-]+/g, '')
+    .replaceAll(' ', '-')
+    .replaceAll(/[^\w-]+/g, '')
     .toLowerCase()
 
 const formatSlugFieldHook =
   (fallback: string): FieldHook =>
-  ({ operation, value, originalDoc, data }) => {
+  ({ data, operation, originalDoc, value }) => {
     if (typeof value === 'string') {
       return format(value)
     }

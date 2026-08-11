@@ -1,4 +1,5 @@
 import { memo } from 'react'
+
 import { NodeButton } from '@/components/graph/fields/graph/components/node-button'
 
 type Props = {
@@ -9,8 +10,8 @@ type Props = {
 const ButtonCenterRightComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
-      id={'inner-center-right'}
-      className={'absolute right-0 top-1/2 z-10 size-6 -translate-y-1/2 translate-x-1/2'}>
+      className={'absolute right-0 top-1/2 z-10 size-6 -translate-y-1/2 translate-x-1/2'}
+      id={'inner-center-right'}>
       <NodeButton onClick={onClickFn}></NodeButton>
     </div>
   )
@@ -20,8 +21,8 @@ const ButtonCenterRightComponent: React.FC<Props> = ({ onClickFn }) => {
 const ButtonBottomCenterComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
-      id={'inner-bottom-center'}
-      className={'absolute bottom-0 right-1/2 z-10 size-6 translate-x-1/2 translate-y-1/2'}>
+      className={'absolute bottom-0 right-1/2 z-10 size-6 translate-x-1/2 translate-y-1/2'}
+      id={'inner-bottom-center'}>
       <NodeButton onClick={onClickFn}></NodeButton>
     </div>
   )
@@ -31,8 +32,8 @@ const ButtonBottomCenterComponent: React.FC<Props> = ({ onClickFn }) => {
 const ButtonCenterLeftComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
-      id={'inner-center-left'}
-      className={'absolute left-0 top-1/2 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}>
+      className={'absolute left-0 top-1/2 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}
+      id={'inner-center-left'}>
       <NodeButton onClick={onClickFn}></NodeButton>
     </div>
   )
@@ -42,8 +43,8 @@ const ButtonCenterLeftComponent: React.FC<Props> = ({ onClickFn }) => {
 const ButtonTopCenterComponent: React.FC<Props> = ({ onClickFn }) => {
   return (
     <div
-      id={'inner-top-center'}
-      className={'absolute left-1/2 top-0 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}>
+      className={'absolute left-1/2 top-0 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}
+      id={'inner-top-center'}>
       <NodeButton onClick={onClickFn}></NodeButton>
     </div>
   )

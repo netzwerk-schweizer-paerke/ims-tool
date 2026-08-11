@@ -21,15 +21,15 @@ export const recordSelectedOrganisationAfterLoginHook: CollectionAfterLoginHook 
     }
 
     await req.payload.update({
-      id: user.id,
       collection: 'users',
       data: {
         selectedOrganisation: selectedOrgId || null,
       },
+      id: user.id,
       req,
     })
-  } catch (err: unknown) {
-    req.payload.logger.error({ userId: user.id, err }, 'Error recording selected organisation for user')
+  } catch (error: unknown) {
+    req.payload.logger.error({ err: error, userId: user.id }, 'Error recording selected organisation for user')
   }
 
   return user

@@ -1,15 +1,16 @@
 'use client'
 import { Button, CloseMenuIcon, Drawer, useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { TaskList } from '@/payload-types'
+import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
+import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
 import {
   CloneConfigurationForm,
   CloneStatusError,
   CloneStatusPartial,
   CloneStatusSuccess,
 } from '@/payload/utilities/cloning/ui/modal/clone-activities'
-import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
-import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
 
 // Use the same baseClass and drawerSlug as Activities for consistency
 export const baseClass = 'clone-task-lists'
@@ -23,12 +24,12 @@ type Props = {
 const cloneConfig: CloneConfig = {
   endpoint: '/api/task-lists/clone',
   resourceName: 'task lists',
-  timeoutMultiplier: 120000,
   retryConfig: {
     limit: 2,
     methods: ['post'],
     statusCodes: [408, 413, 429, 500, 502, 503, 504],
   },
+  timeoutMultiplier: 120_000,
 }
 
 export const CloneTaskListOverlay: React.FC<Props> = ({
@@ -38,19 +39,19 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
   const { t } = useTranslation<I18nObject, I18nKeys>()
 
   const {
+    cloneResults,
     // State
     cloning,
+    errorMessage,
+    handleClose,
+    handleOrgSwitch,
+    // Actions
+    handleSubmit,
+    isSwitching,
+
     status,
     targetOrgId,
     targetOrgName,
-    cloneResults,
-    errorMessage,
-    isSwitching,
-
-    // Actions
-    handleSubmit,
-    handleClose,
-    handleOrgSwitch,
   } = useCloneOverlay(drawerSlug, targetOrganisations)
 
   const onFormSubmit = async (
@@ -64,7 +65,7 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
   }
 
   return (
-    <Drawer slug={drawerSlug} Header={null}>
+    <Drawer Header={null} slug={drawerSlug}>
       <div className={'mt-12 grid grid-cols-[auto_min-content]'}>
         <div className={'flex flex-col gap-8'}>
           <h1 className={'text-2xl font-bold'}>{t('cloneTaskList:title' as any)}</h1>
@@ -83,23 +84,23 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
           {status === '' && (
             <CloneConfigurationForm
               activities={taskLists as any}
-              targetOrganisations={targetOrganisations}
-              onSubmit={onFormSubmit}
-              isCloning={cloning}
               baseClass={baseClass}
+              isCloning={cloning}
               onCancel={handleClose}
+              onSubmit={onFormSubmit}
+              targetOrganisations={targetOrganisations}
             />
           )}
           <CloneLoadingOverlay isVisible={cloning} />
-          {(status === 'error' || status === 'success' || status === 'partial') && (
+          {['error', 'partial', 'success'].includes(status) && (
             <div className="flex gap-2">
               {/* Show switch org button only on success */}
               {(status === 'success' || status === 'partial') && targetOrgId && (
                 <Button
                   buttonStyle="primary"
                   className={`${baseClass}__switch-org`}
-                  onClick={handleOrgSwitch}
-                  disabled={isSwitching}>
+                  disabled={isSwitching}
+                  onClick={handleOrgSwitch}>
                   {isSwitching ? (
                     <span className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

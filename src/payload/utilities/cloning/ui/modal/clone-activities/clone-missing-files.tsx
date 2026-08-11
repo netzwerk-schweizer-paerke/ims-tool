@@ -1,6 +1,7 @@
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+import React from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { MissingDocumentFileError } from '@/payload/utilities/cloning/types'
 
 interface CloneMissingFilesProps {
@@ -21,7 +22,7 @@ export const CloneMissingFiles: React.FC<CloneMissingFilesProps> = ({ errors }) 
       </p>
       <div className="space-y-3 pl-4">
         {errors.map((file, fileIdx) => (
-          <div key={fileIdx} className="ml-2 border-l-2 border-[var(--theme-warning)] pl-3">
+          <div className="ml-2 border-l-2 border-[var(--theme-warning)] pl-3" key={fileIdx}>
             <p className="font-medium text-[var(--theme-text)]">
               {file.documentName || `Document #${file.documentId}`}
             </p>

@@ -1,14 +1,11 @@
 import type { Field } from 'payload'
 
-import { superAdminFieldAccess } from '../../access/super-admins-collection-access'
-import { beforeChangeHook } from './hooks/before-change-hook'
 import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
 
+import { superAdminFieldAccess } from '../../access/super-admins-collection-access'
+import { beforeChangeHook } from './hooks/before-change-hook'
+
 export const updatedByField: Field = {
-  name: 'updatedBy',
-  type: 'relationship',
-  relationTo: 'users',
-  index: true,
   access: {
     create: superAdminFieldAccess,
     read: organisationAdminFieldAccess,
@@ -17,4 +14,8 @@ export const updatedByField: Field = {
   hooks: {
     beforeChange: [beforeChangeHook],
   },
+  index: true,
+  name: 'updatedBy',
+  relationTo: 'users',
+  type: 'relationship',
 }

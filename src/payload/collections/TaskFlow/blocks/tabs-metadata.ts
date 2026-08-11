@@ -1,47 +1,48 @@
-import { I18nCollection } from '@/lib/i18n-collection'
 import { Field } from 'payload'
+
+import { I18nCollection } from '@/lib/i18n-collection'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 
 export const tabsMetadata: Field[] = [
   {
-    type: 'tabs',
     tabs: [
       {
-        name: 'keypoints',
-        label: I18nCollection.fieldLabel.keypoints,
         fields: [
           {
+            editor: lexicalEditorReducedFeatures,
+            label: false,
             name: 'keypoints',
-            label: false,
             type: 'richText',
-            editor: lexicalEditorReducedFeatures,
           },
         ],
+        label: I18nCollection.fieldLabel.keypoints,
+        name: 'keypoints',
       },
       {
-        name: 'tools',
-        label: I18nCollection.fieldLabel.tools,
         fields: [
           {
+            editor: lexicalEditorReducedFeatures,
+            label: false,
             name: 'tools',
-            label: false,
             type: 'richText',
-            editor: lexicalEditorReducedFeatures,
           },
         ],
+        label: I18nCollection.fieldLabel.tools,
+        name: 'tools',
       },
       {
-        name: 'responsibility',
-        label: I18nCollection.fieldLabel.responsibility,
         fields: [
           {
-            name: 'responsibility',
-            label: false,
-            type: 'richText',
             editor: lexicalEditorReducedFeatures,
+            label: false,
+            name: 'responsibility',
+            type: 'richText',
           },
         ],
+        label: I18nCollection.fieldLabel.responsibility,
+        name: 'responsibility',
       },
     ],
+    type: 'tabs',
   },
 ]

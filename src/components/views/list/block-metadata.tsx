@@ -1,5 +1,5 @@
-import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer'
 import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
+import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
 
 type Props = {
   block: ProcessTaskCompoundBlock

@@ -1,31 +1,28 @@
 import { Endpoint, PayloadRequest } from 'payload'
-import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
-import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { z } from 'zod'
-import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
+
+import { createTaskList } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
-import { createTaskList } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
+import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
+import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
+import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
 
 const batchCloneBodySchema = z.object({
-  targetOrganisationId: z.number(),
   ids: z.array(z.number().min(1)).min(1, 'At least one ID is required'),
   locale: z.string(),
+  targetOrganisationId: z.number(),
 })
 
 export type TaskListCloneEndpointBodySchema = z.infer<typeof batchCloneBodySchema>
 
 export type TaskListCloneEndpointResult =
-  | {
+  ReturnType<typeof formatValidationErrors> | { error: string } | {
       message: string
       results: GenericCloneStatisticsFinalized
     }
-  | ReturnType<typeof formatValidationErrors>
-  | { error: string }
 
 export const cloneTaskListTransactional: Endpoint = {
-  path: '/clone',
-  method: 'post',
   handler: async (req) => {
     // Step 1: Verify authentication
     requireAuthentication(req)
@@ -40,8 +37,8 @@ export const cloneTaskListTransactional: Endpoint = {
 
       if (!bodyResult.success) {
         req.payload.logger.warn({
-          msg: 'Invalid batch clone request body',
           errors: formatValidationErrors(bodyResult.error),
+          msg: 'Invalid batch clone request body',
           rawBody,
         })
         return Response.json(formatValidationErrors(bodyResult.error), { status: 400 })
@@ -49,13 +46,13 @@ export const cloneTaskListTransactional: Endpoint = {
       validatedBody = bodyResult.data
     } catch (error) {
       req.payload.logger.error({
-        msg: 'Error parsing batch clone request body',
         error: error instanceof Error ? error.message : 'Unknown error',
+        msg: 'Error parsing batch clone request body',
       })
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { targetOrganisationId, ids: taskListIds, locale } = validatedBody
+    const { ids: taskListIds, locale, targetOrganisationId } = validatedBody
 
     const transactionID = await req.payload.db.beginTransaction()
 
@@ -67,10 +64,10 @@ export const cloneTaskListTransactional: Endpoint = {
 
     try {
       req.payload.logger.info({
-        msg: 'Cloning multiple task lists with single transaction',
-        taskListIds,
-        targetOrgId: targetOrganisationId,
         locale,
+        msg: 'Cloning multiple task lists with single transaction',
+        targetOrgId: targetOrganisationId,
+        taskListIds,
         transactionID,
       })
 
@@ -86,11 +83,11 @@ export const cloneTaskListTransactional: Endpoint = {
 
         // Validate access for this specific task list
         const accessValidation = await validateCloneAccess({
+          collectionSlug: 'task-lists',
           req: transactionalReq,
-          user,
           sourceId: taskListId,
           targetOrgId: targetOrganisationId,
-          collectionSlug: 'task-lists',
+          user,
         })
 
         if (!accessValidation.isValid) {
@@ -101,11 +98,11 @@ export const cloneTaskListTransactional: Endpoint = {
 
         // Find the source task list
         const sourceTaskList = await req.payload.findByID({
-          req: transactionalReq,
           collection: 'task-lists',
+          depth: 0,
           id: taskListId,
           locale: locale as any,
-          depth: 0,
+          req: transactionalReq,
         })
 
         // Set source info for current entity
@@ -126,8 +123,8 @@ export const cloneTaskListTransactional: Endpoint = {
         tracker.setCloneInfo(clonedTaskList.id, clonedTaskList.name, 'task-lists')
 
         req.payload.logger.info({
-          msg: 'Cloned successfully',
           clonedId: clonedTaskList.id,
+          msg: 'Cloned successfully',
           sourceId: sourceTaskList.id,
         })
 
@@ -155,10 +152,10 @@ export const cloneTaskListTransactional: Endpoint = {
       await req.payload.db.rollbackTransaction(transactionID)
 
       req.payload.logger.error({
-        msg: 'Failed to clone task lists - transaction rolled back',
         error: error instanceof Error ? error.message : 'Unknown error',
-        taskListIds,
+        msg: 'Failed to clone task lists - transaction rolled back',
         targetOrgId: targetOrganisationId,
+        taskListIds,
         transactionID,
       })
 
@@ -170,4 +167,6 @@ export const cloneTaskListTransactional: Endpoint = {
       )
     }
   },
+  method: 'post',
+  path: '/clone',
 }

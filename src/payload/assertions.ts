@@ -1,3 +1,5 @@
+import { isNumber, isObject, isString } from 'es-toolkit/compat'
+
 import {
   ActivityIOBlock,
   ActivityTaskBlock,
@@ -5,7 +7,6 @@ import {
   TaskFlow,
   TaskList,
 } from '@/payload-types'
-import { isNumber, isObject, isString } from 'es-toolkit/compat'
 
 export const isActivityIOBlock = (block: any): block is ActivityIOBlock => {
   return (

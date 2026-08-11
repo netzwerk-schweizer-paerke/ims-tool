@@ -1,7 +1,8 @@
-import React from 'react'
 import { PublishButton, SaveButton } from '@payloadcms/ui'
-import { SimpleTranslateButton } from './simple-translate-button'
+import React from 'react'
+
 import { TranslationIndicator } from '../indicators/translation-indicator'
+import { SimpleTranslateButton } from './simple-translate-button'
 
 interface Props {
   CustomComponent?: typeof PublishButton | typeof SaveButton

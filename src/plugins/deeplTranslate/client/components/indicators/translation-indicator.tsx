@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
 import { useFormFields, useLocale, useTranslation } from '@payloadcms/ui'
+import React from 'react'
+
 import type { TranslationMeta } from '../../../fields/translation-meta-field'
 
 interface Props {
@@ -12,14 +13,14 @@ const getRelativeTime = (date: string): string => {
   const now = new Date()
   const past = new Date(date)
   const diffMs = now.getTime() - past.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
+  const diffMins = Math.floor(diffMs / 60_000)
+  const diffHours = Math.floor(diffMs / 3_600_000)
+  const diffDays = Math.floor(diffMs / 86_400_000)
 
   if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`
-  if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-  if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+  if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+  if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
 
   return past.toLocaleDateString()
 }
@@ -66,8 +67,8 @@ export const TranslationIndicator: React.FC<Props> = ({ metaFieldName = 'transla
         {t('plugin-deepltranslate:translation_outdated_title' as any)}
       </strong>
       <p className="mb-[var(--spacing-field)] text-[var(--theme-elevation-200)]">
-        {t('plugin-deepltranslate:translation_outdated_description' as any).replace(
-          /\{\{source\}\}/g,
+        {t('plugin-deepltranslate:translation_outdated_description' as any).replaceAll(
+          '{{source}}',
           sourceLocale?.toUpperCase() || '',
         )}
       </p>
@@ -79,12 +80,12 @@ export const TranslationIndicator: React.FC<Props> = ({ metaFieldName = 'transla
           </p>
           <p className="text-[var(--font-size-small)] text-[var(--theme-elevation-400)] opacity-60">
             {new Date(currentTranslation.date).toLocaleString(undefined, {
-              year: 'numeric',
-              month: 'short',
               day: 'numeric',
               hour: '2-digit',
               minute: '2-digit',
+              month: 'short',
               second: '2-digit',
+              year: 'numeric',
             })}
           </p>
           {sourceLastModified && (
@@ -95,12 +96,12 @@ export const TranslationIndicator: React.FC<Props> = ({ metaFieldName = 'transla
               </p>
               <p className="text-[var(--font-size-small)] text-[var(--theme-elevation-400)] opacity-60">
                 {new Date(sourceLastModified).toLocaleString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
                   day: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit',
+                  month: 'short',
                   second: '2-digit',
+                  year: 'numeric',
                 })}
               </p>
             </>

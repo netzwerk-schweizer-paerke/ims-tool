@@ -22,7 +22,7 @@ import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
  * @param {object} params - The access control parameters
  * @returns {boolean} - True if access is granted, false otherwise
  */
-export const organisationAdminFieldAccess: FieldAccess = ({ req: { user }, doc }) => {
+export const organisationAdminFieldAccess: FieldAccess = ({ doc, req: { user } }) => {
   if (checkUserRoles([ROLE_SUPER_ADMIN], user)) {
     return true
   }

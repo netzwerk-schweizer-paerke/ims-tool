@@ -5,17 +5,17 @@ import type { Field } from 'payload'
  * This field stores timestamps for each locale to determine if translations are outdated
  */
 export const translationMetaField = (fieldName: string = 'translationMeta'): Field => ({
-  name: fieldName,
-  type: 'json',
-  admin: {
-    hidden: true, // Always hide from UI
-    readOnly: true,
-    disableBulkEdit: true,
-  },
   access: {
     read: () => true,
     update: () => false, // Only updated programmatically
   },
+  admin: {
+    disableBulkEdit: true,
+    hidden: true, // Always hide from UI
+    readOnly: true,
+  },
+  name: fieldName,
+  type: 'json',
 })
 
 export type TranslationMeta = {
@@ -28,8 +28,8 @@ export type TranslationMeta = {
   // This means FR was translated from DE on that date, and DE has changed since then
   translations?: {
     [targetLocale: string]: {
-      from: string // source locale it was translated from
       date: string // ISO date string when translated
+      from: string // source locale it was translated from
       isOutdated?: boolean // true if source has changed since translation
     }
   }

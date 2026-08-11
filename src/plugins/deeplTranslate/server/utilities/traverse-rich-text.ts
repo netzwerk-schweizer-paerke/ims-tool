@@ -7,7 +7,7 @@ export const traverseRichText = ({
   root: Record<string, unknown>
   siblingData?: Record<string, unknown>
 }) => {
-  siblingData = siblingData ?? root
+  siblingData ??= root
 
   // Handle text nodes - but only if they're actual text nodes
   // Check the type to ensure we're dealing with a text node

@@ -1,8 +1,9 @@
 import Link from 'next/link'
+
 import { Translate } from '@/lib/translate'
 
 type Props = {
-  id: string | number | null
+  id: null | number | string
   locale: string
 }
 

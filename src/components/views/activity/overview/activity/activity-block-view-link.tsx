@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react'
 import Link from 'next/link'
+import { PropsWithChildren } from 'react'
 
 type Props = PropsWithChildren & {
   activityId: number
-  blockId: string | null | undefined
+  blockId: null | string | undefined
 }
 
 export const ActivityBlockViewLink: React.FC<Props> = ({ activityId, blockId, children }) => {

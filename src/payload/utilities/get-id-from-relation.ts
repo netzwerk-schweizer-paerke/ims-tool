@@ -1,6 +1,6 @@
 import { isNumber, isObject } from 'es-toolkit/compat'
 
-export const getIdFromRelation = (record: any): number | null => {
+export const getIdFromRelation = (record: any): null | number => {
   if (isNumber(record)) {
     return record
   }

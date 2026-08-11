@@ -1,44 +1,44 @@
-import { Activity } from '@/payload-types'
-import { activityTaskConnections } from '@/components/graph/fields/graph/activities/task/connection-definitions'
 import { activityIOFieldConnections } from '@/components/graph/fields/graph/activities/io/connection-definitions'
+import { activityTaskConnections } from '@/components/graph/fields/graph/activities/task/connection-definitions'
 import { ActivityTaskCompoundBlock } from '@/components/views/activity/overview/activity/block'
+import { Activity } from '@/payload-types'
 
 export const assignActivityBlockArrows = (activity: Activity) => {
   const categorizedBlocks = {
-    'activity-task': [],
     'activity-io': [],
+    'activity-task': [],
   }
 
-  activity.blocks?.forEach((block) => {
+  for (const block of activity.blocks ?? []) {
     if (block.blockType in categorizedBlocks) {
-      // @ts-ignore
+      // @ts-expect-error - categorizedBlocks has no index signature for blockType
       categorizedBlocks[block.blockType].push(block)
     }
-  })
+  }
 
   const arrowSet: { arrows: any; id: string }[] = []
 
-  Object.entries(categorizedBlocks).forEach(([blockType, blocks]) => {
+  for (const [blockType, blocks] of Object.entries(categorizedBlocks)) {
     const connections =
       blockType === 'activity-task' ? activityTaskConnections : activityIOFieldConnections
 
-    blocks.forEach((block) => {
+    for (const block of blocks) {
       const compoundBlock = block as ActivityTaskCompoundBlock
       const arrows = compoundBlock.graph?.task?.connections
 
-      arrows?.forEach((arrow) => {
+      for (const arrow of arrows ?? []) {
         const definition = connections.find((c) => c.position === arrow.position)?.definitions
         if (!definition) {
-          return
+          continue
         }
-        // @ts-ignore
+        // @ts-expect-error - definition is keyed by arrow.type without an index signature
         const displayArrows = definition[arrow.type]?.flat() || []
         if (displayArrows.length > 0) {
           arrowSet.push({ arrows: displayArrows, id: compoundBlock.id })
         }
-      })
-    })
-  })
+      }
+    }
+  }
 
   return arrowSet.flat()
 }

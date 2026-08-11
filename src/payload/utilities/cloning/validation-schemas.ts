@@ -28,12 +28,12 @@ const isValidObjectId = (value: string): boolean => {
  */
 const sanitizeString = (value: string): string => {
   return value
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
-    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replaceAll(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replaceAll(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
+    .replaceAll(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
+    .replaceAll(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
+    .replaceAll(/javascript:/gi, '') // Remove javascript: protocol
+    .replaceAll(/on\w+\s*=/gi, '') // Remove event handlers
     .trim()
 }
 
@@ -47,7 +47,7 @@ const sanitizeString = (value: string): string => {
  */
 export const idSchema = z
   .union([z.string(), z.number()])
-  .transform((val) => String(val))
+  .transform(String)
   .refine(isValidObjectId, {
     message: 'Invalid ID format. Must be a valid MongoDB ObjectId or numeric ID',
   })
@@ -94,14 +94,14 @@ export const booleanFlagSchema = z
 export const activityCloneParamsSchema = z.object({
   activityId: z
     .union([z.string(), z.number()])
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val > 0, {
+    .transform(Number)
+    .refine((val) => !Number.isNaN(val) && val > 0, {
       message: 'activityId must be a positive number',
     }),
   organisationId: z
     .union([z.string(), z.number()])
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val > 0, {
+    .transform(Number)
+    .refine((val) => !Number.isNaN(val) && val > 0, {
       message: 'organisationId must be a positive number',
     }),
 })
@@ -118,18 +118,18 @@ export const activityCloneQuerySchema = z.object({
  */
 export const activityCloneBodySchema = z.object({
   name: nameSchema,
-  targetProjectId: optionalIdSchema,
-  targetPhaseId: optionalIdSchema,
   targetModuleId: optionalIdSchema,
+  targetPhaseId: optionalIdSchema,
+  targetProjectId: optionalIdSchema,
 })
 
 /**
  * Complete request schema for activity cloning
  */
 export const activityCloneRequestSchema = z.object({
+  body: activityCloneBodySchema.optional(),
   params: activityCloneParamsSchema,
   query: activityCloneQuerySchema.optional(),
-  body: activityCloneBodySchema.optional(),
 })
 
 // ============================================================================
@@ -140,11 +140,11 @@ export const activityCloneRequestSchema = z.object({
  * Request body for task flow cloning endpoint
  */
 export const taskFlowCloneBodySchema = z.object({
-  targetOrganisationId: idSchema,
   name: nameSchema,
-  targetProjectId: optionalIdSchema,
-  targetPhaseId: optionalIdSchema,
   targetModuleId: optionalIdSchema,
+  targetOrganisationId: idSchema,
+  targetPhaseId: optionalIdSchema,
+  targetProjectId: optionalIdSchema,
 })
 
 /**
@@ -158,8 +158,8 @@ export const taskFlowCloneParamsSchema = z.object({
  * Complete request schema for task flow cloning
  */
 export const taskFlowCloneRequestSchema = z.object({
-  params: taskFlowCloneParamsSchema,
   body: taskFlowCloneBodySchema,
+  params: taskFlowCloneParamsSchema,
 })
 
 // ============================================================================
@@ -170,11 +170,11 @@ export const taskFlowCloneRequestSchema = z.object({
  * Request body for task list cloning endpoint
  */
 export const taskListCloneBodySchema = z.object({
-  targetOrganisationId: idSchema,
   name: nameSchema,
-  targetProjectId: optionalIdSchema,
-  targetPhaseId: optionalIdSchema,
   targetModuleId: optionalIdSchema,
+  targetOrganisationId: idSchema,
+  targetPhaseId: optionalIdSchema,
+  targetProjectId: optionalIdSchema,
 })
 
 /**
@@ -188,18 +188,18 @@ export const taskListCloneParamsSchema = z.object({
  * Complete request schema for task list cloning
  */
 export const taskListCloneRequestSchema = z.object({
-  params: taskListCloneParamsSchema,
   body: taskListCloneBodySchema,
+  params: taskListCloneParamsSchema,
 })
 
 // ============================================================================
 // Type Exports
 // ============================================================================
 
+export type ActivityCloneBody = z.infer<typeof activityCloneBodySchema>
 // Inferred TypeScript types from Zod schemas
 export type ActivityCloneParams = z.infer<typeof activityCloneParamsSchema>
 export type ActivityCloneQuery = z.infer<typeof activityCloneQuerySchema>
-export type ActivityCloneBody = z.infer<typeof activityCloneBodySchema>
 export type ActivityCloneRequest = z.infer<typeof activityCloneRequestSchema>
 
 export type TaskFlowCloneBody = z.infer<typeof taskFlowCloneBodySchema>
@@ -221,12 +221,12 @@ export type TaskListCloneRequest = z.infer<typeof taskListCloneRequestSchema>
  */
 export function formatValidationErrors(error: z.ZodError<any>) {
   return {
-    message: 'Validation failed',
     errors: error.issues.map((issue) => ({
+      code: issue.code,
       field: issue.path.join('.'),
       message: issue.message,
-      code: issue.code,
     })),
+    message: 'Validation failed',
   }
 }
 
@@ -244,20 +244,20 @@ export function validateRequest<T>(
   schema: z.ZodSchema<T>,
   data: unknown,
 ):
-  | { success: true; data: T }
-  | { success: false; error: ReturnType<typeof formatValidationErrors> } {
+  | { data: T; success: true; }
+  | { error: ReturnType<typeof formatValidationErrors>; success: false; } {
   const result = schema.safeParse(data)
 
   if (!result.success) {
     return {
-      success: false,
       error: formatValidationErrors(result.error),
+      success: false,
     }
   }
 
   return {
-    success: true,
     data: result.data,
+    success: true,
   }
 }
 

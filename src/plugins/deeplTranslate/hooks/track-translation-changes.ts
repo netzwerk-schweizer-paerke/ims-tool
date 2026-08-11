@@ -1,6 +1,8 @@
 import type { CollectionBeforeChangeHook, GlobalBeforeChangeHook } from 'payload'
-import type { TranslationMeta } from '../fields/translation-meta-field'
+
 import { getDefaultLocaleCode } from '@/lib/locale-utils'
+
+import type { TranslationMeta } from '../fields/translation-meta-field'
 
 /**
  * Check if any localized fields have changed
@@ -39,8 +41,8 @@ function checkForLocalizedFieldChanges(
     }
 
     console.log(`[Translation Tracking] Comparing field ${fieldName}:`, {
-      original: originalValue,
       new: newValue,
+      original: originalValue,
     })
 
     // Compare values
@@ -59,12 +61,14 @@ function checkForLocalizedFieldChanges(
 function hasLocaleContent(data: Record<string, any>, locale: string): boolean {
   // Check if any localized field has content for this locale
   for (const key in data) {
-    if (key.endsWith(`.${locale}`) || key === locale) {
-      const value = data[key]
-      // Check if the value is not null, undefined, or empty string
-      if (value !== null && value !== undefined && value !== '') {
-        return true
-      }
+    if (!(key.endsWith(`.${locale}`) || key === locale)) {
+    	continue;
+    }
+
+    const value = data[key]
+    // Check if the value is not null, undefined, or empty string
+    if (value !== null && value !== undefined && value !== '') {
+      return true
     }
   }
   return false
@@ -76,7 +80,7 @@ function hasLocaleContent(data: Record<string, any>, locale: string): boolean {
 export const createTrackTranslationChangesHookForCollection = (
   metaFieldName: string,
 ): CollectionBeforeChangeHook => {
-  return async ({ data, req, originalDoc, operation }) => {
+  return async ({ data, operation, originalDoc, req }) => {
     // Only track on updates, not creates
     if (operation !== 'update' || !originalDoc) {
       return data
@@ -95,7 +99,7 @@ export const createTrackTranslationChangesHookForCollection = (
     }
 
     // Create a deep copy to avoid mutating the original
-    translationMeta = JSON.parse(JSON.stringify(translationMeta))
+    translationMeta = structuredClone(translationMeta)
 
     // Ensure structure exists
     if (!translationMeta.lastModified) {
@@ -113,13 +117,12 @@ export const createTrackTranslationChangesHookForCollection = (
       translationMeta.lastModified[locale] = now
 
       // Mark any translations that were derived from this locale as outdated
-      Object.keys(translationMeta.translations).forEach((targetLocale) => {
-        const translation = translationMeta.translations![targetLocale]
+      for (const translation of Object.values(translationMeta.translations)) {
         if (translation.from === locale) {
           // This translation was derived from the locale that just changed
           translation.isOutdated = true
         }
-      })
+      }
     }
 
     return {
@@ -135,7 +138,7 @@ export const createTrackTranslationChangesHookForCollection = (
 export const createTrackTranslationChangesHookForGlobal = (
   metaFieldName: string,
 ): GlobalBeforeChangeHook => {
-  return async ({ data, req, originalDoc }) => {
+  return async ({ data, originalDoc, req }) => {
     // For globals, there's no operation parameter
     if (!originalDoc) {
       return data
@@ -154,7 +157,7 @@ export const createTrackTranslationChangesHookForGlobal = (
     }
 
     // Create a deep copy to avoid mutating the original
-    translationMeta = JSON.parse(JSON.stringify(translationMeta))
+    translationMeta = structuredClone(translationMeta)
 
     // Ensure structure exists
     if (!translationMeta.lastModified) {
@@ -172,13 +175,12 @@ export const createTrackTranslationChangesHookForGlobal = (
       translationMeta.lastModified[locale] = now
 
       // Mark any translations that were derived from this locale as outdated
-      Object.keys(translationMeta.translations).forEach((targetLocale) => {
-        const translation = translationMeta.translations![targetLocale]
+      for (const translation of Object.values(translationMeta.translations)) {
         if (translation.from === locale) {
           // This translation was derived from the locale that just changed
           translation.isOutdated = true
         }
-      })
+      }
     }
 
     return {
@@ -194,7 +196,7 @@ export const createTrackTranslationChangesHookForGlobal = (
 export const createClearOutdatedHookForCollection = (
   metaFieldName: string,
 ): CollectionBeforeChangeHook => {
-  return async ({ data, req, context }) => {
+  return async ({ context, data, req }) => {
     // Check if this update is from a translation operation
     if (context?.isTranslation) {
       const locale = req.locale
@@ -207,7 +209,7 @@ export const createClearOutdatedHookForCollection = (
             ? (req.body as Record<string, any>)
             : {}
         const existingMeta = data[metaFieldName] || bodyData[metaFieldName] || {}
-        const translationMeta: TranslationMeta = JSON.parse(JSON.stringify(existingMeta))
+        const translationMeta: TranslationMeta = structuredClone(existingMeta)
 
         // Ensure structure exists
         if (!translationMeta.translations) {
@@ -216,8 +218,8 @@ export const createClearOutdatedHookForCollection = (
 
         // Update translation relationship
         translationMeta.translations[locale] = {
-          from: fromLocale as string,
           date: new Date().toISOString(),
+          from: fromLocale as string,
           isOutdated: false, // Mark as up-to-date since we just translated
         }
 
@@ -239,7 +241,7 @@ export const createClearOutdatedHookForCollection = (
  * Hook to update translation metadata after translation (for globals)
  */
 export const createClearOutdatedHookForGlobal = (metaFieldName: string): GlobalBeforeChangeHook => {
-  return async ({ data, req, context }) => {
+  return async ({ context, data, req }) => {
     // Check if this update is from a translation operation
     if (context?.isTranslation) {
       const locale = req.locale
@@ -252,7 +254,7 @@ export const createClearOutdatedHookForGlobal = (metaFieldName: string): GlobalB
             ? (req.body as Record<string, any>)
             : {}
         const existingMeta = data[metaFieldName] || bodyData[metaFieldName] || {}
-        const translationMeta: TranslationMeta = JSON.parse(JSON.stringify(existingMeta))
+        const translationMeta: TranslationMeta = structuredClone(existingMeta)
 
         // Ensure structure exists
         if (!translationMeta.translations) {
@@ -261,8 +263,8 @@ export const createClearOutdatedHookForGlobal = (metaFieldName: string): GlobalB
 
         // Update translation relationship
         translationMeta.translations[locale] = {
-          from: fromLocale as string,
           date: new Date().toISOString(),
+          from: fromLocale as string,
           isOutdated: false, // Mark as up-to-date since we just translated
         }
 

@@ -1,22 +1,23 @@
 'use client'
-import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
-import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
+import { useField } from '@payloadcms/ui'
+import { JSONFieldClientComponent } from 'payload'
+import { useCallback, useEffect, useMemo } from 'react'
+
 import {
   ButtonBottomCenter,
   ButtonCenterRight,
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
-import { activityIOFieldConnections } from './connection-definitions'
 import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
-import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
-import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
-
-import '@/components/graph/fields/graph/lib/arrow-styles.css'
-import { Xwrapper } from '@/lib/xarrows/src'
-import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect, useMemo } from 'react'
-import { useField } from '@payloadcms/ui'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
+import '@/components/graph/fields/graph/lib/arrow-styles.css'
+import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
+import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
+import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
+import { Xwrapper } from '@/lib/xarrows/src'
+
+import { activityIOFieldConnections } from './connection-definitions'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -43,9 +44,9 @@ const initialState: ComponentState = {
 
 export const ActivityIOField: JSONFieldClientComponent = (props) => {
   const {
+    field: { required },
     path,
     validate,
-    field: { required },
   } = props
 
   // Memoize validate function
@@ -59,10 +60,10 @@ export const ActivityIOField: JSONFieldClientComponent = (props) => {
     [validate, required],
   )
 
-  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
 
   // Use the centralized text field hook instead of local implementation
-  const { localText, handleTextChange } = useTextField(value, setValue)
+  const { handleTextChange, localText } = useTextField(value, setValue)
 
   // Initialize state once
   useEffect(() => {
@@ -72,10 +73,10 @@ export const ActivityIOField: JSONFieldClientComponent = (props) => {
   }, [setValue, value])
 
   // Memoize arrow hook to prevent recreation
-  const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state: value,
-    setState: setValue,
+  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
     connections: activityIOFieldConnections,
+    setState: setValue,
+    state: value,
   })
 
   // Memoize button click handlers

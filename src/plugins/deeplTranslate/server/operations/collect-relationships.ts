@@ -3,36 +3,17 @@
  * This replaces the translateRelationships function with a simpler collection approach
  */
 
-import { relationshipCollector } from '../collectors/relationship-collector'
 import { isArray, isObject } from 'es-toolkit/compat'
 
-// Helper function to extract ID from polymorphic relationships
-function extractIdFromPolymorphicRelation(relation: any): string | number | null {
-  // Handle polymorphic relationships: { relationTo: "collection", value: { id: 123, ... } }
-  if (relation && typeof relation === 'object' && 'relationTo' in relation && 'value' in relation) {
-    const value = relation.value
-    if (value && typeof value === 'object' && 'id' in value) {
-      return value.id as string | number
-    }
-  }
-  // Handle regular populated relationships: { id: 123, ... }
-  if (relation && typeof relation === 'object' && 'id' in relation) {
-    return relation.id as string | number
-  }
-  // Handle simple ID references
-  if (typeof relation === 'string' || typeof relation === 'number') {
-    return relation
-  }
-  return null
-}
+import { relationshipCollector } from '../collectors/relationship-collector'
 
 export async function collectRelationships(args: {
+  depth: number
   doc: Record<string, any>
   fields: any[]
-  depth: number
   path?: string
 }): Promise<void> {
-  const { doc, fields, depth, path = 'root' } = args
+  const { depth, doc, fields, path = 'root' } = args
 
   if (depth <= 0) {
     return
@@ -73,9 +54,9 @@ export async function collectRelationships(args: {
     // Handle nested fields in groups
     if (field.type === 'group' && field.fields && doc[field.name]) {
       await collectRelationships({
+        depth,
         doc: doc[field.name],
         fields: field.fields,
-        depth,
         path: fieldPath,
       })
     }
@@ -83,9 +64,9 @@ export async function collectRelationships(args: {
     // Handle row fields - these contain nested fields
     if (field.type === 'row' && field.fields) {
       await collectRelationships({
+        depth,
         doc: doc,
         fields: field.fields,
-        depth,
         path: fieldPath,
       })
     }
@@ -95,9 +76,9 @@ export async function collectRelationships(args: {
       for (const tab of field.tabs) {
         if (tab.fields && doc[tab.name]) {
           await collectRelationships({
+            depth,
             doc: doc[tab.name],
             fields: tab.fields,
-            depth,
             path: `${fieldPath}.${tab.name}`,
           })
         }
@@ -116,9 +97,9 @@ export async function collectRelationships(args: {
           const blockDef = field.blocks.find((b: any) => b.slug === block.blockType)
           if (blockDef && blockDef.fields) {
             await collectRelationships({
+              depth,
               doc: block,
               fields: blockDef.fields,
-              depth,
               path: `${fieldPath}[${i}].${block.blockType}`,
             })
           }
@@ -134,13 +115,33 @@ export async function collectRelationships(args: {
           const item = arrayItems[i]
           if (!item) continue
           await collectRelationships({
+            depth,
             doc: item,
             fields: field.fields,
-            depth,
             path: `${fieldPath}[${i}]`,
           })
         }
       }
     }
   }
+}
+
+// Helper function to extract ID from polymorphic relationships
+function extractIdFromPolymorphicRelation(relation: any): null | number | string {
+  // Handle polymorphic relationships: { relationTo: "collection", value: { id: 123, ... } }
+  if (relation && typeof relation === 'object' && 'relationTo' in relation && 'value' in relation) {
+    const value = relation.value
+    if (value && typeof value === 'object' && 'id' in value) {
+      return value.id as number | string
+    }
+  }
+  // Handle regular populated relationships: { id: 123, ... }
+  if (relation && typeof relation === 'object' && 'id' in relation) {
+    return relation.id as number | string
+  }
+  // Handle simple ID references
+  if (typeof relation === 'string' || typeof relation === 'number') {
+    return relation
+  }
+  return null
 }

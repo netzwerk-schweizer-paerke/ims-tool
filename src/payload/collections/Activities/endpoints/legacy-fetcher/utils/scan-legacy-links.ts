@@ -1,12 +1,12 @@
 import type { PayloadRequest } from 'payload'
 
 export interface LegacyLink {
-  url: string
-  fieldPath: string[]
   context: any
-  parentEntity: string // Human-readable parent entity (e.g., "Task Group #1")
   fieldLabel: string // Human-readable field name (e.g., "Input")
+  fieldPath: string[]
   locationPath: string // Full path context (e.g., "Introduction block > Input field")
+  parentEntity: string // Human-readable parent entity (e.g., "Task Group #1")
+  url: string
 }
 
 /**
@@ -29,23 +29,23 @@ export async function scanLegacyLinks(
   if (Array.isArray(data)) {
     for (let i = 0; i < data.length; i++) {
       // Special handling for blocks array
-      if (fieldPath[fieldPath.length - 1] === 'blocks' && data[i]?.blockType) {
+      let itemLinks
+      if (fieldPath.at(-1) === 'blocks' && data[i]?.blockType) {
         const blockLabel = getBlockLabel(data[i].blockType, i)
-        const itemLinks = await scanLegacyLinks(data[i], tracker, req, [...fieldPath, String(i)], {
+        itemLinks = await scanLegacyLinks(data[i], tracker, req, [...fieldPath, String(i)], {
           entity: blockLabel,
           label: blockLabel,
         })
-        legacyLinks.push(...itemLinks)
       } else {
-        const itemLinks = await scanLegacyLinks(
+        itemLinks = await scanLegacyLinks(
           data[i],
           tracker,
           req,
           [...fieldPath, String(i)],
           parentContext,
         )
-        legacyLinks.push(...itemLinks)
       }
+      legacyLinks.push(...itemLinks)
     }
     return legacyLinks
   }
@@ -75,7 +75,7 @@ export async function scanLegacyLinks(
 
     // Update context for nested tabs
     let newContext = parentContext
-    if (key === 'io' || key === 'infos' || key === 'relations') {
+    if (['infos', 'io', 'relations'].includes(key)) {
       // We're entering a tab section, but keep parent entity
       newContext = { ...parentContext }
     }
@@ -111,92 +111,10 @@ export const EXCLUDED_EXTENSIONS = [
 ]
 
 /**
- * Check if a URL is a legacy document URL based on domain and file extension
+ * Get unique legacy URLs from a list of links
  */
-function isLegacyDocumentUrl(url: string): boolean {
-  try {
-    const urlObj = new URL(url)
-
-    // Check if hostname matches any of the legacy domains
-    const isLegacyDomain = LEGACY_DOMAINS.some((domain) => urlObj.hostname.includes(domain))
-
-    if (!isLegacyDomain) {
-      return false
-    }
-
-    const pathname = decodeURIComponent(urlObj.pathname).toLowerCase()
-
-    // Check if URL has NO file extension (directory or dynamic page)
-    const lastSegment = pathname.split('/').pop() || ''
-    if (!lastSegment.includes('.')) {
-      return false
-    }
-
-    // Check if the extension is in the excluded list
-    const isExcluded = EXCLUDED_EXTENSIONS.some((ext) => pathname.endsWith(ext))
-    if (isExcluded) {
-      return false
-    }
-
-    // If it has an extension and it's not excluded, it's a document
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Check if a field appears to be a rich text field
- */
-function isRichTextField(data: any): boolean {
-  // Rich text fields typically have a root property with children
-  return (
-    (data?.root?.type === 'root' && Array.isArray(data.root.children)) ||
-    // Or they might be an array of content blocks
-    (Array.isArray(data) && data.length > 0 && data.some((item) => item?.type && item?.children))
-  )
-}
-
-/**
- * Get human-readable block label
- */
-function getBlockLabel(blockType: string, index: number): string {
-  const blockLabels: Record<string, string> = {
-    'activity-task': 'Task Group',
-    'activity-io': 'Input/Output Task Group',
-  }
-  const label = blockLabels[blockType] || 'Block'
-  return `${label} #${index + 1}`
-}
-
-/**
- * Get human-readable field label from field path
- */
-function getFieldLabel(fieldPath: string[]): string {
-  const fieldLabels: Record<string, string> = {
-    description: 'Description',
-    input: 'Input',
-    output: 'Output',
-    norms: 'Norm Requirements',
-    support: 'Infos / Support',
-    content: 'Content',
-    text: 'Text',
-    tools: 'Tools',
-    keypoints: 'Key Points',
-    topic: 'Topics / Activities',
-  }
-
-  // Get the last meaningful field name from the path
-  for (let i = fieldPath.length - 1; i >= 0; i--) {
-    const segment = fieldPath[i]
-    if (fieldLabels[segment]) {
-      return fieldLabels[segment]
-    }
-  }
-
-  // Default to the last non-numeric segment
-  const lastField = fieldPath.filter((p) => isNaN(Number(p))).pop()
-  return fieldLabels[lastField || ''] || lastField || 'Field'
+export function getUniqueUrls(links: LegacyLink[]): string[] {
+  return Array.from(new Set(links.map((link) => link.url)))
 }
 
 /**
@@ -234,29 +152,29 @@ function extractLegacyLinksFromRichText(
       // Check if it's a custom link to parcs-ims.ch with a file extension
       if (linkType === 'custom' && url && typeof url === 'string' && isLegacyDocumentUrl(url)) {
         links.push({
-          url,
-          fieldPath: [...fieldPath, ...nodePath],
           context: node,
-          parentEntity,
           fieldLabel,
+          fieldPath: [...fieldPath, ...nodePath],
           locationPath: buildLocationPath(parentEntity, fieldLabel),
+          parentEntity,
+          url,
         })
       }
     }
 
     // Handle array of nodes
     if (Array.isArray(node)) {
-      node.forEach((item, index) => {
+      for (const [index, item] of node.entries()) {
         traverseNode(item, [...nodePath, String(index)])
-      })
+      }
       return
     }
 
     // Traverse children
     if (node.children && Array.isArray(node.children)) {
-      node.children.forEach((child: any, index: number) => {
+      for (const [index, child] of (node.children as any[]).entries()) {
         traverseNode(child, [...nodePath, 'children', String(index)])
-      })
+      }
     }
 
     // Check for nested content in various formats
@@ -290,8 +208,85 @@ function extractLegacyLinksFromRichText(
 }
 
 /**
- * Get unique legacy URLs from a list of links
+ * Get human-readable block label
  */
-export function getUniqueUrls(links: LegacyLink[]): string[] {
-  return Array.from(new Set(links.map((link) => link.url)))
+function getBlockLabel(blockType: string, index: number): string {
+  const blockLabels: Record<string, string> = {
+    'activity-io': 'Input/Output Task Group',
+    'activity-task': 'Task Group',
+  }
+  const label = blockLabels[blockType] || 'Block'
+  return `${label} #${index + 1}`
+}
+
+/**
+ * Get human-readable field label from field path
+ */
+function getFieldLabel(fieldPath: string[]): string {
+  const fieldLabels: Record<string, string> = {
+    content: 'Content',
+    description: 'Description',
+    input: 'Input',
+    keypoints: 'Key Points',
+    norms: 'Norm Requirements',
+    output: 'Output',
+    support: 'Infos / Support',
+    text: 'Text',
+    tools: 'Tools',
+    topic: 'Topics / Activities',
+  }
+
+  // Get the last meaningful field name from the path
+  for (let i = fieldPath.length - 1; i >= 0; i--) {
+    const segment = fieldPath[i]
+    if (fieldLabels[segment]) {
+      return fieldLabels[segment]
+    }
+  }
+
+  // Default to the last non-numeric segment
+  const lastField = fieldPath.findLast((p) => Number.isNaN(Number(p)))
+  return fieldLabels[lastField || ''] || lastField || 'Field'
+}
+
+/**
+ * Check if a URL is a legacy document URL based on domain and file extension
+ */
+function isLegacyDocumentUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url)
+
+    // Check if hostname matches any of the legacy domains
+    const isLegacyDomain = LEGACY_DOMAINS.some((domain) => urlObj.hostname.includes(domain))
+
+    if (!isLegacyDomain) {
+      return false
+    }
+
+    const pathname = decodeURIComponent(urlObj.pathname).toLowerCase()
+
+    // Check if URL has NO file extension (directory or dynamic page)
+    const lastSegment = pathname.split('/').pop() || ''
+    if (!lastSegment.includes('.')) {
+      return false
+    }
+
+    // If it has an extension and it's not excluded, it's a document
+    const isExcluded = EXCLUDED_EXTENSIONS.some((ext) => pathname.endsWith(ext))
+    return !isExcluded
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Check if a field appears to be a rich text field
+ */
+function isRichTextField(data: any): boolean {
+  // Rich text fields typically have a root property with children
+  return (
+    (data?.root?.type === 'root' && Array.isArray(data.root.children)) ||
+    // Or they might be an array of content blocks
+    (Array.isArray(data) && data.some((item) => item?.type && item.children))
+  )
 }

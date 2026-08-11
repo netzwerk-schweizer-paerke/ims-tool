@@ -1,16 +1,16 @@
+import { BlockTaskIo } from '@/components/views/flow/lib/block-task-io'
+import { BlockTaskParallel } from '@/components/views/flow/lib/block-task-parallel'
+import { BlockTestOutput } from '@/components/views/flow/lib/block-test-output'
 import {
   ProcessTaskIOBlock,
   ProcessTaskParallelBlock,
   ProcessTestOutputBlock,
 } from '@/payload-types'
-import { BlockTaskIo } from '@/components/views/flow/lib/block-task-io'
-import { BlockTestOutput } from '@/components/views/flow/lib/block-test-output'
-import { BlockTaskParallel } from '@/components/views/flow/lib/block-task-parallel'
 
 export type ProcessTaskCompoundBlock =
   | ProcessTaskIOBlock
-  | ProcessTestOutputBlock
   | ProcessTaskParallelBlock
+  | ProcessTestOutputBlock
 
 type Props = {
   block?: ProcessTaskCompoundBlock

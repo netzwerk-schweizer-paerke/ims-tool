@@ -1,14 +1,14 @@
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
-import { TaskFlow } from '@/payload-types'
 import { FlowBlockViewLink } from '@/components/views/activity/view/flow-block-view-link'
+import { TaskFlow } from '@/payload-types'
 
 type Props = {
-  flow: TaskFlow | number
+  flow: number | TaskFlow
 }
 
 export const FlowBlock: React.FC<Props> = ({ flow }) => {
   if (typeof flow === 'number') {
-    throw new Error('FlowBlock flow prop should be a TaskFlow object')
+    throw new TypeError('FlowBlock flow prop should be a TaskFlow object')
   }
   const blockText = flow.name
   return (

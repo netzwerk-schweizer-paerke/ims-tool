@@ -1,6 +1,7 @@
 'use client'
-import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
 import { Translate } from '@/lib/translate'
 
 export const ActivityLandscapeLink: React.FC = () => {

@@ -1,14 +1,17 @@
 import { CollectionBeforeChangeHook } from 'payload'
+
 import { logger } from '@/lib/logger'
 
 export const setOwnerBeforeChangeCreate: CollectionBeforeChangeHook = async ({
   data,
-  req,
   operation,
+  req,
 }) => {
-  if (operation === 'create' && req?.user) {
-    logger.info('req.user', req.user)
-    data.createdBy = req.user.id
-    return data
+  if (!(operation === 'create' && req?.user)) {
+  	return;
   }
+
+  logger.info('req.user', req.user)
+  data.createdBy = req.user.id
+  return data
 }

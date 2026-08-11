@@ -1,22 +1,25 @@
 import { CollectionConfig } from 'payload'
-import { I18nCollection } from '@/lib/i18n-collection'
+
 import { isProduction } from '@/lib/environment'
+import { I18nCollection } from '@/lib/i18n-collection'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
-import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
-import { adminSettingsField } from '@/payload/fields/admin-settings'
-import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
-import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
-import { filesArrayField } from '@/payload/fields/files-array'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
+import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
+import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone/clone-activity-transactional'
 import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
+import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { filesArrayField } from '@/payload/fields/files-array'
+import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 
 export const Activities: CollectionConfig = {
-  slug: 'activities',
+  access: {
+    create: currentOrganisationCollectionWriteAccess,
+    delete: currentOrganisationCollectionWriteAccess,
+    read: currentOrganisationCollectionReadAccess,
+    update: currentOrganisationCollectionWriteAccess,
+  },
   admin: {
-    group: I18nCollection.collectionGroup.process,
-    hideAPIURL: isProduction,
-    useAsTitle: 'name',
     components: {
       beforeListTable: [
         {
@@ -24,37 +27,29 @@ export const Activities: CollectionConfig = {
         },
       ],
     },
+    group: I18nCollection.collectionGroup.process,
+    hideAPIURL: isProduction,
+    useAsTitle: 'name',
   },
-  labels: {
-    plural: I18nCollection.fieldLabel.activities,
-    singular: I18nCollection.fieldLabel.activity,
-  },
-  access: {
-    read: currentOrganisationCollectionReadAccess,
-    create: currentOrganisationCollectionWriteAccess,
-    update: currentOrganisationCollectionWriteAccess,
-    delete: currentOrganisationCollectionWriteAccess,
-  },
+  endpoints: [cloneActivityTransactional, fetchLegacyDocsTransactional],
   fields: [
     {
-      name: 'name',
       label: I18nCollection.fieldLabel.name,
+      localized: true,
+      name: 'name',
+      required: true,
       type: 'text',
-      localized: true,
-      required: true,
     },
     {
-      name: 'description',
-      label: I18nCollection.fieldLabel.description,
-      type: 'richText',
-      localized: true,
       editor: lexicalEditorReducedFeatures,
+      label: I18nCollection.fieldLabel.description,
+      localized: true,
+      name: 'description',
+      type: 'richText',
     },
     {
-      name: 'variant',
       label: I18nCollection.fieldLabel.variant,
-      type: 'select',
-      required: true,
+      name: 'variant',
       options: [
         {
           label: I18nCollection.fieldLabel.standard,
@@ -69,6 +64,8 @@ export const Activities: CollectionConfig = {
           value: 'strategyActivity',
         },
       ],
+      required: true,
+      type: 'select',
     },
     // This is temporary until payload-enchants/docs_reorder is updated
     {
@@ -77,14 +74,18 @@ export const Activities: CollectionConfig = {
       type: 'number',
     },
     {
-      name: 'blocks',
-      label: I18nCollection.fieldLabel.blocks,
-      type: 'blocks',
-      localized: true,
       blocks: [ActivityIOBlock, ActivityTaskBlock],
+      label: I18nCollection.fieldLabel.blocks,
+      localized: true,
+      name: 'blocks',
+      type: 'blocks',
     },
     filesArrayField,
     adminSettingsField(),
   ],
-  endpoints: [cloneActivityTransactional, fetchLegacyDocsTransactional],
+  labels: {
+    plural: I18nCollection.fieldLabel.activities,
+    singular: I18nCollection.fieldLabel.activity,
+  },
+  slug: 'activities',
 }

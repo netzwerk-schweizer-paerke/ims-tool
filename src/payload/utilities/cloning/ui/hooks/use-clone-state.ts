@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { GenericCloneStatisticsFinalized } from '../../types'
 import { CloneStatus, UseCloneStateResult } from './types'
 
@@ -8,7 +9,7 @@ import { CloneStatus, UseCloneStateResult } from './types'
 export function useCloneState(): UseCloneStateResult {
   const [cloning, setCloning] = useState(false)
   const [status, setStatus] = useState<CloneStatus>('')
-  const [targetOrgId, setTargetOrgId] = useState<number | null>(null)
+  const [targetOrgId, setTargetOrgId] = useState<null | number>(null)
   const [targetOrgName, setTargetOrgName] = useState<string>('')
   const [cloneResults, setCloneResults] = useState<GenericCloneStatisticsFinalized | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
@@ -23,18 +24,18 @@ export function useCloneState(): UseCloneStateResult {
   }
 
   return {
-    cloning,
-    status,
-    targetOrgId,
-    targetOrgName,
     cloneResults,
+    cloning,
     errorMessage,
+    resetState,
+    setCloneResults,
     setCloning,
+    setErrorMessage,
     setStatus,
     setTargetOrgId,
     setTargetOrgName,
-    setCloneResults,
-    setErrorMessage,
-    resetState,
+    status,
+    targetOrgId,
+    targetOrgName,
   }
 }

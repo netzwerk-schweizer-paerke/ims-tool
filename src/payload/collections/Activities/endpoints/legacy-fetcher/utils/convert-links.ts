@@ -10,12 +10,50 @@ export async function convertLinks(
   req: PayloadRequest,
 ): Promise<any> {
   // Deep clone the activity data to avoid mutations
-  const updatedData = JSON.parse(JSON.stringify(activityData))
+  const updatedData = structuredClone(activityData)
 
   // Recursively process the data
   convertLinksInObject(updatedData, documentMap, tracker)
 
   return updatedData
+}
+
+/**
+ * Create a summary of the conversion process
+ */
+export function createConversionSummary(
+  documentMap: Map<string, number>,
+  tracker: any,
+): {
+  failedMappings: number
+  mappingDetails: Array<{ documentId: null | number; url: string; }>
+  successfulMappings: number
+  totalUrls: number
+} {
+  const stats = tracker.getStatistics()
+  const mappingDetails = Array.from(documentMap).map(([url, docId]) => ({
+    documentId: docId,
+    url,
+  }))
+
+  // Add failed URLs to the mapping details
+  if (stats && stats.errors && Array.isArray(stats.errors)) {
+    const failedUrls = stats.errors.map((e: any) => e.url as string)
+    const uniqueFailedUrls = Array.from(new Set(failedUrls))
+
+    for (const url of uniqueFailedUrls) {
+      if (typeof url === 'string' && !documentMap.has(url)) {
+        mappingDetails.push({ documentId: null as any, url: url })
+      }
+    }
+  }
+
+  return {
+    failedMappings: mappingDetails.length - documentMap.size,
+    mappingDetails,
+    successfulMappings: documentMap.size,
+    totalUrls: mappingDetails.length,
+  }
 }
 
 /**
@@ -28,7 +66,9 @@ function convertLinksInObject(data: any, documentMap: Map<string, number>, track
 
   // Handle arrays
   if (Array.isArray(data)) {
-    data.forEach((item) => convertLinksInObject(item, documentMap, tracker))
+    for (const item of data) {
+      convertLinksInObject(item, documentMap, tracker)
+    }
     return
   }
 
@@ -44,16 +84,6 @@ function convertLinksInObject(data: any, documentMap: Map<string, number>, track
     }
     convertLinksInObject(value, documentMap, tracker)
   }
-}
-
-/**
- * Check if a field appears to be a rich text field
- */
-function isRichTextField(data: any): boolean {
-  return (
-    (data?.root?.type === 'root' && Array.isArray(data.root.children)) ||
-    (Array.isArray(data) && data.length > 0 && data.some((item) => item?.type && item?.children))
-  )
 }
 
 /**
@@ -81,11 +111,11 @@ function convertLinksInRichText(
         // Convert to internal link
         node.fields = {
           ...node.fields,
-          linkType: 'internal',
           doc: {
             relationTo: 'documents',
             value: documentId,
           },
+          linkType: 'internal',
         }
 
         // Remove the URL field as it's no longer needed
@@ -97,13 +127,17 @@ function convertLinksInRichText(
 
     // Handle array of nodes
     if (Array.isArray(node)) {
-      node.forEach(traverseAndConvert)
+      for (const child of node) {
+        traverseAndConvert(child)
+      }
       return
     }
 
     // Traverse children
     if (node.children && Array.isArray(node.children)) {
-      node.children.forEach(traverseAndConvert)
+      for (const child of node.children) {
+        traverseAndConvert(child)
+      }
     }
 
     // Check root
@@ -136,39 +170,11 @@ function convertLinksInRichText(
 }
 
 /**
- * Create a summary of the conversion process
+ * Check if a field appears to be a rich text field
  */
-export function createConversionSummary(
-  documentMap: Map<string, number>,
-  tracker: any,
-): {
-  totalUrls: number
-  successfulMappings: number
-  failedMappings: number
-  mappingDetails: Array<{ url: string; documentId: number | null }>
-} {
-  const stats = tracker.getStatistics()
-  const mappingDetails = Array.from(documentMap.entries()).map(([url, docId]) => ({
-    url,
-    documentId: docId,
-  }))
-
-  // Add failed URLs to the mapping details
-  if (stats && stats.errors && Array.isArray(stats.errors)) {
-    const failedUrls = stats.errors.map((e: any) => e.url as string)
-    const uniqueFailedUrls = Array.from(new Set(failedUrls))
-
-    uniqueFailedUrls.forEach((url) => {
-      if (typeof url === 'string' && !documentMap.has(url)) {
-        mappingDetails.push({ url: url, documentId: null as any })
-      }
-    })
-  }
-
-  return {
-    totalUrls: mappingDetails.length,
-    successfulMappings: documentMap.size,
-    failedMappings: mappingDetails.length - documentMap.size,
-    mappingDetails,
-  }
+function isRichTextField(data: any): boolean {
+  return (
+    (data?.root?.type === 'root' && Array.isArray(data.root.children)) ||
+    (Array.isArray(data) && data.some((item) => item?.type && item.children))
+  )
 }

@@ -1,16 +1,16 @@
 'use client'
 
-import React, { useRef, useState, useEffect, ReactNode } from 'react'
-
-type ScrollDirection = 'horizontal' | 'vertical' | 'both'
+import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 interface DragScrollWrapperProps {
   children: ReactNode
   className?: string
+  direction?: ScrollDirection
   scrollSpeed?: number
   showScrollbar?: boolean
-  direction?: ScrollDirection
 }
+
+type ScrollDirection = 'both' | 'horizontal' | 'vertical'
 
 /**
  * A wrapper component that enables drag-to-scroll functionality
@@ -19,9 +19,9 @@ interface DragScrollWrapperProps {
 export const DragScrollWrapper: React.FC<DragScrollWrapperProps> = ({
   children,
   className = '',
+  direction = 'horizontal',
   scrollSpeed = 1,
   showScrollbar = false,
-  direction = 'horizontal',
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -199,24 +199,28 @@ export const DragScrollWrapper: React.FC<DragScrollWrapperProps> = ({
   // Determine overflow settings based on direction
   const getOverflowStyle = () => {
     switch (direction) {
-      case 'horizontal':
+      case 'both': {
+        return {
+          overflow: 'auto' as const,
+        }
+      }
+      case 'horizontal': {
         return {
           overflowX: 'auto' as const,
           overflowY: 'hidden' as const,
         }
-      case 'vertical':
+      }
+      case 'vertical': {
         return {
           overflowX: 'hidden' as const,
           overflowY: 'auto' as const,
         }
-      case 'both':
+      }
+      default: {
         return {
           overflow: 'auto' as const,
         }
-      default:
-        return {
-          overflow: 'auto' as const,
-        }
+      }
     }
   }
 
@@ -225,29 +229,33 @@ export const DragScrollWrapper: React.FC<DragScrollWrapperProps> = ({
     if (showScrollbar) return ''
 
     switch (direction) {
-      case 'horizontal':
+      case 'both': {
+        return 'scrollbar-hide'
+      }
+      case 'horizontal': {
         return 'scrollbar-hide-horizontal'
-      case 'vertical':
+      }
+      case 'vertical': {
         return 'scrollbar-hide-vertical'
-      case 'both':
+      }
+      default: {
         return 'scrollbar-hide'
-      default:
-        return 'scrollbar-hide'
+      }
     }
   }
 
   return (
     <div
-      ref={scrollRef}
       className={`${className} ${getScrollbarClass()} ${isDragging ? 'is-dragging' : ''}`}
+      onDragStart={handleDragStart}
       onMouseDown={handleMouseDown}
       onMouseLeave={handleMouseLeave}
-      onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
+      onMouseUp={handleMouseUp}
       onTouchEnd={handleTouchEnd}
-      onDragStart={handleDragStart}
+      onTouchMove={handleTouchMove}
+      onTouchStart={handleTouchStart}
+      ref={scrollRef}
       style={{
         ...getOverflowStyle(),
         position: 'relative',

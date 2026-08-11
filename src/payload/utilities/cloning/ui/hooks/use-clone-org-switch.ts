@@ -1,17 +1,19 @@
 import { useAuth, useLocale } from '@payloadcms/ui'
-import { useOrganisationSwitch } from '@/hooks/useOrganisationSwitch'
+
+import { useOrganisationSwitch } from '@/hooks/use-organisation-switch'
+
 import { TargetOrganisation, UseCloneOrgSwitchResult } from './types'
 
 /**
  * Organization switching functionality wrapping useOrganisationSwitch
  */
 export function useCloneOrgSwitch(
-  targetOrgId: number | null,
+  targetOrgId: null | number,
   targetOrganisations: TargetOrganisation[],
 ): UseCloneOrgSwitchResult {
   const { user } = useAuth()
   const locale = useLocale()
-  const { switchOrganisation, isSwitching } = useOrganisationSwitch()
+  const { isSwitching, switchOrganisation } = useOrganisationSwitch()
 
   const handleOrgSwitch = async () => {
     if (!user?.id || !targetOrgId) return

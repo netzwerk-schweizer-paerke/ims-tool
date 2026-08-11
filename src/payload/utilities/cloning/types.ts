@@ -1,34 +1,32 @@
 import { CollectionSlug } from 'payload'
 
-type SharedStats = {
-  id: number | string
-  name: string
-  collection: CollectionSlug | null
-  relatedEntitiesCount: number
-  documentFilesCount: number
-  publicDocumentFilesCount: number
-  blocksCount: number
-  itemsCount: number
-  filesCount: number
-  documentsCloned?: number
-  richTextDocumentsFound?: number
-  richTextDocumentsCloned?: number
-  publicDocumentsFound?: number
-  publicDocumentsPreserved?: number
-  totalDocumentsFound?: number
-  totalDocumentsCloned?: number
-  uniqueDocumentsFound?: number
-  uniqueDocumentsCloned?: number
-  relatedItemsCloned?: Record<string, number>
-  customStats?: Record<string, number>
-  fieldsPopulated?: number
+export interface CloneResponse {
+  documentId: number | string
+  message: string
+  statistics: GenericCloneStatistics
+}
+
+export interface GenericCloneStatistics {
+  cloned: SharedStats
+  errors: {
+    missingDocumentFiles: MissingDocumentFileError[]
+    otherErrors: OtherErrors[]
+  }
+  percentComplete: number
+  source: SharedStats
+}
+
+export type GenericCloneStatisticsFinalized = {
+  aggregated: GenericCloneStatistics
+  entities: GenericCloneStatistics[]
+  successLevel: 'fail' | 'partial' | 'success'
 }
 
 export type MissingDocumentFileError = {
   documentId: number
   documentName: string
-  fileName: string
   error: string
+  fileName: string
   usageLocation: string
 }
 
@@ -37,29 +35,31 @@ export type OtherErrors = {
   op: string
 }
 
-export type GenericCloneStatisticsFinalized = {
-  entities: GenericCloneStatistics[]
-  aggregated: GenericCloneStatistics
-  successLevel: 'success' | 'partial' | 'fail'
-}
-
-export interface GenericCloneStatistics {
-  source: SharedStats
-  cloned: SharedStats
-  percentComplete: number
-  errors: {
-    missingDocumentFiles: MissingDocumentFileError[]
-    otherErrors: OtherErrors[]
-  }
-}
-
-export interface CloneResponse {
-  message: string
-  documentId: number | string
-  statistics: GenericCloneStatistics
-}
-
 export type RichTextProcessingResult = {
   content: any
   errors: MissingDocumentFileError[]
+}
+
+type SharedStats = {
+  blocksCount: number
+  collection: CollectionSlug | null
+  customStats?: Record<string, number>
+  documentFilesCount: number
+  documentsCloned?: number
+  fieldsPopulated?: number
+  filesCount: number
+  id: number | string
+  itemsCount: number
+  name: string
+  publicDocumentFilesCount: number
+  publicDocumentsFound?: number
+  publicDocumentsPreserved?: number
+  relatedEntitiesCount: number
+  relatedItemsCloned?: Record<string, number>
+  richTextDocumentsCloned?: number
+  richTextDocumentsFound?: number
+  totalDocumentsCloned?: number
+  totalDocumentsFound?: number
+  uniqueDocumentsCloned?: number
+  uniqueDocumentsFound?: number
 }

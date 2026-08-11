@@ -1,5 +1,6 @@
-import { z } from 'zod'
 import type { CollectionSlug, GlobalSlug, TypedLocale } from 'payload'
+
+import { z } from 'zod'
 
 /**
  * Supported locales in the system
@@ -11,8 +12,8 @@ const SUPPORTED_LOCALES = ['de', 'fr', 'it'] as const
  * DoS protection limits
  */
 const DOS_PROTECTION = {
-  MAX_IDS: 100,
   MAX_DEPTH: 5,
+  MAX_IDS: 100,
 } as const
 
 /**
@@ -22,13 +23,6 @@ const DOS_PROTECTION = {
 export const translateEndpointSchema = z
   .object({
     /**
-     * Document ID - required, must be string or number
-     */
-    id: z
-      .union([z.string().min(1, 'ID cannot be empty'), z.number().positive('ID must be positive')])
-      .describe('The ID of the document to translate'),
-
-    /**
      * Collection slug - optional but either this or globalSlug must be provided
      */
     collectionSlug: z
@@ -36,6 +30,11 @@ export const translateEndpointSchema = z
       .min(1, 'Collection slug cannot be empty')
       .optional()
       .describe('The collection slug where the document exists'),
+
+    /**
+     * Source locale - required, must be one of supported locales
+     */
+    fromLocale: z.enum(SUPPORTED_LOCALES).describe('The source locale to translate from'),
 
     /**
      * Global slug - optional but either this or collectionSlug must be provided
@@ -47,14 +46,11 @@ export const translateEndpointSchema = z
       .describe('The global slug where the document exists'),
 
     /**
-     * Source locale - required, must be one of supported locales
+     * Document ID - required, must be string or number
      */
-    fromLocale: z.enum(SUPPORTED_LOCALES).describe('The source locale to translate from'),
-
-    /**
-     * Target locale - required, must be one of supported locales
-     */
-    toLocale: z.enum(SUPPORTED_LOCALES).describe('The target locale to translate to'),
+    id: z
+      .union([z.string().min(1, 'ID cannot be empty'), z.number().positive('ID must be positive')])
+      .describe('The ID of the document to translate'),
 
     /**
      * Include relationships flag - optional, defaults to false
@@ -76,6 +72,11 @@ export const translateEndpointSchema = z
       .optional()
       .default(1)
       .describe('The depth of relationships to traverse for translation'),
+
+    /**
+     * Target locale - required, must be one of supported locales
+     */
+    toLocale: z.enum(SUPPORTED_LOCALES).describe('The target locale to translate to'),
   })
   .strict() // Reject unknown fields
   .refine((data) => Boolean(data.collectionSlug) || Boolean(data.globalSlug), {
@@ -108,16 +109,6 @@ export const DOS_LIMITS = DOS_PROTECTION
 export const VALID_LOCALES = SUPPORTED_LOCALES
 
 /**
- * Helper function to validate translate endpoint arguments
- * @param data - Raw request data to validate
- * @returns Promise<ValidatedTranslateArgs> - Validated and typed data
- * @throws ZodError - If validation fails
- */
-export async function validateTranslateArgs(data: unknown): Promise<ValidatedTranslateArgs> {
-  return translateEndpointSchema.parseAsync(data)
-}
-
-/**
  * Safe validation that returns either success or error object
  * @param data - Raw request data to validate
  * @returns Object with success flag and either data or error
@@ -125,13 +116,23 @@ export async function validateTranslateArgs(data: unknown): Promise<ValidatedTra
 export async function safeValidateTranslateArgs(
   data: unknown,
 ): Promise<
-  { success: true; data: ValidatedTranslateArgs } | { success: false; error: z.ZodError }
+  { data: ValidatedTranslateArgs; success: true; } | { error: z.ZodError; success: false; }
 > {
   const result = await translateEndpointSchema.safeParseAsync(data)
 
   if (result.success) {
-    return { success: true, data: result.data }
+    return { data: result.data, success: true }
   }
 
-  return { success: false, error: result.error }
+  return { error: result.error, success: false }
+}
+
+/**
+ * Helper function to validate translate endpoint arguments
+ * @param data - Raw request data to validate
+ * @returns Promise<ValidatedTranslateArgs> - Validated and typed data
+ * @throws ZodError - If validation fails
+ */
+export async function validateTranslateArgs(data: unknown): Promise<ValidatedTranslateArgs> {
+  return translateEndpointSchema.parseAsync(data)
 }

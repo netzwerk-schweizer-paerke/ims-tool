@@ -1,18 +1,19 @@
-import React from 'react'
-import { AdminViewServerProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
-import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { toNumber } from 'es-toolkit/compat'
+import { headers as getHeaders } from 'next/headers'
+import { AdminViewServerProps } from 'payload'
+import React from 'react'
 import { assert } from 'ts-essentials'
+
+import { LastUpdated } from '@/components/last-updated'
+import { StepNav } from '@/components/step-nav'
 import { FlowBlock } from '@/components/views/flow/flow-block'
 import { FlowEditLink } from '@/components/views/flow/flow-edit-link'
+import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { logger } from '@/lib/logger'
 import { Translate } from '@/lib/translate'
 import { TaskFlow } from '@/payload-types'
-import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer'
-import { StepNav } from '@/components/step-nav'
-import { logger } from '@/lib/logger'
-import { LastUpdated } from '@/components/last-updated'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
   return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number')
@@ -38,15 +39,15 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
   const flowBlock = await req.payload
     .find({
       collection: 'task-flows',
-      locale: locale as any,
       depth: 2,
+      locale: locale as any,
       where: {
         and: [
           {
+            id: { equals: flowId },
             organisation: {
               equals: selectedOrganisationId,
             },
-            id: { equals: flowId },
           },
         ],
       },
@@ -71,8 +72,8 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
   const activity = await req.payload
     .find({
       collection: 'activities',
-      locale: locale as any,
       depth: 2,
+      locale: locale as any,
       where: {
         and: [
           {
@@ -108,9 +109,9 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
         logger.warn('admin/views/flow/index: More than one activity found')
       }
       return {
-        id: activity[0].id,
         blockId,
         blockTitle,
+        id: activity[0].id,
         name: activity[0].name,
       }
     })
@@ -132,7 +133,7 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
           paddingRight: 'var(--gutter-h)',
         }}>
         <StepNav
-          activity={{ id: activity.id, title: activity.name, blockId: activity.blockId }}
+          activity={{ blockId: activity.blockId, id: activity.id, title: activity.name }}
           activityBlock={{ id: activity.blockId, title: activity.blockTitle }}
           flowBlock={{ id: flowId, title: flowBlock.name }}
         />
@@ -157,7 +158,7 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
               <Translate k={'flowBlock:table:responsibility'} />
             </div>
             {blocks.map((block, i) => (
-              <FlowBlock key={i} block={block} />
+              <FlowBlock block={block} key={i} />
             ))}
           </div>
           {blocks.length === 0 && (

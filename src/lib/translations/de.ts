@@ -1,316 +1,316 @@
 export const de = {
-  admin: {
-    links: {
-      dashboard: 'Dashboard',
-      activityLandscape: 'Prozesslandschaft',
-      title: 'Links',
-    },
-    selectOrganisations: {
-      title: 'Organisation auswählen',
-      orgLanguageMismatch:
-        'Bitte beachten Sie, dass Sie aktuell Inhalte nicht in der Organisationssprache bearbeiten.',
-      noOrganisations:
-        'Ihrem Benutzer wurden keine Organisationen zugewiesen. Bitte wenden Sie sich an Ihren Administrator.',
-      reset: 'Standardsprache wählen',
-    },
-  },
-  activityLandscape: {
-    title: 'Prozesslandschaft',
-    blockHasNoName: 'Block hat keinen Namen',
-    noBlocks: 'Keine Blöcke',
-    noContent: 'Keine Aktivitäten oder Prozesse definiert. Erstellen Sie zuerst einige.',
-  },
   activityBlock: {
-    title: 'Prozessgruppe',
-    input: {
-      title: 'Input',
-    },
-    tasks: {
-      title: 'Listen',
-      noTasks: 'Keine Prozesse definiert',
-    },
-    output: {
-      title: 'Output',
-    },
     flows: {
-      title: 'Prozesse',
       noFlows: 'Keine Prozesse definiert',
+      title: 'Prozesse',
     },
     infos: {
       norms: 'Normen',
       support: 'Unterstützende Informationen',
     },
-  },
-  flowBlock: {
-    title: 'Flow',
-    table: {
-      keypoints: 'Merkpunkte',
-      tools: 'Werkzeuge',
-      responsibility: 'Verantwortung',
+    input: {
+      title: 'Input',
     },
-  },
-  listBlock: {
-    title: 'Aufgaben',
-    table: {
-      keypoints: 'Merkpunkte',
-      tools: 'Werkzeuge',
-      responsibility: 'Verantwortung',
+    output: {
+      title: 'Output',
     },
+    tasks: {
+      noTasks: 'Keine Prozesse definiert',
+      title: 'Listen',
+    },
+    title: 'Prozessgruppe',
   },
-  common: {
-    back: 'Zurück',
-    edit: 'Bearbeiten',
-    delete: 'Löschen',
-    noContentDefined: 'Kein Inhalt definiert',
-    continue: 'Weiter',
-    lastUpdated: 'Zuletzt aktualisiert',
-    boolean: {
-      true: 'Wahr',
-      false: 'Falsch',
+  activityLandscape: {
+    blockHasNoName: 'Block hat keinen Namen',
+    noBlocks: 'Keine Blöcke',
+    noContent: 'Keine Aktivitäten oder Prozesse definiert. Erstellen Sie zuerst einige.',
+    title: 'Prozesslandschaft',
+  },
+  admin: {
+    links: {
+      activityLandscape: 'Prozesslandschaft',
+      dashboard: 'Dashboard',
+      title: 'Links',
+    },
+    selectOrganisations: {
+      noOrganisations:
+        'Ihrem Benutzer wurden keine Organisationen zugewiesen. Bitte wenden Sie sich an Ihren Administrator.',
+      orgLanguageMismatch:
+        'Bitte beachten Sie, dass Sie aktuell Inhalte nicht in der Organisationssprache bearbeiten.',
+      reset: 'Standardsprache wählen',
+      title: 'Organisation auswählen',
     },
   },
   cloneActivity: {
     button: 'Aktivitäten klonen',
-    title: 'Aktivität klonen',
-    processing: 'Aktivitäten werden geklont... Bitte warten!',
-    switchToTarget: 'Zur Zielorganisation wechseln',
-    cloning: 'Klonen...',
     clone: 'Aktivitäten klonen',
-    info: {
-      title: 'Was wird geklont?',
-      language: {
-        title: 'Sprache',
-        description:
-          'Nur Inhalte in Ihrer aktuellen Sprache (z.B. Deutsch bei DE-Ansicht) werden kopiert.',
-      },
-      files: {
-        title: 'Dateien & Dokumente',
-        description:
-          'Alle angehängten Dateien werden in die neue Organisation kopiert. Jede Datei wird nur einmal kopiert, auch wenn sie mehrfach verwendet wird.',
-      },
-      missingFiles: {
-        title: 'Fehlende Dateien',
-        description:
-          'Wenn eine Datei nicht gefunden werden kann, wird die Aktivität trotzdem geklont, aber ohne diese Datei. Sie erhalten einen Bericht über fehlende Dateien.',
-      },
-      tasks: {
-        title: 'Aufgaben',
-        description:
-          'Alle verbundenen Aufgabenabläufe und Aufgabenlisten werden zusammen mit der Aktivität kopiert.',
-      },
-      sharedResources: {
-        title: 'Geteilte Ressourcen',
-        description:
-          'Öffentliche Dokumente bleiben verknüpft, werden aber nicht kopiert (sie sind bereits für alle Organisationen verfügbar).',
-      },
-      safety: {
-        title: 'Sicherheit',
-        description:
-          'Falls etwas schief geht, werden alle Änderungen automatisch rückgängig gemacht, um unvollständige Kopien zu verhindern.',
-      },
-    },
+    cloning: 'Klonen...',
     form: {
+      activities: 'Aktivitäten',
       instructions:
         'Wählen Sie unten die Aktivitäten aus, die Sie klonen möchten, und die Zielorganisation.',
-      activities: 'Aktivitäten',
       targetOrganisation: 'Zielorganisation auswählen',
+    },
+    info: {
+      files: {
+        description:
+          'Alle angehängten Dateien werden in die neue Organisation kopiert. Jede Datei wird nur einmal kopiert, auch wenn sie mehrfach verwendet wird.',
+        title: 'Dateien & Dokumente',
+      },
+      language: {
+        description:
+          'Nur Inhalte in Ihrer aktuellen Sprache (z.B. Deutsch bei DE-Ansicht) werden kopiert.',
+        title: 'Sprache',
+      },
+      missingFiles: {
+        description:
+          'Wenn eine Datei nicht gefunden werden kann, wird die Aktivität trotzdem geklont, aber ohne diese Datei. Sie erhalten einen Bericht über fehlende Dateien.',
+        title: 'Fehlende Dateien',
+      },
+      safety: {
+        description:
+          'Falls etwas schief geht, werden alle Änderungen automatisch rückgängig gemacht, um unvollständige Kopien zu verhindern.',
+        title: 'Sicherheit',
+      },
+      sharedResources: {
+        description:
+          'Öffentliche Dokumente bleiben verknüpft, werden aber nicht kopiert (sie sind bereits für alle Organisationen verfügbar).',
+        title: 'Geteilte Ressourcen',
+      },
+      tasks: {
+        description:
+          'Alle verbundenen Aufgabenabläufe und Aufgabenlisten werden zusammen mit der Aktivität kopiert.',
+        title: 'Aufgaben',
+      },
+      title: 'Was wird geklont?',
+    },
+    processing: 'Aktivitäten werden geklont... Bitte warten!',
+    results: {
+      activityComparison: 'Aktivitätenvergleich:',
+      complete: 'Abgeschlossen',
+      completeness: 'Vollständigkeit:',
+      completenessAnalysis: 'Vollständigkeitsanalyse:',
+      detailedResults: 'Detaillierte Ergebnisse',
+      error: 'Fehler:',
+      failedTask: 'Fehlgeschlagene Aufgabe:',
+      failedTasks: 'Fehlgeschlagene Aufgaben:',
+      fieldsModified: 'Felder geändert:',
+      fieldsPreserved: 'Felder beibehalten:',
+      fieldsRemoved: 'Felder entfernt:',
+      file: 'Datei:',
+      missingDocuments: 'Fehlende Dokumentdateien:',
+      sourceActivity: 'Quellaktivität:',
+      summary: 'Zusammenfassung:',
+      usageInformation: 'Verwendungsinformationen:',
+      variant: 'Variante:',
     },
     status: {
       allFailed: 'Alle Aktivitäten konnten nicht geklont werden',
       allSuccess: 'Alle Aktivitäten erfolgreich geklont!',
+      failedToClone: 'Klonen fehlgeschlagen:',
+      partialSuccess: 'Teilerfolg: {{succeeded}} erfolgreich, {{failed}} fehlgeschlagen',
+      successfullyCloned: 'Erfolgreich geklont:',
+      withIssues: 'Mit Problemen geklont',
       withWarnings: 'Aktivitäten mit Warnungen geklont',
       withWarningsDescription:
         'Einige Aktivitäten wurden erfolgreich geklont, aber mit fehlenden Dateien oder unvollständigen Daten.',
-      partialSuccess: 'Teilerfolg: {{succeeded}} erfolgreich, {{failed}} fehlgeschlagen',
-      successfullyCloned: 'Erfolgreich geklont:',
-      failedToClone: 'Klonen fehlgeschlagen:',
-      withIssues: 'Mit Problemen geklont',
     },
-    results: {
-      summary: 'Zusammenfassung:',
-      completeness: 'Vollständigkeit:',
-      sourceActivity: 'Quellaktivität:',
-      variant: 'Variante:',
-      activityComparison: 'Aktivitätenvergleich:',
-      completenessAnalysis: 'Vollständigkeitsanalyse:',
-      fieldsPreserved: 'Felder beibehalten:',
-      fieldsModified: 'Felder geändert:',
-      fieldsRemoved: 'Felder entfernt:',
-      missingDocuments: 'Fehlende Dokumentdateien:',
-      failedTasks: 'Fehlgeschlagene Aufgaben:',
-      file: 'Datei:',
-      usageInformation: 'Verwendungsinformationen:',
-      error: 'Fehler:',
-      failedTask: 'Fehlgeschlagene Aufgabe:',
-      detailedResults: 'Detaillierte Ergebnisse',
-      complete: 'Abgeschlossen',
-    },
+    switchToTarget: 'Zur Zielorganisation wechseln',
     table: {
-      metric: 'Metrik',
-      source: 'Quelle',
-      clone: 'Klon',
-      status: 'Status',
       activityId: 'Aktivitäts-ID',
-      name: 'Name',
-      hasDescription: 'Hat Beschreibung',
-      variant: 'Variante',
       blocksCount: 'Anzahl Blöcke',
-      directFileAttachments: 'Direkte Dateianhänge',
-      richTextDocuments: 'Rich-Text-Dokumentdateien',
-      publicDocuments: 'Öffentliche Dokumentdateien',
-      totalDocumentUsages: 'Gesamtanzahl Dokumentdateien-Verwendungen',
-      uniqueDocuments: 'Eindeutige Dokumentdateien',
-      totalTasks: 'Gesamtanzahl Aufgaben',
-      taskFlows: 'Prozesse',
-      taskLists: 'Listen',
-      taskFlowBlocks: 'Prozess-Blöcke',
-      taskListBlocks: 'Listen-Blöcke',
+      clone: 'Klon',
       completeness: 'Vollständigkeit',
-      relatedEntities: 'Verwandte Entitäten',
+      directFileAttachments: 'Direkte Dateianhänge',
+      hasDescription: 'Hat Beschreibung',
+      metric: 'Metrik',
       missingFiles: 'Fehlende Dateien',
+      name: 'Name',
+      publicDocuments: 'Öffentliche Dokumentdateien',
+      relatedEntities: 'Verwandte Entitäten',
+      richTextDocuments: 'Rich-Text-Dokumentdateien',
+      source: 'Quelle',
+      status: 'Status',
+      taskFlowBlocks: 'Prozess-Blöcke',
+      taskFlows: 'Prozesse',
+      taskListBlocks: 'Listen-Blöcke',
+      taskLists: 'Listen',
       totalActivities: 'Gesamte Aktivitäten:',
-      totalRelatedEntities: 'Gesamte verwandte Entitäten:',
       totalDocumentFiles: 'Gesamte Dokumentdateien:',
+      totalDocumentUsages: 'Gesamtanzahl Dokumentdateien-Verwendungen',
       totalMissingFiles: 'Fehlende Dateien:',
+      totalRelatedEntities: 'Gesamte verwandte Entitäten:',
+      totalTasks: 'Gesamtanzahl Aufgaben',
+      uniqueDocuments: 'Eindeutige Dokumentdateien',
+      variant: 'Variante',
     },
+    title: 'Aktivität klonen',
   },
   cloneTaskFlow: {
     button: 'Prozesse klonen',
-    title: 'Prozesse klonen',
-    processing: 'Prozesse werden geklont... Bitte warten!',
-    switchToTarget: 'Zur Zielorganisation wechseln',
-    selectTaskFlows: 'Prozesse zum Klonen auswählen',
-    selected: 'ausgewählt',
-    targetOrganisation: 'Zielorganisation',
-    cloning: 'Klonen...',
     clone: 'Prozesse klonen',
-    success: '✅ Alle Prozesse erfolgreich geklont',
-    successMessage: 'Die Prozesse wurden erfolgreich in die Zielorganisation geklont.',
+    cloning: 'Klonen...',
     error: '❌ Klonvorgang fehlgeschlagen',
     errorMessage: 'Bitte überprüfen Sie die obigen Fehler und versuchen Sie es erneut.',
-    partial: '⚠️ Teilweiser Erfolg',
-    succeeded: 'erfolgreich',
     failed: 'fehlgeschlagen',
-    successfulClones: '✅ Erfolgreiche Klone',
     failedClones: '❌ Fehlgeschlagene Klone',
+    info: {
+      blocks: {
+        description: 'Alle Prozessblöcke und ihre Verbindungen werden kopiert.',
+        title: 'Prozessblöcke',
+      },
+      files: {
+        description: 'Alle angehängten Dateien werden in die neue Organisation kopiert.',
+        title: 'Dateien & Dokumente',
+      },
+      language: {
+        description: 'Nur Inhalte in Ihrer aktuellen Sprache werden kopiert.',
+        title: 'Sprache',
+      },
+      safety: {
+        description: 'Bei Fehlern werden alle Änderungen automatisch rückgängig gemacht.',
+        title: 'Sicherheit',
+      },
+      title: 'Was wird geklont?',
+    },
+    partial: '⚠️ Teilweiser Erfolg',
+    processing: 'Prozesse werden geklont... Bitte warten!',
+    results: {
+      comparison: 'Prozessvergleich:',
+      completeness: 'Vollständigkeit:',
+      sourceItem: 'Quellprozess:',
+      summary: 'Zusammenfassung:',
+    },
+    selected: 'ausgewählt',
+    selectTaskFlows: 'Prozesse zum Klonen auswählen',
     status: {
       allSuccess: 'Alle Prozesse erfolgreich geklont!',
     },
-    results: {
-      summary: 'Zusammenfassung:',
-      completeness: 'Vollständigkeit:',
-      sourceItem: 'Quellprozess:',
-      comparison: 'Prozessvergleich:',
-    },
+    succeeded: 'erfolgreich',
+    success: '✅ Alle Prozesse erfolgreich geklont',
+    successfulClones: '✅ Erfolgreiche Klone',
+    successMessage: 'Die Prozesse wurden erfolgreich in die Zielorganisation geklont.',
+    switchToTarget: 'Zur Zielorganisation wechseln',
     table: {
-      metric: 'Metrik',
-      source: 'Quelle',
-      clone: 'Klon',
-      itemId: 'Prozess-ID',
       blocksCount: 'Anzahl Blöcke',
-      itemsCount: 'Anzahl Elemente',
+      clone: 'Klon',
       directFileAttachments: 'Direkte Dateianhänge',
-      richTextDocuments: 'Rich-Text-Dokumentdateien',
+      itemId: 'Prozess-ID',
+      itemsCount: 'Anzahl Elemente',
+      metric: 'Metrik',
       publicDocuments: 'Öffentliche Dokumentdateien',
+      richTextDocuments: 'Rich-Text-Dokumentdateien',
+      source: 'Quelle',
       totalDocumentUsages: 'Gesamte Dokumentdatei-Verwendungen',
       uniqueDocuments: 'Eindeutige Dokumentdateien',
     },
-    info: {
-      title: 'Was wird geklont?',
-      language: {
-        title: 'Sprache',
-        description: 'Nur Inhalte in Ihrer aktuellen Sprache werden kopiert.',
-      },
-      files: {
-        title: 'Dateien & Dokumente',
-        description: 'Alle angehängten Dateien werden in die neue Organisation kopiert.',
-      },
-      blocks: {
-        title: 'Prozessblöcke',
-        description: 'Alle Prozessblöcke und ihre Verbindungen werden kopiert.',
-      },
-      safety: {
-        title: 'Sicherheit',
-        description: 'Bei Fehlern werden alle Änderungen automatisch rückgängig gemacht.',
-      },
-    },
+    targetOrganisation: 'Zielorganisation',
+    title: 'Prozesse klonen',
   },
   cloneTaskList: {
     button: 'Listen klonen',
-    title: 'Listen klonen',
-    processing: 'Listen werden geklont... Bitte warten!',
-    switchToTarget: 'Zur Zielorganisation wechseln',
-    selectTaskLists: 'Listen zum Klonen auswählen',
-    selected: 'ausgewählt',
-    targetOrganisation: 'Zielorganisation',
-    cloning: 'Klonen...',
     clone: 'Listen klonen',
-    success: '✅ Alle Listen erfolgreich geklont',
-    successMessage: 'Die Listen wurden erfolgreich in die Zielorganisation geklont.',
+    cloning: 'Klonen...',
     error: '❌ Klonvorgang fehlgeschlagen',
     errorMessage: 'Bitte überprüfen Sie die obigen Fehler und versuchen Sie es erneut.',
-    partial: '⚠️ Teilweiser Erfolg',
-    succeeded: 'erfolgreich',
     failed: 'fehlgeschlagen',
-    successfulClones: '✅ Erfolgreiche Klone',
     failedClones: '❌ Fehlgeschlagene Klone',
+    info: {
+      files: {
+        description:
+          'Alle an Aufgabenelemente angehängten Dateien werden kopiert. Jede Datei wird nur einmal kopiert, auch wenn sie an mehreren Stellen verwendet wird.',
+        title: 'Dateien & Dokumente',
+      },
+      items: {
+        description:
+          'Alle Aufgabenelemente in den ausgewählten Listen werden kopiert, wobei ihre Reihenfolge und Struktur erhalten bleibt.',
+        title: 'Aufgabenelemente',
+      },
+      language: {
+        description:
+          'Nur Inhalte in Ihrer aktuellen Sprache werden in die Zielorganisation kopiert.',
+        title: 'Sprache',
+      },
+      safety: {
+        description:
+          'Dieser Vorgang ist sicher. Bei Fehlern werden alle Änderungen automatisch rückgängig gemacht, um unvollständige Kopien zu verhindern.',
+        title: 'Sicherheit',
+      },
+      title: 'Was wird geklont?',
+    },
+    partial: '⚠️ Teilweiser Erfolg',
+    processing: 'Listen werden geklont... Bitte warten!',
+    results: {
+      comparison: 'Listenvergleich:',
+      completeness: 'Vollständigkeit:',
+      sourceItem: 'Quellliste:',
+      summary: 'Zusammenfassung:',
+    },
+    selected: 'ausgewählt',
+    selectTaskLists: 'Listen zum Klonen auswählen',
     status: {
       allSuccess: 'Alle Listen erfolgreich geklont!',
     },
-    results: {
-      summary: 'Zusammenfassung:',
-      completeness: 'Vollständigkeit:',
-      sourceItem: 'Quellliste:',
-      comparison: 'Listenvergleich:',
-    },
+    succeeded: 'erfolgreich',
+    success: '✅ Alle Listen erfolgreich geklont',
+    successfulClones: '✅ Erfolgreiche Klone',
+    successMessage: 'Die Listen wurden erfolgreich in die Zielorganisation geklont.',
+    switchToTarget: 'Zur Zielorganisation wechseln',
     table: {
-      metric: 'Metrik',
-      source: 'Quelle',
-      clone: 'Klon',
-      itemId: 'Listen-ID',
       blocksCount: 'Anzahl Blöcke',
-      itemsCount: 'Anzahl Elemente',
+      clone: 'Klon',
       directFileAttachments: 'Direkte Dateianhänge',
-      richTextDocuments: 'Rich-Text-Dokumentdateien',
+      itemId: 'Listen-ID',
+      itemsCount: 'Anzahl Elemente',
+      metric: 'Metrik',
       publicDocuments: 'Öffentliche Dokumentdateien',
+      richTextDocuments: 'Rich-Text-Dokumentdateien',
+      source: 'Quelle',
       totalDocumentUsages: 'Gesamte Dokumentdatei-Verwendungen',
       uniqueDocuments: 'Eindeutige Dokumentdateien',
     },
-    info: {
-      title: 'Was wird geklont?',
-      language: {
-        title: 'Sprache',
-        description:
-          'Nur Inhalte in Ihrer aktuellen Sprache werden in die Zielorganisation kopiert.',
-      },
-      files: {
-        title: 'Dateien & Dokumente',
-        description:
-          'Alle an Aufgabenelemente angehängten Dateien werden kopiert. Jede Datei wird nur einmal kopiert, auch wenn sie an mehreren Stellen verwendet wird.',
-      },
-      items: {
-        title: 'Aufgabenelemente',
-        description:
-          'Alle Aufgabenelemente in den ausgewählten Listen werden kopiert, wobei ihre Reihenfolge und Struktur erhalten bleibt.',
-      },
-      safety: {
-        title: 'Sicherheit',
-        description:
-          'Dieser Vorgang ist sicher. Bei Fehlern werden alle Änderungen automatisch rückgängig gemacht, um unvollständige Kopien zu verhindern.',
-      },
-    },
-  },
-  general: {
-    selectAll: 'Alle auswählen',
-    cancel: 'Abbrechen',
-    close: 'Schließen',
-    switching: 'Wechseln...',
+    targetOrganisation: 'Zielorganisation',
+    title: 'Listen klonen',
   },
   cloning: {
-    loadingMessage: 'Bitte warten Sie, während wir Ihre Daten verarbeiten...',
-    systemErrors: 'Systemfehler:',
-    missingFilesCount: 'Fehlende Dateien ({{count}}):',
     andMoreItems: '... und {{count}} weitere',
     failed: 'Fehlgeschlagen',
+    loadingMessage: 'Bitte warten Sie, während wir Ihre Daten verarbeiten...',
+    missingFilesCount: 'Fehlende Dateien ({{count}}):',
+    systemErrors: 'Systemfehler:',
+  },
+  common: {
+    back: 'Zurück',
+    boolean: {
+      false: 'Falsch',
+      true: 'Wahr',
+    },
+    continue: 'Weiter',
+    delete: 'Löschen',
+    edit: 'Bearbeiten',
+    lastUpdated: 'Zuletzt aktualisiert',
+    noContentDefined: 'Kein Inhalt definiert',
+  },
+  flowBlock: {
+    table: {
+      keypoints: 'Merkpunkte',
+      responsibility: 'Verantwortung',
+      tools: 'Werkzeuge',
+    },
+    title: 'Flow',
+  },
+  general: {
+    cancel: 'Abbrechen',
+    close: 'Schließen',
+    selectAll: 'Alle auswählen',
+    switching: 'Wechseln...',
+  },
+  listBlock: {
+    table: {
+      keypoints: 'Merkpunkte',
+      responsibility: 'Verantwortung',
+      tools: 'Werkzeuge',
+    },
+    title: 'Aufgaben',
   },
 }

@@ -1,40 +1,26 @@
 import { Block } from 'payload'
-import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
+
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
+import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
 export const ProcessTestOutputBlock: Block = {
-  slug: 'proc-test',
-  labels: {
-    singular: 'Test with optional output',
-    plural: 'Tests with optional output',
-  },
-  imageURL: '/process-block-shapes/block-test.svg',
-  imageAltText: 'Test with optional output',
-  interfaceName: 'ProcessTestOutputBlock',
   fields: [
     {
-      type: 'row',
       admin: {
         className: 'process-test-block process-block-row',
       },
       fields: [
         {
-          type: 'group',
-          name: 'graph',
-          label: false,
           admin: {
             className: 'graph-fields-group',
           },
           fields: [
             {
-              type: 'row',
               admin: {
                 className: 'graph-fields-row',
               },
               fields: [
                 {
-                  name: 'output',
-                  type: 'json',
                   admin: {
                     components: {
                       Field:
@@ -42,11 +28,10 @@ export const ProcessTestOutputBlock: Block = {
                     },
                   },
                   jsonSchema: connectionSchema,
+                  name: 'output',
+                  type: 'json',
                 },
                 {
-                  name: 'test',
-                  type: 'json',
-                  localized: true,
                   admin: {
                     components: {
                       Field:
@@ -54,13 +39,29 @@ export const ProcessTestOutputBlock: Block = {
                     },
                   },
                   jsonSchema: connectionSchema,
+                  localized: true,
+                  name: 'test',
+                  type: 'json',
                 },
               ],
+              type: 'row',
             },
           ],
+          label: false,
+          name: 'graph',
+          type: 'group',
         },
         ...tabsMetadata,
       ],
+      type: 'row',
     },
   ],
+  imageAltText: 'Test with optional output',
+  imageURL: '/process-block-shapes/block-test.svg',
+  interfaceName: 'ProcessTestOutputBlock',
+  labels: {
+    plural: 'Tests with optional output',
+    singular: 'Test with optional output',
+  },
+  slug: 'proc-test',
 }

@@ -1,8 +1,10 @@
 import type { CollectionSlug, GlobalSlug, PayloadRequest, TypedLocale, TypeWithID } from 'payload'
+
 import { APIError } from 'payload'
 
 type Args = {
   collectionSlug?: CollectionSlug
+  context?: Record<string, any> // Add context for hooks
   data: Record<string, any>
   depth?: number
   globalSlug?: GlobalSlug
@@ -10,19 +12,18 @@ type Args = {
   locale: TypedLocale
   overrideAccess?: boolean
   req: PayloadRequest
-  context?: Record<string, any> // Add context for hooks
 }
 
 export const updateEntity = ({
-  id,
   collectionSlug,
+  context,
   data,
   depth: incomingDepth,
   globalSlug,
+  id,
   locale,
   overrideAccess,
   req,
-  context,
 }: Args): Promise<Record<string, unknown> & TypeWithID> => {
   if (!collectionSlug && !globalSlug) {
     throw new APIError('Bad Request', 400)
@@ -40,23 +41,23 @@ export const updateEntity = ({
 
   const promise = isGlobal
     ? req.payload.updateGlobal({
-        slug: currentSlug as GlobalSlug,
+        context,
         data,
         depth,
         locale: locale as any,
         overrideAccess,
         req,
-        context,
+        slug: currentSlug as GlobalSlug,
       })
     : req.payload.update({
-        id: id as number | string,
         collection: currentSlug as CollectionSlug,
+        context,
         data,
         depth,
+        id: id as number | string,
         locale: locale as any,
         overrideAccess,
         req,
-        context,
       })
 
   return promise as any

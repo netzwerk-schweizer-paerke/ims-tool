@@ -1,51 +1,53 @@
 'use client'
 
-import React, { useCallback, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button, Drawer, toast, useModal } from '@payloadcms/ui'
 import ky from 'ky'
-import { drawerSlug } from './fetch-legacy-docs-button'
+import { useRouter } from 'next/navigation'
+import React, { useCallback, useMemo, useState } from 'react'
+
 import { Activity } from '@/payload-types'
 
+import { drawerSlug } from './fetch-legacy-docs-button'
+
 type LegacyDocsStatistics = {
-  startTime: number
-  endTime?: number
-  totalLinksFound: number
-  documentsCreated: number
-  linksConverted: number
-  failedConversions: number
-  processedFields: number
-  skippedFields: number
-  errors: Array<{
-    url: string
-    error: string
-    timestamp: number
-  }>
   activitiesProcessed?: number
   activityBreakdown?: Array<{
-    id: string
-    name: string
-    linksFound: number
-    linksConverted: number
     documentsCreated: number
     failedConversions: number
+    id: string
     linkDetails?: Array<{
-      url: string
-      parentEntity: string
-      fieldLabel: string
-      locationPath: string
       converted?: boolean
       error?: string
+      fieldLabel: string
+      locationPath: string
+      parentEntity: string
+      url: string
     }>
+    linksConverted: number
+    linksFound: number
+    name: string
   }>
+  documentsCreated: number
+  endTime?: number
+  errors: Array<{
+    error: string
+    timestamp: number
+    url: string
+  }>
+  failedConversions: number
+  linksConverted: number
+  processedFields: number
+  skippedFields: number
+  startTime: number
+  totalLinksFound: number
 }
 
 type ProcessResult = {
   activityId: string
   activityName: string
+  error?: string
   statistics: LegacyDocsStatistics
   success: boolean
-  error?: string
 }
 
 type Props = {
@@ -60,8 +62,8 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
   const [dryRun, setDryRun] = useState(true)
   const [processResults, setProcessResults] = useState<ProcessResult[]>([])
   const [overallStatistics, setOverallStatistics] = useState<LegacyDocsStatistics | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [currentActivity, setCurrentActivity] = useState<string | null>(null)
+  const [error, setError] = useState<null | string>(null)
+  const [currentActivity, setCurrentActivity] = useState<null | string>(null)
   const [expandedActivities, setExpandedActivities] = useState<Set<string>>(new Set())
 
   // Prepare activity options for the Select component
@@ -87,7 +89,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           json: {
             dryRun,
           },
-          timeout: 600000, // 10 minutes timeout for bulk processing
+          timeout: 600_000, // 10 minutes timeout for bulk processing
         })
         .json<any>()
 
@@ -101,15 +103,15 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           activityId: activity.id,
           activityName: activity.name,
           statistics: {
-            startTime: stats.startTime,
-            endTime: stats.endTime,
-            totalLinksFound: activity.linksFound,
             documentsCreated: activity.documentsCreated,
-            linksConverted: activity.linksConverted,
+            endTime: stats.endTime,
+            errors: [],
             failedConversions: activity.failedConversions,
+            linksConverted: activity.linksConverted,
             processedFields: 0,
             skippedFields: 0,
-            errors: [],
+            startTime: stats.startTime,
+            totalLinksFound: activity.linksFound,
           },
           success: true,
         }))
@@ -133,18 +135,18 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           router.refresh()
         }
       }
-    } catch (err: any) {
+    } catch (error_: any) {
       let errorMessage = 'An error occurred'
 
-      if (err?.name === 'HTTPError' && err?.response) {
+      if (error_?.name === 'HTTPError' && error_?.response) {
         try {
-          const errorData = await err.response.json()
-          errorMessage = errorData.error || errorData.message || err.message
+          const errorData = await error_.response.json()
+          errorMessage = errorData.error || errorData.message || error_.message
         } catch {
-          errorMessage = err.message || 'Failed to fetch legacy documents'
+          errorMessage = error_.message || 'Failed to fetch legacy documents'
         }
-      } else if (err instanceof Error) {
-        errorMessage = err.message
+      } else if (error_ instanceof Error) {
+        errorMessage = error_.message
       }
 
       setError(errorMessage)
@@ -190,7 +192,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
   }
 
   return (
-    <Drawer slug={drawerSlug} Header={null}>
+    <Drawer Header={null} slug={drawerSlug}>
       <div className="mt-12 flex flex-col gap-4">
         <h2 className="text-2xl font-bold">Fetch Legacy Documents</h2>
 
@@ -203,14 +205,14 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
             <div className="mb-4">
               <div className="flex items-center gap-2">
                 <input
-                  type="checkbox"
-                  id="dryRun"
                   checked={dryRun}
-                  onChange={(e) => setDryRun(e.target.checked)}
                   className="rounded"
                   disabled={isProcessing}
+                  id="dryRun"
+                  onChange={(e) => setDryRun(e.target.checked)}
+                  type="checkbox"
                 />
-                <label htmlFor="dryRun" className="">
+                <label className="" htmlFor="dryRun">
                   Dry run (scan only, don&#39;t make changes)
                 </label>
               </div>
@@ -290,19 +292,21 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                   const hasLinks = activity.linksFound > 0
 
                   return (
-                    <div key={activity.id} className="mb-3 border-b last:border-b-0">
+                    <div className="mb-3 border-b last:border-b-0" key={activity.id}>
                       <div
                         className={`flex items-center justify-between py-2 ${hasLinks ? 'cursor-pointer hover:bg-gray-100/20' : ''}`}
                         onClick={() => {
-                          if (hasLinks) {
-                            const newExpanded = new Set(expandedActivities)
-                            if (isExpanded) {
-                              newExpanded.delete(activity.id)
-                            } else {
-                              newExpanded.add(activity.id)
-                            }
-                            setExpandedActivities(newExpanded)
+                          if (!hasLinks) {
+                          	return;
                           }
+
+                          const newExpanded = new Set(expandedActivities)
+                          if (isExpanded) {
+                            newExpanded.delete(activity.id)
+                          } else {
+                            newExpanded.add(activity.id)
+                          }
+                          setExpandedActivities(newExpanded)
                         }}>
                         <div className="flex items-center gap-2">
                           {hasLinks && (
@@ -343,7 +347,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                             </thead>
                             <tbody>
                               {activity.linkDetails.map((link, index) => (
-                                <tr key={index} className="border-b last:border-b-0">
+                                <tr className="border-b last:border-b-0" key={index}>
                                   <td className="py-1 pr-2">
                                     <div className="break-words font-medium">
                                       {link.locationPath}
@@ -385,7 +389,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                 <h4 className="mb-2 font-semibold text-red-800">Errors:</h4>
                 <div className="max-h-32 overflow-y-auto">
                   {overallStatistics.errors.map((error, index) => (
-                    <div key={index} className="mb-1 text-red-600">
+                    <div className="mb-1 text-red-600" key={index}>
                       {error.url}: {error.error}
                     </div>
                   ))}
@@ -404,10 +408,10 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
         <div className="flex justify-end gap-2 border-t pt-4">
           {processResults.length === 0 ? (
             <>
-              <Button onClick={handleClose} buttonStyle="secondary" disabled={isProcessing}>
+              <Button buttonStyle="secondary" disabled={isProcessing} onClick={handleClose}>
                 Cancel
               </Button>
-              <Button onClick={handleFetchLegacyDocs} disabled={isProcessing}>
+              <Button disabled={isProcessing} onClick={handleFetchLegacyDocs}>
                 {isProcessing ? 'Processing...' : dryRun ? 'Scan All' : 'Migrate All'}
               </Button>
             </>
@@ -415,25 +419,25 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
             <>
               {dryRun && overallStatistics && overallStatistics.totalLinksFound > 0 && (
                 <Button
+                  buttonStyle="primary"
                   onClick={() => {
                     setDryRun(false)
                     setProcessResults([])
                     setOverallStatistics(null)
-                  }}
-                  buttonStyle="primary">
+                  }}>
                   Proceed with Migration
                 </Button>
               )}
-              <Button onClick={handleReset} buttonStyle="secondary">
+              <Button buttonStyle="secondary" onClick={handleReset}>
                 Process More
               </Button>
               <Button
-                onClick={handleClose}
                 buttonStyle={
                   dryRun || (overallStatistics && overallStatistics.linksConverted === 0)
                     ? 'secondary'
                     : 'primary'
-                }>
+                }
+                onClick={handleClose}>
                 Close
               </Button>
             </>

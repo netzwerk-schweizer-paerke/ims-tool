@@ -1,6 +1,6 @@
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { User, UserOrganisations } from '@/payload-types'
 import { logger } from '@/lib/logger'
+import { User, UserOrganisations } from '@/payload-types'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 type NonEmptyArray<T> = T extends (infer U)[] ? (U[] extends [] ? never : T) : never
 
@@ -29,30 +29,30 @@ type Roles = NonEmptyUserOrganisations[0]['roles']
  */
 export const checkOrganisationRoles = (
   requiredRoles: Roles = [],
-  user: User | null,
-  organisationId: number | string | null,
+  user: null | User,
+  organisationId: null | number | string,
 ): boolean => {
   // Safety check: If no user or no required roles, return false immediately
   if (!user) {
     logger.debug('checkOrganisationRoles: No user provided', {
-      requiredRoles,
       organisationId,
+      requiredRoles,
     })
     return false
   }
 
   if (!organisationId || typeof organisationId !== 'number') {
     logger.debug('checkOrganisationRoles: No organisationId provided', {
-      userId: user.id,
       requiredRoles,
+      userId: user.id,
     })
     return false
   }
 
-  if (!requiredRoles.length) {
+  if (requiredRoles.length === 0) {
     logger.debug('checkOrganisationRoles: No roles specified to check', {
-      userId: user.id,
       organisationId,
+      userId: user.id,
     })
     return false
   }
@@ -60,9 +60,9 @@ export const checkOrganisationRoles = (
   // Safety check: If user has no organizations array, return false
   if (!user.organisations || !Array.isArray(user.organisations)) {
     logger.debug('checkOrganisationRoles: User has no organisations', {
-      userId: user.id,
       organisationId,
       requiredRoles,
+      userId: user.id,
     })
     return false
   }
@@ -83,8 +83,8 @@ export const checkOrganisationRoles = (
   // If no matching organization is found, return false
   if (!matchingOrganisation) {
     logger.debug('checkOrganisationRoles: User does not belong to the specified organisation', {
-      userId: user.id,
       organisationId,
+      userId: user.id,
       userOrganisations: user.organisations.map((org) => getIdFromRelation(org.organisation)),
     })
     return false
@@ -98,11 +98,11 @@ export const checkOrganisationRoles = (
   logger.debug(
     `checkOrganisationRoles: User ${hasRequiredRole ? 'has' : 'does not have'} required role in organization`,
     {
-      userId: user.id,
+      hasRequiredRole,
       organisationId,
       requiredRoles,
+      userId: user.id,
       userRolesInOrg: matchingOrganisation.roles || [],
-      hasRequiredRole,
     },
   )
 

@@ -1,20 +1,68 @@
-import { PayloadRequest } from 'payload'
-import fetch from 'node-fetch'
 import { assert } from 'es-toolkit'
+import fetch from 'node-fetch'
+import { PayloadRequest } from 'payload'
+
 import { getErrorMessage } from './error-utils'
 
-export interface PreloadedDocument {
-  id: number
-  filename: string
-  mimeType: string
-  filesize: number
-  description?: string
-  fileBuffer: Buffer
+export interface DocumentPreloader {
+  errors: Array<{ documentId: number; error: string }>
+  preloadedDocuments: Map<number, PreloadedDocument>
 }
 
-export interface DocumentPreloader {
-  preloadedDocuments: Map<number, PreloadedDocument>
-  errors: Array<{ documentId: number; error: string }>
+export interface PreloadedDocument {
+  description?: string
+  fileBuffer: Buffer
+  filename: string
+  filesize: number
+  id: number
+  mimeType: string
+}
+
+/**
+ * Creates a cloned document using pre-loaded file data
+ * This runs within the transaction scope but without HTTP operations
+ */
+export async function createClonedDocumentFromPreloaded(
+  req: PayloadRequest,
+  preloadedDocument: PreloadedDocument,
+  targetOrgId: number,
+): Promise<{ collection: 'documents'; id: number; }> {
+  const filename = `${Date.now()}-${preloadedDocument.filename}`
+
+  const file = {
+    data: preloadedDocument.fileBuffer,
+    mimetype: preloadedDocument.mimeType,
+    name: filename,
+    size: preloadedDocument.filesize,
+  }
+
+  const clonedDocument = await req.payload.create({
+    collection: 'documents',
+    data: {
+      description: preloadedDocument.description,
+      organisation: targetOrgId,
+    },
+    file,
+    req: {
+      ...req,
+      context: {
+        ...req.context,
+        targetOrganisationId: targetOrgId,
+      },
+    },
+  })
+
+  req.payload.logger.debug({
+    filename,
+    msg: 'Document created from pre-loaded data',
+    newId: clonedDocument.id,
+    originalId: preloadedDocument.id,
+  })
+
+  return {
+    collection: 'documents',
+    id: clonedDocument.id,
+  }
 }
 
 /**
@@ -26,8 +74,8 @@ export async function preloadDocuments(
   documentIds: number[],
 ): Promise<DocumentPreloader> {
   const preloader: DocumentPreloader = {
-    preloadedDocuments: new Map(),
     errors: [],
+    preloadedDocuments: new Map(),
   }
 
   if (documentIds.length === 0) {
@@ -35,9 +83,9 @@ export async function preloadDocuments(
   }
 
   req.payload.logger.info({
-    msg: 'Pre-loading documents for cloning',
     documentCount: documentIds.length,
     documentIds,
+    msg: 'Pre-loading documents for cloning',
   })
 
   // Remove duplicates
@@ -55,9 +103,9 @@ export async function preloadDocuments(
           preloader.preloadedDocuments.set(documentId, preloadedDoc)
 
           req.payload.logger.debug({
-            msg: 'Document pre-loaded successfully',
             documentId,
             filename: preloadedDoc.filename,
+            msg: 'Document pre-loaded successfully',
             size: preloadedDoc.filesize,
           })
         } catch (error) {
@@ -68,9 +116,9 @@ export async function preloadDocuments(
           })
 
           req.payload.logger.warn({
-            msg: 'Failed to pre-load document',
             documentId,
             error: errorMessage,
+            msg: 'Failed to pre-load document',
           })
         }
       }),
@@ -78,9 +126,9 @@ export async function preloadDocuments(
   }
 
   req.payload.logger.info({
+    errorCount: preloader.errors.length,
     msg: 'Document pre-loading completed',
     successCount: preloader.preloadedDocuments.size,
-    errorCount: preloader.errors.length,
   })
 
   return preloader
@@ -92,10 +140,10 @@ async function preloadSingleDocument(
 ): Promise<PreloadedDocument> {
   // Get document metadata
   const sourceDocument = await req.payload.findByID({
-    req,
     collection: 'documents',
-    id: documentId,
     depth: 0,
+    id: documentId,
+    req,
   })
 
   if (!sourceDocument) {
@@ -112,7 +160,7 @@ async function preloadSingleDocument(
   const downloadUrl = `${serverUrl}${url}`
 
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
+  const timeoutId = setTimeout(() => controller.abort(), 30_000)
 
   assert(process.env.PAYLOAD_API_KEY, 'PAYLOAD_API_KEY not set')
 
@@ -143,61 +191,14 @@ async function preloadSingleDocument(
     }
 
     return {
-      id: sourceDocument.id,
-      filename: sourceDocument.filename,
-      mimeType: sourceDocument.mimeType,
-      filesize: sourceDocument.filesize,
       description: sourceDocument.description || undefined,
       fileBuffer,
+      filename: sourceDocument.filename,
+      filesize: sourceDocument.filesize,
+      id: sourceDocument.id,
+      mimeType: sourceDocument.mimeType,
     }
   } finally {
     clearTimeout(timeoutId)
-  }
-}
-
-/**
- * Creates a cloned document using pre-loaded file data
- * This runs within the transaction scope but without HTTP operations
- */
-export async function createClonedDocumentFromPreloaded(
-  req: PayloadRequest,
-  preloadedDocument: PreloadedDocument,
-  targetOrgId: number,
-): Promise<{ id: number; collection: 'documents' }> {
-  const filename = `${Date.now()}-${preloadedDocument.filename}`
-
-  const file = {
-    data: preloadedDocument.fileBuffer,
-    name: filename,
-    mimetype: preloadedDocument.mimeType,
-    size: preloadedDocument.filesize,
-  }
-
-  const clonedDocument = await req.payload.create({
-    collection: 'documents',
-    data: {
-      description: preloadedDocument.description,
-      organisation: targetOrgId,
-    },
-    file,
-    req: {
-      ...req,
-      context: {
-        ...req.context,
-        targetOrganisationId: targetOrgId,
-      },
-    },
-  })
-
-  req.payload.logger.debug({
-    msg: 'Document created from pre-loaded data',
-    originalId: preloadedDocument.id,
-    newId: clonedDocument.id,
-    filename,
-  })
-
-  return {
-    id: clonedDocument.id,
-    collection: 'documents',
   }
 }

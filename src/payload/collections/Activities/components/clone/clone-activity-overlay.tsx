@@ -1,19 +1,20 @@
 'use client'
 import { Button, CloseMenuIcon, Drawer, useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
+import { Activity } from '@/payload-types'
 import {
   baseClass,
   drawerSlug,
 } from '@/payload/collections/Activities/components/clone/clone-activity-button'
-import { Activity } from '@/payload-types'
+import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
+import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
 import {
   CloneConfigurationForm,
   CloneStatusError,
   CloneStatusPartial,
   CloneStatusSuccess,
 } from '@/payload/utilities/cloning/ui/modal/clone-activities'
-import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
-import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
 
 type Props = {
   documents: Activity[] // Changed from 'activities' to match GenericCloneButton interface
@@ -23,31 +24,31 @@ type Props = {
 const cloneConfig: CloneConfig = {
   endpoint: '/api/activities/clone',
   resourceName: 'activities',
-  timeoutMultiplier: 300000,
   retryConfig: {
     limit: 2,
     methods: ['post'],
     statusCodes: [408, 413, 429, 500, 502, 503, 504],
   },
+  timeoutMultiplier: 300_000,
 }
 
 export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganisations }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
 
   const {
+    cloneResults,
     // State
     cloning,
+    errorMessage,
+    handleClose,
+    handleOrgSwitch,
+    // Actions
+    handleSubmit,
+    isSwitching,
+
     status,
     targetOrgId,
     targetOrgName,
-    cloneResults,
-    errorMessage,
-    isSwitching,
-
-    // Actions
-    handleSubmit,
-    handleClose,
-    handleOrgSwitch,
   } = useCloneOverlay(drawerSlug, targetOrganisations)
 
   const onFormSubmit = async (
@@ -61,7 +62,7 @@ export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganis
   }
 
   return (
-    <Drawer slug={drawerSlug} Header={null}>
+    <Drawer Header={null} slug={drawerSlug}>
       <div className={'mt-12 grid grid-cols-[auto_min-content]'}>
         <div className={'flex flex-col gap-8'}>
           <h1 className={'text-2xl font-bold'}>{t('cloneActivity:title' as any)}</h1>
@@ -80,23 +81,23 @@ export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganis
           {status === '' && (
             <CloneConfigurationForm
               activities={documents}
-              targetOrganisations={targetOrganisations}
-              onSubmit={onFormSubmit}
-              isCloning={cloning}
               baseClass={baseClass}
+              isCloning={cloning}
               onCancel={handleClose}
+              onSubmit={onFormSubmit}
+              targetOrganisations={targetOrganisations}
             />
           )}
           <CloneLoadingOverlay isVisible={cloning} />
-          {(status === 'error' || status === 'success' || status === 'partial') && (
+          {['error', 'partial', 'success'].includes(status) && (
             <div className="flex gap-2">
               {/* Show switch org button only on success */}
               {(status === 'success' || status === 'partial') && targetOrgId && (
                 <Button
                   buttonStyle="primary"
                   className={`${baseClass}__switch-org`}
-                  onClick={handleOrgSwitch}
-                  disabled={isSwitching}>
+                  disabled={isSwitching}
+                  onClick={handleOrgSwitch}>
                   {isSwitching ? (
                     <span className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

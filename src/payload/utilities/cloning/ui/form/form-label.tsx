@@ -2,19 +2,19 @@ import React from 'react'
 
 interface FormLabelProps {
   children: React.ReactNode
+  className?: string
   htmlFor?: string
   required?: boolean
-  className?: string
 }
 
 export const FormLabel: React.FC<FormLabelProps> = ({
   children,
+  className = '',
   htmlFor,
   required,
-  className = '',
 }) => {
   return (
-    <label htmlFor={htmlFor} className={`mb-2 block font-medium ${className}`.trim()}>
+    <label className={`mb-2 block font-medium ${className}`.trim()} htmlFor={htmlFor}>
       {children}
       {required && <span className="ml-1 text-red-500">*</span>}
     </label>

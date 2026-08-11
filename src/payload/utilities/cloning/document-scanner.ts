@@ -3,70 +3,6 @@
  * This allows pre-loading documents before starting the transaction
  */
 
-export function scanForDocumentIds(content: any): number[] {
-  const documentIds: number[] = []
-
-  if (!content || typeof content !== 'object') {
-    return documentIds
-  }
-
-  // Handle arrays
-  if (Array.isArray(content)) {
-    for (const item of content) {
-      documentIds.push(...scanForDocumentIds(item))
-    }
-    return documentIds
-  }
-
-  // Handle Lexical rich text (has root property)
-  if (content.root) {
-    documentIds.push(...scanNode(content.root))
-    return documentIds
-  }
-
-  // Handle general object traversal
-  for (const [key, value] of Object.entries(content)) {
-    if (key === 'blocks' || key === 'content' || key === 'description') {
-      // These are common rich text fields
-      documentIds.push(...scanForDocumentIds(value))
-    } else if (typeof value === 'object' && value !== null) {
-      documentIds.push(...scanForDocumentIds(value))
-    }
-  }
-
-  return documentIds
-}
-
-function scanNode(node: any): number[] {
-  const documentIds: number[] = []
-
-  if (!node || typeof node !== 'object') {
-    return documentIds
-  }
-
-  // Handle document relationships in links
-  if (node.type === 'link' && node.fields?.doc) {
-    const relationship = node.fields.doc
-
-    if (relationship.relationTo === 'documents' && relationship.value) {
-      const docId =
-        typeof relationship.value === 'object' ? relationship.value.id : relationship.value
-      if (typeof docId === 'number') {
-        documentIds.push(docId)
-      }
-    }
-  }
-
-  // Recursively scan children
-  if (Array.isArray(node.children)) {
-    for (const child of node.children) {
-      documentIds.push(...scanNode(child))
-    }
-  }
-
-  return documentIds
-}
-
 /**
  * Scans an activity for all document IDs that will need to be cloned
  */
@@ -98,6 +34,41 @@ export function scanActivityForDocumentIds(activity: any): number[] {
   // Description field
   if (activity.description) {
     documentIds.push(...scanForDocumentIds(activity.description))
+  }
+
+  return documentIds
+}
+
+export function scanForDocumentIds(content: any): number[] {
+  const documentIds: number[] = []
+
+  if (!content || typeof content !== 'object') {
+    return documentIds
+  }
+
+  // Handle arrays
+  if (Array.isArray(content)) {
+    for (const item of content) {
+      documentIds.push(...scanForDocumentIds(item))
+    }
+    return documentIds
+  }
+
+  // Handle Lexical rich text (has root property)
+  if (content.root) {
+    documentIds.push(...scanNode(content.root))
+    return documentIds
+  }
+
+  // Handle general object traversal
+  for (const [key, value] of Object.entries(content)) {
+    // Common rich text fields, plus any nested object worth traversing.
+    if (
+      ['blocks', 'content', 'description'].includes(key) ||
+      (typeof value === 'object' && value !== null)
+    ) {
+      documentIds.push(...scanForDocumentIds(value))
+    }
   }
 
   return documentIds
@@ -173,6 +144,36 @@ export function scanTaskListForDocumentIds(taskList: any): number[] {
       if (task.description) {
         documentIds.push(...scanForDocumentIds(task.description))
       }
+    }
+  }
+
+  return documentIds
+}
+
+function scanNode(node: any): number[] {
+  const documentIds: number[] = []
+
+  if (!node || typeof node !== 'object') {
+    return documentIds
+  }
+
+  // Handle document relationships in links
+  if (node.type === 'link' && node.fields?.doc) {
+    const relationship = node.fields.doc
+
+    if (relationship.relationTo === 'documents' && relationship.value) {
+      const docId =
+        typeof relationship.value === 'object' ? relationship.value.id : relationship.value
+      if (typeof docId === 'number') {
+        documentIds.push(docId)
+      }
+    }
+  }
+
+  // Recursively scan children
+  if (Array.isArray(node.children)) {
+    for (const child of node.children) {
+      documentIds.push(...scanNode(child))
     }
   }
 

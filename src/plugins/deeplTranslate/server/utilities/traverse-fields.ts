@@ -1,13 +1,13 @@
 import type { Field } from 'payload'
 
 import ObjectID from 'bson-objectid'
+import { isObject } from 'es-toolkit/compat'
 import { tabHasName } from 'payload/shared'
 
 import type { ValueToTranslate } from '../types'
 
-import { isEmpty } from '../../utils/isEmpty'
+import { isEmpty } from '../../utils/is-empty'
 import { traverseRichText } from './traverse-rich-text'
-import { isObject } from 'es-toolkit/compat'
 
 export const traverseFields = ({
   dataFrom,
@@ -28,8 +28,8 @@ export const traverseFields = ({
   translatedData: Record<string, unknown>
   valuesToTranslate: ValueToTranslate[]
 }) => {
-  siblingDataFrom = siblingDataFrom ?? dataFrom
-  siblingDataTranslated = siblingDataTranslated ?? translatedData
+  siblingDataFrom ??= dataFrom
+  siblingDataTranslated ??= translatedData
 
   for (const field of fields) {
     // Skip virtual payload fields as they can't be translated
@@ -48,7 +48,7 @@ export const traverseFields = ({
         }
 
         let arrayDataTranslated =
-          (siblingDataTranslated[field.name] as { id: string }[] | undefined) ?? []
+          (siblingDataTranslated[field.name] as undefined | { id: string }[]) ?? []
 
         if (field.localized || localizedParent) {
           if (arrayDataTranslated.length > 0 && emptyOnly) {
@@ -60,7 +60,7 @@ export const traverseFields = ({
           }))
         }
 
-        arrayDataTranslated.forEach((item, index) => {
+        for (const [index, item] of arrayDataTranslated.entries()) {
           traverseFields({
             dataFrom,
             emptyOnly,
@@ -71,7 +71,7 @@ export const traverseFields = ({
             translatedData,
             valuesToTranslate,
           })
-        })
+        }
 
         siblingDataTranslated[field.name] = arrayDataTranslated
 
@@ -89,7 +89,7 @@ export const traverseFields = ({
         }
 
         let blocksDataTranslated =
-          (siblingDataTranslated[field.name] as { blockType: string; id: string }[] | undefined) ??
+          (siblingDataTranslated[field.name] as undefined | { blockType: string; id: string }[]) ??
           []
 
         if (field.localized || localizedParent) {
@@ -98,16 +98,16 @@ export const traverseFields = ({
           }
 
           blocksDataTranslated = blocksDataFrom.map(({ blockType }) => ({
-            id: ObjectID().toHexString(),
             blockType,
+            id: ObjectID().toHexString(),
           }))
         }
 
-        blocksDataTranslated.forEach((item, index) => {
+        for (const [index, item] of blocksDataTranslated.entries()) {
           const block = field.blocks.find((each) => each.slug === item.blockType)
 
           if (!block) {
-            return
+            continue
           }
 
           // Use the specific block data as the new context
@@ -123,7 +123,7 @@ export const traverseFields = ({
             translatedData,
             valuesToTranslate,
           })
-        })
+        }
 
         siblingDataTranslated[field.name] = blocksDataTranslated
 
@@ -138,52 +138,13 @@ export const traverseFields = ({
       case 'point':
       case 'radio':
       case 'select':
-      case 'upload':
+      case 'upload': {
         siblingDataTranslated[field.name] = siblingDataFrom[field.name]
         break
+      }
 
-      case 'relationship':
-        // Copy the relationship reference as-is
-        // Relationship translation will be handled separately in the operation
-        siblingDataTranslated[field.name] = siblingDataFrom[field.name]
-        break
-      case 'json':
-        siblingDataTranslated[field.name] = siblingDataFrom[field.name]
-
-        try {
-          const jsonValue = siblingDataFrom[field.name]
-
-          // Check if the JSON value is an object with a text property
-          if (isObject(jsonValue) && jsonValue !== null) {
-            // Handle objects with a text property
-            if ('text' in jsonValue && typeof jsonValue.text === 'string') {
-              valuesToTranslate.push({
-                onTranslate: (translated: string) => {
-                  try {
-                    // Safely update the text property
-                    const targetObject = siblingDataTranslated[field.name]
-                    if (isObject(targetObject) && targetObject !== null) {
-                      ;(targetObject as any).text = translated
-                    }
-                  } catch (e) {
-                    console.warn(
-                      `Failed to update translated text for JSON field ${field.name}:`,
-                      e,
-                    )
-                  }
-                },
-                value: jsonValue.text,
-              })
-            }
-          }
-        } catch (e) {
-          // Log the error but continue processing other fields
-          console.warn(`Error processing JSON field ${field.name}:`, e)
-        }
-
-        break
       case 'collapsible':
-      case 'row':
+      case 'row': {
         traverseFields({
           dataFrom,
           emptyOnly,
@@ -195,6 +156,7 @@ export const traverseFields = ({
           valuesToTranslate,
         })
         break
+      }
       case 'group': {
         if ('name' in field) {
           const groupDataFrom = siblingDataFrom[field.name] as Record<string, unknown>
@@ -225,6 +187,46 @@ export const traverseFields = ({
 
         break
       }
+      case 'json': {
+        siblingDataTranslated[field.name] = siblingDataFrom[field.name]
+
+        try {
+          const jsonValue = siblingDataFrom[field.name]
+
+          // Check if the JSON value is an object with a text property
+          // Handle objects with a text property
+            if (isObject(jsonValue) && jsonValue !== null && 'text' in jsonValue && typeof jsonValue.text === 'string') {
+              valuesToTranslate.push({
+                onTranslate: (translated: string) => {
+                  try {
+                    // Safely update the text property
+                    const targetObject = siblingDataTranslated[field.name]
+                    if (isObject(targetObject) && targetObject !== null) {
+                      ;(targetObject as any).text = translated
+                    }
+                  } catch (error) {
+                    console.warn(
+                      `Failed to update translated text for JSON field ${field.name}:`,
+                      error,
+                    )
+                  }
+                },
+                value: jsonValue.text,
+              })
+            }
+        } catch (error) {
+          // Log the error but continue processing other fields
+          console.warn(`Error processing JSON field ${field.name}:`, error)
+        }
+
+        break
+      }
+      case 'relationship': {
+        // Copy the relationship reference as-is
+        // Relationship translation will be handled separately in the operation
+        siblingDataTranslated[field.name] = siblingDataFrom[field.name]
+        break
+      }
       case 'richText': {
         if (!(field.localized || localizedParent) || isEmpty(siblingDataFrom[field.name])) {
           break
@@ -245,7 +247,7 @@ export const traverseFields = ({
         }
 
         // Deep clone the Lexical content to avoid reference issues
-        const clonedRichText = JSON.parse(JSON.stringify(richTextDataFrom))
+        const clonedRichText = structuredClone(richTextDataFrom)
         siblingDataTranslated[field.name] = clonedRichText
 
         const root = clonedRichText.root as Record<string, unknown>
@@ -270,7 +272,7 @@ export const traverseFields = ({
         break
       }
 
-      case 'tabs':
+      case 'tabs': {
         for (const tab of field.tabs) {
           const hasName = tabHasName(tab)
 
@@ -304,8 +306,9 @@ export const traverseFields = ({
         }
 
         break
+      }
       case 'text':
-      case 'textarea':
+      case 'textarea': {
         if (field.custom && typeof field.custom === 'object' && field.custom.deepltranslateSkip) {
           break
         }
@@ -329,9 +332,11 @@ export const traverseFields = ({
           value: siblingDataFrom[field.name] as string | undefined,
         })
         break
+      }
 
-      default:
+      default: {
         break
+      }
     }
   }
 }

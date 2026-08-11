@@ -1,23 +1,25 @@
 import { DrawerToggler } from '@payloadcms/ui'
-import React from 'react'
-import { FetchLegacyDocsOverlay } from './fetch-legacy-docs-overlay'
-import { User } from '@/payload-types'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
-import { Payload } from 'payload'
 import { toNumber } from 'es-toolkit/compat'
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { Payload } from 'payload'
+import React from 'react'
+
+import { User } from '@/payload-types'
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
+import { FetchLegacyDocsOverlay } from './fetch-legacy-docs-overlay'
 
 export const baseClass = 'fetch-legacy-docs-button'
 export const drawerSlug = 'fetch-legacy-docs'
 
 type Props = {
-  user: User
   payload: Payload
+  user: User
 }
 
-export const FetchLegacyDocsButton: React.FC<Props> = async ({ user, payload }) => {
+export const FetchLegacyDocsButton: React.FC<Props> = async ({ payload, user }) => {
   if (!user) return null
 
   const selectedOrgId = toNumber(getIdFromRelation(user.selectedOrganisation))
@@ -26,13 +28,13 @@ export const FetchLegacyDocsButton: React.FC<Props> = async ({ user, payload }) 
   // Fetch activities from the selected organisation
   const activities = await payload.find({
     collection: 'activities',
+    depth: 0,
+    limit: 1000, // Get all activities
     where: {
       organisation: {
         equals: selectedOrgId,
       },
     },
-    depth: 0,
-    limit: 1000, // Get all activities
   })
 
   if (!selectedOrgId) {

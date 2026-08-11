@@ -1,9 +1,11 @@
-import { Activity } from '@/payload-types'
 import { isArray } from 'es-toolkit/compat'
-import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 import { PayloadRequest } from 'payload'
-import { stripBlocks } from '@/payload/utilities/cloning/strip-blocks'
+
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
+
+import { Activity } from '@/payload-types'
+import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
+import { stripBlocks } from '@/payload/utilities/cloning/strip-blocks'
 
 export const stripActivity = async (
   obj: Activity,
@@ -19,7 +21,7 @@ export const stripActivity = async (
     throw new Error('stripActivity requires an organisationId')
   }
 
-  const { id, createdAt, createdBy, updatedAt, updatedBy, ...stripped } = obj
+  const { createdAt, createdBy, id, updatedAt, updatedBy, ...stripped } = obj
 
   if (stripped.description) {
     const result = await processRichTextField(

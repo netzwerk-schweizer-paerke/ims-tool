@@ -1,31 +1,19 @@
 // New function to handle relationship translations
 import type { PayloadRequest, TypedLocale } from 'payload'
+
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { translateOperation } from '@/plugins/deeplTranslate'
 
-// Helper function to extract ID from polymorphic relationships
-function extractIdFromPolymorphicRelation(relation: any): string | number | null {
-  // Handle polymorphic relationships: { relationTo: "collection", value: { id: 123, ... } }
-  if (relation && typeof relation === 'object' && 'relationTo' in relation && 'value' in relation) {
-    const value = relation.value
-    if (value && typeof value === 'object' && 'id' in value) {
-      return value.id as string | number
-    }
-  }
-  // Fall back to standard extraction
-  return getIdFromRelation(relation)
-}
-
 export async function translateRelationships(args: {
+  depth: number
   doc: Record<string, any>
   fields: any[]
   fromLocale: TypedLocale
-  toLocale: TypedLocale
-  depth: number
-  req: PayloadRequest
   overrideAccess?: boolean
+  req: PayloadRequest
+  toLocale: TypedLocale
 }) {
-  const { doc, fields, fromLocale, toLocale, depth, req, overrideAccess } = args
+  const { depth, doc, fields, fromLocale, overrideAccess, req, toLocale } = args
 
   console.log('Starting relationship translation with depth:', depth)
   console.log('Document keys:', Object.keys(doc).slice(0, 10))
@@ -43,7 +31,7 @@ export async function translateRelationships(args: {
       console.log(`Found relationship field: ${field.name}`)
       const relationValue = doc[field.name]
       console.log(`  Value type: ${typeof relationValue}`)
-      console.log(`  Value (first 200 chars): ${JSON.stringify(relationValue).substring(0, 200)}`)
+      console.log(`  Value (first 200 chars): ${JSON.stringify(relationValue).slice(0, 200)}`)
       const relationTo = Array.isArray(field.relationTo) ? field.relationTo : [field.relationTo]
       console.log(`  Relation targets: ${relationTo.join(', ')}`)
 
@@ -56,7 +44,7 @@ export async function translateRelationships(args: {
 
         console.log(
           'Processing relation:',
-          typeof relation === 'object' ? JSON.stringify(relation).substring(0, 100) : relation,
+          typeof relation === 'object' ? JSON.stringify(relation).slice(0, 100) : relation,
         )
 
         // Extract ID from relation - handle polymorphic relationships
@@ -94,16 +82,16 @@ export async function translateRelationships(args: {
           console.log(`Calling translateOperation for ${relationCollection}/${relationId}`)
           // Recursively translate the related document
           await translateOperation({
-            id: relationId,
             collectionSlug: relationCollection as any,
+            emptyOnly: false,
+            id: relationId,
+            includeRelationships: true,
             locale: toLocale,
             localeFrom: fromLocale,
             overrideAccess,
+            relationshipDepth: depth - 1,
             req,
             update: true,
-            emptyOnly: false,
-            includeRelationships: true,
-            relationshipDepth: depth - 1,
           })
 
           console.log(`✅ Translated relationship: ${relationCollection}/${relationId}`)
@@ -120,13 +108,13 @@ export async function translateRelationships(args: {
     if (field.type === 'group' && field.fields && doc[field.name]) {
       console.log(`Found group field: ${field.name}`)
       await translateRelationships({
+        depth,
         doc: doc[field.name],
         fields: field.fields,
         fromLocale,
-        toLocale,
-        depth,
-        req,
         overrideAccess,
+        req,
+        toLocale,
       })
     }
 
@@ -134,13 +122,13 @@ export async function translateRelationships(args: {
     if (field.type === 'row' && field.fields) {
       console.log(`Found row field, processing ${field.fields.length} nested fields`)
       await translateRelationships({
+        depth,
         doc: doc,
         fields: field.fields,
         fromLocale,
-        toLocale,
-        depth,
-        req,
         overrideAccess,
+        req,
+        toLocale,
       })
     }
 
@@ -148,18 +136,20 @@ export async function translateRelationships(args: {
     if (field.type === 'tabs' && field.tabs) {
       console.log(`Found tabs field with ${field.tabs.length} tabs`)
       for (const tab of field.tabs) {
-        if (tab.fields && doc[tab.name]) {
-          console.log(`  Processing tab: ${tab.name}`)
-          await translateRelationships({
-            doc: doc[tab.name],
-            fields: tab.fields,
-            fromLocale,
-            toLocale,
-            depth,
-            req,
-            overrideAccess,
-          })
+        if (!(tab.fields && doc[tab.name])) {
+        	continue;
         }
+
+        console.log(`  Processing tab: ${tab.name}`)
+        await translateRelationships({
+          depth,
+          doc: doc[tab.name],
+          fields: tab.fields,
+          fromLocale,
+          overrideAccess,
+          req,
+          toLocale,
+        })
       }
     }
 
@@ -178,13 +168,13 @@ export async function translateRelationships(args: {
           if (blockDef && blockDef.fields) {
             console.log(`  Block has ${blockDef.fields.length} fields`)
             await translateRelationships({
+              depth,
               doc: block,
               fields: blockDef.fields,
               fromLocale,
-              toLocale,
-              depth,
-              req,
               overrideAccess,
+              req,
+              toLocale,
             })
           }
         }
@@ -198,16 +188,29 @@ export async function translateRelationships(args: {
         for (const item of arrayItems) {
           if (!item) continue
           await translateRelationships({
+            depth,
             doc: item,
             fields: field.fields,
             fromLocale,
-            toLocale,
-            depth,
-            req,
             overrideAccess,
+            req,
+            toLocale,
           })
         }
       }
     }
   }
+}
+
+// Helper function to extract ID from polymorphic relationships
+function extractIdFromPolymorphicRelation(relation: any): null | number | string {
+  // Handle polymorphic relationships: { relationTo: "collection", value: { id: 123, ... } }
+  if (relation && typeof relation === 'object' && 'relationTo' in relation && 'value' in relation) {
+    const value = relation.value
+    if (value && typeof value === 'object' && 'id' in value) {
+      return value.id as number | string
+    }
+  }
+  // Fall back to standard extraction
+  return getIdFromRelation(relation)
 }

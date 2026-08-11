@@ -5,20 +5,20 @@ import { deepMerge } from 'payload/shared'
 import type { DeepLTranslateConfig } from './types'
 
 import { CustomButton } from './client/components/buttons/custom-button'
-import { translations } from './i18n-translations'
-import { translateEndpoint } from './server/endpoints/translate'
-import { translateOperation } from './server/operations/translate-operation'
 import { translationMetaField } from './fields/translation-meta-field'
 import {
-  createTrackTranslationChangesHookForCollection,
-  createTrackTranslationChangesHookForGlobal,
   createClearOutdatedHookForCollection,
   createClearOutdatedHookForGlobal,
+  createTrackTranslationChangesHookForCollection,
+  createTrackTranslationChangesHookForGlobal,
 } from './hooks/track-translation-changes'
+import { translations } from './i18n-translations'
+import { translateEndpoint } from './server/endpoints/translate'
 
-export * from './server/services/resolver-types'
 
-export { translateOperation }
+export {translateOperation} from './server/operations/translate-operation'
+
+
 
 export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (pluginConfig) => {
   return (config) => {
@@ -33,7 +33,7 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
     const updatedConfig: Config = {
       ...config,
       admin: {
-        ...(config.admin ?? {}),
+        ...config.admin,
       },
       collections:
         config.collections?.map((collection) => {
@@ -44,11 +44,11 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
           const collectionWithTranslation = {
             ...collection,
             admin: {
-              ...(collection.admin ?? {}),
+              ...collection.admin,
               components: {
-                ...(collection.admin?.components ?? {}),
+                ...collection.admin?.components,
                 edit: {
-                  ...(collection.admin?.components?.edit ?? {}),
+                  ...collection.admin?.components?.edit,
                   PublishButton: CustomButton('publish'),
                   SaveButton: CustomButton('save'),
                 },
@@ -78,7 +78,7 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
           return collectionWithTranslation
         }) ?? [],
       custom: {
-        ...(config.custom ?? {}),
+        ...config.custom,
         deepltranslate: pluginConfig,
       },
       endpoints: [
@@ -98,11 +98,11 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
           const globalWithTranslation = {
             ...global,
             admin: {
-              ...(global.admin ?? {}),
+              ...global.admin,
               components: {
-                ...(global.admin?.components ?? {}),
+                ...global.admin?.components,
                 elements: {
-                  ...(global.admin?.components?.elements ?? {}),
+                  ...global.admin?.components?.elements,
                   PublishButton: CustomButton('publish'),
                   SaveButton: CustomButton('save'),
                 },
@@ -139,3 +139,5 @@ export const deepLTranslate: (pluginConfig: DeepLTranslateConfig) => Plugin = (p
     return updatedConfig
   }
 }
+
+export * from './server/services/resolver-types'

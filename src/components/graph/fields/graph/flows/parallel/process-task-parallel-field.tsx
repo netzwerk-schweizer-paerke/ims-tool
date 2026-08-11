@@ -1,15 +1,16 @@
 'use client'
-import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
-import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
-import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
-import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
-import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
-import { Xwrapper } from '@/lib/xarrows/src'
-import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
+import { useField } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useField } from '@payloadcms/ui'
+
+import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
+import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
+import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
+import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
+import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
+import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
+import { Xwrapper } from '@/lib/xarrows/src'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -38,9 +39,9 @@ const initialState: ComponentState = {
 
 export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
   const {
+    field: { required },
     path,
     validate,
-    field: { required },
   } = props
 
   const memoizedValidate = useCallback(
@@ -53,16 +54,14 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
     [validate, required],
   )
 
-  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
 
   // Use local state for textareas to reduce re-renders of the entire component
   const [localTextLeft, setLocalTextLeft] = useState('')
   const [localTextRight, setLocalTextRight] = useState('')
 
   useEffect(() => {
-    if (!value) {
-      setValue(initialState)
-    } else {
+    if (value) {
       // Only update local text if it differs from the field value
       if (value.textLeft !== localTextLeft) {
         setLocalTextLeft(value.textLeft || '')
@@ -70,6 +69,8 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
       if (value.textRight !== localTextRight) {
         setLocalTextRight(value.textRight || '')
       }
+    } else {
+      setValue(initialState)
     }
   }, [setValue, value, localTextLeft, localTextRight])
 
@@ -97,10 +98,10 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
   )
 
   // Memoize arrow hook to prevent recreation
-  const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state: value,
-    setState: setValue,
+  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
     connections: processTaskParallelConnections,
+    setState: setValue,
+    state: value,
   })
 
   // Memoize button click handlers
@@ -112,11 +113,11 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
   }, [isLoaded, renderArrows])
 
   return (
-    <div ref={ref} className={'process-task-parallel-block relative h-full'}>
+    <div className={'process-task-parallel-block relative h-full'} ref={ref}>
       <Xwrapper>
         <div className={'grid size-full grid-cols-2'}>
           <BlockTaskWrapper>
-            <RootTarget id={arrowSetId} comboTarget={'left'}>
+            <RootTarget comboTarget={'left'} id={arrowSetId}>
               <TaskShapeWrapper mode={'edit'}>
                 <textarea
                   className={
@@ -129,7 +130,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
             </RootTarget>
           </BlockTaskWrapper>
           <BlockTaskWrapper>
-            <RootTarget id={arrowSetId} comboTarget={'right'}>
+            <RootTarget comboTarget={'right'} id={arrowSetId}>
               <TaskShapeWrapper mode={'edit'}>
                 <textarea
                   className={

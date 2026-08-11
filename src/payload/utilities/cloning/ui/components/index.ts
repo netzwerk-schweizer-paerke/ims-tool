@@ -1,1 +1,1 @@
-export { CloneLoadingOverlay } from './CloneLoadingOverlay'
+export { CloneLoadingOverlay } from './clone-loading-overlay'

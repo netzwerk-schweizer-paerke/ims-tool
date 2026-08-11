@@ -1,10 +1,10 @@
 'use client'
-import { ProcessTaskParallelBlock } from '@/payload-types'
-import { BlockWrapper } from '@/components/views/flow/block-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
-import { TaskFlowArrows } from '@/components/views/flow/task-flow-arrows'
+import { BlockWrapper } from '@/components/views/flow/block-wrapper'
 import { BlockMetadata } from '@/components/views/flow/lib/block-metadata'
+import { TaskFlowArrows } from '@/components/views/flow/task-flow-arrows'
 import { Xwrapper } from '@/lib/xarrows/src'
+import { ProcessTaskParallelBlock } from '@/payload-types'
 
 type Props = {
   block: ProcessTaskParallelBlock

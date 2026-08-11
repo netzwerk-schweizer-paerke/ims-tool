@@ -1,18 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import ky from 'ky'
 import { usePreferences } from '@payloadcms/ui'
+import ky from 'ky'
+import { useState } from 'react'
+
 import { Organisation } from '@/payload-types'
 
 type UseOrganisationSwitchResult = {
+  error: null | string
+  isSwitching: boolean
   switchOrganisation: (
     userId: number,
     targetOrgId: number,
     targetOrg?: Organisation,
   ) => Promise<void>
-  isSwitching: boolean
-  error: string | null
 }
 
 /**
@@ -21,7 +22,7 @@ type UseOrganisationSwitchResult = {
  */
 export function useOrganisationSwitch(): UseOrganisationSwitchResult {
   const [isSwitching, setIsSwitching] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<null | string>(null)
   const { setPreference } = usePreferences()
 
   const switchOrganisation = async (
@@ -35,10 +36,10 @@ export function useOrganisationSwitch(): UseOrganisationSwitchResult {
     try {
       // Update the user's selected organisation
       await ky.patch(`/api/users/${userId}`, {
+        credentials: 'include',
         json: {
           selectedOrganisation: targetOrgId,
         },
-        credentials: 'include',
       })
 
       // Update language preference if the target org has a language set
@@ -55,17 +56,17 @@ export function useOrganisationSwitch(): UseOrganisationSwitchResult {
 
       // Reload to apply the new organisation context
       window.location.reload()
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to switch organisation'
+    } catch (error_) {
+      const errorMessage = error_ instanceof Error ? error_.message : 'Failed to switch organisation'
       setError(errorMessage)
       setIsSwitching(false)
-      throw err
+      throw error_
     }
   }
 
   return {
-    switchOrganisation,
-    isSwitching,
     error,
+    isSwitching,
+    switchOrganisation,
   }
 }

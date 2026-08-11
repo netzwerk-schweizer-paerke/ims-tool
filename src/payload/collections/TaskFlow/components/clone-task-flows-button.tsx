@@ -1,26 +1,28 @@
-import { GenericCloneButton } from '@/payload/utilities/cloning/ui/GenericCloneButton'
-import { CloneTaskFlowOverlay } from './clone-task-flow-overlay'
-import { User } from '@/payload-types'
 import { Payload } from 'payload'
+
+import { User } from '@/payload-types'
+import { GenericCloneButton } from '@/payload/utilities/cloning/ui/generic-clone-button'
+
+import { CloneTaskFlowOverlay } from './clone-task-flow-overlay'
 
 export const baseClass = 'clone-task-flow-button'
 export const drawerSlug = 'clone-task-flows'
 
 type Props = {
-  user: User
   payload: Payload
+  user: User
 }
 
-export const CloneTaskFlowsButton: React.FC<Props> = async ({ user, payload }) => {
+export const CloneTaskFlowsButton: React.FC<Props> = async ({ payload, user }) => {
   return (
     <GenericCloneButton
-      user={user}
-      payload={payload}
-      collectionSlug="task-flows"
-      translationKey="cloneTaskFlow:button"
-      drawerSlug={drawerSlug}
       baseClass={baseClass}
+      collectionSlug="task-flows"
+      drawerSlug={drawerSlug}
       OverlayComponent={CloneTaskFlowOverlay}
+      payload={payload}
+      translationKey="cloneTaskFlow:button"
+      user={user}
     />
   )
 }

@@ -1,22 +1,23 @@
 import React from 'react'
-import { FormCheckbox } from './FormCheckbox'
+
+import { FormCheckbox } from './form-checkbox'
 
 interface SelectAllCheckboxProps {
   checked: boolean
-  onChange: () => void
-  label?: string
   className?: string
+  label?: string
+  onChange: () => void
 }
 
 export const SelectAllCheckbox: React.FC<SelectAllCheckboxProps> = ({
   checked,
-  onChange,
-  label = 'Select All',
   className = '',
+  label = 'Select All',
+  onChange,
 }) => {
   return (
     <div className={`mb-2 border-b pb-2 ${className}`.trim()}>
-      <FormCheckbox checked={checked} onChange={onChange} label={label} className="font-medium" />
+      <FormCheckbox checked={checked} className="font-medium" label={label} onChange={onChange} />
     </div>
   )
 }

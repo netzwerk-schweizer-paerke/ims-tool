@@ -1,8 +1,9 @@
 import type { Access } from 'payload'
+
+import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
-import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 
 /**
  * Access control for organization collections
@@ -40,7 +41,7 @@ export const organisationCollectionReadAccess: Access = ({ req: { payload, user 
         }
         return result
       },
-      [] as (string | number)[],
+      [] as (number | string)[],
     ) || []
 
   if (accessibleOrganizationIds.length === 0) {

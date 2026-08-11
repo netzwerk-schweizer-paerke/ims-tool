@@ -2,6 +2,10 @@ import type { CollectionSlug, GlobalSlug } from 'payload'
 
 export type DeepLTranslateConfig = {
   /**
+   * DeepL API key
+   */
+  apiKey: string
+  /**
    * Collections with DeepL Translate enabled
    */
   collections: CollectionSlug[]
@@ -13,10 +17,6 @@ export type DeepLTranslateConfig = {
    * Globals with DeepL Translate enabled
    */
   globals: GlobalSlug[]
-  /**
-   * DeepL API key
-   */
-  apiKey: string
   /**
    * Track outdated translations (optional)
    */

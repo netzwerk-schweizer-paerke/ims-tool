@@ -1,38 +1,39 @@
 'use client'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { debounce } from 'es-toolkit'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+
 import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
 import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 
 export const connectionTypes = ['in', 'out', 'pass-by', 'in-bottom', 'out-top', 'none'] as const
 
-export type ConnectionsType = {
-  position: 'top' | 'bottom' | 'left' | 'right'
-  type: (typeof connectionTypes)[number]
-}[]
-
 export type ConnectionStateType = {
   connections: ConnectionsType
   text?: string
   textBottom?: string
-  textTop?: string
   textLeft?: string
   textRight?: string
+  textTop?: string
 }
 
+export type ConnectionsType = {
+  position: 'bottom' | 'left' | 'right' | 'top'
+  type: (typeof connectionTypes)[number]
+}[]
+
 type ArrowConnections = {
-  position: string
-  options: readonly string[]
   definitions: Record<string, any[]>
+  options: readonly string[]
+  position: string
 }[]
 
 type Props = {
-  state?: ConnectionStateType
-  setState: any
   connections: ArrowConnections
+  setState: any
+  state?: ConnectionStateType
 }
 
-export const useArrows = ({ state, setState, connections }: Props) => {
+export const useArrows = ({ connections, setState, state }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const arrowSetId = useId()
   const updateXarrow = useXarrow()
@@ -75,10 +76,10 @@ export const useArrows = ({ state, setState, connections }: Props) => {
       return
     }
     const nextIndex = currentIndex + 1
-    if (!options[nextIndex]) {
-      setConnectionType(options[0], position)
-    } else {
+    if (options[nextIndex]) {
       setConnectionType(options[nextIndex], position)
+    } else {
+      setConnectionType(options[0], position)
     }
   }
 
@@ -109,22 +110,21 @@ export const useArrows = ({ state, setState, connections }: Props) => {
   const renderArrows = useCallback(() => {
     if (!state?.connections) return null
     return state.connections
-      .map((connection) => {
+      .flatMap((connection) => {
         const definition = connections.find((c) => c.position === connection.position)?.definitions
         if (!definition) {
           throw new Error(`No definition found for arrow position: ${connection.position}`)
         }
         return definition[connection.type]
       })
-      .flat()
       .map((arrow, index) => {
         if (!arrow) return null
         const start = `${arrowSetId}-${arrow.start}`
         const end = `${arrowSetId}-${arrow.end}`
-        const props = { ...arrow, start, end, ...arrowStyle }
+        const props = { ...arrow, end, start, ...arrowStyle }
         return <Xarrow key={index} {...props} />
       })
   }, [state, connections, arrowSetId])
 
-  return { ref, toggleConnectionType, renderArrows, isLoaded, arrowSetId, updateXarrow }
+  return { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType, updateXarrow }
 }

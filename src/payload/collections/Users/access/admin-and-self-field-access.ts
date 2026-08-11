@@ -1,4 +1,5 @@
 import type { FieldAccess } from 'payload'
+
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 
@@ -16,7 +17,7 @@ import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
  * @param {Object} params - Payload field access control function parameters
  * @returns {boolean} True if access is granted, false otherwise
  */
-export const adminAndSelfFieldAccess: FieldAccess = async ({ req: { user }, doc, data }) => {
+export const adminAndSelfFieldAccess: FieldAccess = async ({ data, doc, req: { user } }) => {
   if (!user) return false
 
   const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
@@ -25,11 +26,9 @@ export const adminAndSelfFieldAccess: FieldAccess = async ({ req: { user }, doc,
     return true
   }
 
-  if (doc && data) {
-    if (doc.id === user.id) {
+  if (doc && data && doc.id === user.id) {
       return true
     }
-  }
 
   return false
 }

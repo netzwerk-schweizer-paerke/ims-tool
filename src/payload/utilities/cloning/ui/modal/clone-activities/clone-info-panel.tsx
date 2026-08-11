@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Translate } from '@/lib/translate'
 
 export const CloneInfoPanel: React.FC = () => {

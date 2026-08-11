@@ -1,10 +1,12 @@
 import type { FieldAccess } from 'payload'
 
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
-import { checkOrganisationRoles } from '../../../utilities/check-organisation-roles'
-import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
-import { User } from '@/payload-types'
 import { isNumber } from 'es-toolkit/compat'
+
+import { User } from '@/payload-types'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
+
+import { checkOrganisationRoles } from '../../../utilities/check-organisation-roles'
 
 /**
  * Field access control that grants access to organization administrators.
@@ -21,8 +23,8 @@ import { isNumber } from 'es-toolkit/compat'
  */
 export const organisationAdminFieldAccess: FieldAccess<User> = (args) => {
   const {
-    req: { user },
     doc,
+    req: { user },
   } = args
 
   // Always grant access to super admins

@@ -1,40 +1,41 @@
 'use client'
-import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
-import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
-import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
-import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
-import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
-import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
-import { Xwrapper } from '@/lib/xarrows/src'
-import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
+import { useField } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
 import { useCallback, useEffect, useMemo } from 'react'
-import { useField } from '@payloadcms/ui'
+
+import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
+import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
+import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
+import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
+import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
+import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
+import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
+import { Xwrapper } from '@/lib/xarrows/src'
 
 type ComponentState = {
-  enabled: boolean
   connections: ConnectionsType
+  enabled: boolean
   text: string
 }
 
 const initialState: ComponentState = {
-  enabled: true,
   connections: [
     {
       position: 'right',
       type: 'out',
     },
   ],
+  enabled: true,
   text: '',
 }
 
 export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
   const {
+    field: { required },
     path,
     validate,
-    field: { required },
   } = props
 
   const memoizedValidate = useCallback(
@@ -47,10 +48,10 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
     [validate, required],
   )
 
-  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
 
   // Use the centralized text field hook instead of local implementation
-  const { localText, handleTextChange } = useTextField(value, setValue)
+  const { handleTextChange, localText } = useTextField(value, setValue)
 
   // Initialize state once
   useEffect(() => {
@@ -60,10 +61,10 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
   }, [setValue, value])
 
   // Memoize arrow hook to prevent recreation
-  const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state: value,
-    setState: setValue,
+  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
     connections: processIoConnections,
+    setState: setValue,
+    state: value,
   })
 
   // Memoize toggleEnabled handler

@@ -1,26 +1,19 @@
 import { GenericCloneStatisticsFinalized } from '../../types'
 
+export interface CloneApiResponse {
+  message: string
+  results: GenericCloneStatisticsFinalized
+}
+
 export interface CloneConfig {
   endpoint: string
   resourceName: string
-  timeoutMultiplier?: number
   retryConfig?: {
     limit: number
     methods: string[]
     statusCodes: number[]
   }
-}
-
-export type CloneStatus = 'error' | 'success' | 'partial' | ''
-
-export interface CloneResults {
-  data: GenericCloneStatisticsFinalized
-  successLevel: 'success' | 'partial' | 'fail'
-}
-
-export interface TargetOrganisation {
-  label: string
-  value: number
+  timeoutMultiplier?: number
 }
 
 export interface CloneFormData {
@@ -28,25 +21,16 @@ export interface CloneFormData {
   targetOrganisation: TargetOrganisation
 }
 
-export interface CloneApiResponse {
-  message: string
-  results: GenericCloneStatisticsFinalized
+export interface CloneResults {
+  data: GenericCloneStatisticsFinalized
+  successLevel: 'fail' | 'partial' | 'success'
 }
 
-export interface UseCloneStateResult {
-  cloning: boolean
-  status: CloneStatus
-  targetOrgId: number | null
-  targetOrgName: string
-  cloneResults: GenericCloneStatisticsFinalized | null
-  errorMessage: string
-  setCloning: (cloning: boolean) => void
-  setStatus: (status: CloneStatus) => void
-  setTargetOrgId: (id: number | null) => void
-  setTargetOrgName: (name: string) => void
-  setCloneResults: (results: GenericCloneStatisticsFinalized | null) => void
-  setErrorMessage: (message: string) => void
-  resetState: () => void
+export type CloneStatus = '' | 'error' | 'partial' | 'success'
+
+export interface TargetOrganisation {
+  label: string
+  value: number
 }
 
 export interface UseCloneApiResult {
@@ -58,9 +42,12 @@ export interface UseCloneApiResult {
   processError: (error: any) => string
 }
 
-export interface UseCloneLoadingStateResult {
-  // No return values needed - just side effects
+export interface UseCloneFormSubmitResult {
+  handleSubmit: (config: CloneConfig, formData: CloneFormData) => Promise<void>
 }
+
+// No return values needed - just side effects (the hook returns `{}`).
+export type UseCloneLoadingStateResult = Record<string, never>
 
 export interface UseCloneModalResult {
   handleClose: () => void
@@ -71,22 +58,34 @@ export interface UseCloneOrgSwitchResult {
   isSwitching: boolean
 }
 
-export interface UseCloneFormSubmitResult {
-  handleSubmit: (config: CloneConfig, formData: CloneFormData) => Promise<void>
-}
-
 export interface UseCloneOverlayResult {
+  cloneResults: GenericCloneStatisticsFinalized | null
   // State
   cloning: boolean
-  status: CloneStatus
-  targetOrgId: number | null
-  targetOrgName: string
-  cloneResults: GenericCloneStatisticsFinalized | null
   errorMessage: string
-  isSwitching: boolean
-
-  // Actions
-  handleSubmit: (config: CloneConfig, formData: CloneFormData) => Promise<void>
   handleClose: () => void
   handleOrgSwitch: () => Promise<void>
+  // Actions
+  handleSubmit: (config: CloneConfig, formData: CloneFormData) => Promise<void>
+  isSwitching: boolean
+
+  status: CloneStatus
+  targetOrgId: null | number
+  targetOrgName: string
+}
+
+export interface UseCloneStateResult {
+  cloneResults: GenericCloneStatisticsFinalized | null
+  cloning: boolean
+  errorMessage: string
+  resetState: () => void
+  setCloneResults: (results: GenericCloneStatisticsFinalized | null) => void
+  setCloning: (cloning: boolean) => void
+  setErrorMessage: (message: string) => void
+  setStatus: (status: CloneStatus) => void
+  setTargetOrgId: (id: null | number) => void
+  setTargetOrgName: (name: string) => void
+  status: CloneStatus
+  targetOrgId: null | number
+  targetOrgName: string
 }

@@ -1,12 +1,13 @@
-import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
-import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
-import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 import Link from 'next/link'
+
+import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
+import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
 import { Translate } from '@/lib/translate'
+import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
 type Props = {
-  locale: string
   activity: Activity
+  locale: string
 }
 
 export const ActivitySupport: React.FC<Props> = ({ activity, locale }) => {
@@ -75,7 +76,7 @@ export const ActivitySupport: React.FC<Props> = ({ activity, locale }) => {
       <div className={'flex grow flex-col items-center justify-center'}>
         <div className={'relative flex flex-row flex-wrap justify-center'}>
           {blocksDisplay.tasks.map((block) => (
-            <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
+            <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'task'} />
           ))}
         </div>
       </div>

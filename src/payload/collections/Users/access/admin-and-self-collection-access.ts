@@ -1,7 +1,8 @@
 import type { Access, AccessResult } from 'payload'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /**
  * Collection access control that grants access to administrators and users viewing their own data.

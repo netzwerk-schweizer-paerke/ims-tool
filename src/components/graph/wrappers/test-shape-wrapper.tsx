@@ -1,5 +1,6 @@
 'use client'
 import { PropsWithChildren } from 'react'
+
 import './shapestyle.css'
 import './test-shape-wrapper.css'
 
@@ -18,7 +19,7 @@ export const TestShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) =
         {children}
       </div>
       <div className="shape z-0 h-6 w-10">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" width={'100%'} height={'100%'}>
+        <svg height={'100%'} preserveAspectRatio="none" viewBox="0 0 100 100" width={'100%'}>
           <polygon points="50,0 100,50 50,100 0,50" vectorEffect="non-scaling-stroke" />
         </svg>
       </div>

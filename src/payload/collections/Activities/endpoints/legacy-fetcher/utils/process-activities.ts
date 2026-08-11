@@ -1,9 +1,11 @@
 import type { PayloadRequest } from 'payload'
-import { scanLegacyLinks } from './scan-legacy-links'
-import { downloadExternalDocument } from './download-external-document'
-import { convertLinks } from './convert-links'
-import { FetchLegacyDocsTracker } from './statistics-tracker'
+
 import type { LegacyDocsStatistics } from '../types'
+
+import { convertLinks } from './convert-links'
+import { downloadExternalDocument } from './download-external-document'
+import { scanLegacyLinks } from './scan-legacy-links'
+import { FetchLegacyDocsTracker } from './statistics-tracker'
 
 interface ProcessActivitiesParams {
   activities: any[]
@@ -24,20 +26,20 @@ export async function processActivities({
   // Process each activity
   for (const activity of activities) {
     const activityStats = {
-      id: activity.id.toString(),
-      name: activity.name,
-      linksFound: 0,
-      linksConverted: 0,
       documentsCreated: 0,
       failedConversions: 0,
+      id: activity.id.toString(),
       linkDetails: [] as Array<{
-        url: string
-        parentEntity: string
-        fieldLabel: string
-        locationPath: string
         converted?: boolean
         error?: string
+        fieldLabel: string
+        locationPath: string
+        parentEntity: string
+        url: string
       }>,
+      linksConverted: 0,
+      linksFound: 0,
+      name: activity.name,
     }
 
     try {
@@ -50,9 +52,9 @@ export async function processActivities({
 
       if (!orgId) {
         tracker.addError({
-          url: `Activity: ${activity.name}`,
           error: 'Activity has no organisation',
           timestamp: Date.now(),
+          url: `Activity: ${activity.name}`,
         })
         continue
       }
@@ -67,19 +69,19 @@ export async function processActivities({
 
       // Add link details to statistics
       activityStats.linkDetails = legacyLinks.map((link) => ({
-        url: link.url,
-        parentEntity: link.parentEntity,
+        converted: false,
         fieldLabel: link.fieldLabel,
         locationPath: link.locationPath,
-        converted: false,
+        parentEntity: link.parentEntity,
+        url: link.url,
       }))
 
       tracker.updateStatistics({
-        totalLinksFound: tracker.getStatistics().totalLinksFound + legacyLinks.length,
         processedFields:
           tracker.getStatistics().processedFields + activityTracker.getStatistics().processedFields,
         skippedFields:
           tracker.getStatistics().skippedFields + activityTracker.getStatistics().skippedFields,
+        totalLinksFound: tracker.getStatistics().totalLinksFound + legacyLinks.length,
       })
 
       if (legacyLinks.length > 0 && !dryRun) {
@@ -118,9 +120,9 @@ export async function processActivities({
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error)
             tracker.addError({
-              url: link.url,
               error: errorMessage,
               timestamp: Date.now(),
+              url: link.url,
             })
             activityStats.failedConversions++
             tracker.increment('failedConversions')
@@ -136,8 +138,8 @@ export async function processActivities({
         // Update the activity with converted content
         await req.payload.update({
           collection: 'activities',
-          id: activity.id,
           data: updatedActivity,
+          id: activity.id,
           req,
         })
 
@@ -150,9 +152,9 @@ export async function processActivities({
       activityBreakdown.push(activityStats)
     } catch (error) {
       tracker.addError({
-        url: `Activity: ${activity.name}`,
         error: error instanceof Error ? error.message : String(error),
         timestamp: Date.now(),
+        url: `Activity: ${activity.name}`,
       })
       activityBreakdown.push(activityStats)
     }

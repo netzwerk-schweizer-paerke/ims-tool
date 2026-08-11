@@ -1,32 +1,34 @@
-import { PayloadRequest } from 'payload'
 import { isArray } from 'es-toolkit/compat'
-import { Activity, TaskFlow, TaskList } from '@/payload-types'
-import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
-import { cloneDocumentFile } from '@/payload/utilities/cloning/clone-document'
-import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+import { PayloadRequest } from 'payload'
+
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
+import { Activity, TaskFlow, TaskList } from '@/payload-types'
+import { cloneDocumentFile } from '@/payload/utilities/cloning/clone-document'
+import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+
 type CloneActivityDocumentsParams = {
+  collectionName: 'activities' | 'task-flows' | 'task-lists'
+  documentPreloader?: DocumentPreloader
+  locale: string
   req: PayloadRequest
   sourceEntity: Activity | TaskFlow | TaskList
-  collectionName: 'activities' | 'task-flows' | 'task-lists'
   targetEntityId: number
   targetOrgId: number
-  locale: string
-  documentPreloader?: DocumentPreloader
 }
 
 export async function cloneRelatedDocumentFiles(
   params: CloneActivityDocumentsParams,
 ): Promise<void> {
   const {
+    collectionName,
+    documentPreloader,
+    locale,
     req,
     sourceEntity,
     targetEntityId,
     targetOrgId,
-    collectionName,
-    locale,
-    documentPreloader,
   } = params
 
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
@@ -52,19 +54,19 @@ export async function cloneRelatedDocumentFiles(
         : `Document ${documentId}`
 
     try {
-      let clonedDoc: { id: number; collection: string }
+      let clonedDoc: { collection: string; id: number; }
 
       const existingClonedId = tracker.getClonedDocumentId(documentId)
 
       if (existingClonedId) {
         clonedDoc = {
-          id: existingClonedId,
           collection: 'documents',
+          id: existingClonedId,
         }
         req.payload.logger.debug({
+          clonedId: existingClonedId,
           msg: 'Reusing existing cloned document for direct attachment',
           sourceId: documentId,
-          clonedId: existingClonedId,
         })
       } else {
         // Use pre-loaded document if available
@@ -85,26 +87,26 @@ export async function cloneRelatedDocumentFiles(
 
           clonedFiles.push({ document: clonedDoc.id })
           req.payload.logger.debug({
+            clonedId: clonedDoc.id,
             msg: 'Document cloned and cached for direct attachment',
             sourceId: documentId,
-            clonedId: clonedDoc.id,
           })
         }
       }
     } catch (error) {
       req.payload.logger.warn({
-        msg: 'Failed to clone document, continuing with others',
         documentId,
         error: error instanceof Error ? error.message : 'Unknown error',
+        msg: 'Failed to clone document, continuing with others',
       })
 
       try {
         const sourceDoc = await req.payload.findByID({
-          req,
           collection: 'documents',
-          id: documentId,
           depth: 1,
+          id: documentId,
           locale: locale as any,
+          req,
         })
 
         const fileName = sourceDoc.filename || 'Unknown'
@@ -121,16 +123,16 @@ export async function cloneRelatedDocumentFiles(
         tracker.addMissingFileError({
           documentId,
           documentName: sourceDoc?.name || documentName,
-          fileName,
           error: error instanceof Error ? error.message : 'Unknown error',
+          fileName,
           usageLocation: usageInfo,
         })
       } catch {
         tracker.addMissingFileError({
           documentId,
           documentName: documentName,
-          fileName: 'Unknown',
           error: error instanceof Error ? error.message : 'Unknown error',
+          fileName: 'Unknown',
           usageLocation: 'Direct file attachment',
         })
       }
@@ -139,18 +141,18 @@ export async function cloneRelatedDocumentFiles(
 
   if (clonedFiles.length > 0) {
     await req.payload.update({
-      req: mergeReqContextTargetOrgId(req, targetOrgId),
       collection: collectionName,
-      locale: locale as any,
-      id: targetEntityId,
       data: {
         files: clonedFiles,
       },
+      id: targetEntityId,
+      locale: locale as any,
+      req: mergeReqContextTargetOrgId(req, targetOrgId),
     })
 
     req.payload.logger.debug({
-      msg: 'Updated activity with cloned documents',
       count: clonedFiles.length,
+      msg: 'Updated activity with cloned documents',
     })
   }
 }

@@ -1,14 +1,15 @@
 import type { Endpoint } from 'payload'
+
 import { z } from 'zod'
+
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
-import { FetchLegacyDocsSchema, type FetchLegacyDocsParams } from './schemas'
-import { FetchLegacyDocsTracker } from './utils/statistics-tracker'
+
+import { type FetchLegacyDocsParams, FetchLegacyDocsSchema } from './schemas'
 import { createCloneError } from './utils/error-utils'
 import { processActivities } from './utils/process-activities'
+import { FetchLegacyDocsTracker } from './utils/statistics-tracker'
 
 export const fetchLegacyDocsTransactional: Endpoint = {
-  path: '/fetch-legacy-docs',
-  method: 'post',
   handler: async (req) => {
     // Step 1: Verify authentication
     requireAuthentication(req)
@@ -37,16 +38,16 @@ export const fetchLegacyDocsTransactional: Endpoint = {
     // Step 3: Initialize statistics tracker
     const tracker = new FetchLegacyDocsTracker()
     tracker.initializeStatistics({
-      startTime: Date.now(),
-      totalLinksFound: 0,
-      documentsCreated: 0,
-      linksConverted: 0,
-      failedConversions: 0,
-      errors: [],
-      processedFields: 0,
-      skippedFields: 0,
       activitiesProcessed: 0,
       activityBreakdown: [],
+      documentsCreated: 0,
+      errors: [],
+      failedConversions: 0,
+      linksConverted: 0,
+      processedFields: 0,
+      skippedFields: 0,
+      startTime: Date.now(),
+      totalLinksFound: 0,
     })
 
     try {
@@ -73,14 +74,14 @@ export const fetchLegacyDocsTransactional: Endpoint = {
       // Fetch all activities from the selected organisation
       const activitiesResult = await req.payload.find({
         collection: 'activities',
+        depth: 2,
+        limit: 1000, // Process up to 1000 activities
+        req,
         where: {
           organisation: {
             equals: selectedOrgId,
           },
         },
-        depth: 2,
-        limit: 1000, // Process up to 1000 activities
-        req,
       })
 
       if (!activitiesResult.docs || activitiesResult.docs.length === 0) {
@@ -119,10 +120,10 @@ export const fetchLegacyDocsTransactional: Endpoint = {
           : `Successfully processed ${finalStats.activitiesProcessed} activities, converted ${finalStats.linksConverted} of ${finalStats.totalLinksFound} legacy links`
 
         return Response.json({
-          success: true,
+          dryRun,
           message,
           statistics: finalStats,
-          dryRun,
+          success: true,
         })
       } catch (error) {
         // Rollback transaction on error
@@ -143,4 +144,6 @@ export const fetchLegacyDocsTransactional: Endpoint = {
       )
     }
   },
+  method: 'post',
+  path: '/fetch-legacy-docs',
 }

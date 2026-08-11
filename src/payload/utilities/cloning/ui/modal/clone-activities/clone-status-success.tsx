@@ -1,9 +1,11 @@
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nObject, I18nKeys } from '@/lib/useTranslation-custom-types'
+import { AlertTriangle, CheckCircle } from 'lucide-react'
+import React from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
-import { CheckCircle, AlertTriangle } from 'lucide-react'
-import { CloneResultsTable } from './CloneResultsTable'
+
+import { CloneResultsTable } from './clone-results-table'
 
 interface CloneStatusSuccessProps {
   results: GenericCloneStatisticsFinalized
@@ -106,8 +108,8 @@ export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results 
 
           return (
             <div
-              key={idx}
-              className="rounded-lg border border-[var(--theme-border)] bg-[var(--theme-elevation-0)] p-4">
+              className="rounded-lg border border-[var(--theme-border)] bg-[var(--theme-elevation-0)] p-4"
+              key={idx}>
               <div className="mb-3 flex items-center justify-between">
                 <h4 className="text-lg font-medium text-[var(--theme-text)]">
                   {entity.source.name}

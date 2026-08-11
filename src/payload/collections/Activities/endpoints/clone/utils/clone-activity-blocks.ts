@@ -1,18 +1,21 @@
-import { PayloadRequest } from 'payload'
 import { isArray, isNumber } from 'es-toolkit/compat'
-import { isActivityIOBlock, isActivityTaskBlock } from '@/payload/assertions'
-import { Activity, ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
-import { createTaskFlow, createTaskList } from './clone-task-flow-or-list'
-import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
-import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+import { PayloadRequest } from 'payload'
+
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
+import { Activity, ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
+import { isActivityIOBlock, isActivityTaskBlock } from '@/payload/assertions'
+import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+
+import { createTaskFlow, createTaskList } from './clone-task-flow-or-list'
+
 type CloneActivityBlocksParams = {
-  req: PayloadRequest
   clonedActivity: Activity
-  targetOrgId: number
-  locale: string
   documentPreloader?: DocumentPreloader
+  locale: string
+  req: PayloadRequest
+  targetOrgId: number
 }
 
 /**
@@ -21,7 +24,7 @@ type CloneActivityBlocksParams = {
  * Tracks statistics for cloned blocks
  */
 export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Promise<void> {
-  const { req, clonedActivity, targetOrgId, locale, documentPreloader } = params
+  const { clonedActivity, documentPreloader, locale, req, targetOrgId } = params
 
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
 
@@ -56,11 +59,11 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
 
         if (relationTo === 'task-flows' && isNumber(value)) {
           const taskFlow = await req.payload.findByID({
-            req,
             collection: 'task-flows',
+            depth: 0,
             id: value,
             locale: locale as any,
-            depth: 0,
+            req,
           })
 
           req.payload.logger.debug({ msg: 'before createTaskFlow', value: taskFlow.id })
@@ -88,11 +91,11 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
 
         if (relationTo === 'task-lists' && isNumber(value)) {
           const taskList = await req.payload.findByID({
-            req,
             collection: 'task-lists',
+            depth: 0,
             id: value,
             locale: locale as any,
-            depth: 0,
+            req,
           })
 
           req.payload.logger.debug({ msg: 'before createTaskList', value: taskList.id })
@@ -124,8 +127,8 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
 
     if (newRelations.length > 0) {
       updatedBlocks.push({
-        id: block.id,
         blockType: block.blockType,
+        id: block.id,
         relations: { tasks: newRelations },
       })
     }
@@ -152,13 +155,13 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
     })
 
     await req.payload.update({
-      req: mergeReqContextTargetOrgId(req, targetOrgId),
-      locale: locale as any,
       collection: 'activities',
-      id: clonedActivity.id,
       data: {
         blocks: finalBlocks,
       },
+      id: clonedActivity.id,
+      locale: locale as any,
+      req: mergeReqContextTargetOrgId(req, targetOrgId),
     })
   }
 }

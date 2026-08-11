@@ -1,9 +1,9 @@
-import { useCloneState } from './useCloneState'
-import { useCloneLoadingState } from './useCloneLoadingState'
-import { useCloneModal } from './useCloneModal'
-import { useCloneOrgSwitch } from './useCloneOrgSwitch'
-import { useCloneFormSubmit } from './useCloneFormSubmit'
 import { TargetOrganisation, UseCloneOverlayResult } from './types'
+import { useCloneFormSubmit } from './use-clone-form-submit'
+import { useCloneLoadingState } from './use-clone-loading-state'
+import { useCloneModal } from './use-clone-modal'
+import { useCloneOrgSwitch } from './use-clone-org-switch'
+import { useCloneState } from './use-clone-state'
 
 /**
  * Master hook that orchestrates all clone functionality
@@ -14,7 +14,7 @@ export function useCloneOverlay(
 ): UseCloneOverlayResult {
   // Initialize all state
   const cloneState = useCloneState()
-  const { cloning, targetOrgId, cloneResults } = cloneState
+  const { cloneResults, cloning, targetOrgId } = cloneState
 
   // Initialize sub-hooks
   useCloneLoadingState(cloning)
@@ -23,18 +23,18 @@ export function useCloneOverlay(
   const { handleSubmit } = useCloneFormSubmit(cloneState)
 
   return {
+    cloneResults: cloneState.cloneResults,
     // State
     cloning: cloneState.cloning,
+    errorMessage: cloneState.errorMessage,
+    handleClose,
+    handleOrgSwitch,
+    // Actions
+    handleSubmit,
+    isSwitching,
+
     status: cloneState.status,
     targetOrgId: cloneState.targetOrgId,
     targetOrgName: cloneState.targetOrgName,
-    cloneResults: cloneState.cloneResults,
-    errorMessage: cloneState.errorMessage,
-    isSwitching,
-
-    // Actions
-    handleSubmit,
-    handleClose,
-    handleOrgSwitch,
   }
 }

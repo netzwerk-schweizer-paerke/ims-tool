@@ -1,8 +1,9 @@
 import type { ILogObj } from 'tslog'
+
 import { Logger } from 'tslog'
 
-const dev: ILogObj = { type: 'pretty', minLevel: 3 }
-const prod: ILogObj = { type: 'pretty', minLevel: 3, hideLogPositionForProduction: true }
+const dev: ILogObj = { minLevel: 3, type: 'pretty' }
+const prod: ILogObj = { hideLogPositionForProduction: true, minLevel: 3, type: 'pretty' }
 
 const logger: Logger<ILogObj> = new Logger(dev)
 

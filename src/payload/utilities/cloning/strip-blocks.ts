@@ -1,7 +1,9 @@
-import { ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 import { PayloadRequest } from 'payload'
-import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
+
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
+
+import { ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
+import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 
 export const stripBlocks = async (
   blocks: (ActivityIOBlock | ActivityTaskBlock)[],

@@ -2,42 +2,52 @@ import type { PayloadRequest } from 'payload'
 
 import * as deepl from 'deepl-node'
 
-import type { DeepLResolver, DeepLResolverArgs } from './resolver-types'
 import { logger } from '@/lib/logger'
+
+import type { DeepLResolver, DeepLResolverArgs } from './resolver-types'
+
+export interface DeeplResolverConfig {
+  apiKey: string
+  chunkLength?: number
+}
 
 // Helper function to detect and categorize DeepL API errors
 function categorizeDeepLError(error: any): {
-  type: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
-  message: string
   details?: any
+  message: string
+  type: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
 } {
   // Check for DeepL specific error types based on error status codes
   if (error?.status) {
     switch (error.status) {
-      case 456: // Quota exceeded
+      case 400: { // Bad request
         return {
-          type: 'quota_exceeded',
-          message: 'Translation quota exceeded. Please check your DeepL account limits.',
           details: error,
-        }
-      case 403: // Forbidden/Authentication
-        return {
-          type: 'authentication',
-          message: 'DeepL authentication failed. Please check your API key.',
-          details: error,
-        }
-      case 400: // Bad request
-        return {
-          type: 'generic',
           message: 'Invalid request to DeepL API.',
-          details: error,
-        }
-      default:
-        return {
           type: 'generic',
-          message: 'DeepL API error occurred.',
-          details: error,
         }
+      }
+      case 403: { // Forbidden/Authentication
+        return {
+          details: error,
+          message: 'DeepL authentication failed. Please check your API key.',
+          type: 'authentication',
+        }
+      }
+      case 456: { // Quota exceeded
+        return {
+          details: error,
+          message: 'Translation quota exceeded. Please check your DeepL account limits.',
+          type: 'quota_exceeded',
+        }
+      }
+      default: {
+        return {
+          details: error,
+          message: 'DeepL API error occurred.',
+          type: 'generic',
+        }
+      }
     }
   }
 
@@ -48,9 +58,9 @@ function categorizeDeepLError(error: any): {
     error?.code === 'ECONNREFUSED'
   ) {
     return {
-      type: 'network',
-      message: 'Network error connecting to DeepL API.',
       details: error,
+      message: 'Network error connecting to DeepL API.',
+      type: 'network',
     }
   }
 
@@ -58,23 +68,18 @@ function categorizeDeepLError(error: any): {
   const errorMessage = error?.message?.toLowerCase() || ''
   if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
     return {
-      type: 'quota_exceeded',
-      message: 'Translation quota exceeded. Please check your DeepL account limits.',
       details: error,
+      message: 'Translation quota exceeded. Please check your DeepL account limits.',
+      type: 'quota_exceeded',
     }
   }
 
   // Default to generic error
   return {
-    type: 'generic',
-    message: error?.message || 'Unknown translation error occurred.',
     details: error,
+    message: error?.message || 'Unknown translation error occurred.',
+    type: 'generic',
   }
-}
-
-export interface DeeplResolverConfig {
-  apiKey: string
-  chunkLength?: number
 }
 
 export const chunkArray = <T>(array: T[], length: number): T[][] => {
@@ -100,7 +105,7 @@ async function processChunksSequentially(
 
   for (const chunk of chunks) {
     try {
-      const chunkWithIndices = chunk.map((text, index) => ({ text, index }))
+      const chunkWithIndices = chunk.map((text, index) => ({ index, text }))
 
       const filteredChunk = chunkWithIndices.filter((item) => item.text.trim() !== '')
       const textsToTranslate = filteredChunk.map((item) => item.text)
@@ -111,9 +116,9 @@ async function processChunksSequentially(
       }
 
       logger.debug({
+        filteredSize: textsToTranslate.length,
         msg: 'Processing chunk',
         size: chunk.length,
-        filteredSize: textsToTranslate.length,
       })
 
       const translationResults = (await translator.translateText(
@@ -125,9 +130,9 @@ async function processChunksSequentially(
 
       // Create a map of translations indexed by their original position
       const translatedMap = new Map<number, string>()
-      filteredChunk.forEach((item, i) => {
+      for (const [i, item] of filteredChunk.entries()) {
         translatedMap.set(item.index, translationResults[i].text)
-      })
+      }
 
       // Rebuild the result array with translations in original positions
       const chunkResults = chunk.map((text, index) => {
@@ -139,12 +144,12 @@ async function processChunksSequentially(
       const categorizedError = categorizeDeepLError(error)
 
       logger.error({
-        error,
-        message: 'DeepL translation failed for chunk',
-        chunkSize: chunk.length,
         chunk,
-        errorType: categorizedError.type,
+        chunkSize: chunk.length,
+        error,
         errorMessage: categorizedError.message,
+        errorType: categorizedError.type,
+        message: 'DeepL translation failed for chunk',
       })
 
       // For quota exceeded errors, we should propagate the error instead of continuing
@@ -164,9 +169,9 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
   key: 'deepl',
   resolve: async (args: DeepLResolverArgs) => {
     const options: deepl.TranslatorOptions = {
-      sendPlatformInfo: false,
       maxRetries: 10,
       minTimeout: 1000,
+      sendPlatformInfo: false,
     }
 
     const DeepL = new deepl.Translator(apiKey, options)
@@ -174,18 +179,18 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
     const {
       localeFrom,
       localeTo,
+      options: translationOptions,
       req,
       texts,
-      options: translationOptions,
     } = args as {
       localeFrom: deepl.SourceLanguageCode
       localeTo: deepl.TargetLanguageCode
+      options?: any
       req: PayloadRequest
       texts: string[]
-      options?: any
     }
 
-    logger.debug({ msg: 'DeepL resolver called', localeFrom, localeTo, entries: texts.length })
+    logger.debug({ entries: texts.length, localeFrom, localeTo, msg: 'DeepL resolver called' })
 
     const chunks = chunkArray(texts, chunkLength)
 
@@ -207,17 +212,17 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
       const categorizedError = categorizeDeepLError(error)
 
       logger.error({
-        msg: 'DeepL resolver failed',
+        entriesCount: texts.length,
+        errorMessage: categorizedError.message,
+        errorType: categorizedError.type,
         localeFrom,
         localeTo,
-        entriesCount: texts.length,
-        errorType: categorizedError.type,
-        errorMessage: categorizedError.message,
+        msg: 'DeepL resolver failed',
       })
 
       return {
-        success: false,
         error: categorizedError,
+        success: false,
       }
     }
   },

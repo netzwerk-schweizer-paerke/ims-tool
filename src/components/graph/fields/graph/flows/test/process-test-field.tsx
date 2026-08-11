@@ -1,37 +1,39 @@
 'use client'
-import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
-import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
+import { useField } from '@payloadcms/ui'
+import { JSONFieldClientComponent } from 'payload'
+import { memo, useCallback, useEffect, useMemo } from 'react'
+
+import { BooleanButton } from '@/components/graph/fields/graph/components/boolean-button'
 import {
   ButtonBottomCenter,
   ButtonCenterRight,
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
-import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { processTestConnections } from '@/components/graph/fields/graph/flows/test/connection-definitions'
+import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
+import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
+import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
 import { TestShapeWrapper } from '@/components/graph/wrappers/test-shape-wrapper'
 import { Xwrapper } from '@/lib/xarrows/src'
-import { BooleanButton } from '@/components/graph/fields/graph/components/boolean-button'
-import { JSONFieldClientComponent } from 'payload'
-import { memo, useCallback, useEffect, useMemo } from 'react'
-import { useField } from '@payloadcms/ui'
-import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
 
 enum BooleanOutput {
   FALSE = 'false',
-  TRUE = 'true',
   None = 'none',
+  TRUE = 'true',
 }
 
 type ComponentState = {
-  connections: ConnectionsType
-  text: string
-  leftBoolean: BooleanOutput
   bottomBoolean: BooleanOutput
+  connections: ConnectionsType
+  leftBoolean: BooleanOutput
   rightBoolean: BooleanOutput
+  text: string
 }
 
 const initialState: ComponentState = {
+  bottomBoolean: BooleanOutput.TRUE,
   connections: [
     {
       position: 'top',
@@ -46,18 +48,17 @@ const initialState: ComponentState = {
       type: 'out',
     },
   ],
-  text: '',
   leftBoolean: BooleanOutput.FALSE,
-  bottomBoolean: BooleanOutput.TRUE,
   rightBoolean: BooleanOutput.None,
+  text: '',
 }
 
 const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = memo(({ booleanOutput }) => {
   const booleanOutputMap = useMemo(
     () => ({
       [BooleanOutput.FALSE]: 'False',
-      [BooleanOutput.TRUE]: 'True',
       [BooleanOutput.None]: 'None',
+      [BooleanOutput.TRUE]: 'True',
     }),
     [],
   )
@@ -65,8 +66,8 @@ const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = memo(({ boole
   const booleanOutputCssMap = useMemo(
     () => ({
       [BooleanOutput.FALSE]: 'text-red-600',
-      [BooleanOutput.TRUE]: 'text-green-600',
       [BooleanOutput.None]: '',
+      [BooleanOutput.TRUE]: 'text-green-600',
     }),
     [],
   )
@@ -82,9 +83,9 @@ DisplayBoolean.displayName = 'DisplayBoolean'
 
 export const ProcessTestField: JSONFieldClientComponent = (props) => {
   const {
+    field: { required },
     path,
     validate,
-    field: { required },
   } = props
 
   const memoizedValidate = useCallback(
@@ -97,10 +98,10 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
     [validate, required],
   )
 
-  const { value, setValue } = useField<ComponentState>({ path, validate: memoizedValidate })
+  const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
 
   // Use the centralized text field hook instead of local implementation
-  const { localText, handleTextChange } = useTextField(value, setValue)
+  const { handleTextChange, localText } = useTextField(value, setValue)
 
   // Initialize state only once
   useEffect(() => {
@@ -110,15 +111,15 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
   }, [setValue, value])
 
   // Memoize arrow hook to prevent recreation
-  const { arrowSetId, toggleConnectionType, ref, renderArrows, isLoaded } = useArrows({
-    state: value,
-    setState: setValue,
+  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
     connections: processTestConnections,
+    setState: setValue,
+    state: value,
   })
 
   // Memoize toggleBoolean handler
   const toggleBoolean = useCallback(
-    (position: 'leftBoolean' | 'bottomBoolean' | 'rightBoolean') => {
+    (position: 'bottomBoolean' | 'leftBoolean' | 'rightBoolean') => {
       if (!value) return
 
       const currentBoolean = value[position]
@@ -155,7 +156,7 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
   }, [isLoaded, renderArrows])
 
   return (
-    <div ref={ref} className={'process-task-test-block relative h-full'}>
+    <div className={'process-task-test-block relative h-full'} ref={ref}>
       <Xwrapper>
         <BlockTaskWrapper>
           <RootTarget id={arrowSetId}>

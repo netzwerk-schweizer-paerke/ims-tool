@@ -1,7 +1,8 @@
-import ky from 'ky'
 import { toNumber } from 'es-toolkit/compat'
+import ky from 'ky'
+
 import { GenericCloneStatisticsFinalized } from '../../types'
-import { CloneConfig, CloneFormData, CloneApiResponse, UseCloneApiResult } from './types'
+import { CloneApiResponse, CloneConfig, CloneFormData, UseCloneApiResult } from './types'
 
 /**
  * Handles API calls with error handling and response processing
@@ -12,7 +13,7 @@ export function useCloneApi(): UseCloneApiResult {
     formData: CloneFormData,
     locale: string,
   ): Promise<GenericCloneStatisticsFinalized> => {
-    const { endpoint, timeoutMultiplier = 120000, retryConfig } = config
+    const { endpoint, retryConfig, timeoutMultiplier = 120_000 } = config
     const { selectedItems, targetOrganisation } = formData
 
     const defaultRetryConfig = {
@@ -24,12 +25,12 @@ export function useCloneApi(): UseCloneApiResult {
     const response = await ky
       .post<CloneApiResponse>(endpoint, {
         json: {
+          ids: selectedItems.map((id) => toNumber(id)),
           locale,
           targetOrganisationId: targetOrganisation.value,
-          ids: selectedItems.map((id) => toNumber(id)),
         },
-        timeout: timeoutMultiplier * selectedItems.length,
         retry: retryConfig || defaultRetryConfig,
+        timeout: timeoutMultiplier * selectedItems.length,
       })
       .json()
 

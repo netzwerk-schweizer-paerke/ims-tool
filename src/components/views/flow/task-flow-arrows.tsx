@@ -1,14 +1,15 @@
 'use client'
 import { debounce } from 'es-toolkit'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
-import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
-import { assignBlockArrows } from '@/components/views/flow/lib/assign-block-arrows'
 import {
   RootTargetLeftName,
   RootTargetName,
   RootTargetRightName,
 } from '@/components/graph/fields/graph/lib/root-target'
+import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
+import { assignBlockArrows } from '@/components/views/flow/lib/assign-block-arrows'
 import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 
 // Pre-compiled regex for parallel block ID transformations (avoids 6 replace calls per arrow)
@@ -60,7 +61,7 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
   const arrowSet = useMemo(() => assignBlockArrows(taskFlowBlock), [taskFlowBlock])
 
   const renderArrows = useCallback(() => {
-    return arrowSet.map(({ arrows, id, leftId, rightId, blockType }, index) => (
+    return arrowSet.map(({ arrows, blockType, id, leftId, rightId }, index) => (
       <Fragment key={id + index}>
         {arrows.map((arrow, index) => {
           let startPrefix =
@@ -87,8 +88,8 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
           // arrowStyle is already merged in assignBlockArrows
           const props = {
             ...arrow,
-            start: startPrefix,
             end: endPrefix,
+            start: startPrefix,
           }
           return <Xarrow key={startPrefix + endPrefix + index} {...props} />
         })}
@@ -97,7 +98,7 @@ export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
   }, [arrowSet])
 
   return (
-    <div ref={ref} className={'x-arrows absolute inset-0'}>
+    <div className={'x-arrows absolute inset-0'} ref={ref}>
       {isLoaded && renderArrows()}
     </div>
   )

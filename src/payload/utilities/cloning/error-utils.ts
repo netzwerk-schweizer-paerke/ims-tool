@@ -17,8 +17,8 @@ export const getErrorMessage = (error: unknown): string => {
 export const formatError = (error: unknown, context?: Record<string, any>) => {
   return {
     message: getErrorMessage(error),
-    ...(error instanceof Error && error.stack ? { stack: error.stack } : {}),
-    ...(context || {}),
+    ...(error instanceof Error && error.stack && { stack: error.stack }),
+    ...context,
   }
 }
 

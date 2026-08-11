@@ -1,11 +1,12 @@
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { CollectionBeforeChangeHook } from 'payload'
 
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
 export const assignOrgToUploadBeforeChangeHook: CollectionBeforeChangeHook = async ({
+  context,
+  data,
   req,
   req: { user },
-  data,
-  context,
 }) => {
   // Debug logging
   req.payload.logger.info({ targetOrganisationId: context?.targetOrganisationId }, '[Upload Hook] Context')

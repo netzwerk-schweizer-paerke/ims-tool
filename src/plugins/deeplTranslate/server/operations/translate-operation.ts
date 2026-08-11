@@ -1,26 +1,27 @@
 import he from 'he'
 import { APIError, type Payload, type PayloadRequest } from 'payload'
+
 import type { TranslateArgs, TranslateResult, ValueToTranslate } from '../types'
 
+import { deepLResolver } from '../services/deepl-resolver'
+import { extractTranslationData } from '../utilities/extract-translation-data'
 import { findEntityWithConfig } from '../utilities/find-entity-with-config'
 import { traverseFields } from '../utilities/traverse-fields'
 import { updateEntity } from './update-entity'
-import { deepLResolver } from '../services/deepl-resolver'
-import { extractTranslationData } from '../utilities/extract-translation-data'
 // Removed translateRelationships - now handled by the endpoint with collector
 
-export type TranslateOperationArgs = (
+export type TranslateOperationArgs = Omit<TranslateArgs, 'resolver'> &
+  {
+    includeRelationships?: boolean
+    relationshipDepth?: number
+  } & (
   | {
       payload: Payload
     }
   | {
       req: PayloadRequest
     }
-) &
-  Omit<TranslateArgs, 'resolver'> & {
-    includeRelationships?: boolean
-    relationshipDepth?: number
-  }
+)
 
 export const translateOperation = async (args: TranslateOperationArgs) => {
   const req: PayloadRequest =
@@ -30,15 +31,15 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
           payload: args.payload,
         } as PayloadRequest)
 
-  const { id, collectionSlug, globalSlug, locale, localeFrom, overrideAccess } = args
+  const { collectionSlug, globalSlug, id, locale, localeFrom, overrideAccess } = args
 
   const { config, doc: dataFrom } = await findEntityWithConfig({
-    id,
     collectionSlug,
+    depth: 0, // Use depth 0 to avoid populating document references in Lexical links
     globalSlug,
+    id,
     locale: localeFrom,
     req,
-    depth: 0, // Use depth 0 to avoid populating document references in Lexical links
     // We don't need populated data for translation, just IDs
   })
 
@@ -59,15 +60,15 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
   if (!translatedData) {
     try {
       const { doc } = await findEntityWithConfig({
-        id,
         collectionSlug,
         globalSlug,
+        id,
         locale,
         overrideAccess,
         req,
       })
       translatedData = doc
-    } catch (error) {
+    } catch {
       // If document doesn't exist in target locale, use an empty object
       // The document will be created when we call updateEntity
       translatedData = {}
@@ -91,17 +92,12 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
 
   let result: TranslateResult
 
-  if (!resolveResult.success) {
-    result = {
-      success: false,
-      error: resolveResult.error,
-    }
-  } else {
-    resolveResult.translatedTexts.forEach((translated, index) => {
+  if (resolveResult.success) {
+    for (const [index, translated] of resolveResult.translatedTexts.entries()) {
       const formattedValue = he.decode(translated)
 
       valuesToTranslate[index].onTranslate(formattedValue)
-    })
+    }
 
     if (args.update) {
       // Preserve the translationMeta field if it exists
@@ -112,16 +108,16 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
       let existingMeta = null
       try {
         const { doc: currentDoc } = await findEntityWithConfig({
-          id,
           collectionSlug,
+          depth: 0,
           globalSlug,
+          id,
           locale,
           overrideAccess,
           req,
-          depth: 0,
         })
         existingMeta = currentDoc?.[metaFieldName]
-      } catch (e) {
+      } catch {
         // Document might not exist in target locale yet
       }
 
@@ -131,18 +127,18 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
       }
 
       await updateEntity({
-        id,
         collectionSlug,
+        context: {
+          fromLocale: localeFrom,
+          isTranslation: true,
+        },
         data: translatedData,
         depth: 0,
         globalSlug,
+        id,
         locale,
         overrideAccess,
         req,
-        context: {
-          isTranslation: true,
-          fromLocale: localeFrom,
-        },
       })
 
       // Relationship translations are now handled in the endpoint using the collector pattern
@@ -151,6 +147,11 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
     result = {
       success: true,
       translatedData,
+    }
+  } else {
+    result = {
+      error: resolveResult.error,
+      success: false,
     }
   }
 

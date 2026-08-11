@@ -1,8 +1,10 @@
 'use client'
 
-import React from 'react'
 import { Button, useConfig, useModal, useTranslation } from '@payloadcms/ui'
+import React from 'react'
+
 import { hasLocalization } from '@/lib/locale-utils'
+
 import { StandaloneTranslatorModal } from '../modals/translator-modal'
 
 const modalSlug = 'deepltranslate-modal'
@@ -26,7 +28,7 @@ export const SimpleTranslateButton: React.FC = () => {
 
   return (
     <>
-      <Button onClick={openTranslator} buttonStyle="secondary" size="small">
+      <Button buttonStyle="secondary" onClick={openTranslator} size="small">
         {t('plugin-deepltranslate:resolver_deepl_buttonLabel' as any)}
       </Button>
       <StandaloneTranslatorModal modalSlug={modalSlug} onClose={closeTranslator} />

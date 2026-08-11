@@ -1,26 +1,26 @@
-import React from 'react'
 import { Button, useTranslation } from '@payloadcms/ui'
+import React from 'react'
 
 interface TranslationResultProps {
-  success: boolean
   error?: string
-  errorType?: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
-  selectedFromLabel?: string
-  selectedToLabel?: string
-  onViewTranslation: () => void
+  errorType?: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
   onClose: () => void
   onTryAgain: () => void
+  onViewTranslation: () => void
+  selectedFromLabel?: string
+  selectedToLabel?: string
+  success: boolean
 }
 
 export const TranslationResult: React.FC<TranslationResultProps> = ({
-  success,
   error,
   errorType,
-  selectedFromLabel,
-  selectedToLabel,
-  onViewTranslation,
   onClose,
   onTryAgain,
+  onViewTranslation,
+  selectedFromLabel,
+  selectedToLabel,
+  success,
 }) => {
   const { t } = useTranslation()
 
@@ -43,13 +43,13 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
           </div>
         )}
         <div className="deepltranslate__buttons flex gap-4">
-          <Button onClick={onViewTranslation} buttonStyle="primary">
+          <Button buttonStyle="primary" onClick={onViewTranslation}>
             {t('plugin-deepltranslate:resolver_deepl_viewTranslation' as any).replace(
               '{{language}}',
               selectedToLabel || '',
             )}
           </Button>
-          <Button onClick={onClose} buttonStyle="secondary">
+          <Button buttonStyle="secondary" onClick={onClose}>
             {t('plugin-deepltranslate:resolver_deepl_close' as any)}
           </Button>
         </div>
@@ -60,14 +60,18 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
   // Helper function to get the appropriate error message
   const getErrorMessage = () => {
     switch (errorType) {
-      case 'quota_exceeded':
-        return 'Translation quota exceeded. Please check your DeepL account limits.'
-      case 'authentication':
+      case 'authentication': {
         return 'DeepL authentication failed. Please check your API key.'
-      case 'network':
+      }
+      case 'network': {
         return 'Network error connecting to DeepL API. Please try again.'
-      default:
+      }
+      case 'quota_exceeded': {
+        return 'Translation quota exceeded. Please check your DeepL account limits.'
+      }
+      default: {
         return error || t('plugin-deepltranslate:resolver_deepl_errorMessage' as any)
+      }
     }
   }
 
@@ -77,7 +81,7 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
         ✕ {getErrorMessage()}
       </div>
       <div className="deepltranslate__buttons">
-        <Button onClick={onTryAgain} buttonStyle="secondary">
+        <Button buttonStyle="secondary" onClick={onTryAgain}>
           {t('plugin-deepltranslate:resolver_deepl_tryAgain' as any)}
         </Button>
       </div>

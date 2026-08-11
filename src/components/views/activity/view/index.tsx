@@ -1,17 +1,19 @@
-import React from 'react'
 import { DefaultTemplate } from '@payloadcms/next/templates'
-import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer'
 import { toNumber } from 'es-toolkit/compat'
+import { headers as getHeaders } from 'next/headers'
+import { AdminViewProps, AdminViewServerProps } from 'payload'
+import React from 'react'
 import { assert } from 'ts-essentials'
-import { Translate } from '@/lib/translate'
+
+import { LastUpdated } from '@/components/last-updated'
 import { StepNav } from '@/components/step-nav'
 import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
 import { TasksGrid } from '@/components/views/activity/view/tasks-grid'
+import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+
 import './landscape-bg.css'
-import { LastUpdated } from '@/components/last-updated'
-import { AdminViewProps, AdminViewServerProps } from 'payload'
+import { Translate } from '@/lib/translate'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   initPageResult,
@@ -35,15 +37,15 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   const activityBlock = await req.payload
     .find({
       collection: 'activities',
-      locale: locale as any,
       depth: 2,
+      locale: locale as any,
       where: {
         and: [
           {
+            id: { equals: activityid },
             organisation: {
               equals: selectedOrganisationId,
             },
-            id: { equals: activityid },
           },
         ],
       },
@@ -61,15 +63,15 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   const activity = await req.payload
     .find({
       collection: 'activities',
-      locale: locale as any,
       depth: 2,
+      locale: locale as any,
       where: {
         and: [
           {
+            id: { equals: activityid },
             organisation: {
               equals: selectedOrganisationId,
             },
-            id: { equals: activityid },
           },
         ],
       },
@@ -109,7 +111,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           paddingRight: 'var(--gutter-h)',
         }}>
         <StepNav
-          activity={{ id: activityid, title: activity?.name, blockId: activityBlockId }}
+          activity={{ blockId: activityBlockId, id: activityid, title: activity?.name }}
           activityBlock={{
             id: activityBlockId,
             title: activityBlock?.graph?.task?.text,

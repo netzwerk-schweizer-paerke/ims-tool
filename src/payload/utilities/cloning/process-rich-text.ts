@@ -1,11 +1,13 @@
 import { PayloadRequest } from 'payload'
-import { cloneDocumentFile } from './clone-document'
-import { CloneStatisticsTracker } from './clone-statistics-tracker'
+
+import { normalizeRichText } from '@/payload/utilities/cloning/normalize-rich-text'
 import {
   MissingDocumentFileError,
   RichTextProcessingResult,
 } from '@/payload/utilities/cloning/types'
-import { normalizeRichText } from '@/payload/utilities/cloning/normalize-rich-text'
+
+import { cloneDocumentFile } from './clone-document'
+import { CloneStatisticsTracker } from './clone-statistics-tracker'
 
 export async function processRichTextField(
   richText: any,
@@ -21,8 +23,8 @@ export async function processRichTextField(
 
   if (!richText || typeof richText !== 'object') {
     return {
-      errors,
       content: richText,
+      errors,
     }
   }
 
@@ -101,9 +103,7 @@ async function processNode(
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
 
   // Remove IDs
-  if ('id' in processedNode) {
-    delete processedNode.id
-  }
+  delete processedNode.id
 
   // Handle document relationships in links
   if (processedNode.type === 'link' && processedNode.fields?.doc) {
@@ -123,21 +123,17 @@ async function processNode(
           tracker.addSourceDocument()
 
           // Use pre-loaded document if available
+          let clonedDoc
           if (documentPreloader && documentPreloader.preloadedDocuments.has(docId)) {
             const preloadedDoc = documentPreloader.preloadedDocuments.get(docId)!
             const { createClonedDocumentFromPreloaded } = await import('./document-preloader')
-            const clonedDoc = await createClonedDocumentFromPreloaded(
-              req,
-              preloadedDoc,
-              targetOrgId,
-            )
-            clonedId = clonedDoc.id
+            clonedDoc = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
           } else {
             // Fallback to original method (will cause transaction timeout risk)
             const { cloneDocumentFile } = await import('./clone-document')
-            const clonedDoc = await cloneDocumentFile(req, docId, targetOrgId)
-            clonedId = clonedDoc.id
+            clonedDoc = await cloneDocumentFile(req, docId, targetOrgId)
           }
+          clonedId = clonedDoc.id
 
           tracker.addClonedDocument()
         }
@@ -150,11 +146,11 @@ async function processNode(
 
         try {
           const sourceDoc = await req.payload.findByID({
-            req,
             collection: 'documents',
-            id: docId,
             depth: 0,
+            id: docId,
             locale: locale as any,
+            req,
           })
 
           if (sourceDoc) {
@@ -168,9 +164,9 @@ async function processNode(
         const errorEntry: MissingDocumentFileError = {
           documentId: docId,
           documentName,
-          fileName,
           error:
             error instanceof Error ? error.message : `Failed to clone document ${documentName}`,
+          fileName,
           usageLocation: `${collectionName} rich text field`,
         }
 

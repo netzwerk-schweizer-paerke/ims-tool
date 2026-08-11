@@ -1,15 +1,16 @@
 'use client'
-import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
-import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
-import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
-import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 import Link from 'next/link'
+
+import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
+import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
+import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
 import { Translate } from '@/lib/translate'
 import { Xwrapper } from '@/lib/xarrows/src'
+import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
 type Props = {
-  locale: string
   activity: Activity
+  locale: string
 }
 
 export const ActivityStrategy: React.FC<Props> = ({ activity, locale }) => {
@@ -78,20 +79,20 @@ export const ActivityStrategy: React.FC<Props> = ({ activity, locale }) => {
         </div>
         <div className={'relative flex h-full grow flex-col justify-center'}>
           {blocksDisplay.input.length === 0 ? (
-            <ActivityBlock type={'empty'} activityId={activity.id} />
+            <ActivityBlock activityId={activity.id} type={'empty'} />
           ) : (
             blocksDisplay.input.map((block) => (
-              <ActivityBlock block={block} activityId={activity.id} type={'input'} key={block.id} />
+              <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'input'} />
             ))
           )}
           {blocksDisplay.tasks.map((block) => (
-            <ActivityBlock block={block} activityId={activity.id} type={'task'} key={block.id} />
+            <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'task'} />
           ))}
           {blocksDisplay.output.length === 0 ? (
             <ActivityBlock activityId={activity.id} type={'empty'} />
           ) : (
             blocksDisplay.output.map((block) => (
-              <ActivityBlock activityId={activity.id} block={block} type={'output'} key={block.id} />
+              <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'output'} />
             ))
           )}
           <ActivityFlowArrows activity={activity} />

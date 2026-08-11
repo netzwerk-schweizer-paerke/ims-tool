@@ -1,5 +1,5 @@
-import { User } from '@/payload-types'
 import { logger } from '@/lib/logger'
+import { User } from '@/payload-types'
 import { Roles } from '@/payload/utilities/constants'
 
 /**
@@ -19,7 +19,7 @@ import { Roles } from '@/payload/utilities/constants'
  * @param user - The user object to evaluate
  * @returns boolean - True if the user has at least one of the required roles, false otherwise
  */
-export const checkUserRoles = (requiredRoles: Roles = [], user: User | null): boolean => {
+export const checkUserRoles = (requiredRoles: Roles = [], user: null | User): boolean => {
   // Early exit if user is null/undefined
   if (!user) {
     logger.debug('checkUserRoles: No user provided, denying access', { requiredRoles })
@@ -27,7 +27,7 @@ export const checkUserRoles = (requiredRoles: Roles = [], user: User | null): bo
   }
 
   // Early exit if no roles to check or user has no roles
-  if (!requiredRoles.length) {
+  if (requiredRoles.length === 0) {
     logger.debug('checkUserRoles: No roles specified to check, denying access', {
       userId: user.id,
     })
@@ -36,8 +36,8 @@ export const checkUserRoles = (requiredRoles: Roles = [], user: User | null): bo
 
   if (!user.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
     logger.debug('checkUserRoles: User has no roles, denying access', {
-      userId: user.id,
       requiredRoles,
+      userId: user.id,
     })
     return false
   }
@@ -46,10 +46,10 @@ export const checkUserRoles = (requiredRoles: Roles = [], user: User | null): bo
   const hasRequiredRole = requiredRoles.some((requiredRole) => user.roles.includes(requiredRole))
 
   logger.debug(`checkUserRoles: User ${hasRequiredRole ? 'has' : 'does not have'} required role`, {
-    userId: user.id,
-    requiredRoles,
-    userRoles: user.roles,
     hasRequiredRole,
+    requiredRoles,
+    userId: user.id,
+    userRoles: user.roles,
   })
 
   return hasRequiredRole

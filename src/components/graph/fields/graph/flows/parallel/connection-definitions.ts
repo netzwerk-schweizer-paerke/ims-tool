@@ -1,9 +1,9 @@
-import { xarrowPropsType } from '@/lib/xarrows/src'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
 import {
   RootTargetLeftName,
   RootTargetRightName,
 } from '@/components/graph/fields/graph/lib/root-target'
+import { xarrowPropsType } from '@/lib/xarrows/src'
 
 const taskArrowRightOptions = ['pass-by', 'none'] as const
 const taskArrowRightDef: Record<
@@ -13,12 +13,12 @@ const taskArrowRightDef: Record<
   none: [],
   'pass-by': [
     {
-      start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: OuterTargetsEnum.TOP_RIGHT,
+      startAnchor: 'bottom',
     },
   ],
 }
@@ -30,20 +30,20 @@ const taskArrowBottomDef: Record<
 > = {
   out: [
     {
-      start: RootTargetLeftName,
       end: OuterTargetsEnum.BOTTOM_CENTER,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: RootTargetLeftName,
+      startAnchor: 'bottom',
     },
     {
-      start: RootTargetRightName,
       end: OuterTargetsEnum.BOTTOM_CENTER,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: RootTargetRightName,
+      startAnchor: 'bottom',
     },
   ],
 }
@@ -52,34 +52,34 @@ const taskArrowTopOptions = ['in'] as const
 const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarrowPropsType>[]> = {
   in: [
     {
-      start: OuterTargetsEnum.TOP_CENTER,
       end: RootTargetLeftName,
-      startAnchor: 'bottom',
       endAnchor: 'top',
+      start: OuterTargetsEnum.TOP_CENTER,
+      startAnchor: 'bottom',
     },
     {
-      start: OuterTargetsEnum.TOP_CENTER,
       end: RootTargetRightName,
-      startAnchor: 'bottom',
       endAnchor: 'top',
+      start: OuterTargetsEnum.TOP_CENTER,
+      startAnchor: 'bottom',
     },
   ],
 }
 
 export const processTaskParallelConnections = [
   {
-    position: 'top',
-    options: taskArrowTopOptions,
     definitions: taskArrowTopDef,
+    options: taskArrowTopOptions,
+    position: 'top',
   },
   {
-    position: 'right',
-    options: taskArrowRightOptions,
     definitions: taskArrowRightDef,
+    options: taskArrowRightOptions,
+    position: 'right',
   },
   {
-    position: 'bottom',
-    options: taskArrowBottomOptions,
     definitions: taskArrowBottomDef,
+    options: taskArrowBottomOptions,
+    position: 'bottom',
   },
 ]

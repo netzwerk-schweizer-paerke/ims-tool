@@ -1,23 +1,24 @@
-import { I18nCollection } from '@/lib/i18n-collection'
 import { Field } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
+
 export const filesArrayField: Field = {
-  name: 'files',
-  type: 'array',
-  label: false,
   admin: {
     description: I18nCollection.fieldDescription.filesArray,
   },
   fields: [
     {
-      name: 'document',
-      type: 'relationship',
-      label: I18nCollection.fieldLabel.file,
-      relationTo: 'documents',
-      localized: true,
       admin: {
         description: I18nCollection.fieldDescription.file,
       },
+      label: I18nCollection.fieldLabel.file,
+      localized: true,
+      name: 'document',
+      relationTo: 'documents',
+      type: 'relationship',
     },
   ],
+  label: false,
+  name: 'files',
+  type: 'array',
 }

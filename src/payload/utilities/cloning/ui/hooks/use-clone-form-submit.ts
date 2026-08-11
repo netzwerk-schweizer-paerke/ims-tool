@@ -1,6 +1,7 @@
 import { useLocale } from '@payloadcms/ui'
-import { useCloneApi } from './useCloneApi'
+
 import { CloneConfig, CloneFormData, UseCloneFormSubmitResult, UseCloneStateResult } from './types'
+import { useCloneApi } from './use-clone-api'
 
 /**
  * Form submission orchestration that combines the other hooks
@@ -12,10 +13,10 @@ export function useCloneFormSubmit(cloneState: UseCloneStateResult): UseCloneFor
   const handleSubmit = async (config: CloneConfig, formData: CloneFormData) => {
     const { selectedItems, targetOrganisation } = formData
     const {
-      setCloning,
-      setStatus,
       setCloneResults,
+      setCloning,
       setErrorMessage,
+      setStatus,
       setTargetOrgId,
       setTargetOrgName,
     } = cloneState
@@ -30,7 +31,7 @@ export function useCloneFormSubmit(cloneState: UseCloneStateResult): UseCloneFor
     setTargetOrgName(targetOrganisation.label)
 
     // Validate inputs
-    if (!selectedItems.length) {
+    if (selectedItems.length === 0) {
       setErrorMessage(`No ${config.resourceName} selected for cloning`)
       setStatus('error')
       setCloning(false)

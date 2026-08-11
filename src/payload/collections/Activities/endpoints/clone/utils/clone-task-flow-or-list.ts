@@ -1,34 +1,37 @@
 import { PayloadRequest } from 'payload'
-import { TaskFlow, TaskList } from '@/payload-types'
-import { stripTaskFlow } from '../../../../../utilities/cloning/strip-task-flow'
-import { stripTaskList } from '../../../../../utilities/cloning/strip-task-list'
-import { cloneRelatedDocumentFiles } from '@/payload/collections/Activities/endpoints/clone/utils/clone-related-document-files'
-import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
-type TaskType = 'task-flows' | 'task-lists'
-type Task = TaskFlow | TaskList
+import { TaskFlow, TaskList } from '@/payload-types'
+import { cloneRelatedDocumentFiles } from '@/payload/collections/Activities/endpoints/clone/utils/clone-related-document-files'
+import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+
+import { stripTaskFlow } from '../../../../../utilities/cloning/strip-task-flow'
+import { stripTaskList } from '../../../../../utilities/cloning/strip-task-list'
 
 interface CreateTaskOptions {
-  req: PayloadRequest
-  task: Task
-  targetOrgId: number
   collectionName: TaskType
-  locale: string
   documentPreloader?: DocumentPreloader
+  locale: string
+  req: PayloadRequest
+  targetOrgId: number
+  task: Task
 }
+type Task = TaskFlow | TaskList
+
+type TaskType = 'task-flows' | 'task-lists'
 
 /**
  * Generic function to create task flows or task lists
  * Reduces duplication between createTaskFlow and createTaskList
  */
 export const cloneTaskFlowOrList = async ({
-  req,
-  task,
-  targetOrgId,
   collectionName,
-  locale,
   documentPreloader,
+  locale,
+  req,
+  targetOrgId,
+  task,
 }: CreateTaskOptions) => {
   req.payload.logger.debug({
     msg: `Creating ${collectionName}`,
@@ -42,32 +45,32 @@ export const cloneTaskFlowOrList = async ({
 
   try {
     const createdTask = await req.payload.create({
-      req: mergeReqContextTargetOrgId(req, targetOrgId),
       collection: collectionName,
       data: strippedTask,
       locale: locale as any,
+      req: mergeReqContextTargetOrgId(req, targetOrgId),
     })
 
     req.payload.logger.debug({
-      msg: `${collectionName} created successfully`,
       createdTaskId: createdTask.id,
+      msg: `${collectionName} created successfully`,
     })
 
     await cloneRelatedDocumentFiles({
+      collectionName: collectionName,
+      documentPreloader,
+      locale,
       req,
       sourceEntity: task,
       targetEntityId: createdTask.id,
-      collectionName: collectionName,
       targetOrgId,
-      locale,
-      documentPreloader,
     })
 
     return createdTask
   } catch (error) {
     req.payload.logger.error({
-      msg: `Error creating ${collectionName}`,
       error: error instanceof Error ? error.message : 'Unknown error',
+      msg: `Error creating ${collectionName}`,
       sourceTaskId: task.id,
     })
     throw error
@@ -85,12 +88,12 @@ export const createTaskFlow = async (
   documentPreloader?: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
-    req,
-    task,
-    targetOrgId: organisationId,
     collectionName: 'task-flows',
-    locale,
     documentPreloader,
+    locale,
+    req,
+    targetOrgId: organisationId,
+    task,
   })
 }
 
@@ -105,11 +108,11 @@ export const createTaskList = async (
   documentPreloader?: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
-    req,
-    task,
-    targetOrgId: organisationId,
     collectionName: 'task-lists',
-    locale,
     documentPreloader,
+    locale,
+    req,
+    targetOrgId: organisationId,
+    task,
   })
 }

@@ -1,17 +1,18 @@
-import React from 'react'
-import { AdminViewProps, AdminViewServerProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
-import { headers as getHeaders } from 'next/headers'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { toNumber } from 'es-toolkit/compat'
+import { headers as getHeaders } from 'next/headers'
+import { AdminViewProps, AdminViewServerProps } from 'payload'
+import React from 'react'
 import { assert } from 'ts-essentials'
+
+import { LastUpdated } from '@/components/last-updated'
+import { StepNav } from '@/components/step-nav'
+import { BlockMetaWrapper } from '@/components/views/flow/lib/block-meta-wrapper'
+import { ListEditLink } from '@/components/views/list/list-edit-link'
+import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
 import { Translate } from '@/lib/translate'
 import { TaskFlow } from '@/payload-types'
-import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payloadLexicalReactRenderer'
-import { StepNav } from '@/components/step-nav'
-import { ListEditLink } from '@/components/views/list/list-edit-link'
-import { BlockMetaWrapper } from '@/components/views/flow/lib/block-meta-wrapper'
-import { LastUpdated } from '@/components/last-updated'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 function isTaskFlowArray(listRelation: any): listRelation is TaskFlow[] {
   return Array.isArray(listRelation) && listRelation.every((list) => typeof list.id === 'number')
@@ -37,15 +38,15 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
   const listBlock = await req.payload
     .find({
       collection: 'task-lists',
-      locale: locale as any,
       depth: 2,
+      locale: locale as any,
       where: {
         and: [
           {
+            id: { equals: listId },
             organisation: {
               equals: selectedOrganisationId,
             },
-            id: { equals: listId },
           },
         ],
       },
@@ -70,8 +71,8 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
   const activity = await req.payload
     .find({
       collection: 'activities',
-      locale: locale as any,
       depth: 2,
+      locale: locale as any,
       where: {
         and: [
           {
@@ -105,8 +106,8 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
         throw new Error('More than one activity found')
       }
       return {
-        id: activity[0].id,
         blockId: blockId,
+        id: activity[0].id,
         name: activity[0].name,
       }
     })
@@ -128,7 +129,7 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
           paddingRight: 'var(--gutter-h)',
         }}>
         <StepNav
-          activity={{ id: activity.id, title: activity.name, blockId: activity.blockId }}
+          activity={{ blockId: activity.blockId, id: activity.id, title: activity.name }}
           listBlock={{ id: listId, title: listBlock.name }}
         />
         <div className={'prose prose-lg'}>

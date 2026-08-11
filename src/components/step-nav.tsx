@@ -1,27 +1,28 @@
 'use client'
-import { useEffect } from 'react'
 import { StepNavItem, useStepNav, useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+import { useEffect } from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
 type Fields = {
   id: number | string
-  title: string | null | undefined
+  title: null | string | undefined
 }
 
 type Props = {
-  home?: boolean
   activity?: Fields & { blockId: string }
   activityBlock?: Fields
   flowBlock?: Fields
+  home?: boolean
   listBlock?: Fields
 }
 
 export const StepNav: React.FC<Props> = ({
-  home = false,
   activity,
-  flowBlock,
-  listBlock,
   activityBlock,
+  flowBlock,
+  home = false,
+  listBlock,
 }) => {
   const step = useStepNav()
   const { t } = useTranslation<I18nObject, I18nKeys>()

@@ -1,9 +1,10 @@
+import { FieldHook } from 'payload'
+
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { FieldHook } from 'payload'
 
-export const beforeChangeHook: FieldHook = async ({ req, req: { user }, data, context }) => {
+export const beforeChangeHook: FieldHook = async ({ context, data, req, req: { user } }) => {
   if (!user || !req.user) return undefined
 
   // Debug logging

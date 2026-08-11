@@ -1,16 +1,17 @@
 import { PayloadRequest } from 'payload'
-import { validateCloneAccess } from './validate-access'
+
 import { CloneStatisticsTracker } from './clone-statistics-tracker'
 import { getErrorMessage, withErrorHandling } from './error-utils'
 import { CloneResponse } from './types'
+import { validateCloneAccess } from './validate-access'
 
 export interface CloneConfig<TSource = any, TCloned = any> {
   collectionSlug: 'activities' | 'task-flows' | 'task-lists'
-  sourceId: number | string
-  targetOrgId: number
-  req: PayloadRequest
-  stripDocument: (doc: TSource, targetOrgId: number) => Promise<Partial<TCloned>>
   processRelationships?: (doc: TSource, clonedDoc: TCloned, req: PayloadRequest) => Promise<void>
+  req: PayloadRequest
+  sourceId: number | string
+  stripDocument: (doc: TSource, targetOrgId: number) => Promise<Partial<TCloned>>
+  targetOrgId: number
 }
 
 export class GenericCloneExecutor<TSource = any, TCloned = any> {
@@ -21,18 +22,18 @@ export class GenericCloneExecutor<TSource = any, TCloned = any> {
   }
 
   async execute(): Promise<CloneResponse> {
-    const { req, sourceId, targetOrgId, collectionSlug } = this.config
+    const { collectionSlug, req, sourceId, targetOrgId } = this.config
 
     this.tracker.reset()
 
     try {
       const user = req.user
       const accessResult = await validateCloneAccess({
+        collectionSlug,
         req,
-        user,
         sourceId,
         targetOrgId,
-        collectionSlug,
+        user,
       })
 
       if (!accessResult.isValid) {
@@ -42,15 +43,15 @@ export class GenericCloneExecutor<TSource = any, TCloned = any> {
       const sourceDoc = await withErrorHandling(
         () =>
           req.payload.findByID({
-            req,
             collection: collectionSlug,
-            id: sourceId,
             depth: 1, // Depth 1 to populate organisation but not nested richtext relationships
+            id: sourceId,
             locale: req.locale,
+            req,
           }),
         `Failed to fetch source ${collectionSlug}`,
         req.payload.logger,
-        { sourceId, collectionSlug },
+        { collectionSlug, sourceId },
       )
 
       if (!sourceDoc) {
@@ -67,16 +68,16 @@ export class GenericCloneExecutor<TSource = any, TCloned = any> {
       const clonedDoc = await withErrorHandling(
         () =>
           req.payload.create({
-            req,
             collection: collectionSlug,
             data: {
               ...strippedData,
-              organisation: targetOrgId,
               createdBy: user?.id,
+              organisation: targetOrgId,
               updatedBy: user?.id,
             } as any,
-            locale: req.locale === 'all' ? undefined : req.locale,
             depth: 0,
+            locale: req.locale === 'all' ? undefined : req.locale,
+            req,
           }),
         `Failed to create cloned ${collectionSlug}`,
         req.payload.logger,
@@ -88,29 +89,29 @@ export class GenericCloneExecutor<TSource = any, TCloned = any> {
           () => this.config.processRelationships!(sourceDoc as TSource, clonedDoc as TCloned, req),
           'Failed to process relationships',
           req.payload.logger,
-          { sourceId: sourceDoc.id, clonedId: clonedDoc.id },
+          { clonedId: clonedDoc.id, sourceId: sourceDoc.id },
         )
       }
 
       const statistics = this.tracker.getStatistics()
 
       req.payload.logger.info({
+        clonedId: clonedDoc.id,
         msg: `Successfully cloned ${collectionSlug}`,
         sourceId: sourceDoc.id,
-        clonedId: clonedDoc.id,
-        targetOrgId,
         statistics,
+        targetOrgId,
       })
 
       return {
-        message: `Successfully cloned ${collectionSlug}`,
         documentId: clonedDoc.id,
+        message: `Successfully cloned ${collectionSlug}`,
         statistics,
       }
     } catch (error) {
       req.payload.logger.error({
-        msg: `Failed to clone ${collectionSlug}`,
         error: getErrorMessage(error),
+        msg: `Failed to clone ${collectionSlug}`,
         sourceId,
         targetOrgId,
       })

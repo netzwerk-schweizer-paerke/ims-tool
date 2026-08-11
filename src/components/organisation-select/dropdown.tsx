@@ -1,24 +1,25 @@
 'use client'
 
+import { Select, usePreferences } from '@payloadcms/ui'
 import { toNumber } from 'es-toolkit/compat'
 import ky from 'ky'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { Organisation } from '@/payload-types'
-import { Select, usePreferences } from '@payloadcms/ui'
+import { useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
+
 import { logger } from '@/lib/logger'
 import { Translate } from '@/lib/translate'
-import { useSearchParams } from 'next/navigation'
+import { Organisation } from '@/payload-types'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 type Props = {
-  userId?: number
   orgs?: Organisation[]
   selectedOrg?: Organisation
+  userId?: number
 }
 
-export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selectedOrg }) => {
+export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, userId }) => {
   const [orgLangMismatch, setOrgLangMismatch] = useState(false)
-  const { setPreference, getPreference } = usePreferences()
+  const { getPreference, setPreference } = usePreferences()
   const params = useSearchParams()
   const paramsLocale = params.get('locale')
 
@@ -58,10 +59,10 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
   const onChange = async (option: { value: any }) => {
     const selectedId = toNumber(option.value)
     await ky.patch(`/api/users/${userId}`, {
+      credentials: 'include',
       json: {
         selectedOrganisation: selectedId,
       },
-      credentials: 'include',
     })
     const selectedOrg = orgs?.find((org) => org.id === selectedId)
     await setLanguagePreference(selectedOrg)
@@ -72,8 +73,8 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
   const options =
     orgs?.map((org) => {
       return {
-        value: `${org.id}`,
         label: org.name,
+        value: `${org.id}`,
       }
     }) || []
 
@@ -82,11 +83,11 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
   return (
     <>
       <Select
+        isClearable={false}
+        isCreatable={false}
+        onChange={onChange as any}
         options={options}
         value={selectedOption}
-        onChange={onChange as any}
-        isCreatable={false}
-        isClearable={false}
       />
       {orgLangMismatch && (
         <div className={'mt-4 rounded-lg border px-2'}>
@@ -94,9 +95,9 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, userId, selected
             <Translate k={'admin:selectOrganisations:orgLanguageMismatch'} />
           </p>
           <button
+            className={'btn btn--style-pill btn--size-small my-2'}
             onClick={() => setLanguagePreference(selectedOrg)}
-            type={'button'}
-            className={'btn btn--style-pill btn--size-small my-2'}>
+            type={'button'}>
             <Translate k={'admin:selectOrganisations:reset'} />
           </button>
         </div>

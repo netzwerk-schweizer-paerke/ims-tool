@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react'
 import { Button, Select, useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+import React, { useMemo, useState } from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { Activity } from '@/payload-types'
-import { CloneInfoPanel } from './CloneInfoPanel'
 import {
   FormCheckbox,
   FormLabel,
@@ -10,41 +10,43 @@ import {
   SelectAllCheckbox,
 } from '@/payload/utilities/cloning/ui/form'
 
-type FormField = {
-  key: string
-  label: string
-  export: boolean
-}
-
-type FormSection = {
-  section: string
-  fields: FormField[]
-}
+import { CloneInfoPanel } from './clone-info-panel'
 
 interface CloneConfigurationFormProps {
   activities: Activity[]
-  targetOrganisations: { label: string; value: number }[]
+  baseClass: string
+  isCloning: boolean
+  onCancel: () => void
   onSubmit: (
     selectedActivities: string[],
     targetOrganisation: { label: string; value: number },
   ) => void
-  isCloning: boolean
-  baseClass: string
-  onCancel: () => void
+  targetOrganisations: { label: string; value: number }[]
+}
+
+type FormField = {
+  export: boolean
+  key: string
+  label: string
+}
+
+type FormSection = {
+  fields: FormField[]
+  section: string
 }
 
 export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
   activities,
-  targetOrganisations,
-  onSubmit,
-  isCloning,
   baseClass,
+  isCloning,
   onCancel,
+  onSubmit,
+  targetOrganisations,
 }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const [formState, setFormState] = useState<Record<string, boolean>>({})
   const [selectedOption, setSelectedOption] = useState<
-    { label: string; value: number } | undefined
+    undefined | { label: string; value: number }
   >()
 
   const availableOptions = useMemo(() => {
@@ -53,12 +55,12 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
         ...prevState,
         [`activity-${activity.id}`]: false,
       }))
-      return { key: `activity-${activity.id}`, label: activity.name, export: false }
+      return { export: false, key: `activity-${activity.id}`, label: activity.name }
     })
     return [
       {
-        section: 'Activities',
         fields: formFields,
+        section: 'Activities',
       },
     ] as FormSection[]
   }, [activities])
@@ -70,9 +72,9 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
   const handleSelectAll = () => {
     const newState = { ...formState }
     const shouldSelectAll = !selectAll
-    availableOptions[0]?.fields?.forEach((field) => {
+    for (const field of availableOptions[0]?.fields ?? []) {
       newState[field.key] = shouldSelectAll
-    })
+    }
     setFormState(newState)
   }
 
@@ -88,7 +90,7 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
   }
 
   const disableSave = useMemo(() => {
-    const activitiesSelected = Object.values(formState).some((value) => value)
+    const activitiesSelected = Object.values(formState).some(Boolean)
     const organisationSelected = !!selectedOption
     return !(activitiesSelected && organisationSelected && !isCloning)
   }, [formState, selectedOption, isCloning])
@@ -98,7 +100,7 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
 
     const selectedActivities = Object.entries(formState)
       .filter(([_, selected]) => selected)
-      .map(([key]) => key.split('-')[1])
+      .map(([key]) => key.split('-', 2)[1])
 
     onSubmit(selectedActivities, selectedOption)
   }
@@ -116,19 +118,19 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
           <FormSection>
             <SelectAllCheckbox
               checked={selectAll}
-              onChange={handleSelectAll}
               label={t('general:selectAll' as any)}
+              onChange={handleSelectAll}
             />
             {availableOptions[0]?.fields?.map((field) => (
               <FormCheckbox
-                key={field.key}
                 checked={formState[field.key] || false}
-                onChange={() => onCheckboxChange(field.key)}
+                key={field.key}
                 label={field.label}
+                onChange={() => onCheckboxChange(field.key)}
               />
             ))}
           </FormSection>
-          {Object.values(formState).filter(Boolean).length > 0 && (
+          {Object.values(formState).some(Boolean) && (
             <p className="mt-1 text-[var(--theme-text-light)]">
               {Object.values(formState).filter(Boolean).length} activities selected
             </p>
@@ -141,11 +143,11 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
           </FormLabel>
           <Select
             id="targetOrg"
+            isClearable={false}
+            isCreatable={false}
+            onChange={onOrganisationChange as any}
             options={targetOrganisations}
             value={selectedOption}
-            onChange={onOrganisationChange as any}
-            isCreatable={false}
-            isClearable={false}
           />
         </div>
 
@@ -167,8 +169,8 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
           <Button
             buttonStyle="secondary"
             className={`${baseClass}__cancel`}
-            onClick={onCancel}
-            disabled={isCloning}>
+            disabled={isCloning}
+            onClick={onCancel}>
             {t('general:cancel' as any)}
           </Button>
         </div>

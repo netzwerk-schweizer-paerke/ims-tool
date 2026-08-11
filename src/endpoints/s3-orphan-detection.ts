@@ -1,34 +1,33 @@
 import { Endpoint } from 'payload'
-import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
+
+import { S3OrphanDetector } from '@/lib/s3-orphan-detector'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
-import { S3OrphanDetector } from '@/lib/s3-orphan-detector'
+import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
 
 export interface OrphanReport {
-  timestamp: string
+  orphansByPrefix: Array<{
+    count: number
+    objects: Array<{
+      key: string
+      lastModified: string
+      size: number
+      sizeFormatted: string
+    }>
+    prefix: string
+    totalSize: number
+  }>
   summary: {
-    totalS3Objects: number
-    totalReferencedFiles: number
     orphanedCount: number
     totalOrphanedSize: number
     totalOrphanedSizeFormatted: string
+    totalReferencedFiles: number
+    totalS3Objects: number
   }
-  orphansByPrefix: Array<{
-    prefix: string
-    count: number
-    totalSize: number
-    objects: Array<{
-      key: string
-      size: number
-      sizeFormatted: string
-      lastModified: string
-    }>
-  }>
+  timestamp: string
 }
 
 export const s3OrphanDetectionEndpoint: Endpoint = {
-  path: '/s3-orphan-detection',
-  method: 'get',
   handler: async (req) => {
     try {
       // Step 1: Verify authentication
@@ -62,16 +61,16 @@ export const s3OrphanDetectionEndpoint: Endpoint = {
 
       req.payload.logger.info({
         msg: 'S3 orphan detection completed successfully',
-        userId: user!.id,
         orphanCount: report.summary.orphanedCount,
         totalSize: report.summary.totalOrphanedSizeFormatted,
+        userId: user!.id,
       })
 
       return Response.json(report, { status: 200 })
     } catch (error) {
       req.payload.logger.error({
-        msg: 'S3 orphan detection failed',
         error: error instanceof Error ? error.message : 'Unknown error',
+        msg: 'S3 orphan detection failed',
         userId: req.user?.id,
       })
 
@@ -83,4 +82,6 @@ export const s3OrphanDetectionEndpoint: Endpoint = {
       )
     }
   },
+  method: 'get',
+  path: '/s3-orphan-detection',
 }

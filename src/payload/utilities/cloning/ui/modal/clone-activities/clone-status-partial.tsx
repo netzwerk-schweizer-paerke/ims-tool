@@ -1,9 +1,11 @@
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nObject, I18nKeys } from '@/lib/useTranslation-custom-types'
-import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
-import { CloneResultsTable } from './CloneResultsTable'
+import React from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
+import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
+
+import { CloneResultsTable } from './clone-results-table'
 
 interface CloneStatusPartialProps {
   results: GenericCloneStatisticsFinalized
@@ -28,8 +30,8 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
         <div>
           <p className="text-lg font-semibold text-[var(--theme-warning-dark)]">
             {t('cloneActivity:status:partialSuccess', {
-              succeeded: successfulEntities.length,
               failed: problematicEntities.length,
+              succeeded: successfulEntities.length,
             })}
           </p>
         </div>
@@ -48,8 +50,8 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
           <div className="space-y-4">
             {successfulEntities.map((entity, idx) => (
               <div
-                key={idx}
-                className="rounded border border-[var(--theme-success-light)] bg-[var(--theme-elevation-0)] p-3">
+                className="rounded border border-[var(--theme-success-light)] bg-[var(--theme-elevation-0)] p-3"
+                key={idx}>
                 <div className="mb-2 flex items-center justify-between">
                   <h4 className="font-medium text-[var(--theme-text)]">{entity.source.name}</h4>
                   <div className="flex items-center gap-1">
@@ -92,8 +94,8 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
 
               return (
                 <div
-                  key={idx}
-                  className="rounded border border-[var(--theme-warning-light)] bg-[var(--theme-elevation-0)] p-3">
+                  className="rounded border border-[var(--theme-warning-light)] bg-[var(--theme-elevation-0)] p-3"
+                  key={idx}>
                   <div className="mb-2 flex items-center justify-between">
                     <h4 className="font-medium text-[var(--theme-text)]">{entity.source.name}</h4>
                     <div className="flex items-center gap-1">

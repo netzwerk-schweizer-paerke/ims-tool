@@ -1,6 +1,6 @@
 import { FlowBlock } from '@/components/views/activity/view/flow-block'
-import { TaskFlow, TaskList } from '@/payload-types'
 import { ListBlock } from '@/components/views/activity/view/list-block'
+import { TaskFlow, TaskList } from '@/payload-types'
 
 type Props = {
   tasks:
@@ -22,14 +22,14 @@ export const TasksGrid: React.FC<Props> = ({ tasks }) => {
         switch (task.relationTo) {
           case 'task-flows': {
             return (
-              <div key={i} className={'w-48'}>
+              <div className={'w-48'} key={i}>
                 <FlowBlock flow={task.value} />
               </div>
             )
           }
           case 'task-lists': {
             return (
-              <div key={i} className={'w-48'}>
+              <div className={'w-48'} key={i}>
                 <ListBlock list={task.value} />
               </div>
             )

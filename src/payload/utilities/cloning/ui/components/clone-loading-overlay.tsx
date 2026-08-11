@@ -1,18 +1,19 @@
 'use client'
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+import React from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
 interface CloneLoadingOverlayProps {
   isVisible: boolean
-  title?: string
   subtitle?: string
+  title?: string
 }
 
 export const CloneLoadingOverlay: React.FC<CloneLoadingOverlayProps> = ({
   isVisible,
-  title,
   subtitle,
+  title,
 }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
 

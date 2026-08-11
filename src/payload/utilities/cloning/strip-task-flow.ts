@@ -1,8 +1,10 @@
-import { TaskFlow } from '@/payload-types'
-import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 import { PayloadRequest } from 'payload'
-import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
+
+import { TaskFlow } from '@/payload-types'
+import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 
 export const stripTaskFlow = async (
   obj: TaskFlow,
@@ -11,7 +13,7 @@ export const stripTaskFlow = async (
   locale: string,
   documentPreloader?: DocumentPreloader,
 ): Promise<any> => {
-  const { id, createdAt, createdBy, updatedAt, updatedBy, ...strippedEntity } = obj
+  const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   const locationPrefix = obj.name ? `Task Flow "${obj.name}"` : 'Task Flow'
 

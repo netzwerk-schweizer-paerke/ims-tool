@@ -7,16 +7,17 @@ import type {
   TypedLocale,
   TypeWithID,
 } from 'payload'
+
 import { APIError } from 'payload'
 
 type Args = {
   collectionSlug?: CollectionSlug
+  depth?: number
   globalSlug?: GlobalSlug
   id?: number | string
   locale: TypedLocale
   overrideAccess?: boolean
   req: PayloadRequest
-  depth?: number
 }
 
 const findConfigBySlug = (
@@ -30,7 +31,7 @@ export const findEntityWithConfig = async (
   config: SanitizedCollectionConfig | SanitizedGlobalConfig
   doc: Record<string, unknown> & TypeWithID
 }> => {
-  const { id, collectionSlug, globalSlug, locale, overrideAccess, req, depth = 0 } = args
+  const { collectionSlug, depth = 0, globalSlug, id, locale, overrideAccess, req } = args
 
   if (!collectionSlug && !globalSlug) {
     throw new APIError('Bad Request', 400)
@@ -60,18 +61,18 @@ export const findEntityWithConfig = async (
 
   const doc = isGlobal
     ? await payload.findGlobal({
-        slug: args.globalSlug as GlobalSlug,
         depth,
         fallbackLocale: undefined,
         locale,
         overrideAccess,
         req,
+        slug: args.globalSlug as GlobalSlug,
       })
     : await payload.findByID({
-        id: id as string | number,
         collection: collectionSlug as CollectionSlug,
         depth,
         fallbackLocale: undefined,
+        id: id as number | string,
         locale,
         overrideAccess,
         req,

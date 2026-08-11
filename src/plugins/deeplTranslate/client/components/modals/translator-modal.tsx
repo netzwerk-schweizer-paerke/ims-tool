@@ -1,4 +1,4 @@
-import React from 'react'
+import { getTranslation } from '@payloadcms/translations'
 import {
   Button,
   CloseMenuIcon,
@@ -10,20 +10,16 @@ import {
   usePreferences,
   useTranslation,
 } from '@payloadcms/ui'
-import { getTranslation } from '@payloadcms/translations'
 import { TypedLocale } from 'payload'
-import { translateDocument } from '../../api/translate-api'
+import React from 'react'
+
 import { hasLocalization } from '@/lib/locale-utils'
-import { TranslationResult } from './TranslationResult'
-import { LanguageSelectors } from './LanguageSelectors'
-import { TranslationOptions } from './TranslationOptions'
 
+import { translateDocument } from '../../api/translate-api'
+import { LanguageSelectors } from './language-selectors'
+import { TranslationOptions } from './translation-options'
+import { TranslationResult } from './translation-result'
 import './styles.scss'
-
-interface Props {
-  modalSlug: string
-  onClose: () => void
-}
 
 // Type for React Select option
 type Option<TValue> = {
@@ -32,18 +28,23 @@ type Option<TValue> = {
   value: TValue
 }
 
+interface Props {
+  modalSlug: string
+  onClose: () => void
+}
+
 export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose }) => {
   const [busy, setBusy] = React.useState(false)
   const [selectedFromLocale, setSelectedFromLocale] = React.useState<string>('')
   const [selectedToLocale, setSelectedToLocale] = React.useState<string>('')
   const [includeRelationships, setIncludeRelationships] = React.useState(false)
-  const [translationResult, setTranslationResult] = React.useState<{
-    success: boolean
+  const [translationResult, setTranslationResult] = React.useState<null | {
     error?: string
-    errorType?: 'quota_exceeded' | 'generic' | 'network' | 'authentication'
-  } | null>(null)
+    errorType?: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
+    success: boolean
+  }>(null)
 
-  const { id, collectionSlug, globalSlug } = useDocumentInfo()
+  const { collectionSlug, globalSlug, id } = useDocumentInfo()
   const locale = useLocale()
   const { i18n, t } = useTranslation()
   const { config } = useConfig()
@@ -57,12 +58,14 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
 
   React.useEffect(() => {
     // Set defaults: current locale as source, and first available other locale as target
-    if (hasLocalization(config) && allLocales.length > 0) {
-      setSelectedFromLocale(locale.code)
-      const otherLocales = allLocales.filter((l) => l.code !== locale.code)
-      if (otherLocales.length > 0) {
-        setSelectedToLocale(otherLocales[0].code)
-      }
+    if (!(hasLocalization(config) && allLocales.length > 0)) {
+    	return;
+    }
+
+    setSelectedFromLocale(locale.code)
+    const otherLocales = allLocales.filter((l) => l.code !== locale.code)
+    if (otherLocales.length > 0) {
+      setSelectedToLocale(otherLocales[0].code)
     }
   }, [config, allLocales, locale.code])
 
@@ -72,8 +75,8 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
       allLocales.map((option) => {
         const label = getTranslation(option.label, i18n)
         return {
+          label: label === option.code ? label : `${label} (${option.code})`,
           value: option.code,
-          label: label !== option.code ? `${label} (${option.code})` : label,
         }
       }),
     [allLocales, i18n],
@@ -87,8 +90,8 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
         .map((option) => {
           const label = getTranslation(option.label, i18n)
           return {
+            label: label === option.code ? label : `${label} (${option.code})`,
             value: option.code,
-            label: label !== option.code ? `${label} (${option.code})` : label,
           }
         }),
     [allLocales, selectedFromLocale, i18n],
@@ -105,15 +108,17 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
   )
 
   const onFromSelectChange = (option: Option<unknown> | Option<unknown>[]) => {
-    if (!Array.isArray(option) && option?.value) {
-      const newFromLocale = option.value as string
-      setSelectedFromLocale(newFromLocale)
-      // If the new FROM locale is the same as current TO locale, reset TO locale
-      if (newFromLocale === selectedToLocale) {
-        const otherLocales = allLocales.filter((l) => l.code !== newFromLocale)
-        if (otherLocales.length > 0) {
-          setSelectedToLocale(otherLocales[0].code)
-        }
+    if (Array.isArray(option) || !option?.value) {
+    	return;
+    }
+
+    const newFromLocale = option.value as string
+    setSelectedFromLocale(newFromLocale)
+    // If the new FROM locale is the same as current TO locale, reset TO locale
+    if (newFromLocale === selectedToLocale) {
+      const otherLocales = allLocales.filter((l) => l.code !== newFromLocale)
+      if (otherLocales.length > 0) {
+        setSelectedToLocale(otherLocales[0].code)
       }
     }
   }
@@ -135,12 +140,12 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
 
     try {
       const result = await translateDocument({
-        id: id || '',
         collectionSlug,
-        globalSlug,
         fromLocale: selectedFromLocale as TypedLocale,
-        toLocale: selectedToLocale as TypedLocale,
+        globalSlug,
+        id: id || '',
         includeRelationships,
+        toLocale: selectedToLocale as TypedLocale,
       })
 
       setBusy(false)
@@ -149,18 +154,18 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
         setTranslationResult({ success: true })
       } else {
         setTranslationResult({
-          success: false,
           error: result.error || t('plugin-deepltranslate:resolver_deepl_errorMessage' as any),
           errorType: result.errorType || 'generic',
+          success: false,
         })
       }
     } catch (error) {
       console.error(error)
       setBusy(false)
       setTranslationResult({
-        success: false,
         error: t('plugin-deepltranslate:resolver_deepl_errorMessage' as any),
         errorType: 'generic',
+        success: false,
       })
     }
   }
@@ -175,10 +180,10 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
     <Modal className="deepltranslate__modal" slug={modalSlug}>
       <div className="deepltranslate__wrapper">
         <button
-          type="button"
           aria-label="Close"
           className="deepltranslate__close"
-          onClick={onClose}>
+          onClick={onClose}
+          type="button">
           <CloseMenuIcon />
         </button>
 
@@ -188,38 +193,41 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
           {/* Show translation result if available */}
           {translationResult ? (
             <TranslationResult
-              success={translationResult.success}
               error={translationResult.error}
               errorType={translationResult.errorType}
-              selectedFromLabel={selectedFromOption?.label}
-              selectedToLabel={selectedToOption?.label}
-              onViewTranslation={onViewTranslation}
               onClose={onClose}
               onTryAgain={() => setTranslationResult(null)}
+              onViewTranslation={onViewTranslation}
+              selectedFromLabel={selectedFromOption?.label}
+              selectedToLabel={selectedToOption?.label}
+              success={translationResult.success}
             />
           ) : (
             <>
               {/* Show translation form */}
               <LanguageSelectors
+                disabled={busy}
                 fromSelectOptions={fromSelectOptions}
-                toSelectOptions={toSelectOptions}
-                selectedFromOption={selectedFromOption}
-                selectedToOption={selectedToOption}
                 onFromSelectChange={onFromSelectChange}
                 onToSelectChange={onToSelectChange}
-                disabled={busy}
+                selectedFromOption={selectedFromOption}
+                selectedToOption={selectedToOption}
+                toSelectOptions={toSelectOptions}
               />
 
               <TranslationOptions
+                disabled={busy}
                 includeRelationships={includeRelationships}
                 onIncludeRelationshipsChange={setIncludeRelationships}
-                disabled={busy}
               />
 
               <div className="deepltranslate__buttons">
                 <Button
-                  onClick={onClickTranslate}
-                  disabled={busy || !selectedFromLocale || !selectedToLocale}>
+                  disabled={busy || !selectedFromLocale || !selectedToLocale}
+                  onClick={onClickTranslate}>
+                  {/* Collapsing this ternary would build the key by interpolation; i18n keys
+                      must stay static literals so the extractor can find them. */}
+                  {/* eslint-disable-next-line unicorn/prefer-minimal-ternary */}
                   {busy
                     ? t('plugin-deepltranslate:resolver_deepl_pleaseWait' as any)
                     : t('plugin-deepltranslate:resolver_deepl_submitButtonLabelFull' as any)}

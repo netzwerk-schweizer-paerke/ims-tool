@@ -11,9 +11,8 @@ export function normalizeDocumentRelationships(node: any): any {
   const normalizedNode = Array.isArray(node) ? [...node] : { ...node }
 
   // Handle link nodes with document relationships
-  if (normalizedNode.type === 'link' && normalizedNode.fields?.doc?.value) {
-    // Check if it's a resolved entity (value is an object with an id)
-    if (isObject(normalizedNode.fields.doc.value) && 'id' in normalizedNode.fields.doc.value) {
+  // Check if it's a resolved entity (value is an object with an id)
+    if (normalizedNode.type === 'link' && normalizedNode.fields?.doc?.value && isObject(normalizedNode.fields.doc.value) && 'id' in normalizedNode.fields.doc.value) {
       // Convert resolved to unresolved by extracting just the ID
       normalizedNode.fields = {
         ...normalizedNode.fields,
@@ -23,7 +22,6 @@ export function normalizeDocumentRelationships(node: any): any {
         },
       }
     }
-  }
 
   // Handle upload nodes with resolved documents
   if (normalizedNode.type === 'upload') {

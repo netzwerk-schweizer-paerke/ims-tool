@@ -1,4 +1,5 @@
 import { Payload } from 'payload'
+
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
 export const seedDevUser = async (payload: Payload) => {
@@ -13,11 +14,11 @@ export const seedDevUser = async (payload: Payload) => {
     await payload.create({
       collection: 'users',
       data: {
-        roles: [ROLE_SUPER_ADMIN],
+        email: 'admin@test.com',
         firstName: 'Admin',
         lastName: 'User',
-        email: 'admin@test.com',
         password: 'admin',
+        roles: [ROLE_SUPER_ADMIN],
       },
     })
   }
@@ -44,11 +45,9 @@ export const seedDevUser = async (payload: Payload) => {
     await payload.create({
       collection: 'users',
       data: {
-        roles: [ROLE_SUPER_ADMIN],
+        email: 'admin@test.com',
         firstName: 'Admin',
         lastName: 'User',
-        email: 'admin@test.com',
-        password: 'admin',
         organisations: [
           {
             organisation: musterPark.id,
@@ -59,38 +58,40 @@ export const seedDevUser = async (payload: Payload) => {
             roles: [ROLE_SUPER_ADMIN],
           },
         ],
+        password: 'admin',
+        roles: [ROLE_SUPER_ADMIN],
       },
     })
 
     await payload.create({
       collection: 'users',
       data: {
-        roles: [ROLE_USER],
+        email: 'musterpark@parcs-ims.ch',
         firstName: 'Muster',
         lastName: 'Park',
-        email: 'musterpark@parcs-ims.ch',
-        password: 'Test1234',
         organisations: [
           {
             organisation: musterPark.id,
             roles: [ROLE_USER],
           },
         ],
+        password: 'Test1234',
+        roles: [ROLE_USER],
       },
     })
 
     await payload.create({
       collection: 'users',
       data: {
-        roles: [ROLE_USER],
         email: 'testpark@parcs-ims.ch',
-        password: 'Test1234',
         organisations: [
           {
             organisation: testPark.id,
             roles: [ROLE_USER],
           },
         ],
+        password: 'Test1234',
+        roles: [ROLE_USER],
       },
     })
   }

@@ -1,8 +1,9 @@
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nKeys, I18nObject } from '@/lib/useTranslation-custom-types'
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import React from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { GenericCloneStatistics } from '@/payload/utilities/cloning/types'
-import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 
 interface CloneResultsTableProps {
   statistics: GenericCloneStatistics

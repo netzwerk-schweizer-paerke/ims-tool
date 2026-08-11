@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 /**
  * Recursively removes all "i18n" keys and their children from objects and arrays
@@ -50,11 +50,11 @@ export const extractTranslationData = (
   const cleanedConfigFields = removeI18nKeys(configFields)
 
   const extractedData = {
-    dataFrom: cleanedDataFrom,
     configFields: cleanedConfigFields,
+    dataFrom: cleanedDataFrom,
   }
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const timestamp = new Date().toISOString().replaceAll(/[:.]/g, '-')
   const filename = path.join(__dirname, `${baseName}-${timestamp}.json`)
 
   fs.writeFileSync(filename, JSON.stringify(extractedData, null, 2), 'utf8')

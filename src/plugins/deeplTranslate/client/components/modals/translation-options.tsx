@@ -1,16 +1,16 @@
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
+import React from 'react'
 
 interface TranslationOptionsProps {
+  disabled?: boolean
   includeRelationships: boolean
   onIncludeRelationshipsChange: (checked: boolean) => void
-  disabled?: boolean
 }
 
 export const TranslationOptions: React.FC<TranslationOptionsProps> = ({
+  disabled = false,
   includeRelationships,
   onIncludeRelationshipsChange,
-  disabled = false,
 }) => {
   const { t } = useTranslation()
 
@@ -18,11 +18,11 @@ export const TranslationOptions: React.FC<TranslationOptionsProps> = ({
     <div className="mb-4">
       <label className="flex cursor-pointer items-center gap-2">
         <input
-          type="checkbox"
           checked={includeRelationships}
-          onChange={(e) => onIncludeRelationshipsChange(e.target.checked)}
           className="cursor-pointer"
           disabled={disabled}
+          onChange={(e) => onIncludeRelationshipsChange(e.target.checked)}
+          type="checkbox"
         />
         <span className="">{t('plugin-deepltranslate:resolver_deepl_includeRelated' as any)}</span>
       </label>

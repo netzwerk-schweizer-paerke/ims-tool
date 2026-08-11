@@ -1,9 +1,11 @@
-import React from 'react'
 import { useTranslation } from '@payloadcms/ui'
-import { I18nObject, I18nKeys } from '@/lib/useTranslation-custom-types'
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import React from 'react'
+
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
-import { XCircle, CheckCircle, AlertTriangle } from 'lucide-react'
-import { CloneResultsTable } from './CloneResultsTable'
+
+import { CloneResultsTable } from './clone-results-table'
 
 interface CloneStatusErrorProps {
   results: GenericCloneStatisticsFinalized
@@ -36,8 +38,8 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
             <>
               <p className="text-lg font-semibold text-[var(--theme-error-dark)]">
                 {t('cloneActivity:status:partialSuccess', {
-                  succeeded: successfullyClonedEntities.length,
                   failed: completelyFailedEntities.length,
+                  succeeded: successfullyClonedEntities.length,
                 })}
               </p>
               <p className="text-[var(--theme-error)]">
@@ -88,7 +90,7 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                 : 'bg-[var(--theme-success-50)]'
 
             return (
-              <div key={idx} className={`rounded-lg border ${borderColor} ${bgColor} p-4`}>
+              <div className={`rounded-lg border ${borderColor} ${bgColor} p-4`} key={idx}>
                 <div className="mb-3 flex items-center justify-between">
                   <h4 className="text-lg font-medium text-[var(--theme-text)]">
                     {entity.source.name}
@@ -160,8 +162,8 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
 
                         return (
                           <div
-                            key={errorIdx}
-                            className="border-l-2 border-[var(--theme-warning)] pl-3 text-sm">
+                            className="border-l-2 border-[var(--theme-warning)] pl-3 text-sm"
+                            key={errorIdx}>
                             <div className="font-medium text-[var(--theme-warning-dark)]">
                               {error.fileName}
                             </div>
@@ -201,8 +203,8 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
 
           {completelyFailedEntities.map((entity, idx) => (
             <div
-              key={idx}
-              className="rounded-lg border border-[var(--theme-error-light)] bg-[var(--theme-error-50)] p-4">
+              className="rounded-lg border border-[var(--theme-error-light)] bg-[var(--theme-error-50)] p-4"
+              key={idx}>
               <div className="mb-3 flex items-center justify-between">
                 <h4 className="text-lg font-medium text-[var(--theme-text)]">
                   {entity.source.name}

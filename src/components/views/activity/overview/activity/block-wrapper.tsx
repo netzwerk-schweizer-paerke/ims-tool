@@ -1,9 +1,10 @@
 import { PropsWithChildren } from 'react'
+
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 
 type Props = PropsWithChildren & {
-  id: string | null | undefined
+  id: null | string | undefined
 }
 
 export const BlockWrapper: React.FC<Props> = ({ children, id }) => {
@@ -13,7 +14,7 @@ export const BlockWrapper: React.FC<Props> = ({ children, id }) => {
   return (
     <div className={'activity-block relative p-8'}>
       <div className={'flex h-24 w-52 items-center justify-center text-center'}>
-        <div id={`${id}-${RootTargetName}`} className={'root-target size-full'}>
+        <div className={'root-target size-full'} id={`${id}-${RootTargetName}`}>
           {children}
         </div>
       </div>

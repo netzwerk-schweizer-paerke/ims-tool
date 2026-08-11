@@ -1,120 +1,27 @@
-import { GenericCloneStatistics, MissingDocumentFileError, OtherErrors } from './types'
 import { CollectionSlug } from 'payload'
+
+import { GenericCloneStatistics, MissingDocumentFileError, OtherErrors } from './types'
 
 export class CloneStatisticsTracker {
   private static instances: Map<string, CloneStatisticsTracker> = new Map()
-  private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
+  private currentEntityId: null | number = null
   private documentCloneMaps: Map<number, Map<number, number>> = new Map()
-  private currentEntityId: number | null = null
+  private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
 
   private constructor(id: string) {
     this.reset()
   }
 
+  static clearAllInstances(): void {
+    this.instances.clear()
+  }
+
   static getInstance(transactionId: any): CloneStatisticsTracker {
     const id = transactionId.toString()
-    if (!CloneStatisticsTracker.instances.has(id)) {
-      CloneStatisticsTracker.instances.set(id, new CloneStatisticsTracker(id))
+    if (!this.instances.has(id)) {
+      this.instances.set(id, new CloneStatisticsTracker(id))
     }
-    return CloneStatisticsTracker.instances.get(id) as CloneStatisticsTracker
-  }
-
-  reset(): void {
-    this.entitiesStats = new Map()
-    this.documentCloneMaps = new Map()
-    this.currentEntityId = null
-  }
-
-  startEntity(entityId: number): void {
-    this.currentEntityId = entityId
-    if (!this.entitiesStats.has(entityId)) {
-      this.entitiesStats.set(entityId, {
-        source: {
-          id: 0,
-          name: '',
-          collection: null,
-          relatedEntitiesCount: 0,
-          documentFilesCount: 0,
-          publicDocumentFilesCount: 0,
-          blocksCount: 0,
-          itemsCount: 0,
-          filesCount: 0,
-        },
-        cloned: {
-          id: 0,
-          name: '',
-          collection: null,
-          relatedEntitiesCount: 0,
-          documentFilesCount: 0,
-          publicDocumentFilesCount: 0,
-          blocksCount: 0,
-          itemsCount: 0,
-          filesCount: 0,
-        },
-        percentComplete: 0,
-        errors: {
-          missingDocumentFiles: [],
-          otherErrors: [],
-        },
-      })
-      this.documentCloneMaps.set(entityId, new Map())
-    }
-  }
-
-  endEntity(): void {
-    if (this.currentEntityId !== null) {
-      this.calculateCompleteness(this.currentEntityId)
-      this.currentEntityId = null
-    }
-  }
-
-  private getCurrentStats(): GenericCloneStatistics {
-    if (this.currentEntityId === null) {
-      throw new Error('No current entity set. Call startEntity() first.')
-    }
-    return this.entitiesStats.get(this.currentEntityId)!
-  }
-
-  private getCurrentDocumentCloneMap(): Map<number, number> {
-    if (this.currentEntityId === null) {
-      throw new Error('No current entity set. Call startEntity() first.')
-    }
-    return this.documentCloneMaps.get(this.currentEntityId)!
-  }
-
-  setSourceInfo(id: number, name: string, collection: CollectionSlug): void {
-    const stats = this.getCurrentStats()
-    stats.source = {
-      ...stats.source,
-      name,
-      id,
-      collection,
-    }
-  }
-
-  setCloneInfo(id: number, name: string, collection: CollectionSlug): void {
-    const stats = this.getCurrentStats()
-    stats.cloned = {
-      ...stats.cloned,
-      name,
-      id,
-      collection,
-    }
-  }
-
-  addSourceDocument(): void {
-    const stats = this.getCurrentStats()
-    stats.source.documentFilesCount++
-  }
-
-  addClonedDocument(): void {
-    const stats = this.getCurrentStats()
-    stats.cloned.documentFilesCount++
-  }
-
-  addSourceBlock(): void {
-    const stats = this.getCurrentStats()
-    stats.source.blocksCount++
+    return this.instances.get(id) as CloneStatisticsTracker
   }
 
   addClonedBlock(): void {
@@ -122,43 +29,9 @@ export class CloneStatisticsTracker {
     stats.cloned.blocksCount++
   }
 
-  addSourcePublicDocument(): void {
+  addClonedDocument(): void {
     const stats = this.getCurrentStats()
-    stats.source.publicDocumentFilesCount++
-  }
-
-  addClonedPublicDocument(): void {
-    const stats = this.getCurrentStats()
-    stats.cloned.publicDocumentFilesCount++
-  }
-
-  getClonedDocumentId(sourceId: number): number | undefined {
-    return this.getCurrentDocumentCloneMap().get(sourceId)
-  }
-
-  addSourceRelatedItem(): void {
-    const stats = this.getCurrentStats()
-    stats.source.relatedEntitiesCount++
-  }
-
-  addClonedRelatedItem(): void {
-    const stats = this.getCurrentStats()
-    stats.cloned.relatedEntitiesCount++
-  }
-
-  addSourceItem(): void {
-    const stats = this.getCurrentStats()
-    stats.source.itemsCount++
-  }
-
-  addClonedItem(): void {
-    const stats = this.getCurrentStats()
-    stats.cloned.itemsCount++
-  }
-
-  addSourceFile(): void {
-    const stats = this.getCurrentStats()
-    stats.source.filesCount++
+    stats.cloned.documentFilesCount++
   }
 
   addClonedFile(): void {
@@ -166,9 +39,59 @@ export class CloneStatisticsTracker {
     stats.cloned.filesCount++
   }
 
+  addClonedItem(): void {
+    const stats = this.getCurrentStats()
+    stats.cloned.itemsCount++
+  }
+
+  addClonedPublicDocument(): void {
+    const stats = this.getCurrentStats()
+    stats.cloned.publicDocumentFilesCount++
+  }
+
+  addClonedRelatedItem(): void {
+    const stats = this.getCurrentStats()
+    stats.cloned.relatedEntitiesCount++
+  }
+
+  addError(error: OtherErrors): void {
+    const stats = this.getCurrentStats()
+    stats.errors.otherErrors.push(error)
+  }
+
   addMissingFileError(error: GenericCloneStatistics['errors']['missingDocumentFiles'][0]): void {
     const stats = this.getCurrentStats()
     stats.errors.missingDocumentFiles.push(error)
+  }
+
+  addSourceBlock(): void {
+    const stats = this.getCurrentStats()
+    stats.source.blocksCount++
+  }
+
+  addSourceDocument(): void {
+    const stats = this.getCurrentStats()
+    stats.source.documentFilesCount++
+  }
+
+  addSourceFile(): void {
+    const stats = this.getCurrentStats()
+    stats.source.filesCount++
+  }
+
+  addSourceItem(): void {
+    const stats = this.getCurrentStats()
+    stats.source.itemsCount++
+  }
+
+  addSourcePublicDocument(): void {
+    const stats = this.getCurrentStats()
+    stats.source.publicDocumentFilesCount++
+  }
+
+  addSourceRelatedItem(): void {
+    const stats = this.getCurrentStats()
+    stats.source.relatedEntitiesCount++
   }
 
   calculateCompleteness(entityId?: number): void {
@@ -191,58 +114,7 @@ export class CloneStatisticsTracker {
     }
   }
 
-  getStatistics(entityId?: number): GenericCloneStatistics {
-    const targetEntityId = entityId ?? this.currentEntityId
-    if (targetEntityId === null) {
-      throw new Error('No entity specified and no current entity set.')
-    }
-
-    this.calculateCompleteness(targetEntityId)
-    const stats = this.entitiesStats.get(targetEntityId)
-    if (!stats) {
-      throw new Error(`No statistics found for entity ${targetEntityId}`)
-    }
-    return stats
-  }
-
-  static clearAllInstances(): void {
-    CloneStatisticsTracker.instances.clear()
-  }
-
-  processRichTextResults(
-    result: {
-      documentIds: number[]
-      publicDocumentIds: number[]
-      errors: MissingDocumentFileError[]
-    },
-    location?: string,
-  ): void {
-    if (result.documentIds) {
-      result.documentIds.forEach(() => this.addSourceDocument())
-    }
-    if (result.publicDocumentIds) {
-      result.publicDocumentIds.forEach(() => this.addClonedPublicDocument())
-    }
-    if (result.errors) {
-      result.errors.forEach((error: any) => {
-        this.addMissingFileError({
-          ...error,
-          location: error.location || location,
-        })
-      })
-    }
-  }
-
-  setDocumentCloneMapping(sourceId: number, clonedId: number): void {
-    this.getCurrentDocumentCloneMap().set(sourceId, clonedId)
-  }
-
-  addError(error: OtherErrors): void {
-    const stats = this.getCurrentStats()
-    stats.errors.otherErrors.push(error)
-  }
-
-  determineSuccessLevel(): 'success' | 'partial' | 'fail' {
+  determineSuccessLevel(): 'fail' | 'partial' | 'success' {
     // Ensure all entities have their completeness calculated
     for (const entityId of Array.from(this.entitiesStats.keys())) {
       this.calculateCompleteness(entityId)
@@ -278,16 +150,24 @@ export class CloneStatisticsTracker {
     if (failedEntities.length === 0) {
       // No failures, check for errors in successful clones
       return hasErrors ? 'partial' : 'success'
-    } else {
-      // Some entities failed to clone entirely, so at best it's partial success
-      return 'partial'
     }
+    // Some entities failed to clone entirely, so at best it's partial success
+    return 'partial'
+  }
+
+  endEntity(): void {
+    if (this.currentEntityId === null) {
+    	return;
+    }
+
+    this.calculateCompleteness(this.currentEntityId)
+    this.currentEntityId = null
   }
 
   finalize(): {
-    entities: GenericCloneStatistics[]
     aggregated: GenericCloneStatistics
-    successLevel: 'success' | 'partial' | 'fail'
+    entities: GenericCloneStatistics[]
+    successLevel: 'fail' | 'partial' | 'success'
   } {
     // Ensure all entities have their completeness calculated
     for (const entityId of Array.from(this.entitiesStats.keys())) {
@@ -298,37 +178,37 @@ export class CloneStatisticsTracker {
 
     // Calculate aggregated statistics
     const aggregated: GenericCloneStatistics = {
-      source: {
-        id: 'aggregated',
-        name: 'Aggregated Statistics',
-        collection: null,
-        relatedEntitiesCount: 0,
-        documentFilesCount: 0,
-        publicDocumentFilesCount: 0,
-        blocksCount: 0,
-        itemsCount: 0,
-        filesCount: 0,
-      },
       cloned: {
-        id: 'aggregated',
-        name: 'Aggregated Statistics',
-        collection: null,
-        relatedEntitiesCount: 0,
-        documentFilesCount: 0,
-        publicDocumentFilesCount: 0,
         blocksCount: 0,
-        itemsCount: 0,
+        collection: null,
+        documentFilesCount: 0,
         filesCount: 0,
+        id: 'aggregated',
+        itemsCount: 0,
+        name: 'Aggregated Statistics',
+        publicDocumentFilesCount: 0,
+        relatedEntitiesCount: 0,
       },
-      percentComplete: 0,
       errors: {
         missingDocumentFiles: [],
         otherErrors: [],
       },
+      percentComplete: 0,
+      source: {
+        blocksCount: 0,
+        collection: null,
+        documentFilesCount: 0,
+        filesCount: 0,
+        id: 'aggregated',
+        itemsCount: 0,
+        name: 'Aggregated Statistics',
+        publicDocumentFilesCount: 0,
+        relatedEntitiesCount: 0,
+      },
     }
 
     // Aggregate all entity statistics
-    entities.forEach((entityStats) => {
+    for (const entityStats of entities) {
       aggregated.source.relatedEntitiesCount += entityStats.source.relatedEntitiesCount
       aggregated.source.documentFilesCount += entityStats.source.documentFilesCount
       aggregated.source.publicDocumentFilesCount += entityStats.source.publicDocumentFilesCount
@@ -345,7 +225,7 @@ export class CloneStatisticsTracker {
 
       aggregated.errors.missingDocumentFiles.push(...entityStats.errors.missingDocumentFiles)
       aggregated.errors.otherErrors.push(...entityStats.errors.otherErrors)
-    })
+    }
 
     // Calculate aggregated completeness
     const totalSourceFiles =
@@ -365,9 +245,137 @@ export class CloneStatisticsTracker {
     const successLevel = this.determineSuccessLevel()
 
     return {
-      entities,
       aggregated,
+      entities,
       successLevel,
     }
+  }
+
+  getClonedDocumentId(sourceId: number): number | undefined {
+    return this.getCurrentDocumentCloneMap().get(sourceId)
+  }
+
+  getStatistics(entityId?: number): GenericCloneStatistics {
+    const targetEntityId = entityId ?? this.currentEntityId
+    if (targetEntityId === null) {
+      throw new Error('No entity specified and no current entity set.')
+    }
+
+    this.calculateCompleteness(targetEntityId)
+    const stats = this.entitiesStats.get(targetEntityId)
+    if (!stats) {
+      throw new Error(`No statistics found for entity ${targetEntityId}`)
+    }
+    return stats
+  }
+
+  processRichTextResults(
+    result: {
+      documentIds: number[]
+      errors: MissingDocumentFileError[]
+      publicDocumentIds: number[]
+    },
+    location?: string,
+  ): void {
+    if (result.documentIds) {
+      for (const _documentId of result.documentIds) {
+        this.addSourceDocument()
+      }
+    }
+    if (result.publicDocumentIds) {
+      for (const _publicDocumentId of result.publicDocumentIds) {
+        this.addClonedPublicDocument()
+      }
+    }
+    if (result.errors) {
+      // `any` preserves the pre-existing looseness here: callers pass errors
+      // carrying an extra `location` that MissingDocumentFileError doesn't declare.
+      for (const error of result.errors as any[]) {
+        this.addMissingFileError({
+          ...error,
+          location: error.location || location,
+        })
+      }
+    }
+  }
+
+  reset(): void {
+    this.entitiesStats = new Map()
+    this.documentCloneMaps = new Map()
+    this.currentEntityId = null
+  }
+
+  setCloneInfo(id: number, name: string, collection: CollectionSlug): void {
+    const stats = this.getCurrentStats()
+    stats.cloned = {
+      ...stats.cloned,
+      collection,
+      id,
+      name,
+    }
+  }
+
+  setDocumentCloneMapping(sourceId: number, clonedId: number): void {
+    this.getCurrentDocumentCloneMap().set(sourceId, clonedId)
+  }
+
+  setSourceInfo(id: number, name: string, collection: CollectionSlug): void {
+    const stats = this.getCurrentStats()
+    stats.source = {
+      ...stats.source,
+      collection,
+      id,
+      name,
+    }
+  }
+
+  startEntity(entityId: number): void {
+    this.currentEntityId = entityId
+    if (!this.entitiesStats.has(entityId)) {
+      this.entitiesStats.set(entityId, {
+        cloned: {
+          blocksCount: 0,
+          collection: null,
+          documentFilesCount: 0,
+          filesCount: 0,
+          id: 0,
+          itemsCount: 0,
+          name: '',
+          publicDocumentFilesCount: 0,
+          relatedEntitiesCount: 0,
+        },
+        errors: {
+          missingDocumentFiles: [],
+          otherErrors: [],
+        },
+        percentComplete: 0,
+        source: {
+          blocksCount: 0,
+          collection: null,
+          documentFilesCount: 0,
+          filesCount: 0,
+          id: 0,
+          itemsCount: 0,
+          name: '',
+          publicDocumentFilesCount: 0,
+          relatedEntitiesCount: 0,
+        },
+      })
+      this.documentCloneMaps.set(entityId, new Map())
+    }
+  }
+
+  private getCurrentDocumentCloneMap(): Map<number, number> {
+    if (this.currentEntityId === null) {
+      throw new Error('No current entity set. Call startEntity() first.')
+    }
+    return this.documentCloneMaps.get(this.currentEntityId)!
+  }
+
+  private getCurrentStats(): GenericCloneStatistics {
+    if (this.currentEntityId === null) {
+      throw new Error('No current entity set. Call startEntity() first.')
+    }
+    return this.entitiesStats.get(this.currentEntityId)!
   }
 }

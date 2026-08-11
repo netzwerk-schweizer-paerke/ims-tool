@@ -1,5 +1,15 @@
-import React from 'react'
 import { Select, useTranslation } from '@payloadcms/ui'
+import React from 'react'
+
+interface LanguageSelectorsProps {
+  disabled?: boolean
+  fromSelectOptions: Array<{ label: string; value: string; }>
+  onFromSelectChange: (option: Option<unknown> | Option<unknown>[]) => void
+  onToSelectChange: (option: Option<unknown> | Option<unknown>[]) => void
+  selectedFromOption?: { label: string; value: string; }
+  selectedToOption?: { label: string; value: string; }
+  toSelectOptions: Array<{ label: string; value: string; }>
+}
 
 // Type for React Select option
 type Option<TValue> = {
@@ -8,24 +18,14 @@ type Option<TValue> = {
   value: TValue
 }
 
-interface LanguageSelectorsProps {
-  fromSelectOptions: Array<{ value: string; label: string }>
-  toSelectOptions: Array<{ value: string; label: string }>
-  selectedFromOption?: { value: string; label: string }
-  selectedToOption?: { value: string; label: string }
-  onFromSelectChange: (option: Option<unknown> | Option<unknown>[]) => void
-  onToSelectChange: (option: Option<unknown> | Option<unknown>[]) => void
-  disabled?: boolean
-}
-
 export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
+  disabled = false,
   fromSelectOptions,
-  toSelectOptions,
-  selectedFromOption,
-  selectedToOption,
   onFromSelectChange,
   onToSelectChange,
-  disabled = false,
+  selectedFromOption,
+  selectedToOption,
+  toSelectOptions,
 }) => {
   const { t } = useTranslation()
 
@@ -36,14 +36,14 @@ export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
           {t('plugin-deepltranslate:resolver_deepl_translateFrom' as any)}
         </label>
         <Select
-          options={fromSelectOptions}
-          value={selectedFromOption}
-          onChange={onFromSelectChange}
-          isCreatable={false}
+          disabled={disabled}
           isClearable={false}
+          isCreatable={false}
           isMulti={false}
           isSearchable={false}
-          disabled={disabled}
+          onChange={onFromSelectChange}
+          options={fromSelectOptions}
+          value={selectedFromOption}
         />
       </div>
 
@@ -54,14 +54,14 @@ export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
           {t('plugin-deepltranslate:resolver_deepl_translateTo' as any)}
         </label>
         <Select
-          options={toSelectOptions}
-          value={selectedToOption}
-          onChange={onToSelectChange}
-          isCreatable={false}
+          disabled={disabled}
           isClearable={false}
+          isCreatable={false}
           isMulti={false}
           isSearchable={false}
-          disabled={disabled}
+          onChange={onToSelectChange}
+          options={toSelectOptions}
+          value={selectedToOption}
         />
       </div>
     </div>

@@ -1,33 +1,30 @@
 import { Endpoint, PayloadRequest } from 'payload'
-import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
-import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
-import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone/utils/clone-activity'
 import { z } from 'zod'
-import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
+
+import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone/utils/clone-activity'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
-import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { scanActivityForDocumentIds } from '@/payload/utilities/cloning/document-scanner'
+import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
+import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
+import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
+import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
 
 const batchCloneBodySchema = z.object({
-  targetOrganisationId: z.number(),
   ids: z.array(z.number().min(1)).min(1, 'At least one ID is required'),
   locale: z.string(),
+  targetOrganisationId: z.number(),
 })
 
 export type ActivityCloneEndpointBodySchema = z.infer<typeof batchCloneBodySchema>
 
 export type ActivityCloneEndpointResult =
-  | {
+  ReturnType<typeof formatValidationErrors> | { error: string } | {
       message: string
       results: GenericCloneStatisticsFinalized
     }
-  | ReturnType<typeof formatValidationErrors>
-  | { error: string }
 
 export const cloneActivityTransactional: Endpoint = {
-  path: '/clone',
-  method: 'post',
   handler: async (req) => {
     // Step 1: Verify authentication
     requireAuthentication(req)
@@ -42,8 +39,8 @@ export const cloneActivityTransactional: Endpoint = {
 
       if (!bodyResult.success) {
         req.payload.logger.warn({
-          msg: 'Invalid batch clone request body',
           errors: formatValidationErrors(bodyResult.error),
+          msg: 'Invalid batch clone request body',
           rawBody,
         })
         return Response.json(formatValidationErrors(bodyResult.error), { status: 400 })
@@ -51,13 +48,13 @@ export const cloneActivityTransactional: Endpoint = {
       validatedBody = bodyResult.data
     } catch (error) {
       req.payload.logger.error({
-        msg: 'Error parsing batch clone request body',
         error: error instanceof Error ? error.message : 'Unknown error',
+        msg: 'Error parsing batch clone request body',
       })
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { targetOrganisationId, ids: activityIds, locale } = validatedBody
+    const { ids: activityIds, locale, targetOrganisationId } = validatedBody
 
     const transactionID = await req.payload.db.beginTransaction()
 
@@ -70,22 +67,22 @@ export const cloneActivityTransactional: Endpoint = {
     try {
       // PHASE 1: Pre-load all documents (OUTSIDE transaction to prevent timeouts)
       req.payload.logger.info({
-        msg: 'Phase 1: Pre-loading documents for all activities',
         activityIds,
+        msg: 'Phase 1: Pre-loading documents for all activities',
       })
 
       const allDocumentIds: number[] = []
-      const activityData: Array<{ id: number; activity: any }> = []
+      const activityData: Array<{ activity: any; id: number; }> = []
 
       // First, fetch all activities and scan for document IDs
       for (const activityId of activityIds) {
         // Validate access for this specific activity
         const accessValidation = await validateCloneAccess({
+          collectionSlug: 'activities',
           req,
-          user,
           sourceId: activityId,
           targetOrgId: targetOrganisationId,
-          collectionSlug: 'activities',
+          user,
         })
 
         if (!accessValidation.isValid) {
@@ -96,18 +93,18 @@ export const cloneActivityTransactional: Endpoint = {
 
         // Find the source activity
         const sourceActivity = await req.payload.findByID({
-          req,
           collection: 'activities',
+          depth: 2, // Need depth for scanning nested content
           id: activityId,
           locale: locale as any,
-          depth: 2, // Need depth for scanning nested content
+          req,
         })
 
         if (!sourceActivity) {
           throw new Error(`Source activity ${activityId} not found`)
         }
 
-        activityData.push({ id: activityId, activity: sourceActivity })
+        activityData.push({ activity: sourceActivity, id: activityId })
 
         // Scan for all document IDs in this activity
         const documentIds = scanActivityForDocumentIds(sourceActivity)
@@ -119,10 +116,10 @@ export const cloneActivityTransactional: Endpoint = {
       const documentPreloader = await preloadDocuments(req, uniqueDocumentIds)
 
       req.payload.logger.info({
-        msg: 'Phase 1 completed - documents pre-loaded',
         documentCount: uniqueDocumentIds.length,
-        preloadedCount: documentPreloader.preloadedDocuments.size,
         errorCount: documentPreloader.errors.length,
+        msg: 'Phase 1 completed - documents pre-loaded',
+        preloadedCount: documentPreloader.preloadedDocuments.size,
       })
 
       // PHASE 2: Clone activities using pre-loaded documents (INSIDE transaction)
@@ -138,7 +135,7 @@ export const cloneActivityTransactional: Endpoint = {
       }
 
       // Process each activity within the SAME transaction
-      for (const { id: activityId, activity: sourceActivity } of activityData) {
+      for (const { activity: sourceActivity, id: activityId } of activityData) {
         // Start tracking this entity
         tracker.startEntity(activityId)
 
@@ -147,18 +144,18 @@ export const cloneActivityTransactional: Endpoint = {
 
         // Execute the cloning process for this activity
         const clonedActivity = await cloneActivity({
+          documentPreloader,
+          locale,
           req: transactionalReq,
           sourceActivity,
           targetOrgId: targetOrganisationId,
-          locale,
-          documentPreloader,
         })
 
         tracker.setCloneInfo(clonedActivity.id, clonedActivity.name, 'activities')
 
         req.payload.logger.info({
-          msg: 'Cloned successfully',
           clonedId: clonedActivity.id,
+          msg: 'Cloned successfully',
           sourceId: sourceActivity.id,
         })
 
@@ -186,9 +183,9 @@ export const cloneActivityTransactional: Endpoint = {
       await req.payload.db.rollbackTransaction(transactionID)
 
       req.payload.logger.error({
-        msg: 'Failed to clone activities - transaction rolled back',
-        error: error instanceof Error ? error.message : 'Unknown error',
         activityIds,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        msg: 'Failed to clone activities - transaction rolled back',
         targetOrgId: targetOrganisationId,
         transactionID,
       })
@@ -201,4 +198,6 @@ export const cloneActivityTransactional: Endpoint = {
       )
     }
   },
+  method: 'post',
+  path: '/clone',
 }

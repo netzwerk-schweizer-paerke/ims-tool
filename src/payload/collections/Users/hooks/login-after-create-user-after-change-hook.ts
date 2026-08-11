@@ -2,15 +2,15 @@ import { CollectionAfterChangeHook } from 'payload'
 
 export const loginAfterCreateUserAfterChangeHook: CollectionAfterChangeHook = async ({
   doc,
-  req,
-  req: { payload, body = {} },
   operation,
+  req,
+  req: { body = {}, payload },
 }) => {
   if (operation === 'create' && !req.user) {
     const { email, password } = body as any
 
     if (email && password) {
-      const { user, token } = await payload.login({
+      const { token, user } = await payload.login({
         collection: 'users',
         data: { email, password },
         req,

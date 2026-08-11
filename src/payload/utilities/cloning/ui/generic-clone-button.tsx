@@ -1,34 +1,35 @@
 import { DrawerToggler } from '@payloadcms/ui'
-import { Translate } from '@/lib/translate'
-import { User } from '@/payload-types'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
-import { Payload } from 'payload'
 import { compact } from 'es-toolkit'
 import { toNumber } from 'es-toolkit/compat'
-import { isOrganisation } from '@/payload/assertions'
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
-import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { Payload } from 'payload'
 import React from 'react'
 
+import { Translate } from '@/lib/translate'
+import { User } from '@/payload-types'
+import { isOrganisation } from '@/payload/assertions'
+import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
 export interface GenericCloneButtonProps {
-  user: User
-  payload: Payload
-  collectionSlug: string
-  translationKey: string
-  drawerSlug: string
   baseClass: string
+  collectionSlug: string
+  drawerSlug: string
   OverlayComponent: React.ComponentType<any>
+  payload: Payload
+  translationKey: string
+  user: User
 }
 
 export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
-  user,
-  payload,
-  collectionSlug,
-  translationKey,
-  drawerSlug,
   baseClass,
+  collectionSlug,
+  drawerSlug,
   OverlayComponent,
+  payload,
+  translationKey,
+  user,
 }) => {
   if (!user) return null
 
@@ -37,19 +38,19 @@ export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
 
   const organisations = await payload.find({
     collection: 'organisations',
-    limit: 0,
     depth: 0,
+    limit: 0,
   })
 
   const documents = await payload.find({
     collection: collectionSlug as any,
+    depth: 0,
+    limit: 0,
     where: {
       organisation: {
         equals: selectedOrgId,
       },
     },
-    depth: 0,
-    limit: 0,
   })
 
   if (!selectedOrgId) {

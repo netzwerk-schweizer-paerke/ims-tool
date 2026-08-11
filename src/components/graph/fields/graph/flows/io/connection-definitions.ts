@@ -1,6 +1,6 @@
-import { xarrowPropsType } from '@/lib/xarrows/src'
-import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
+import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
+import { xarrowPropsType } from '@/lib/xarrows/src'
 
 export const taskArrowRightOptions = ['out', 'in'] as const
 
@@ -10,26 +10,26 @@ export const taskArrowRightDef: Record<
 > = {
   in: [
     {
-      start: OuterTargetsEnum.CENTER_RIGHT,
       end: RootTargetName,
-      startAnchor: 'left',
       endAnchor: 'right',
+      start: OuterTargetsEnum.CENTER_RIGHT,
+      startAnchor: 'left',
     },
   ],
   out: [
     {
-      start: RootTargetName,
       end: OuterTargetsEnum.CENTER_RIGHT,
-      startAnchor: 'right',
       endAnchor: 'left',
+      start: RootTargetName,
+      startAnchor: 'right',
     },
   ],
 }
 
 export const processIoConnections = [
   {
-    position: 'right',
-    options: taskArrowRightOptions,
     definitions: taskArrowRightDef,
+    options: taskArrowRightOptions,
+    position: 'right',
   },
 ]

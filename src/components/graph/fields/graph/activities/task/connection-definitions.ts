@@ -1,6 +1,6 @@
-import { xarrowPropsType } from '@/lib/xarrows/src'
-import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
+import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
+import { xarrowPropsType } from '@/lib/xarrows/src'
 
 const taskArrowRightOptions = [
   'in-top',
@@ -17,85 +17,85 @@ const taskArrowRightDef: Record<
   (typeof taskArrowRightOptions)[number],
   Partial<xarrowPropsType>[]
 > = {
-  none: [],
-  'in-top': [
-    {
-      start: OuterTargetsEnum.TOP_RIGHT,
-      end: RootTargetName,
-      startAnchor: 'bottom',
-      endAnchor: 'right',
-    },
-  ],
   'in-bottom': [
     {
-      start: OuterTargetsEnum.BOTTOM_RIGHT,
       end: RootTargetName,
-      startAnchor: 'top',
       endAnchor: 'right',
+      start: OuterTargetsEnum.BOTTOM_RIGHT,
+      startAnchor: 'top',
     },
   ],
   'in-pass-by': [
     {
-      start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
-    },
-    {
       start: OuterTargetsEnum.TOP_RIGHT,
-      end: RootTargetName,
-      startAnchor: 'left',
-      endAnchor: 'right',
+      startAnchor: 'bottom',
     },
-  ],
-  'out-top': [
     {
-      start: RootTargetName,
-      end: OuterTargetsEnum.TOP_RIGHT,
-      startAnchor: 'right',
-      endAnchor: 'bottom',
-      showHead: false,
-      showTail: false,
+      end: RootTargetName,
+      endAnchor: 'right',
+      start: OuterTargetsEnum.TOP_RIGHT,
+      startAnchor: 'left',
     },
   ],
+  'in-top': [
+    {
+      end: RootTargetName,
+      endAnchor: 'right',
+      start: OuterTargetsEnum.TOP_RIGHT,
+      startAnchor: 'bottom',
+    },
+  ],
+  none: [],
   'out-bottom': [
     {
-      start: RootTargetName,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
-      startAnchor: 'right',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: RootTargetName,
+      startAnchor: 'right',
     },
   ],
   'out-pass-by': [
     {
-      start: RootTargetName,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
-      startAnchor: 'right',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: RootTargetName,
+      startAnchor: 'right',
     },
     {
-      start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: OuterTargetsEnum.TOP_RIGHT,
+      startAnchor: 'bottom',
+    },
+  ],
+  'out-top': [
+    {
+      end: OuterTargetsEnum.TOP_RIGHT,
+      endAnchor: 'bottom',
+      showHead: false,
+      showTail: false,
+      start: RootTargetName,
+      startAnchor: 'right',
     },
   ],
   'pass-by': [
     {
-      start: OuterTargetsEnum.TOP_RIGHT,
       end: OuterTargetsEnum.BOTTOM_RIGHT,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: OuterTargetsEnum.TOP_RIGHT,
+      startAnchor: 'bottom',
     },
   ],
 }
@@ -109,12 +109,12 @@ const taskArrowBottomDef: Record<
   none: [],
   out: [
     {
-      start: RootTargetName,
       end: OuterTargetsEnum.BOTTOM_CENTER,
-      startAnchor: 'bottom',
       endAnchor: 'top',
       showHead: false,
       showTail: false,
+      start: RootTargetName,
+      startAnchor: 'bottom',
     },
   ],
 }
@@ -122,31 +122,31 @@ const taskArrowBottomDef: Record<
 const taskArrowTopOptions = ['none', 'in'] as const
 
 const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarrowPropsType>[]> = {
-  none: [],
   in: [
     {
-      start: OuterTargetsEnum.TOP_CENTER,
       end: RootTargetName,
-      startAnchor: 'bottom',
       endAnchor: 'top',
+      start: OuterTargetsEnum.TOP_CENTER,
+      startAnchor: 'bottom',
     },
   ],
+  none: [],
 }
 
 export const activityTaskConnections = [
   {
-    position: 'top',
-    options: taskArrowTopOptions,
     definitions: taskArrowTopDef,
+    options: taskArrowTopOptions,
+    position: 'top',
   },
   {
-    position: 'right',
-    options: taskArrowRightOptions,
     definitions: taskArrowRightDef,
+    options: taskArrowRightOptions,
+    position: 'right',
   },
   {
-    position: 'bottom',
-    options: taskArrowBottomOptions,
     definitions: taskArrowBottomDef,
+    options: taskArrowBottomOptions,
+    position: 'bottom',
   },
 ]

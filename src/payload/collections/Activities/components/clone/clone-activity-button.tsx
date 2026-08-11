@@ -1,26 +1,27 @@
-import { GenericCloneButton } from '@/payload/utilities/cloning/ui/GenericCloneButton'
-import { CloneActivityOverlay } from '@/payload/collections/Activities/components/clone/clone-activity-overlay'
-import { User } from '@/payload-types'
 import { Payload } from 'payload'
+
+import { User } from '@/payload-types'
+import { CloneActivityOverlay } from '@/payload/collections/Activities/components/clone/clone-activity-overlay'
+import { GenericCloneButton } from '@/payload/utilities/cloning/ui/generic-clone-button'
 
 export const baseClass = 'clone-activity-button'
 export const drawerSlug = 'clone-activities'
 
 type Props = {
-  user: User
   payload: Payload
+  user: User
 }
 
-export const CloneActivityButton: React.FC<Props> = async ({ user, payload }) => {
+export const CloneActivityButton: React.FC<Props> = async ({ payload, user }) => {
   return (
     <GenericCloneButton
-      user={user}
-      payload={payload}
-      collectionSlug="activities"
-      translationKey="cloneActivity:button"
-      drawerSlug={drawerSlug}
       baseClass={baseClass}
+      collectionSlug="activities"
+      drawerSlug={drawerSlug}
       OverlayComponent={CloneActivityOverlay}
+      payload={payload}
+      translationKey="cloneActivity:button"
+      user={user}
     />
   )
 }

@@ -1,13 +1,31 @@
-import { CollectionAfterReadHook } from 'payload'
-import { getLocaleCodesFromRequest, getLocalizedValue } from '@/lib/locale-utils'
 import { isArray, isObject } from 'es-toolkit/compat'
+import { CollectionAfterReadHook } from 'payload'
+
+import { getLocaleCodesFromRequest, getLocalizedValue } from '@/lib/locale-utils'
 
 /**
- * Get the name from a potentially localized field
- * When locale: 'all' is used, localized fields are returned as objects
+ * Recursively check any value for document references
+ * Handles both rich text fields and nested structures
  */
-function getName(nameField: any, locales: string[]): string {
-  return getLocalizedValue(nameField, locales)
+function checkForDocumentReference(value: any, documentId: number): boolean {
+  if (!value) return false
+
+  // If it's a rich text field
+  if (value.root) {
+    return isDocumentReferencedInRichText(value, documentId)
+  }
+
+  // If it's an array, check each item
+  if (isArray(value)) {
+    return value.some((item) => checkForDocumentReference(item, documentId))
+  }
+
+  // If it's an object, check all properties
+  if (typeof value === 'object') {
+    return Object.values(value).some((val) => checkForDocumentReference(val, documentId))
+  }
+
+  return false
 }
 
 /**
@@ -34,28 +52,11 @@ function getDescription(descField: any, locales: string[]): any {
 }
 
 /**
- * Recursively check any value for document references
- * Handles both rich text fields and nested structures
+ * Get the name from a potentially localized field
+ * When locale: 'all' is used, localized fields are returned as objects
  */
-function checkForDocumentReference(value: any, documentId: number): boolean {
-  if (!value) return false
-
-  // If it's a rich text field
-  if (value.root) {
-    return isDocumentReferencedInRichText(value, documentId)
-  }
-
-  // If it's an array, check each item
-  if (isArray(value)) {
-    return value.some((item) => checkForDocumentReference(item, documentId))
-  }
-
-  // If it's an object, check all properties
-  if (typeof value === 'object') {
-    return Object.values(value).some((val) => checkForDocumentReference(val, documentId))
-  }
-
-  return false
+function getName(nameField: any, locales: string[]): string {
+  return getLocalizedValue(nameField, locales)
 }
 
 /**
@@ -98,9 +99,7 @@ function isDocumentReferencedInRichText(richText: any, documentId: number): bool
 
     // Check any other properties that might contain nodes
     for (const key in node) {
-      if (key !== 'children' && typeof node[key] === 'object') {
-        if (searchNode(node[key])) return true
-      }
+      if (key !== 'children' && typeof node[key] === 'object' && searchNode(node[key])) return true
     }
 
     return false
@@ -116,8 +115,8 @@ function isDocumentReferencedInRichText(richText: any, documentId: number): bool
  */
 export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
   doc,
-  req,
   findMany,
+  req,
 }) => {
   // Get configured locales from Payload config
   const locales = getLocaleCodesFromRequest(req)
@@ -129,33 +128,33 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
   try {
     const usedIn = {
       activities: [] as Array<{
-        id: number
-        name: string
-        referenceType: string
-        field?: string // Which field contains the reference
-        locale?: string // Which locale (if applicable)
-        path?: string // Full path to the reference
         blockId?: string // Block ID if in a block
         blockType?: string // Type of block
+        field?: string // Which field contains the reference
+        id: number
+        locale?: string // Which locale (if applicable)
+        name: string
+        path?: string // Full path to the reference
+        referenceType: string
       }>,
       taskFlows: [] as Array<{
-        id: number
-        name: string
-        referenceType: string
-        field?: string
-        locale?: string
-        path?: string
         blockId?: string
         blockType?: string
+        field?: string
+        id: number
+        locale?: string
+        name: string
+        path?: string
+        referenceType: string
       }>,
       taskLists: [] as Array<{
-        id: number
-        name: string
-        referenceType: string
         field?: string
-        locale?: string
-        path?: string
+        id: number
         itemIndex?: number // For TaskList items
+        locale?: string
+        name: string
+        path?: string
+        referenceType: string
       }>,
     }
 
@@ -163,25 +162,25 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     // First, find activities with direct file references
     const activitiesWithFiles = await req.payload.find({
       collection: 'activities',
+      depth: 0,
+      limit: 100,
+      locale: 'all', // Include all locales
+      req,
       where: {
         'files.document': {
           equals: doc.id,
         },
       },
-      depth: 0,
-      limit: 100,
-      locale: 'all', // Include all locales
-      req,
     })
 
     for (const activity of activitiesWithFiles.docs) {
       const activityName = getName(activity.name, locales)
       usedIn.activities.push({
+        field: 'files',
         id: activity.id,
         name: activityName || `Activity ${activity.id}`,
-        referenceType: 'file',
-        field: 'files',
         path: 'files.document',
+        referenceType: 'file',
       })
     }
 
@@ -206,11 +205,11 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
       if (description && isDocumentReferencedInRichText(description, doc.id)) {
         const activityName = getName(activity.name, locales)
         usedIn.activities.push({
+          field: 'description',
           id: activity.id,
           name: activityName || `Activity ${activity.id}`,
-          referenceType: 'richtext',
-          field: 'description',
           path: 'description',
+          referenceType: 'richtext',
         })
         foundInDescription = true
       }
@@ -230,12 +229,12 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           ) {
             const activityName = getName(activity.name, locales)
             usedIn.activities.push({
-              id: activity.id,
-              name: activityName || `Activity ${activity.id}`,
-              referenceType: 'richtext',
               field: 'description',
+              id: activity.id,
               locale: locale,
+              name: activityName || `Activity ${activity.id}`,
               path: `description.${locale}`,
+              referenceType: 'richtext',
             })
             foundInDescription = true
             break
@@ -254,7 +253,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         const checkBlocksWithDetails = (
           blocks: any,
           locale?: string,
-        ): { found: boolean; details?: any } => {
+        ): { details?: any; found: boolean; } => {
           if (!blocks || !isArray(blocks)) return { found: false }
 
           for (let i = 0; i < blocks.length; i++) {
@@ -264,9 +263,9 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
             if (checkForDocumentReference(block, doc.id)) {
               // Try to get more specific location
               let fieldPath = ''
-              let blockInfo: any = {
-                blockType: block.blockType,
+              const blockInfo: any = {
                 blockId: block.id,
+                blockType: block.blockType,
               }
 
               // Check specific fields based on block type
@@ -293,13 +292,13 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
               }
 
               return {
-                found: true,
                 details: {
                   ...blockInfo,
-                  path: fieldPath || (locale ? `blocks.${locale}[${i}]` : `blocks[${i}]`),
-                  locale: locale,
                   blockIndex: i,
+                  locale: locale,
+                  path: fieldPath || (locale ? `blocks.${locale}[${i}]` : `blocks[${i}]`),
                 },
+                found: true,
               }
             }
           }
@@ -312,13 +311,15 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           // Localized blocks - check all locales
           // Use locales from config
           for (const locale of locales) {
-            if (activity.blocks[locale]) {
-              const result = checkBlocksWithDetails(activity.blocks[locale], locale)
-              if (result.found) {
-                foundInBlocks = true
-                blockDetails = result.details
-                break
-              }
+            if (!activity.blocks[locale]) {
+            	continue;
+            }
+
+            const result = checkBlocksWithDetails(activity.blocks[locale], locale)
+            if (result.found) {
+              foundInBlocks = true
+              blockDetails = result.details
+              break
             }
           }
         } else {
@@ -333,14 +334,14 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         if (foundInBlocks) {
           const activityName = getName(activity.name, locales)
           usedIn.activities.push({
-            id: activity.id,
-            name: activityName || `Activity ${activity.id}`,
-            referenceType: 'richtext-block',
-            field: blockDetails?.field || 'blocks',
-            locale: blockDetails?.locale,
-            path: blockDetails?.path,
             blockId: blockDetails?.blockId,
             blockType: blockDetails?.blockType,
+            field: blockDetails?.field || 'blocks',
+            id: activity.id,
+            locale: blockDetails?.locale,
+            name: activityName || `Activity ${activity.id}`,
+            path: blockDetails?.path,
+            referenceType: 'richtext-block',
           })
         }
       }
@@ -349,25 +350,25 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     // Search for references in TaskFlows
     const taskFlows = await req.payload.find({
       collection: 'task-flows',
+      depth: 0,
+      limit: 100,
+      locale: 'all', // Include all locales
+      req,
       where: {
         'files.document': {
           equals: doc.id,
         },
       },
-      depth: 0,
-      limit: 100,
-      locale: 'all', // Include all locales
-      req,
     })
 
     for (const taskFlow of taskFlows.docs) {
       const taskFlowName = getName(taskFlow.name, locales)
       usedIn.taskFlows.push({
+        field: 'files',
         id: taskFlow.id,
         name: taskFlowName || `TaskFlow ${taskFlow.id}`,
-        referenceType: 'file',
-        field: 'files',
         path: 'files.document',
+        referenceType: 'file',
       })
     }
 
@@ -424,11 +425,11 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
             const block = blocks[i]
             if (checkForDocumentReference(block, doc.id)) {
               return {
-                blockType: block.blockType,
                 blockId: block.id,
                 blockIndex: i,
-                path: locale ? `blocks.${locale}[${i}]` : `blocks[${i}]`,
+                blockType: block.blockType,
                 locale,
+                path: locale ? `blocks.${locale}[${i}]` : `blocks[${i}]`,
               }
             }
           }
@@ -439,14 +440,16 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           // Localized blocks
           // Use locales from config
           for (const locale of locales) {
-            if (taskFlow.blocks[locale]) {
-              blockDetails = findBlockWithDoc(taskFlow.blocks[locale], locale)
-              if (blockDetails) {
-                foundInTaskFlow = true
-                blockLocale = locale
-                blockPath = blockDetails.path
-                break
-              }
+            if (!taskFlow.blocks[locale]) {
+            	continue;
+            }
+
+            blockDetails = findBlockWithDoc(taskFlow.blocks[locale], locale)
+            if (blockDetails) {
+              foundInTaskFlow = true
+              blockLocale = locale
+              blockPath = blockDetails.path
+              break
             }
           }
         } else if (isArray(taskFlow.blocks)) {
@@ -489,25 +492,25 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     // Search for references in TaskLists
     const taskLists = await req.payload.find({
       collection: 'task-lists',
+      depth: 0,
+      limit: 100,
+      locale: 'all', // Include all locales
+      req,
       where: {
         'files.document': {
           equals: doc.id,
         },
       },
-      depth: 0,
-      limit: 100,
-      locale: 'all', // Include all locales
-      req,
     })
 
     for (const taskList of taskLists.docs) {
       const taskListName = getName(taskList.name, locales)
       usedIn.taskLists.push({
+        field: 'files',
         id: taskList.id,
         name: taskListName || `TaskList ${taskList.id}`,
-        referenceType: 'file',
-        field: 'files',
         path: 'files.document',
+        referenceType: 'file',
       })
     }
 
@@ -561,19 +564,21 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           // Localized items
           // Use locales from config
           for (const locale of locales) {
-            if (taskList.items[locale] && isArray(taskList.items[locale])) {
-              const items = taskList.items[locale] as any[]
-              for (let i = 0; i < items.length; i++) {
-                if (checkForDocumentReference(items[i], doc.id)) {
-                  foundInTaskList = true
-                  itemLocale = locale
-                  itemIndex = i
-                  itemPath = `items.${locale}[${i}]`
-                  break
-                }
-              }
-              if (foundInTaskList) break
+            if (!(taskList.items[locale] && isArray(taskList.items[locale]))) {
+            	continue;
             }
+
+            const items = taskList.items[locale] as any[]
+            for (let i = 0; i < items.length; i++) {
+              if (checkForDocumentReference(items[i], doc.id)) {
+                foundInTaskList = true
+                itemLocale = locale
+                itemIndex = i
+                itemPath = `items.${locale}[${i}]`
+                break
+              }
+            }
+            if (foundInTaskList) break
           }
         } else if (isArray(taskList.items)) {
           for (let i = 0; i < taskList.items.length; i++) {
@@ -613,8 +618,8 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     // Add usage information to the document
     return {
       ...doc,
-      usedIn,
       usageCount: usedIn.activities.length + usedIn.taskFlows.length + usedIn.taskLists.length,
+      usedIn,
     }
   } catch (error) {
     // If there's an error, just return the document without usage info

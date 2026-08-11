@@ -1,5 +1,5 @@
 export const arrowStyle = {
-  path: 'grid' as const,
   color: 'unset',
+  path: 'grid' as const,
   strokeWidth: 2,
 }

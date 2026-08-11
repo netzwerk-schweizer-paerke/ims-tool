@@ -1,7 +1,8 @@
 import type { Access } from 'payload'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /**
  * Access control function that determines if a user can access content from a specific organization. The content item needs to have an organization field.

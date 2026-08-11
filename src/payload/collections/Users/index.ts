@@ -1,27 +1,40 @@
 import { CollectionConfig } from 'payload'
-import { I18nCollection } from '@/lib/i18n-collection'
+
+import { renderPasswordResetEmail } from '@/lib/email-renderer'
 import { isProduction } from '@/lib/environment'
+import { I18nCollection } from '@/lib/i18n-collection'
+import { getLocaleCodes } from '@/lib/locale-utils'
 import { anyone } from '@/payload/access/anyone'
+import { superAdminFieldAccess } from '@/payload/access/super-admins-collection-access'
+import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
+import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
 import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
 import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
-import { superAdminFieldAccess } from '@/payload/access/super-admins-collection-access'
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
-import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
 import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
-import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
-import { renderPasswordResetEmail } from '@/lib/email-renderer'
-import { getLocaleCodes } from '@/lib/locale-utils'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
 export const Users: CollectionConfig = {
-  slug: 'users',
+  access: {
+    create: anyone,
+    delete: adminAndSelfCollectionAccess,
+    read: adminAndSelfCollectionAccess,
+    update: adminAndSelfCollectionAccess,
+  },
+  admin: {
+    group: I18nCollection.collectionGroup.settings,
+    hidden: (user) => {
+      return !user?.user?.roles?.includes(ROLE_SUPER_ADMIN)
+    },
+    hideAPIURL: isProduction,
+    useAsTitle: 'email',
+  },
   auth: {
-    useAPIKey: true,
     forgotPassword: {
       generateEmailHTML: async (args) => {
         if (!args) {
           throw new Error('Missing required fields')
         }
-        const { user, req, token } = args
+        const { req, token, user } = args
 
         // Validate required parameters
         if (!user?.email || !token) {
@@ -33,45 +46,28 @@ export const Users: CollectionConfig = {
 
         // Determine user's preferred locale (fallback to 'en')
         const acceptLanguage = req?.headers?.get?.('accept-language') || ''
-        const locale = acceptLanguage.split(',')[0]?.split('-')[0]
+        const locale = acceptLanguage.split(',', 1)[0]?.split('-', 1)[0]
         const supportedLocales = systemLocales || [defaultLocale]
         const userLocale = supportedLocales.includes(locale) ? locale : defaultLocale
 
         // Generate the HTML using React Email
         const emailHtml = await renderPasswordResetEmail({
-          userEmail: user.email,
-          token,
           locale: userLocale as any,
+          token,
+          userEmail: user.email,
         })
 
         req?.payload.logger.info({
           action: 'password_reset_email_generated',
-          userEmail: user.email,
           locale: userLocale,
           tokenLength: token.length,
+          userEmail: user.email,
         })
 
         return emailHtml
       },
     },
-  },
-  admin: {
-    hideAPIURL: isProduction,
-    group: I18nCollection.collectionGroup.settings,
-    useAsTitle: 'email',
-    hidden: (user) => {
-      return !user?.user?.roles?.includes(ROLE_SUPER_ADMIN)
-    },
-  },
-  access: {
-    read: adminAndSelfCollectionAccess,
-    create: anyone,
-    update: adminAndSelfCollectionAccess,
-    delete: adminAndSelfCollectionAccess,
-  },
-  hooks: {
-    afterChange: [loginAfterCreateUserAfterChangeHook],
-    afterLogin: [recordSelectedOrganisationAfterLoginHook],
+    useAPIKey: true,
   },
   fields: [
     {
@@ -84,21 +80,19 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'email',
-      type: 'text',
       required: true,
+      type: 'text',
       unique: true,
     },
     {
-      name: 'roles',
-      type: 'select',
-      hasMany: true,
-      required: true,
       access: {
         create: superAdminFieldAccess,
         update: superAdminFieldAccess,
         // read: superAdminFieldAccess,
         // delete: superAdminFieldAccess,
       },
+      hasMany: true,
+      name: 'roles',
       options: [
         {
           label: 'Admin',
@@ -109,12 +103,10 @@ export const Users: CollectionConfig = {
           value: ROLE_USER,
         },
       ],
+      required: true,
+      type: 'select',
     },
     {
-      name: 'organisations',
-      type: 'array',
-      label: 'Organisations',
-      interfaceName: 'UserOrganisations',
       access: {
         create: organisationAdminFieldAccess,
         update: organisationAdminFieldAccess,
@@ -123,15 +115,13 @@ export const Users: CollectionConfig = {
       fields: [
         {
           name: 'organisation',
-          type: 'relationship',
           relationTo: 'organisations',
           required: true,
+          type: 'relationship',
         },
         {
-          name: 'roles',
-          type: 'select',
           hasMany: true,
-          required: true,
+          name: 'roles',
           options: [
             {
               label: 'Admin',
@@ -142,14 +132,16 @@ export const Users: CollectionConfig = {
               value: ROLE_USER,
             },
           ],
+          required: true,
+          type: 'select',
         },
       ],
+      interfaceName: 'UserOrganisations',
+      label: 'Organisations',
+      name: 'organisations',
+      type: 'array',
     },
     {
-      name: 'selectedOrganisation',
-      type: 'relationship',
-      relationTo: 'organisations',
-      index: true,
       access: {
         create: () => false,
         read: organisationAdminFieldAccess,
@@ -158,6 +150,15 @@ export const Users: CollectionConfig = {
       admin: {
         position: 'sidebar',
       },
+      index: true,
+      name: 'selectedOrganisation',
+      relationTo: 'organisations',
+      type: 'relationship',
     },
   ],
+  hooks: {
+    afterChange: [loginAfterCreateUserAfterChangeHook],
+    afterLogin: [recordSelectedOrganisationAfterLoginHook],
+  },
+  slug: 'users',
 }

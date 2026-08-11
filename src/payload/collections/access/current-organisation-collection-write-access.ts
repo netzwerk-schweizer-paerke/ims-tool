@@ -1,9 +1,9 @@
 import type { Access } from 'payload'
 
+import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 
 /**
  * Access control function that determines if a user can modify content from a specific organization. The content item needs to have an organization field.
@@ -16,7 +16,7 @@ import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-r
  * @returns {boolean|object} - Returns true if access is granted, or a query filter to restrict access
  */
 export const currentOrganisationCollectionWriteAccess: Access = async ({
-  req: { user, payload },
+  req: { payload, user },
 }) => {
   const userLastLoggedInOrgId = getIdFromRelation(user?.selectedOrganisation)
 
