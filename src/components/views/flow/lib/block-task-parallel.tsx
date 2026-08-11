@@ -14,9 +14,8 @@ export const BlockTaskParallel: React.FC<Props> = ({ block }) => {
   const graph = block.graph
   const task = graph?.task
 
-  if (!task) {
-    throw new Error('FlowBlock proc-task-p block should have a task')
-  }
+  // A block saved before the graph field existed has no task JSON. The markup below already
+  // optional-chains it, so render the block empty rather than blanking the view.
 
   return (
     <Xwrapper>

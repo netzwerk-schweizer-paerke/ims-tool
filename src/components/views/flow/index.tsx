@@ -1,6 +1,7 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { toNumber } from 'es-toolkit/compat'
 import { headers as getHeaders } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { AdminViewServerProps } from 'payload'
 import React from 'react'
 import { assert } from 'ts-essentials'
@@ -64,7 +65,9 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
     })
 
   if (!flowBlock) {
-    throw new Error(`Flow block (${flowId}) not found`)
+    // Stale link, or a flow belonging to another organisation — render the admin 404
+    // rather than an error page
+    notFound()
   }
 
   const blocks = flowBlock.blocks || []
@@ -103,7 +106,10 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
         })
       })
       if (activity.length === 0) {
-        throw new Error('No activities found')
+        // An orphaned flow — no activity block references it. The flow itself still renders;
+        // only the breadcrumb is unavailable.
+        logger.warn('admin/views/flow/index: No activity references this flow')
+        return null
       }
       if (activity.length > 1) {
         logger.warn('admin/views/flow/index: More than one activity found')
@@ -132,11 +138,13 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
           paddingLeft: 'var(--gutter-h)',
           paddingRight: 'var(--gutter-h)',
         }}>
-        <StepNav
-          activity={{ blockId: activity.blockId, id: activity.id, title: activity.name }}
-          activityBlock={{ id: activity.blockId, title: activity.blockTitle }}
-          flowBlock={{ id: flowId, title: flowBlock.name }}
-        />
+        {activity && (
+          <StepNav
+            activity={{ blockId: activity.blockId, id: activity.id, title: activity.name }}
+            activityBlock={{ id: activity.blockId, title: activity.blockTitle }}
+            flowBlock={{ id: flowId, title: flowBlock.name }}
+          />
+        )}
         <div className={'prose prose-lg'}>
           <h1>{flowBlock.name}</h1>
           <h3>

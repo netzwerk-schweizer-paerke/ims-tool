@@ -17,12 +17,8 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
   const io = graph?.io
   const isIoEnabled = io?.enabled
 
-  if (!task) {
-    throw new Error('FlowBlock proc-task-io block should have a task')
-  }
-  if (!io) {
-    throw new Error('FlowBlock proc-task-io block should have an io')
-  }
+  // A block saved before the graph field existed has no task/io JSON. The markup below
+  // already optional-chains both, so render the block empty rather than blanking the view.
 
   return (
     <Xwrapper>

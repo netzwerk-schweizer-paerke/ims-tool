@@ -10,6 +10,7 @@ import { StepNav } from '@/components/step-nav'
 import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
 import { TasksGrid } from '@/components/views/activity/view/tasks-grid'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { logger } from '@/lib/logger'
 
 import './landscape-bg.css'
 import { Translate } from '@/lib/translate'
@@ -55,7 +56,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
         return null
       }
       if (res.docs.length > 1) {
-        throw new Error('More than one activity found')
+        logger.warn('admin/views/activity/view/index: More than one activity found')
       }
       return res?.docs[0]?.blocks?.find((block) => block.id === (activityBlockId as any))
     })
@@ -82,7 +83,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
         return null
       }
       if (res.docs.length > 1) {
-        throw new Error('More than one activity found')
+        logger.warn('admin/views/activity/view/index: More than one activity found')
       }
       return res?.docs[0]
     })

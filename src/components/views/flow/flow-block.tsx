@@ -8,9 +8,7 @@ import {
 } from '@/payload-types'
 
 export type ProcessTaskCompoundBlock =
-  | ProcessTaskIOBlock
-  | ProcessTaskParallelBlock
-  | ProcessTestOutputBlock
+  ProcessTaskIOBlock | ProcessTaskParallelBlock | ProcessTestOutputBlock
 
 type Props = {
   block?: ProcessTaskCompoundBlock
@@ -18,7 +16,7 @@ type Props = {
 
 export const FlowBlock: React.FC<Props> = ({ block }) => {
   if (!block) {
-    throw new Error('FlowBlock block prop should not be null or undefined')
+    return null
   }
 
   if (block.blockType === 'proc-task-io') {
@@ -32,4 +30,7 @@ export const FlowBlock: React.FC<Props> = ({ block }) => {
   if (block.blockType === 'proc-test') {
     return <BlockTestOutput block={block} />
   }
+
+  // A block type this view does not render yet
+  return null
 }

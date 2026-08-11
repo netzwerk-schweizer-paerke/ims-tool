@@ -1,6 +1,7 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { toNumber } from 'es-toolkit/compat'
 import { headers as getHeaders } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { AdminViewProps, AdminViewServerProps } from 'payload'
 import React from 'react'
 import { assert } from 'ts-essentials'
@@ -10,6 +11,7 @@ import { StepNav } from '@/components/step-nav'
 import { BlockMetaWrapper } from '@/components/views/flow/lib/block-meta-wrapper'
 import { ListEditLink } from '@/components/views/list/list-edit-link'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { logger } from '@/lib/logger'
 import { Translate } from '@/lib/translate'
 import { TaskFlow } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
@@ -57,13 +59,15 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
         return null
       }
       if (res.docs.length > 1) {
-        throw new Error('More than one activity found')
+        logger.warn('admin/views/list/index: More than one list block found')
       }
       return res?.docs[0]
     })
 
   if (!listBlock) {
-    throw new Error(`Flow block (${listId}) not found`)
+    // Stale link, or a list belonging to another organisation — render the admin 404
+    // rather than an error page
+    notFound()
   }
 
   const blocks = listBlock.items || []
@@ -100,10 +104,13 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
         })
       })
       if (activity.length === 0) {
-        throw new Error('No activities found')
+        // An orphaned list — no activity block references it. The list itself still renders;
+        // only the breadcrumb is unavailable.
+        logger.warn('admin/views/list/index: No activity references this list')
+        return null
       }
       if (activity.length > 1) {
-        throw new Error('More than one activity found')
+        logger.warn('admin/views/list/index: More than one activity found')
       }
       return {
         blockId: blockId,
@@ -128,10 +135,12 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
           paddingLeft: 'var(--gutter-h)',
           paddingRight: 'var(--gutter-h)',
         }}>
-        <StepNav
-          activity={{ blockId: activity.blockId, id: activity.id, title: activity.name }}
-          listBlock={{ id: listId, title: listBlock.name }}
-        />
+        {activity && (
+          <StepNav
+            activity={{ blockId: activity.blockId, id: activity.id, title: activity.name }}
+            listBlock={{ id: listId, title: listBlock.name }}
+          />
+        )}
         <div className={'prose prose-lg'}>
           <h1>{listBlock.name}</h1>
           <h3>

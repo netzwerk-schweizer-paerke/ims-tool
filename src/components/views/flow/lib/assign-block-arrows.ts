@@ -120,7 +120,14 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
       break
     }
     default: {
-      throw new Error(`Block type not supported: ${(block as any).blockType}`)
+      // Runs inside TaskFlowArrows' render — a block type added to the collection but not
+      // yet mapped here must degrade to "no arrows", not blank the whole flow view.
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `[graph] no arrow definitions for block type "${String((block as { blockType?: string }).blockType)}" — drawing no arrows`,
+        )
+      }
+      return []
     }
   }
 
