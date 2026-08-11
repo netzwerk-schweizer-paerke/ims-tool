@@ -16,6 +16,8 @@
 
 - [SVGR was dropped and the two logos inlined as React components, removing the bundler decision](.claude/rules/project/decisions/dropped-svgr-instead-of-choosing-bundler.md)
   `next.config.mjs src/components/logo.tsx src/components/icon.tsx src/components/nsp-large.tsx src/components/nsp-small.tsx `
+- [The Payload 3.67 → 3.87 upgrade needs no schema migration](.claude/rules/project/decisions/payload-387-needs-no-schema-migration.md)
+  `src/migrations/** src/payload.config.ts `
 
 ## Conventions
 
