@@ -222,10 +222,11 @@ export const getPosition = (
     // in case of smooth path
     if (endAnchorPosition === 'middle') {
       // in case a middle anchor is chosen for endAnchor choose from which side to attach to the middle of the element
+      // xSign/ySign are 1 or -1, so both are truthy — these must compare, not coerce
       if (absDx > absDy) {
-        endAnchorPosition = xSign ? 'left' : 'right'
+        endAnchorPosition = xSign > 0 ? 'left' : 'right'
       } else {
-        endAnchorPosition = ySign ? 'top' : 'bottom'
+        endAnchorPosition = ySign > 0 ? 'top' : 'bottom'
       }
     }
     if (showHead) {

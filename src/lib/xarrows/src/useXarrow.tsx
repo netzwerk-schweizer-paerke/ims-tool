@@ -1,5 +1,5 @@
 'use client'
-import { useContext, useLayoutEffect, useState } from 'react'
+import { useCallback, useContext, useLayoutEffect, useState } from 'react'
 import { XelemContext } from './Xwrapper'
 
 // Typing the noop function to match the expected context value type
@@ -8,7 +8,8 @@ const noop: () => void = () => {}
 // Typing the useXarrow hook to explicitly state it returns a function of type () => void
 const useXarrow = (): (() => void) => {
   const [, setRender] = useState<{}>({})
-  const reRender: () => void = () => setRender({})
+  // Stable identity, so callers can memoise handlers that depend on it
+  const reRender: () => void = useCallback(() => setRender({}), [])
 
   let updateXarrow: () => void = useContext(XelemContext)
   if (!updateXarrow) updateXarrow = noop
