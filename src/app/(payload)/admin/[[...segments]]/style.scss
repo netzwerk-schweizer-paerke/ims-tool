@@ -19,6 +19,14 @@
   .graph-fields-row {
     @apply size-full;
   }
+  // The graph group renders inside a block Collapsible, so Payload gives it
+  // `.group-field--within-collapsible { padding: var(--base) }`. Reclaim it for the widget —
+  // `--within-row` already zeroes that modifier's negative margins, so only padding is left.
+  // This file is unlayered and Payload's rule sits in @layer payload-default, so it wins
+  // without !important.
+  .graph-fields-group {
+    padding: 0;
+  }
 }
 
 .collection-edit--activities {
