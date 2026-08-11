@@ -6,6 +6,7 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 import { Activity } from '@/payload-types'
 import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 import { stripBlocks } from '@/payload/utilities/cloning/strip-blocks'
+import { stripRowIds } from '@/payload/utilities/cloning/strip-row-ids'
 
 export const stripActivity = async (
   obj: Activity,
@@ -38,6 +39,9 @@ export const stripActivity = async (
   if (obj.blocks && isArray(obj.blocks)) {
     stripped.blocks = await stripBlocks(obj.blocks, req, organisationId, locale, documentPreloader)
   }
+
+  // `files` rows keep their own primary key, which would be re-inserted verbatim.
+  stripped.files = stripRowIds(stripped.files)
 
   stripped.organisation = organisationId
 

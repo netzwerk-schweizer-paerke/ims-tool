@@ -5,6 +5,7 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 import { TaskFlow } from '@/payload-types'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
+import { stripRowIds } from '@/payload/utilities/cloning/strip-row-ids'
 
 export const stripTaskFlow = async (
   obj: TaskFlow,
@@ -75,6 +76,9 @@ export const stripTaskFlow = async (
       }),
     )
   }
+
+  // `files` rows keep their own primary key, which would be re-inserted verbatim.
+  strippedEntity.files = stripRowIds(strippedEntity.files)
 
   strippedEntity.organisation = organisationId
 
