@@ -91,10 +91,11 @@ export const DocumentHealthButton: React.FC = () => {
         {t(running ? ('dataHealth:checking' as never) : ('dataHealth:checkThisItem' as never))}
       </Button>
 
-      <Drawer Header={null} slug={drawerSlug}>
-        <div className={'mt-12 flex w-full max-w-4xl flex-col gap-6'}>
-          <h1 className={'text-2xl font-bold'}>{t('dataHealth:titleDocument' as never)}</h1>
-
+      {/* No `Header` prop: Payload renders its own header — title plus the close X in the
+          top right — but only when Header is `undefined`. Passing `Header={null}`
+          suppresses it, leaving the drawer with no way to close from the corner. */}
+      <Drawer slug={drawerSlug} title={t('dataHealth:titleDocument' as never)}>
+        <div className={'flex w-full max-w-4xl flex-col gap-6'}>
           {running && (
             <p className="text-[var(--theme-text-light)]">{t('dataHealth:checking' as never)}</p>
           )}
