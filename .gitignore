@@ -45,5 +45,6 @@ next-env.d.ts
 
 .claude
 CLAUDE.md
+WIKI.md
 .mcp.json
 .serena
