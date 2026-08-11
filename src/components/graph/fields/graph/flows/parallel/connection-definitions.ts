@@ -1,3 +1,4 @@
+import { ConnectionDefinition } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
 import {
   RootTargetLeftName,
@@ -82,4 +83,4 @@ export const processTaskParallelConnections = [
     options: taskArrowBottomOptions,
     position: 'bottom',
   },
-]
+] satisfies ConnectionDefinition[]

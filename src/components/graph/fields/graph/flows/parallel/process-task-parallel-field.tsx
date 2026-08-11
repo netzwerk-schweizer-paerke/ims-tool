@@ -1,11 +1,13 @@
 'use client'
 import { useField } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
 import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
@@ -18,7 +20,7 @@ type ComponentState = {
   textRight: string
 }
 
-const initialState: ComponentState = {
+const createInitialState = (): ComponentState => ({
   connections: [
     {
       position: 'top',
@@ -35,7 +37,7 @@ const initialState: ComponentState = {
   ],
   textLeft: '',
   textRight: '',
-}
+})
 
 export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
   const {
@@ -56,46 +58,27 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
 
   const { setValue, value } = useField<ComponentState>({ path, validate: memoizedValidate })
 
-  // Use local state for textareas to reduce re-renders of the entire component
-  const [localTextLeft, setLocalTextLeft] = useState('')
-  const [localTextRight, setLocalTextRight] = useState('')
+  // Use the centralized text field hook instead of local implementations
+  const { handleTextChange: handleTextLeftChange, localText: localTextLeft } = useTextField(
+    value,
+    setValue,
+    '',
+    'textLeft',
+  )
+  const { handleTextChange: handleTextRightChange, localText: localTextRight } = useTextField(
+    value,
+    setValue,
+    '',
+    'textRight',
+  )
 
+  // Initialize state once
   useEffect(() => {
-    if (value) {
-      // Only update local text if it differs from the field value
-      if (value.textLeft !== localTextLeft) {
-        setLocalTextLeft(value.textLeft || '')
-      }
-      if (value.textRight !== localTextRight) {
-        setLocalTextRight(value.textRight || '')
-      }
-    } else {
-      setValue(initialState)
+    if (!value) {
+      // `true` keeps the form clean — applying a default is not a user edit
+      setValue(createInitialState(), true)
     }
-  }, [setValue, value, localTextLeft, localTextRight])
-
-  // Debounced text update handlers
-  const handleTextLeftChange = useCallback(
-    (text: string) => {
-      setLocalTextLeft(text)
-      // Only update the actual value when necessary
-      if (value && text !== value.textLeft) {
-        setValue({ ...value, textLeft: text })
-      }
-    },
-    [value, setValue],
-  )
-
-  const handleTextRightChange = useCallback(
-    (text: string) => {
-      setLocalTextRight(text)
-      // Only update the actual value when necessary
-      if (value && text !== value.textRight) {
-        setValue({ ...value, textRight: text })
-      }
-    },
-    [value, setValue],
-  )
+  }, [setValue, value])
 
   // Memoize arrow hook to prevent recreation
   const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({

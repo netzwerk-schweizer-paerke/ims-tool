@@ -1,3 +1,4 @@
+import { ConnectionDefinition } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 import { xarrowPropsType } from '@/lib/xarrows/src'
@@ -32,4 +33,4 @@ export const processIoConnections = [
     options: taskArrowRightOptions,
     position: 'right',
   },
-]
+] satisfies ConnectionDefinition[]

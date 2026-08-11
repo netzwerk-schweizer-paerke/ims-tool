@@ -10,8 +10,9 @@ import {
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
 import { processTestConnections } from '@/components/graph/fields/graph/flows/test/connection-definitions'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
@@ -32,7 +33,7 @@ type ComponentState = {
   text: string
 }
 
-const initialState: ComponentState = {
+const createInitialState = (): ComponentState => ({
   bottomBoolean: BooleanOutput.TRUE,
   connections: [
     {
@@ -51,7 +52,7 @@ const initialState: ComponentState = {
   leftBoolean: BooleanOutput.FALSE,
   rightBoolean: BooleanOutput.None,
   text: '',
-}
+})
 
 const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = memo(({ booleanOutput }) => {
   const booleanOutputMap = useMemo(
@@ -106,7 +107,8 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
   // Initialize state only once
   useEffect(() => {
     if (!value) {
-      setValue(initialState)
+      // `true` keeps the form clean — applying a default is not a user edit
+      setValue(createInitialState(), true)
     }
   }, [setValue, value])
 
@@ -173,17 +175,17 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
               <ButtonTopCenter onClickFn={handleTopClick} />
               <div className={'absolute -bottom-1/3 left-1/2 z-10 -translate-x-1/2'}>
                 <BooleanButton onClick={handleBottomBooleanClick}>
-                  <DisplayBoolean booleanOutput={value?.bottomBoolean} />
+                  <DisplayBoolean booleanOutput={value?.bottomBoolean ?? BooleanOutput.None} />
                 </BooleanButton>
               </div>
               <div className={'absolute -right-2 bottom-4 z-10'}>
                 <BooleanButton onClick={handleRightBooleanClick}>
-                  <DisplayBoolean booleanOutput={value?.rightBoolean} />
+                  <DisplayBoolean booleanOutput={value?.rightBoolean ?? BooleanOutput.None} />
                 </BooleanButton>
               </div>
               <div className={'absolute -left-2 bottom-4 z-10'}>
                 <BooleanButton onClick={handleLeftBooleanClick}>
-                  <DisplayBoolean booleanOutput={value?.leftBoolean} />
+                  <DisplayBoolean booleanOutput={value?.leftBoolean ?? BooleanOutput.None} />
                 </BooleanButton>
               </div>
             </TestShapeWrapper>

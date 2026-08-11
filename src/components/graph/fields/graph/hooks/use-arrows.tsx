@@ -3,33 +3,17 @@ import { debounce } from 'es-toolkit'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
+import {
+  ConnectionDefinition,
+  ConnectionPosition,
+  ConnectionStateType,
+  ConnectionType,
+} from '@/components/graph/fields/graph/lib/connection-types'
 import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 
-export const connectionTypes = ['in', 'out', 'pass-by', 'in-bottom', 'out-top', 'none'] as const
-
-export type ConnectionStateType = {
-  connections: ConnectionsType
-  text?: string
-  textBottom?: string
-  textLeft?: string
-  textRight?: string
-  textTop?: string
-}
-
-export type ConnectionsType = {
-  position: 'bottom' | 'left' | 'right' | 'top'
-  type: (typeof connectionTypes)[number]
-}[]
-
-type ArrowConnections = {
-  definitions: Record<string, any[]>
-  options: readonly string[]
-  position: string
-}[]
-
 type Props = {
-  connections: ArrowConnections
-  setState: any
+  connections: readonly ConnectionDefinition[]
+  setState: (state: ConnectionStateType) => void
   state?: ConnectionStateType
 }
 
@@ -39,17 +23,17 @@ export const useArrows = ({ connections, setState, state }: Props) => {
   const updateXarrow = useXarrow()
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const setConnectionType = (type: string, position: string) => {
-    const connection = state?.connections.find((connection) => connection.position === position)
-    if (!connection) {
-      throw new Error(`No connection found for arrow position: ${position}`)
-    }
-    const connections = state?.connections.map((connection) => {
-      if (connection.position === position) {
-        return { ...connection, type }
-      }
-      return connection
-    })
+  const setConnectionType = (type: ConnectionType, position: ConnectionPosition) => {
+    if (!state) return
+
+    // A stored state that predates this position simply has no entry for it yet —
+    // add one rather than refusing to switch the connection.
+    const hasPosition = state.connections.some((connection) => connection.position === position)
+    const connections = hasPosition
+      ? state.connections.map((connection) =>
+          connection.position === position ? { ...connection, type } : connection,
+        )
+      : [...state.connections, { position, type }]
 
     setState({
       ...state,
@@ -58,29 +42,14 @@ export const useArrows = ({ connections, setState, state }: Props) => {
     updateXarrow()
   }
 
-  const toggleConnectionType = (position: string) => {
+  const toggleConnectionType = (position: ConnectionPosition) => {
     const options = connections.find((connection) => connection.position === position)?.options
-    if (!options) {
-      throw new Error(`No options found for arrow position: ${position}`)
-    }
-    const option = options.find(
-      (option) =>
-        option === state?.connections.find((connection) => connection.position === position)?.type,
-    )
-    if (!option) {
-      throw new Error(`No options found for arrow position: ${position}`)
-    }
-    const currentIndex = options.indexOf(option)
-    if (currentIndex === -1) {
-      setConnectionType(options[0], position)
-      return
-    }
-    const nextIndex = currentIndex + 1
-    if (options[nextIndex]) {
-      setConnectionType(options[nextIndex], position)
-    } else {
-      setConnectionType(options[0], position)
-    }
+    if (!options?.length) return
+
+    const current = state?.connections.find((connection) => connection.position === position)?.type
+    // A missing or no-longer-supported stored type restarts the cycle at the first option.
+    const currentIndex = current ? options.indexOf(current) : -1
+    setConnectionType(options[(currentIndex + 1) % options.length], position)
   }
 
   useEffect(() => {
@@ -111,18 +80,34 @@ export const useArrows = ({ connections, setState, state }: Props) => {
     if (!state?.connections) return null
     return state.connections
       .flatMap((connection) => {
-        const definition = connections.find((c) => c.position === connection.position)?.definitions
-        if (!definition) {
-          throw new Error(`No definition found for arrow position: ${connection.position}`)
+        // The JSON schema only checks that position and type are strings, so stored
+        // values that no longer exist in the definitions must be skipped — throwing
+        // here would take down the whole edit view.
+        const definitions = connections.find(
+          (candidate) => candidate.position === connection.position,
+        )?.definitions
+        const arrows = definitions?.[connection.type]
+        if (!arrows) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(
+              `[graph] no arrow definition for "${connection.position}/${connection.type}" — skipping`,
+            )
+          }
+          return []
         }
-        return definition[connection.type]
+        return arrows.map((arrow, arrowIndex) => ({
+          arrow,
+          // Position is unique within a block, so this key survives a type change and the
+          // skip path above. Xarrow holds position state, so an index key would let React
+          // reuse one instance for a completely different start/end pair.
+          key: `${connection.position}-${connection.type}-${arrowIndex}`,
+        }))
       })
-      .map((arrow, index) => {
-        if (!arrow) return null
+      .map(({ arrow, key }) => {
         const start = `${arrowSetId}-${arrow.start}`
         const end = `${arrowSetId}-${arrow.end}`
         const props = { ...arrow, end, start, ...arrowStyle }
-        return <Xarrow key={index} {...props} />
+        return <Xarrow key={key} {...props} />
       })
   }, [state, connections, arrowSetId])
 

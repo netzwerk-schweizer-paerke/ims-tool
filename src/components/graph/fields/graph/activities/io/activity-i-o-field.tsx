@@ -8,8 +8,9 @@ import {
   ButtonCenterRight,
   ButtonTopCenter,
 } from '@/components/graph/fields/graph/components/node-buttons'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
@@ -24,7 +25,7 @@ type ComponentState = {
   text: string
 }
 
-const initialState: ComponentState = {
+const createInitialState = (): ComponentState => ({
   connections: [
     {
       position: 'top',
@@ -40,7 +41,7 @@ const initialState: ComponentState = {
     },
   ],
   text: '',
-}
+})
 
 export const ActivityIOField: JSONFieldClientComponent = (props) => {
   const {
@@ -68,7 +69,8 @@ export const ActivityIOField: JSONFieldClientComponent = (props) => {
   // Initialize state once
   useEffect(() => {
     if (!value) {
-      setValue(initialState)
+      // `true` keeps the form clean — applying a default is not a user edit
+      setValue(createInitialState(), true)
     }
   }, [setValue, value])
 

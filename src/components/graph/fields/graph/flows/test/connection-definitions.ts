@@ -1,3 +1,4 @@
+import { ConnectionDefinition } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 import { xarrowPropsType } from '@/lib/xarrows/src'
@@ -94,7 +95,7 @@ const taskArrowBottomDef: Record<
   ],
 }
 
-const taskArrowTopOptions = ['none', 'in']
+const taskArrowTopOptions = ['none', 'in'] as const
 
 const taskArrowTopDef: Record<(typeof taskArrowTopOptions)[number], Partial<xarrowPropsType>[]> = {
   in: [
@@ -124,4 +125,4 @@ export const processTestConnections = [
     options: taskArrowBottomOptions,
     position: 'bottom',
   },
-]
+] satisfies ConnectionDefinition[]

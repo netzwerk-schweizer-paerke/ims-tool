@@ -3,9 +3,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
 /**
- * A hook for managing text field state with debounced updates to the parent state
- * This reduces re-renders by maintaining a local state that only updates the parent
- * state when necessary.
+ * Mirrors a text field's value in local state so the textarea keeps its text and caret if
+ * the field is re-rendered from the server, and writes straight through to the parent on
+ * every change.
+ *
+ * NOT debounced — every keystroke dispatches to Payload form state. The local mirror does
+ * not reduce parent updates; it only decouples what the textarea shows from what the form
+ * currently holds.
  *
  * @param value The current field value from the parent component
  * @param setValue Function to update the parent value
@@ -19,7 +23,7 @@ export function useTextField<T extends Record<string, any>>(
   initialText: string = '',
   fieldName: keyof T = 'text' as keyof T,
 ) {
-  // Use local state to reduce re-renders
+  // What the textarea shows, independent of what the form currently holds
   const [localText, setLocalText] = useState(initialText)
 
   // Sync local state with parent value
@@ -33,7 +37,6 @@ export function useTextField<T extends Record<string, any>>(
     }
   }, [value, localText, fieldName])
 
-  // Debounced text update handler
   const handleTextChange = useCallback(
     (text: string) => {
       setLocalText(text)

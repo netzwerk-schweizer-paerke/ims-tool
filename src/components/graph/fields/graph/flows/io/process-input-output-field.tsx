@@ -5,8 +5,9 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
 import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
-import { ConnectionsType, useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
 import useTextField from '@/components/graph/fields/graph/hooks/use-text-field'
+import { ConnectionsType } from '@/components/graph/fields/graph/lib/connection-types'
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
@@ -20,7 +21,7 @@ type ComponentState = {
   text: string
 }
 
-const initialState: ComponentState = {
+const createInitialState = (): ComponentState => ({
   connections: [
     {
       position: 'right',
@@ -29,7 +30,7 @@ const initialState: ComponentState = {
   ],
   enabled: true,
   text: '',
-}
+})
 
 export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
   const {
@@ -56,7 +57,8 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
   // Initialize state once
   useEffect(() => {
     if (!value) {
-      setValue(initialState)
+      // `true` keeps the form clean — applying a default is not a user edit
+      setValue(createInitialState(), true)
     }
   }, [setValue, value])
 

@@ -1,4 +1,4 @@
-import { ConnectionStateType } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { ConnectionStateType } from '@/components/graph/fields/graph/lib/connection-types'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { ActivityBlockViewLink } from '@/components/views/activity/overview/activity/activity-block-view-link'
