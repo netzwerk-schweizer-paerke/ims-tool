@@ -296,6 +296,9 @@ export const en = {
     blockingHint: 'Cloning aborts with an error on these.',
     blockNumber: 'Block {{number}}',
     button: 'Check data',
+    checkExternalUrls: 'Check external links',
+    checkExternalUrlsHint:
+      'Requests every external link once. Takes somewhat longer and sends requests to third-party servers.',
     checking: 'Checking...',
     checkThisItem: 'Check this item',
     counts:
@@ -326,6 +329,9 @@ export const en = {
         'References {{collection}} {{id}}, which does not exist. Cloning follows this reference and aborts with a 404.',
       documentIncomplete:
         'Missing {{fields}}. Cloning reports this file as missing and copies the activity without it.',
+      externalUrlMalformed: 'Link has no valid target: “{{url}}”',
+      externalUrlNotFound: 'External link answers with HTTP {{status}}: {{url}}',
+      externalUrlUnreachable: 'External link unreachable ({{reason}}): {{url}}',
       malformedRichTextNoChildren: 'Rich text field: "root" has no "children" array.',
       malformedRichTextRoot: 'Rich text field: "root" is not an object.',
       missingRequiredField:
@@ -354,6 +360,9 @@ export const en = {
     preconditionFailed: 'Precondition not met',
     preconditionHint: 'These checks apply to the whole installation, not to a single park.',
     run: 'Run check',
+    shared: 'Shared resources',
+    sharedHint:
+      'Public documents belong to every park. They are deliberately not cloned — copies keep pointing at the original. These findings therefore affect all parks, not just this one.',
     title: 'Data health check',
     titleDocument: 'Check of this item',
   },

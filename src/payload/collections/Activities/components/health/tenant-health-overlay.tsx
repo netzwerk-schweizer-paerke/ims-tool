@@ -1,6 +1,6 @@
 'use client'
 import { Button, Drawer, useTranslation } from '@payloadcms/ui'
-import React from 'react'
+import React, { useState } from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import {
@@ -17,6 +17,7 @@ type Props = {
 export const TenantHealthOverlay: React.FC<Props> = ({ organisationId }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const { error, report, run, running } = useHealthCheck()
+  const [checkExternalUrls, setCheckExternalUrls] = useState(false)
 
   return (
     // No `Header` prop: Payload renders its own header — title plus the close X in the
@@ -32,12 +33,28 @@ export const TenantHealthOverlay: React.FC<Props> = ({ organisationId }) => {
 
         {report && <HealthReport report={report} showOrganisation />}
 
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            checked={checkExternalUrls}
+            className="mt-1"
+            disabled={running}
+            onChange={(event) => setCheckExternalUrls(event.target.checked)}
+            type="checkbox"
+          />
+          <span>
+            {t('dataHealth:checkExternalUrls' as never)}
+            <span className="block text-[var(--theme-text-light)]">
+              {t('dataHealth:checkExternalUrlsHint' as never)}
+            </span>
+          </span>
+        </label>
+
         <div className="flex gap-2">
           <Button
             buttonStyle="primary"
             className={`${baseClass}__run`}
             disabled={running}
-            onClick={() => run({ organisationId })}>
+            onClick={() => run({ checkExternalUrls, organisationId })}>
             {running ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--theme-elevation-0)] border-t-transparent" />

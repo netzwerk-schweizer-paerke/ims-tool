@@ -297,6 +297,9 @@ export const de = {
     blockingHint: 'Das Klonen bricht bei diesen Punkten mit einem Fehler ab.',
     blockNumber: 'Block {{number}}',
     button: 'Daten prüfen',
+    checkExternalUrls: 'Externe Links prüfen',
+    checkExternalUrlsHint:
+      'Ruft jeden externen Link einmal auf. Dauert etwas länger und sendet Anfragen an fremde Server.',
     checking: 'Prüfung läuft...',
     checkThisItem: 'Diesen Eintrag prüfen',
     counts:
@@ -327,6 +330,9 @@ export const de = {
         'Verweist auf {{collection}} {{id}}, das nicht existiert. Das Klonen folgt diesem Verweis und bricht mit einem 404 ab.',
       documentIncomplete:
         'Es fehlt: {{fields}}. Das Klonen meldet diese Datei als fehlend und kopiert die Aktivität ohne sie.',
+      externalUrlMalformed: 'Link ohne gültiges Ziel: „{{url}}“',
+      externalUrlNotFound: 'Externer Link antwortet mit HTTP {{status}}: {{url}}',
+      externalUrlUnreachable: 'Externer Link nicht erreichbar ({{reason}}): {{url}}',
       malformedRichTextNoChildren: 'Rich-Text-Feld: "root" enthält kein "children"-Array.',
       malformedRichTextRoot: 'Rich-Text-Feld: "root" ist kein Objekt.',
       missingRequiredField:
@@ -357,6 +363,9 @@ export const de = {
     preconditionHint:
       'Diese Prüfungen gelten für die gesamte Installation, nicht für einen einzelnen Park.',
     run: 'Prüfung starten',
+    shared: 'Geteilte Ressourcen',
+    sharedHint:
+      'Öffentliche Dokumente gehören allen Parks. Sie werden bewusst nicht geklont — Kopien verweisen weiterhin auf das Original. Diese Befunde betreffen daher alle Parks, nicht nur diesen.',
     title: 'Datenprüfung',
     titleDocument: 'Prüfung dieses Eintrags',
   },

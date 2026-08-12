@@ -75,6 +75,9 @@ export const DocumentHealthButton: React.FC = () => {
   const onClick = async () => {
     openModal(drawerSlug)
     await run({
+      // Always on here: the link count is bounded by this one document, unlike the
+      // park-wide sweep where it would mean hundreds of outbound requests.
+      checkExternalUrls: true,
       collection: collectionSlug as 'activities',
       id: documentId,
     })

@@ -279,6 +279,9 @@ export const fr = {
     blockingHint: 'Le clonage s’interrompt avec une erreur sur ces points.',
     blockNumber: 'Bloc {{number}}',
     button: 'Vérifier les données',
+    checkExternalUrls: 'Vérifier les liens externes',
+    checkExternalUrlsHint:
+      'Interroge chaque lien externe une fois. Un peu plus long et envoie des requêtes à des serveurs tiers.',
     checking: 'Vérification en cours...',
     checkThisItem: 'Vérifier cet élément',
     counts:
@@ -309,6 +312,9 @@ export const fr = {
         'Référence {{collection}} {{id}}, qui n’existe pas. Le clonage suit cette référence et s’interrompt avec une erreur 404.',
       documentIncomplete:
         'Manquant : {{fields}}. Le clonage signale ce fichier comme manquant et copie l’activité sans lui.',
+      externalUrlMalformed: 'Lien sans cible valide : « {{url}} »',
+      externalUrlNotFound: 'Le lien externe répond avec HTTP {{status}} : {{url}}',
+      externalUrlUnreachable: 'Lien externe injoignable ({{reason}}) : {{url}}',
       malformedRichTextNoChildren:
         'Champ de texte enrichi : « root » ne contient pas de tableau « children ».',
       malformedRichTextRoot: 'Champ de texte enrichi : « root » n’est pas un objet.',
@@ -340,6 +346,9 @@ export const fr = {
     preconditionHint:
       'Ces vérifications concernent l’ensemble de l’installation, pas un parc en particulier.',
     run: 'Lancer la vérification',
+    shared: 'Ressources partagées',
+    sharedHint:
+      'Les documents publics appartiennent à tous les parcs. Ils ne sont délibérément pas clonés — les copies continuent de pointer vers l’original. Ces résultats concernent donc tous les parcs, pas seulement celui-ci.',
     title: 'Contrôle des données',
     titleDocument: 'Contrôle de cet élément',
   },

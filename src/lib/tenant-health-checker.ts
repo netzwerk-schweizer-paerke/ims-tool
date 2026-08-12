@@ -30,6 +30,17 @@ const ORG_SCOPED_COLLECTIONS = new Set(['activities', 'documents', 'task-flows',
 
 const S3_PROBE_CONCURRENCY = 8
 
+/** Kept low and slow: these are third-party servers, not ours. */
+const URL_PROBE_CONCURRENCY = 6
+const URL_PROBE_TIMEOUT_MS = 8000
+
+/**
+ * Statuses that say nothing about whether the link is good. Plenty of sites reject HEAD,
+ * refuse unknown user agents, or sit behind a login — reporting those as broken links
+ * would bury the genuinely dead ones.
+ */
+const INCONCLUSIVE_URL_STATUSES = new Set([401, 403, 405, 406, 429, 999])
+
 export interface TenantHealthEntityRef {
   collection: string
   id: number
@@ -50,6 +61,12 @@ export interface TenantHealthFinding {
    * reference finding, or a document's referrer for a file finding.
    */
   related?: TenantHealthEntityRef
+  /**
+   * `shared` marks a finding about a resource every park uses — a public document. The
+   * same broken file would otherwise be reported once per park as if each had its own
+   * problem. Absent means the finding belongs to the park being checked.
+   */
+  scope?: 'shared'
   severity: TenantHealthSeverity
   /**
    * The row a user should open to fix this.
@@ -67,6 +84,9 @@ export type TenantHealthFindingCode =
   | 'danglingReference'
   | 'danglingReferenceFollowed'
   | 'documentIncomplete'
+  | 'externalUrlMalformed'
+  | 'externalUrlNotFound'
+  | 'externalUrlUnreachable'
   | 'malformedRichTextNoChildren'
   | 'malformedRichTextRoot'
   | 'missingRequiredField'
@@ -91,6 +111,14 @@ export interface TenantHealthLocation {
   locale?: string
   /** 1-based, matching the numbering shown in the admin UI. */
   rowNumber?: number
+}
+
+export interface TenantHealthOptions {
+  /**
+   * Probe every distinct external link. Off by default: it is the only check that makes
+   * outbound requests, and it turns a seconds-long scan into a minutes-long one.
+   */
+  checkExternalUrls?: boolean
 }
 
 export type TenantHealthPreconditionCode =
@@ -168,6 +196,8 @@ interface Reference extends RawReference {
 }
 
 interface WalkResult {
+  /** Lexical link nodes with `linkType: 'custom'` — links out to somewhere we don't own. */
+  externalUrls: { path: string; url: string }[]
   malformedRichText: { code: TenantHealthFindingCode; path: string }[]
   references: RawReference[]
 }
@@ -192,7 +222,7 @@ export class TenantHealthChecker {
     })
   }
 
-  async run(organisationId: number): Promise<TenantHealthReport> {
+  async run(organisationId: number, options: TenantHealthOptions = {}): Promise<TenantHealthReport> {
     const organisation = await this.payload.findByID({
       collection: 'organisations',
       depth: 0,
@@ -216,6 +246,7 @@ export class TenantHealthChecker {
       [...activities, ...taskFlows, ...taskLists],
       organisationId,
       preconditions,
+      options,
     )
 
     findings.push(...analysis.findings)
@@ -245,6 +276,7 @@ export class TenantHealthChecker {
   async runForDocument(
     collection: 'activities' | 'task-flows' | 'task-lists',
     id: number,
+    options: TenantHealthOptions = {},
   ): Promise<TenantHealthReport> {
     const entity = (await this.payload.findByID({
       collection,
@@ -269,6 +301,7 @@ export class TenantHealthChecker {
       [{ ...entity, __collection: collection }],
       organisationId,
       preconditions,
+      options,
     )
 
     return buildReport({
@@ -289,9 +322,11 @@ export class TenantHealthChecker {
     entities: LoadedEntity[],
     organisationId: number,
     preconditions: TenantHealthPreconditions,
+    options: TenantHealthOptions,
   ): Promise<{ findings: TenantHealthFinding[]; ownedDocumentCount: number }> {
     const findings: TenantHealthFinding[] = []
     const referenced: Reference[] = []
+    const externalLinks: { owner: TenantHealthEntityRef; path: string; url: string }[] = []
 
     for (const entity of entities) {
       const source: TenantHealthEntityRef = { collection: entity.__collection, id: entity.id }
@@ -300,6 +335,7 @@ export class TenantHealthChecker {
 
       const walk = walkForReferences(entity)
       referenced.push(...walk.references.map((reference) => ({ ...reference, owner: source })))
+      externalLinks.push(...walk.externalUrls.map((link) => ({ ...link, owner: source })))
 
       for (const issue of walk.malformedRichText) {
         findings.push({
@@ -317,6 +353,18 @@ export class TenantHealthChecker {
     const documentRefs = referenced.filter((reference) => reference.collection === 'documents')
     const documentResult = await this.checkDocuments(documentRefs, organisationId, preconditions)
     findings.push(...documentResult.findings)
+
+    // Public documents are deliberately never cloned — a copy keeps pointing at the
+    // original, which is the intended behaviour. They still have to exist: a missing
+    // object leaves a dead link in the source and in every copy made from it.
+    const publicRefs = referenced.filter(
+      (reference) => reference.collection === 'documents-public',
+    )
+    findings.push(...(await this.checkPublicDocuments(publicRefs, preconditions)))
+
+    if (options.checkExternalUrls) {
+      findings.push(...(await this.checkExternalUrls(externalLinks)))
+    }
 
     return { findings, ownedDocumentCount: documentResult.ownedCount }
   }
@@ -432,9 +480,156 @@ export class TenantHealthChecker {
     return { findings, ownedCount }
   }
 
+  /**
+   * Probes each distinct external URL once.
+   *
+   * Opt-in, because this is the only check that leaves the building: ~500 distinct URLs
+   * across 51 hosts exist in the content, and hitting them takes tens of seconds and makes
+   * the server look like a crawler. A URL is only reported when the answer is unambiguous —
+   * see INCONCLUSIVE_URL_STATUSES.
+   */
+  private async checkExternalUrls(
+    links: { owner: TenantHealthEntityRef; path: string; url: string }[],
+  ): Promise<TenantHealthFinding[]> {
+    const firstUseByUrl = new Map<string, { owner: TenantHealthEntityRef; path: string }>()
+
+    for (const link of links) {
+      if (!firstUseByUrl.has(link.url)) {
+        firstUseByUrl.set(link.url, { owner: link.owner, path: link.path })
+      }
+    }
+
+    const findings: TenantHealthFinding[] = []
+    const urls: string[] = []
+
+    // A link saved with no target at all ("https://") is a content mistake, not an
+    // unreachable server — probing it would report a parser error and read as a network
+    // problem.
+    for (const [url, use] of firstUseByUrl) {
+      let hostname = ''
+
+      try {
+        hostname = new URL(url).hostname
+      } catch {
+        hostname = ''
+      }
+
+      if (hostname) {
+        urls.push(url)
+        continue
+      }
+
+      findings.push({
+        code: 'externalUrlMalformed',
+        params: { url },
+        path: use.path,
+        severity: 'degrading',
+        source: use.owner,
+      })
+    }
+
+    for (let index = 0; index < urls.length; index += URL_PROBE_CONCURRENCY) {
+      const batch = urls.slice(index, index + URL_PROBE_CONCURRENCY)
+
+      const results = await Promise.all(batch.map(async (url) => ({ url, ...(await probeUrl(url)) })))
+
+      for (const result of results) {
+        if (result.ok) {
+          continue
+        }
+
+        const use = firstUseByUrl.get(result.url)!
+
+        findings.push({
+          code: result.status ? 'externalUrlNotFound' : 'externalUrlUnreachable',
+          params: { reason: result.reason ?? '', status: result.status ?? 0, url: result.url },
+          path: use.path,
+          severity: 'degrading',
+          source: use.owner,
+        })
+      }
+    }
+
+    return findings
+  }
+
   private async checkPreconditions(): Promise<TenantHealthPreconditions> {
     const [s3, apiKey] = await Promise.all([this.checkS3(), this.checkApiKey()])
     return { apiKey, s3 }
+  }
+
+  /**
+   * Public documents are shared across every park and are never cloned, so the only
+   * questions worth asking are whether the row is complete and whether the object is
+   * still in S3. Findings are marked `shared` — the file is broken for the whole
+   * installation, not for the park that happens to be under inspection.
+   *
+   * Dangling references to a public document are already reported by `checkReferences`,
+   * which resolves every collection; that finding stays park-scoped because the broken
+   * link lives in this park's content.
+   */
+  private async checkPublicDocuments(
+    references: Reference[],
+    preconditions: TenantHealthPreconditions,
+  ): Promise<TenantHealthFinding[]> {
+    const ids = uniqueIds(references)
+
+    if (ids.length === 0) {
+      return []
+    }
+
+    const findings: TenantHealthFinding[] = []
+
+    const { docs } = await this.payload.find({
+      collection: 'documents-public',
+      depth: 0,
+      limit: 0,
+      overrideAccess: true,
+      where: { id: { in: ids } },
+    })
+
+    const referrerById = new Map(references.map((reference) => [reference.id, reference.owner]))
+    const probeable: { id: number; key: string; related?: TenantHealthEntityRef }[] = []
+
+    for (const doc of docs) {
+      const source: TenantHealthEntityRef = { collection: 'documents-public', id: doc.id }
+      const related = referrerById.get(doc.id)
+
+      const missing = (['filename', 'filesize', 'mimeType', 'url'] as const).filter(
+        (field) => !doc[field],
+      )
+
+      if (missing.length > 0) {
+        findings.push({
+          code: 'documentIncomplete',
+          params: { fields: missing.join(', ') },
+          related,
+          scope: 'shared',
+          severity: 'degrading',
+          source,
+        })
+      }
+
+      const prefix = (doc as { prefix?: null | string }).prefix
+
+      if (prefix && doc.filename) {
+        probeable.push({ id: doc.id, key: `${prefix}/${doc.filename}`, related })
+      }
+    }
+
+    if (preconditions.s3.ok) {
+      const probed = await this.probeS3(probeable)
+
+      findings.push(
+        ...probed.map((finding) => ({
+          ...finding,
+          scope: 'shared' as const,
+          source: { collection: 'documents-public', id: Number(finding.source.id) },
+        })),
+      )
+    }
+
+    return findings
   }
 
   /**
@@ -658,7 +853,7 @@ export class TenantHealthChecker {
  * and every `document` key holding an id.
  */
 export const walkForReferences = (root: unknown): WalkResult => {
-  const result: WalkResult = { malformedRichText: [], references: [] }
+  const result: WalkResult = { externalUrls: [], malformedRichText: [], references: [] }
 
   const visit = (node: unknown, path: string) => {
     if (Array.isArray(node)) {
@@ -683,6 +878,16 @@ export const walkForReferences = (root: unknown): WalkResult => {
           id,
           path,
         })
+      }
+    }
+
+    // Lexical link node fields: `{ doc, url, newTab, linkType }`. `custom` means the URL
+    // points somewhere outside this application.
+    if (record.linkType === 'custom' && typeof record.url === 'string') {
+      const url = record.url.trim()
+
+      if (/^https?:\/\//i.test(url)) {
+        result.externalUrls.push({ path, url })
       }
     }
 
@@ -798,6 +1003,52 @@ const buildReport = (
 
 const describe = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown error'
+
+/**
+ * HEAD first, falling back to a ranged GET — a fair number of servers answer HEAD with 405
+ * or 501 while serving GET perfectly well, and reporting those as dead links would be wrong.
+ */
+const probeUrl = async (
+  url: string,
+): Promise<{ ok: boolean; reason?: string; status?: number }> => {
+  const attempt = async (method: 'GET' | 'HEAD') => {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), URL_PROBE_TIMEOUT_MS)
+
+    try {
+      return await fetch(url, {
+        headers: {
+          // Identify honestly, and ask for as little as possible on the GET fallback.
+          'Range': 'bytes=0-0',
+          'User-Agent': 'ims-tool-health-check',
+        },
+        method,
+        redirect: 'follow',
+        signal: controller.signal,
+      })
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  try {
+    let response = await attempt('HEAD')
+
+    if (response.status === 405 || response.status === 501) {
+      response = await attempt('GET')
+    }
+
+    if (response.ok || response.status < 400 || INCONCLUSIVE_URL_STATUSES.has(response.status)) {
+      return { ok: true }
+    }
+
+    return { ok: false, status: response.status }
+  } catch (error) {
+    // DNS failure, refused connection, TLS error or timeout — the link is not reachable
+    // from the server, which is what the report is about.
+    return { ok: false, reason: describe(error) }
+  }
+}
 
 /**
  * `cloneActivityBlocks` resolves every entry under a block's `relations.tasks` with

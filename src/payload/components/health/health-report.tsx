@@ -40,6 +40,9 @@ export const HealthReport: React.FC<HealthReportProps> = ({
   const translate = t as Translator
 
   const failedPreconditions = Object.entries(report.preconditions).filter(([, value]) => !value.ok)
+  // Public documents are shared installation-wide, so their problems are not this park's
+  // to fix and would otherwise be repeated identically in every park's report.
+  const sharedFindings = report.findings.filter((finding) => finding.scope === 'shared')
 
   return (
     <>
@@ -80,7 +83,9 @@ export const HealthReport: React.FC<HealthReportProps> = ({
       )}
 
       {SEVERITY_ORDER.map((severity) => {
-        const findings = report.findings.filter((finding) => finding.severity === severity)
+        const findings = report.findings.filter(
+          (finding) => finding.severity === severity && finding.scope !== 'shared',
+        )
         if (findings.length === 0) return null
 
         return (
@@ -102,6 +107,16 @@ export const HealthReport: React.FC<HealthReportProps> = ({
           />
         )
       })}
+
+      {sharedFindings.length > 0 && (
+        <FindingGroup
+          findings={sharedFindings}
+          hint={t('dataHealth:sharedHint' as never)}
+          onJump={onJump}
+          severity="degrading"
+          title={`${t('dataHealth:shared' as never)} (${sharedFindings.length})`}
+        />
+      )}
     </>
   )
 }
@@ -330,6 +345,15 @@ export const findingMessage = (t: Translator, finding: TenantHealthFinding): str
     }
     case 'documentIncomplete': {
       return t('dataHealth:finding:documentIncomplete' as never, params)
+    }
+    case 'externalUrlMalformed': {
+      return t('dataHealth:finding:externalUrlMalformed' as never, params)
+    }
+    case 'externalUrlNotFound': {
+      return t('dataHealth:finding:externalUrlNotFound' as never, params)
+    }
+    case 'externalUrlUnreachable': {
+      return t('dataHealth:finding:externalUrlUnreachable' as never, params)
     }
     case 'malformedRichTextNoChildren': {
       return t('dataHealth:finding:malformedRichTextNoChildren' as never, params)

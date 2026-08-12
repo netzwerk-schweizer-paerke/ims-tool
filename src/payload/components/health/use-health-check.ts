@@ -4,9 +4,10 @@ import { useState } from 'react'
 
 import { TenantHealthReport } from '@/lib/tenant-health-checker'
 
-export type HealthCheckScope =
+export type HealthCheckScope = { checkExternalUrls?: boolean } & (
   | { collection: 'activities' | 'task-flows' | 'task-lists'; id: number }
   | { organisationId: number }
+)
 
 interface UseHealthCheckResult {
   error: string

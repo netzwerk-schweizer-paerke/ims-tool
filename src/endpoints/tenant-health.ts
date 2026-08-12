@@ -17,10 +17,13 @@ const CHECKABLE_COLLECTIONS = ['activities', 'task-flows', 'task-lists'] as cons
  * They carry different access rules, so they are separate shapes rather than one object
  * with optional fields — see the handler.
  */
-const bodySchema = z.union([
-  z.object({ organisationId: z.number().min(1) }),
-  z.object({ collection: z.enum(CHECKABLE_COLLECTIONS), id: z.number().min(1) }),
-])
+const bodySchema = z.intersection(
+  z.union([
+    z.object({ organisationId: z.number().min(1) }),
+    z.object({ collection: z.enum(CHECKABLE_COLLECTIONS), id: z.number().min(1) }),
+  ]),
+  z.object({ checkExternalUrls: z.boolean().optional() }),
+)
 
 export type TenantHealthEndpointResult =
   ReturnType<typeof formatValidationErrors> | TenantHealthReport | { error: string }
@@ -62,7 +65,9 @@ export const tenantHealthEndpoint: Endpoint = {
           )
         }
 
-        const report = await checker.run(body.organisationId)
+        const report = await checker.run(body.organisationId, {
+          checkExternalUrls: body.checkExternalUrls,
+        })
 
         req.payload.logger.info({
           blocking: report.summary.blocking,
@@ -85,7 +90,9 @@ export const tenantHealthEndpoint: Endpoint = {
         req,
       })
 
-      const report = await checker.runForDocument(body.collection, body.id)
+      const report = await checker.runForDocument(body.collection, body.id, {
+        checkExternalUrls: body.checkExternalUrls,
+      })
 
       req.payload.logger.info({
         blocking: report.summary.blocking,
