@@ -1,18 +1,45 @@
-import type { CollectionSlug, PayloadHandler, PayloadRequest } from 'payload'
+import type { CollectionSlug, GlobalSlug, PayloadHandler, PayloadRequest } from 'payload'
 
 import { APIError } from 'payload'
 import { ZodError } from 'zod'
 
-import { relationshipCollector } from '../collectors/relationship-collector'
+import { createRelationshipCollector } from '../collectors/relationship-collector'
 import { collectRelationships } from '../operations/collect-relationships'
-import { translateOperation } from '../operations/translate-operation'
+import { translateOperation, writeTranslation } from '../operations/translate-operation'
 import { type ValidatedTranslateArgs, validateTranslateArgs } from '../schemas/translate-endpoint'
 import { findEntityWithConfig } from '../utilities/find-entity-with-config'
 import { validateTranslateAccess } from '../utilities/validate-translate-access'
 
+type TranslateTarget = {
+  collectionSlug?: CollectionSlug
+  globalSlug?: GlobalSlug
+  id?: number | string
+}
+
+/** Maps a resolver error type onto the HTTP status the client expects. */
+const statusForErrorType = (type: string | undefined): number => {
+  switch (type) {
+    case 'authentication': {
+      return 401
+    }
+    case 'network': {
+      return 502
+    }
+    case 'quota_exceeded': {
+      return 429
+    }
+    default: {
+      return 500
+    }
+  }
+}
+
 /**
- * Transaction-safe translation endpoint
- * Ensures all translations are committed together or rolled back on failure
+ * Translation endpoint.
+ *
+ * The work runs in three phases. The endpoint decides the document set, then calls DeepL
+ * for every document, then opens one transaction and writes them all. The transaction
+ * therefore never stays open across a network call.
  */
 export const translateEndpoint: PayloadHandler = async (req) => {
   if (!req.user) {
@@ -59,7 +86,127 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     throw new APIError(access.message ?? 'Access denied', access.status ?? 403)
   }
 
-  // Start a database transaction
+  const relationshipStats = {
+    failed: 0,
+    failedDocs: [] as string[],
+    skipped: 0,
+    success: 0,
+    total: 0,
+  }
+
+  // Phase 1: decide which documents to translate. The main document comes first.
+  const targets: TranslateTarget[] = [
+    { collectionSlug: collectionSlug as CollectionSlug | undefined, globalSlug: globalSlug as any, id },
+  ]
+
+  if (includeRelationships && relationshipDepth > 0) {
+    // One collector per request. A shared instance let two concurrent translations
+    // overwrite each other's collected ids.
+    const collector = createRelationshipCollector()
+
+    // Fetch the source document with minimal depth for relationship IDs
+    const { config, doc: sourceDoc } = await findEntityWithConfig({
+      collectionSlug: collectionSlug as CollectionSlug | undefined,
+      depth: 1, // Only need depth 1 to get relationship IDs, not full population
+      globalSlug: globalSlug as any,
+      id,
+      locale: fromLocale,
+      req,
+    })
+
+    await collectRelationships({
+      collector,
+      depth: relationshipDepth,
+      doc: sourceDoc,
+      fields: config.fields,
+      path: collectionSlug || globalSlug || 'root',
+    })
+
+    const relatedDocuments = collector.getDocuments()
+
+    relationshipStats.total = relatedDocuments.length
+
+    for (const relatedDoc of relatedDocuments) {
+      // The write below uses `overrideAccess: true`, so this check is the only gate on it.
+      const relatedAccess = await validateTranslateAccess({
+        collectionSlug: relatedDoc.collectionSlug,
+        id: relatedDoc.id,
+        req,
+      })
+
+      // A skip is not a failure. `addDocument` accepts only task-lists and task-flows,
+      // so a skip means a task the caller may not translate, such as one in another
+      // organisation. The response reports the count.
+      if (!relatedAccess.isValid) {
+        relationshipStats.skipped++
+        continue
+      }
+
+      targets.push({
+        collectionSlug: relatedDoc.collectionSlug as CollectionSlug,
+        id: relatedDoc.id,
+      })
+    }
+  }
+
+  // Phase 2: call DeepL for every document. No transaction is open here, and
+  // `update: false` means nothing is written yet.
+  const prepared: Array<{ target: TranslateTarget; translatedData: Record<string, any> }> = []
+
+  for (const [index, target] of targets.entries()) {
+    const isMainDocument = index === 0
+    const label = `${target.collectionSlug ?? target.globalSlug}/${target.id}`
+
+    let result
+
+    try {
+      result = await translateOperation({
+        collectionSlug: target.collectionSlug,
+        emptyOnly: false,
+        globalSlug: target.globalSlug,
+        id: target.id,
+        includeRelationships: false,
+        locale: toLocale,
+        localeFrom: fromLocale,
+        overrideAccess: true,
+        relationshipDepth: 0,
+        req,
+        update: false,
+      })
+    } catch (error: any) {
+      if (!isMainDocument) {
+        relationshipStats.failed++
+        relationshipStats.failedDocs.push(label)
+      }
+      if (error instanceof APIError) {
+        throw error
+      }
+      throw new APIError(
+        isMainDocument
+          ? `Main document translation failed: ${error.message}`
+          : `Failed to translate relationship ${label}: ${error.message}`,
+        500,
+      )
+    }
+
+    if (!result.success) {
+      if (!isMainDocument) {
+        relationshipStats.failed++
+        relationshipStats.failedDocs.push(label)
+      }
+      throw new APIError(
+        result.error?.message ??
+          (isMainDocument
+            ? 'Main document translation failed'
+            : `Failed to translate relationship ${label}`),
+        statusForErrorType(result.error?.type),
+      )
+    }
+
+    prepared.push({ target, translatedData: result.translatedData })
+  }
+
+  // Phase 3: write every translated document in one transaction.
   const transactionID = await req.payload.db.beginTransaction()
 
   if (!transactionID) {
@@ -67,183 +214,28 @@ export const translateEndpoint: PayloadHandler = async (req) => {
   }
 
   try {
-    // Create a new request object with the transaction ID
     const transactionalReq: PayloadRequest = {
       ...req,
       transactionID,
     }
 
-    // Step 1: Translate the main document first (without relationships)
-
-    const result = await translateOperation({
-      collectionSlug: collectionSlug as CollectionSlug | undefined,
-      emptyOnly: false,
-      globalSlug: globalSlug as any, // GlobalSlug type is not available, using any
-      id,
-      includeRelationships: false,
-      locale: toLocale,
-      localeFrom: fromLocale,
-      overrideAccess: true,
-      relationshipDepth: 0,
-      req: transactionalReq, // Use transactional request
-      update: true,
-    })
-
-    if (!result.success) {
-      // Handle different error types with appropriate HTTP status codes
-      switch (result.error?.type) {
-      case 'quota_exceeded': {
-        throw new APIError(result.error.message, 429) // Too Many Requests for quota
-      }
-      case 'authentication': {
-        throw new APIError(result.error.message, 401) // Unauthorized
-      }
-      case 'network': {
-        throw new APIError(result.error.message, 502) // Bad Gateway for network issues
-      }
-      default: {
-        throw new APIError(result.error?.message || 'Main document translation failed', 500)
-      }
-      }
-    }
-
-    // Step 2: If relationships should be included, collect and translate them
-    const relationshipStats = {
-      failed: 0,
-      failedDocs: [] as string[],
-      skipped: 0,
-      success: 0,
-      total: 0,
-    }
-
-    if (includeRelationships && relationshipDepth > 0) {
-      // Start collecting
-      relationshipCollector.startCollecting()
-
-      // Fetch the source document with minimal depth for relationship IDs
-      const { config, doc: sourceDoc } = await findEntityWithConfig({
-        collectionSlug: collectionSlug as CollectionSlug | undefined,
-        depth: 1, // Only need depth 1 to get relationship IDs, not full population
-        globalSlug: globalSlug as any,
-        id,
-        locale: fromLocale,
-        req: transactionalReq, // Use transactional request
+    for (const { target, translatedData } of prepared) {
+      await writeTranslation({
+        collectionSlug: target.collectionSlug,
+        globalSlug: target.globalSlug,
+        id: target.id,
+        locale: toLocale,
+        localeFrom: fromLocale,
+        overrideAccess: true,
+        req: transactionalReq,
+        translatedData,
       })
-
-      // Collect all relationships
-      await collectRelationships({
-        depth: relationshipDepth,
-        doc: sourceDoc,
-        fields: config.fields,
-        path: collectionSlug || globalSlug || 'root',
-      })
-
-      // Get collected documents
-      const relatedDocuments = relationshipCollector.stopCollecting()
-
-      relationshipStats.total = relatedDocuments.length
-
-      // Step 3: Translate each collected document within the transaction
-      for (const relatedDoc of relatedDocuments) {
-        try {
-          // The collector walks every relationship field, so it also reaches users and
-          // organisations. Skip a related document the caller may not translate.
-          const relatedAccess = await validateTranslateAccess({
-            collectionSlug: relatedDoc.collectionSlug,
-            id: relatedDoc.id,
-            req: transactionalReq,
-          })
-
-          // A skip is not a failure. The collector reaches users and organisations on
-          // every activity, so counting these as failures would change the reported stats.
-          if (!relatedAccess.isValid) {
-            relationshipStats.skipped++
-            continue
-          }
-
-          const relationshipResult = await translateOperation({
-            collectionSlug: relatedDoc.collectionSlug as CollectionSlug,
-            emptyOnly: false,
-            id: relatedDoc.id,
-            includeRelationships: false,
-            locale: toLocale,
-            localeFrom: fromLocale,
-            overrideAccess: true,
-            relationshipDepth: 0,
-            req: transactionalReq, // Use transactional request
-            update: true,
-          })
-
-          if (!relationshipResult.success) {
-            // Handle different error types for relationships
-            switch (relationshipResult.error?.type) {
-            case 'quota_exceeded': {
-              throw new APIError(relationshipResult.error.message, 429)
-            }
-            case 'authentication': {
-              throw new APIError(relationshipResult.error.message, 401)
-            }
-            case 'network': {
-              throw new APIError(relationshipResult.error.message, 502)
-            }
-            default: {
-              throw new APIError(
-                relationshipResult.error?.message ||
-                  `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}`,
-                500,
-              )
-            }
-            }
-          }
-
-          relationshipStats.success++
-        } catch (error: any) {
-          relationshipStats.failed++
-          relationshipStats.failedDocs.push(`${relatedDoc.collectionSlug}/${relatedDoc.id}`)
-
-          // ANY failure should trigger rollback to ensure data consistency
-          // Preserve the original error message and status code if it's an APIError
-          if (error instanceof APIError) {
-            throw error
-          }
-          throw new APIError(
-            `Failed to translate relationship ${relatedDoc.collectionSlug}/${relatedDoc.id}: ${error.message}`,
-            500,
-          )
-        }
-      }
-
-      // Clear the collector for next use
-      relationshipCollector.clear()
     }
 
-    // If we've made it this far, commit the transaction
     await req.payload.db.commitTransaction(transactionID)
-
-    // A skipped relationship must reach the caller. Otherwise a partial translation
-    // reports the same success as a complete one.
-    const skipNotice =
-      relationshipStats.skipped > 0
-        ? `. ${relationshipStats.skipped} related document(s) were skipped, because you may not translate them`
-        : ''
-
-    // Return success with statistics
-    return Response.json({
-      collection: collectionSlug || globalSlug,
-      id,
-      message: `Document translated from ${fromLocale} to ${toLocale}${skipNotice}`,
-      statistics: {
-        mainDocument: 'translated',
-        relationships: relationshipStats,
-      },
-      success: true,
-    })
   } catch (error: any) {
     // If anything goes wrong, rollback the entire transaction
     await req.payload.db.rollbackTransaction(transactionID)
-
-    // Clear the collector in case of error
-    relationshipCollector.clear()
 
     req.payload.logger.error({
       collection: collectionSlug || globalSlug,
@@ -258,4 +250,26 @@ export const translateEndpoint: PayloadHandler = async (req) => {
       error.status || 500,
     )
   }
+
+  // The main document is the first target, so the rest are relationships.
+  relationshipStats.success = prepared.length - 1
+
+  // A skipped relationship must reach the caller. Otherwise a partial translation
+  // reports the same success as a complete one.
+  const skipNotice =
+    relationshipStats.skipped > 0
+      ? `. ${relationshipStats.skipped} related document(s) were skipped, because you may not translate them`
+      : ''
+
+  // Return success with statistics
+  return Response.json({
+    collection: collectionSlug || globalSlug,
+    id,
+    message: `Document translated from ${fromLocale} to ${toLocale}${skipNotice}`,
+    statistics: {
+      mainDocument: 'translated',
+      relationships: relationshipStats,
+    },
+    success: true,
+  })
 }

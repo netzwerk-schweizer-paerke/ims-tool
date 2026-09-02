@@ -144,21 +144,16 @@ async function processChunksSequentially(
       const categorizedError = categorizeDeepLError(error)
 
       logger.error({
-        chunk,
         chunkSize: chunk.length,
-        error,
         errorMessage: categorizedError.message,
         errorType: categorizedError.type,
         message: 'DeepL translation failed for chunk',
       })
 
-      // For quota exceeded errors, we should propagate the error instead of continuing
-      if (categorizedError.type === 'quota_exceeded') {
-        throw categorizedError
-      }
-
-      // For other errors, return original texts for this chunk
-      results.push(...chunk)
+      // A failed chunk fails the whole request. The earlier code pushed the source
+      // strings, which wrote untranslated text into the target locale and marked it
+      // up to date. Throw the original error, because the caller categorises it once.
+      throw error
     }
   }
 

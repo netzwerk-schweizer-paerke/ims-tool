@@ -3,17 +3,18 @@
  * This replaces the translateRelationships function with a simpler collection approach
  */
 
-import { isArray, isObject } from 'es-toolkit/compat'
+import { isArray } from 'es-toolkit/compat'
 
-import { relationshipCollector } from '../collectors/relationship-collector'
+import type { RelationshipCollector } from '../collectors/relationship-collector'
 
 export async function collectRelationships(args: {
+  collector: RelationshipCollector
   depth: number
   doc: Record<string, any>
   fields: any[]
   path?: string
 }): Promise<void> {
-  const { depth, doc, fields, path = 'root' } = args
+  const { collector, depth, doc, fields, path = 'root' } = args
 
   if (depth <= 0) {
     return
@@ -46,7 +47,7 @@ export async function collectRelationships(args: {
         }
 
         if (relationCollection) {
-          relationshipCollector.addDocument(relationCollection, relationId, depth - 1, fieldPath)
+          collector.addDocument(relationCollection, relationId, depth - 1, fieldPath)
         }
       }
     }
@@ -54,6 +55,7 @@ export async function collectRelationships(args: {
     // Handle nested fields in groups
     if (field.type === 'group' && field.fields && doc[field.name]) {
       await collectRelationships({
+        collector,
         depth,
         doc: doc[field.name],
         fields: field.fields,
@@ -64,6 +66,7 @@ export async function collectRelationships(args: {
     // Handle row fields - these contain nested fields
     if (field.type === 'row' && field.fields) {
       await collectRelationships({
+        collector,
         depth,
         doc: doc,
         fields: field.fields,
@@ -76,6 +79,7 @@ export async function collectRelationships(args: {
       for (const tab of field.tabs) {
         if (tab.fields && doc[tab.name]) {
           await collectRelationships({
+            collector,
             depth,
             doc: doc[tab.name],
             fields: tab.fields,
@@ -97,6 +101,7 @@ export async function collectRelationships(args: {
           const blockDef = field.blocks.find((b: any) => b.slug === block.blockType)
           if (blockDef && blockDef.fields) {
             await collectRelationships({
+              collector,
               depth,
               doc: block,
               fields: blockDef.fields,
@@ -115,6 +120,7 @@ export async function collectRelationships(args: {
           const item = arrayItems[i]
           if (!item) continue
           await collectRelationships({
+            collector,
             depth,
             doc: item,
             fields: field.fields,

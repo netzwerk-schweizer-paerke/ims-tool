@@ -1,6 +1,9 @@
 /**
- * Singleton class to collect relationships that need to be translated
- * This allows us to gather all relationships first, then translate them in a controlled manner
+ * Collects the related documents that a translation must also translate.
+ *
+ * Create one collector per request with `createRelationshipCollector()`. An earlier
+ * version exported a single shared instance, so two concurrent translations
+ * overwrote each other's collected ids.
  */
 
 export interface RelatedDocument {
@@ -10,26 +13,13 @@ export interface RelatedDocument {
   path: string // For debugging - shows where this relationship was found
 }
 
-class RelationshipCollector {
-  private static instance: null | RelationshipCollector = null
+export class RelationshipCollector {
   private documents: Map<string, RelatedDocument> = new Map()
-  private enabled: boolean = false
-
-  private constructor() {}
-
-  static getInstance(): RelationshipCollector {
-    if (!this.instance) {
-      this.instance = new RelationshipCollector()
-    }
-    return this.instance
-  }
 
   /**
    * Add a document to the collection
    */
   addDocument(collectionSlug: string, id: number | string, depth: number, path: string): void {
-    if (!this.enabled) return
-
     // TODO: Make this configurable through plugin options
     // Currently hardcoded to only collect task-lists and task-flows
     if (collectionSlug !== 'task-lists' && collectionSlug !== 'task-flows') {
@@ -38,23 +28,14 @@ class RelationshipCollector {
 
     const key = `${collectionSlug}/${id}`
 
-    if (this.documents.has(key)) {
-      const existing = this.documents.get(key)!
-      // Keep the one with higher depth (more complete traversal)
-      if (depth > existing.depth) {
-        this.documents.set(key, { collectionSlug, depth, id, path })
-      }
-    } else {
-      this.documents.set(key, { collectionSlug, depth, id, path })
-    }
-  }
+    const existing = this.documents.get(key)
 
-  /**
-   * Clear the collection
-   */
-  clear(): void {
-    this.documents.clear()
-    this.enabled = false
+    // Keep the one with higher depth (more complete traversal)
+    if (existing && depth <= existing.depth) {
+      return
+    }
+
+    this.documents.set(key, { collectionSlug, depth, id, path })
   }
 
   /**
@@ -67,7 +48,7 @@ class RelationshipCollector {
   /**
    * Get summary of collected documents
    */
-  getSummary(): { byCollection: Record<string, number>; total: number; } {
+  getSummary(): { byCollection: Record<string, number>; total: number } {
     const byCollection: Record<string, number> = {}
 
     for (const doc of this.documents.values()) {
@@ -79,30 +60,6 @@ class RelationshipCollector {
       total: this.documents.size,
     }
   }
-
-  /**
-   * Check if collecting is enabled
-   */
-  isCollecting(): boolean {
-    return this.enabled
-  }
-
-  /**
-   * Start collecting relationships
-   */
-  startCollecting(): void {
-    this.enabled = true
-    this.documents.clear()
-  }
-
-  /**
-   * Stop collecting and return collected documents
-   */
-  stopCollecting(): RelatedDocument[] {
-    this.enabled = false
-    const results = Array.from(this.documents.values())
-    return results
-  }
 }
 
-export const relationshipCollector = RelationshipCollector.getInstance()
+export const createRelationshipCollector = (): RelationshipCollector => new RelationshipCollector()

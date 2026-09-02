@@ -4,6 +4,8 @@ import ObjectID from 'bson-objectid'
 import { isObject } from 'es-toolkit/compat'
 import { tabHasName } from 'payload/shared'
 
+import { logger } from '@/lib/logger'
+
 import type { ValueToTranslate } from '../types'
 
 import { isEmpty } from '../../utils/is-empty'
@@ -205,10 +207,11 @@ export const traverseFields = ({
                       ;(targetObject as any).text = translated
                     }
                   } catch (error) {
-                    console.warn(
-                      `Failed to update translated text for JSON field ${field.name}:`,
+                    logger.warn({
                       error,
-                    )
+                      fieldName: field.name,
+                      msg: 'Failed to write the translated text into a JSON field',
+                    })
                   }
                 },
                 value: jsonValue.text,
@@ -216,7 +219,7 @@ export const traverseFields = ({
             }
         } catch (error) {
           // Log the error but continue processing other fields
-          console.warn(`Error processing JSON field ${field.name}:`, error)
+          logger.warn({ error, fieldName: field.name, msg: 'Failed to process a JSON field' })
         }
 
         break

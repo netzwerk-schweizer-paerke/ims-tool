@@ -16,9 +16,6 @@ function checkForLocalizedFieldChanges(
   // the field values directly (e.g., { name: "New Name" })
   // We need to compare with the original localized values
 
-  console.log('[Translation Tracking] Checking changes for locale:', locale)
-  console.log('[Translation Tracking] New data keys:', Object.keys(newData))
-
   // Check each field in the update data
   for (const fieldName in newData) {
     // Skip the metadata field itself
@@ -40,14 +37,8 @@ function checkForLocalizedFieldChanges(
       originalValue = originalValue[locale]
     }
 
-    console.log(`[Translation Tracking] Comparing field ${fieldName}:`, {
-      new: newValue,
-      original: originalValue,
-    })
-
     // Compare values
     if (JSON.stringify(originalValue) !== JSON.stringify(newValue)) {
-      console.log(`[Translation Tracking] Field ${fieldName} has changed`)
       return true
     }
   }

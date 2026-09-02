@@ -1,10 +1,16 @@
 import he from 'he'
-import { APIError, type Payload, type PayloadRequest } from 'payload'
+import {
+  APIError,
+  type CollectionSlug,
+  type GlobalSlug,
+  type Payload,
+  type PayloadRequest,
+  type TypedLocale,
+} from 'payload'
 
 import type { TranslateArgs, TranslateResult, ValueToTranslate } from '../types'
 
 import { deepLResolver } from '../services/deepl-resolver'
-import { extractTranslationData } from '../utilities/extract-translation-data'
 import { findEntityWithConfig } from '../utilities/find-entity-with-config'
 import { traverseFields } from '../utilities/traverse-fields'
 import { updateEntity } from './update-entity'
@@ -22,6 +28,69 @@ export type TranslateOperationArgs = Omit<TranslateArgs, 'resolver'> &
       req: PayloadRequest
     }
 )
+
+export type WriteTranslationArgs = {
+  collectionSlug?: CollectionSlug
+  globalSlug?: GlobalSlug
+  id?: number | string
+  locale: TypedLocale
+  localeFrom: TypedLocale
+  overrideAccess?: boolean
+  req: PayloadRequest
+  translatedData: Record<string, any>
+}
+
+/**
+ * Writes one already-translated document into the target locale.
+ *
+ * The endpoint calls this inside its transaction, after every DeepL call has finished.
+ * Keeping the write separate stops the transaction from staying open across the network.
+ */
+export const writeTranslation = async (args: WriteTranslationArgs): Promise<void> => {
+  const { collectionSlug, globalSlug, id, locale, localeFrom, overrideAccess, req, translatedData } =
+    args
+
+  // Preserve the translationMeta field if it exists
+  const metaFieldName =
+    req.payload.config.custom?.deepltranslate?.trackOutdated?.fieldName || 'translationMeta'
+
+  // Fetch the current document to get existing metadata
+  let existingMeta = null
+  try {
+    const { doc: currentDoc } = await findEntityWithConfig({
+      collectionSlug,
+      depth: 0,
+      globalSlug,
+      id,
+      locale,
+      overrideAccess,
+      req,
+    })
+    existingMeta = currentDoc?.[metaFieldName]
+  } catch {
+    // Document might not exist in target locale yet
+  }
+
+  // Include existing metadata in the update
+  if (existingMeta) {
+    translatedData[metaFieldName] = existingMeta
+  }
+
+  await updateEntity({
+    collectionSlug,
+    context: {
+      fromLocale: localeFrom,
+      isTranslation: true,
+    },
+    data: translatedData,
+    depth: 0,
+    globalSlug,
+    id,
+    locale,
+    overrideAccess,
+    req,
+  })
+}
 
 export const translateOperation = async (args: TranslateOperationArgs) => {
   const req: PayloadRequest =
@@ -42,8 +111,6 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
     req,
     // We don't need populated data for translation, just IDs
   })
-
-  extractTranslationData(dataFrom, config.fields)
 
   const resolver = deepLResolver({
     apiKey: req.payload.config.custom?.deepltranslate.apiKey,
@@ -100,48 +167,16 @@ export const translateOperation = async (args: TranslateOperationArgs) => {
     }
 
     if (args.update) {
-      // Preserve the translationMeta field if it exists
-      const metaFieldName =
-        req.payload.config.custom?.deepltranslate?.trackOutdated?.fieldName || 'translationMeta'
-
-      // Fetch the current document to get existing metadata
-      let existingMeta = null
-      try {
-        const { doc: currentDoc } = await findEntityWithConfig({
-          collectionSlug,
-          depth: 0,
-          globalSlug,
-          id,
-          locale,
-          overrideAccess,
-          req,
-        })
-        existingMeta = currentDoc?.[metaFieldName]
-      } catch {
-        // Document might not exist in target locale yet
-      }
-
-      // Include existing metadata in the update
-      if (existingMeta) {
-        translatedData[metaFieldName] = existingMeta
-      }
-
-      await updateEntity({
+      await writeTranslation({
         collectionSlug,
-        context: {
-          fromLocale: localeFrom,
-          isTranslation: true,
-        },
-        data: translatedData,
-        depth: 0,
         globalSlug,
         id,
         locale,
+        localeFrom,
         overrideAccess,
         req,
+        translatedData,
       })
-
-      // Relationship translations are now handled in the endpoint using the collector pattern
     }
 
     result = {
