@@ -55,6 +55,9 @@ type Kind = 'FIX' | 'INVARIANT'
 
 type Mode = 'after' | 'before'
 
+// Raise this with every row added. The run fails when it records a different number.
+const EXPECTED_CHECKS = 31
+
 const checks: Check[] = []
 const sessionCookie: Record<string, string> = {}
 
@@ -582,8 +585,9 @@ const run = async (mode: Mode) => {
     const meAgain = await request('/users/me?depth=0', { as: 'user' })
     record(
       'FIX',
+      // `relationId` returns null for a stripped field, and the row stringifies it.
       'M4 a park user reads their own selectedOrganisation',
-      'undefined',
+      'null',
       String(homeOrg),
       String(relationId(parse(meSchema, meAgain.json)?.user?.selectedOrganisation)),
     )
@@ -659,6 +663,17 @@ const run = async (mode: Mode) => {
   }
 
   console.log(`\n${checks.length - failed}/${checks.length} passed in mode "${mode}".`)
+
+  // Several rows only record when a lookup returned a document. Without this the run
+  // prints a clean pass over a shrunken denominator, and a missing control reads as success.
+  if (checks.length !== EXPECTED_CHECKS) {
+    console.error(
+      `\nFAIL  the run recorded ${checks.length} checks, and ${EXPECTED_CHECKS} are expected.` +
+        ' A lookup returned no document, so an assertion never ran.',
+    )
+    failed++
+  }
+
   if (failed > 0) process.exitCode = 1
 }
 

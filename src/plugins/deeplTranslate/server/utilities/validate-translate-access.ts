@@ -41,6 +41,14 @@ export const validateTranslateAccess = async (args: Args): Promise<Result> => {
     return { isValid: false, message: 'Only a super admin may translate this entity', status: 403 }
   }
 
+  // `findByID` throws on an unknown slug before it consults `disableErrors`, and this runs
+  // outside the endpoint's try block. Reject the slug here, or a bad name answers 500.
+  const isKnownCollection = Object.hasOwn(req.payload.collections, collectionSlug)
+
+  if (!isKnownCollection) {
+    return { isValid: false, message: `Unknown collection: ${collectionSlug}`, status: 400 }
+  }
+
   const doc = await req.payload.findByID({
     collection: collectionSlug as CollectionSlug,
     depth: 0,

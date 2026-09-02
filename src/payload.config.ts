@@ -16,7 +16,7 @@ import { seedDevUser } from '@/config/seed/dev-user'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
 import { customI18nTranslations } from '@/lib/custom-i18n-translations'
-import { isDevelopment } from '@/lib/environment'
+import { isLocalDevelopment } from '@/lib/environment'
 import { migrations } from '@/migrations'
 import { Activities } from '@/payload/collections/Activities'
 import { Documents } from '@/payload/collections/Documents'
@@ -141,9 +141,9 @@ export default buildConfig({
     },
   },
   async onInit(payload) {
-    // The seed creates a super admin with a published password. It must never run
-    // against a deployed database.
-    if (isDevelopment) {
+    // The seed creates a super admin with a published password. `isDevelopment` is not
+    // enough: it is true for a staging image and for an ops script with NODE_ENV unset.
+    if (isLocalDevelopment) {
       await seedDevUser(payload)
     }
   },
