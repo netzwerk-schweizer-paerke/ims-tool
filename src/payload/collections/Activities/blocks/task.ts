@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
@@ -39,9 +40,6 @@ export const ActivityTaskBlock: Block = {
   imageAltText: 'Task group',
   imageURL: '/process-block-shapes/task.svg',
   interfaceName: 'ActivityTaskBlock',
-  labels: {
-    plural: 'Task groups',
-    singular: 'Task group',
-  },
+  labels: I18nCollection.blockLabel.taskGroup,
   slug: 'activity-task',
 }

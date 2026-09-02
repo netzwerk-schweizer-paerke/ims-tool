@@ -8,6 +8,7 @@ import { anyone } from '@/payload/access/anyone'
 import { superAdminFieldAccess } from '@/payload/access/super-admins-collection-access'
 import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
 import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
+import { enforceSelectedOrganisationMembershipHook } from '@/payload/collections/Users/hooks/enforce-selected-organisation-membership-hook'
 import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
 import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
 import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
@@ -71,14 +72,17 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
+      label: I18nCollection.fieldLabel.firstName,
       name: 'firstName',
       type: 'text',
     },
     {
+      label: I18nCollection.fieldLabel.lastName,
       name: 'lastName',
       type: 'text',
     },
     {
+      label: I18nCollection.fieldLabel.email,
       name: 'email',
       required: true,
       type: 'text',
@@ -92,14 +96,15 @@ export const Users: CollectionConfig = {
         // delete: superAdminFieldAccess,
       },
       hasMany: true,
+      label: I18nCollection.fieldLabel.roles,
       name: 'roles',
       options: [
         {
-          label: 'Admin',
+          label: I18nCollection.roles.admin,
           value: ROLE_SUPER_ADMIN,
         },
         {
-          label: 'User',
+          label: I18nCollection.roles.user,
           value: ROLE_USER,
         },
       ],
@@ -114,6 +119,7 @@ export const Users: CollectionConfig = {
       },
       fields: [
         {
+          label: I18nCollection.fieldLabel.organisation,
           name: 'organisation',
           relationTo: 'organisations',
           required: true,
@@ -121,14 +127,15 @@ export const Users: CollectionConfig = {
         },
         {
           hasMany: true,
+          label: I18nCollection.fieldLabel.roles,
           name: 'roles',
           options: [
             {
-              label: 'Admin',
+              label: I18nCollection.roles.admin,
               value: ROLE_SUPER_ADMIN,
             },
             {
-              label: 'Users',
+              label: I18nCollection.roles.user,
               value: ROLE_USER,
             },
           ],
@@ -137,7 +144,7 @@ export const Users: CollectionConfig = {
         },
       ],
       interfaceName: 'UserOrganisations',
-      label: 'Organisations',
+      label: I18nCollection.fieldLabel.organisations,
       name: 'organisations',
       type: 'array',
     },
@@ -151,6 +158,7 @@ export const Users: CollectionConfig = {
         position: 'sidebar',
       },
       index: true,
+      label: I18nCollection.fieldLabel.selectedOrganisation,
       name: 'selectedOrganisation',
       relationTo: 'organisations',
       type: 'relationship',
@@ -159,6 +167,11 @@ export const Users: CollectionConfig = {
   hooks: {
     afterChange: [loginAfterCreateUserAfterChangeHook],
     afterLogin: [recordSelectedOrganisationAfterLoginHook],
+    beforeChange: [enforceSelectedOrganisationMembershipHook],
+  },
+  labels: {
+    plural: I18nCollection.fieldLabel.users,
+    singular: I18nCollection.fieldLabel.user,
   },
   slug: 'users',
 }

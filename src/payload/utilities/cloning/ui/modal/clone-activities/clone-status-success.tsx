@@ -129,16 +129,23 @@ export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results 
               {entity.errors.missingDocumentFiles.length > 0 && (
                 <div className="mt-4 rounded border border-[var(--theme-warning-light)] bg-[var(--theme-warning-50)] p-3">
                   <p className="text-sm font-medium text-[var(--theme-warning-dark)]">
-                    ⚠️ {entity.errors.missingDocumentFiles.length} missing file(s) detected
+                    ⚠️{' '}
+                    {t('cloning:missingFilesDetected', {
+                      count: entity.errors.missingDocumentFiles.length,
+                    })}
                   </p>
                   <details className="mt-2">
                     <summary className="cursor-pointer text-sm text-[var(--theme-warning)] hover:text-[var(--theme-warning-darker)]">
-                      Show details
+                      {t('cloning:showDetails')}
                     </summary>
                     <ul className="mt-2 space-y-1 text-sm text-[var(--theme-warning-dark)]">
                       {entity.errors.missingDocumentFiles.map((error, errorIdx) => (
                         <li key={errorIdx}>
-                          • {error.fileName} in {error.documentName} ({error.usageLocation})
+                          • {error.fileName} —{' '}
+                          {t('cloning:documentLocation', {
+                            document: error.documentName,
+                            location: error.usageLocation,
+                          })}
                         </li>
                       ))}
                     </ul>

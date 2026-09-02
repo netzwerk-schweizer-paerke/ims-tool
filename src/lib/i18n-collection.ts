@@ -1,4 +1,76 @@
 export const I18nCollection = {
+  blockLabel: {
+    inputOutputTaskGroup: {
+      plural: {
+        de: 'Eingabe-/Ausgabe-Aufgabengruppen',
+        en: 'Input/output task groups',
+        fr: "Groupes de tâches d'entrée/sortie",
+        it: 'Gruppi di attività di input/output',
+      },
+      singular: {
+        de: 'Eingabe-/Ausgabe-Aufgabengruppe',
+        en: 'Input/output task group',
+        fr: "Groupe de tâches d'entrée/sortie",
+        it: 'Gruppo di attività di input/output',
+      },
+    },
+    taskGroup: {
+      plural: {
+        de: 'Aufgabengruppen',
+        en: 'Task groups',
+        fr: 'Groupes de tâches',
+        it: 'Gruppi di attività',
+      },
+      singular: {
+        de: 'Aufgabengruppe',
+        en: 'Task group',
+        fr: 'Groupe de tâches',
+        it: 'Gruppo di attività',
+      },
+    },
+    taskWithOptionalIo: {
+      plural: {
+        de: 'Aufgaben mit optionaler Eingabe/Ausgabe',
+        en: 'Tasks with optional input/output',
+        fr: 'Tâches avec entrée/sortie facultative',
+        it: 'Attività con input/output facoltativo',
+      },
+      singular: {
+        de: 'Aufgabe mit optionaler Eingabe/Ausgabe',
+        en: 'Task with optional input/output',
+        fr: 'Tâche avec entrée/sortie facultative',
+        it: 'Attività con input/output facoltativo',
+      },
+    },
+    testWithOptionalOutput: {
+      plural: {
+        de: 'Tests mit optionaler Ausgabe',
+        en: 'Tests with optional output',
+        fr: 'Tests avec sortie facultative',
+        it: 'Test con output facoltativo',
+      },
+      singular: {
+        de: 'Test mit optionaler Ausgabe',
+        en: 'Test with optional output',
+        fr: 'Test avec sortie facultative',
+        it: 'Test con output facoltativo',
+      },
+    },
+    twoParallelTasks: {
+      plural: {
+        de: 'Zwei parallele Aufgaben',
+        en: 'Two parallel tasks',
+        fr: 'Deux tâches parallèles',
+        it: 'Due attività parallele',
+      },
+      singular: {
+        de: 'Zwei parallele Aufgaben',
+        en: 'Two parallel tasks',
+        fr: 'Deux tâches parallèles',
+        it: 'Due attività parallele',
+      },
+    },
+  },
   collectionGroup: {
     files: {
       de: 'Dateien',
@@ -20,6 +92,20 @@ export const I18nCollection = {
     },
   },
   collectionLabel: {
+    documents: {
+      plural: {
+        de: 'Dokumente',
+        en: 'Documents',
+        fr: 'Documents',
+        it: 'Documenti',
+      },
+      singular: {
+        de: 'Dokument',
+        en: 'Document',
+        fr: 'Document',
+        it: 'Documento',
+      },
+    },
     documentsPublic: {
       plural: {
         de: 'Öffentliche Dokumente',
@@ -32,6 +118,20 @@ export const I18nCollection = {
         en: 'Public document',
         fr: 'Document public',
         it: 'Documento pubblico',
+      },
+    },
+    media: {
+      plural: {
+        de: 'Medien',
+        en: 'Media',
+        fr: 'Médias',
+        it: 'Media',
+      },
+      singular: {
+        de: 'Medium',
+        en: 'Media item',
+        fr: 'Média',
+        it: 'Elemento multimediale',
       },
     },
   },
@@ -94,6 +194,24 @@ export const I18nCollection = {
       fr: 'Fichiers: Choisissez ou téléchargez un nouveau fichier ou fournissez une URL externe',
       it: 'File: Scegli o carica uno nuovo o fornisci un URL esterno',
     },
+    organisation: {
+      de: 'Die Organisation, zu der dieser Datensatz gehört. Sie wird beim Erstellen automatisch aus der Rolle und der gewählten Organisation des Benutzers gesetzt.',
+      en: "The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.",
+      fr: "L'organisation à laquelle appartient cet enregistrement. Elle est définie automatiquement à partir du rôle de l'utilisateur et de l'organisation qu'il a sélectionnée lors de la création.",
+      it: "L'organizzazione a cui appartiene questo record. Viene impostata automaticamente in base al ruolo dell'utente e all'organizzazione selezionata durante la creazione.",
+    },
+    usageCount: {
+      de: 'Anzahl der Stellen, an denen dieses Dokument verwendet wird',
+      en: 'Number of places this document is used',
+      fr: "Nombre d'endroits où ce document est utilisé",
+      it: 'Numero di punti in cui questo documento è utilizzato',
+    },
+    usedIn: {
+      de: 'Wo dieses Dokument referenziert wird',
+      en: 'Where this document is referenced',
+      fr: 'Où ce document est référencé',
+      it: 'Dove questo documento è referenziato',
+    },
   },
   fieldLabel: {
     activities: {
@@ -144,6 +262,18 @@ export const I18nCollection = {
       fr: 'Blocs',
       it: 'Blocchi',
     },
+    content: {
+      de: 'Inhalt',
+      en: 'Content',
+      fr: 'Contenu',
+      it: 'Contenuto',
+    },
+    createdBy: {
+      de: 'Erstellt von',
+      en: 'Created by',
+      fr: 'Créé par',
+      it: 'Creato da',
+    },
     description: {
       de: 'Beschreibung',
       en: 'Description',
@@ -156,17 +286,35 @@ export const I18nCollection = {
       fr: "Nom d'affichage",
       it: 'Nome visualizzato',
     },
+    email: {
+      de: 'E-Mail',
+      en: 'Email',
+      fr: 'E-mail',
+      it: 'E-mail',
+    },
     english: {
       de: 'Englisch',
       en: 'English',
       fr: 'Anglais',
       it: 'Inglese',
     },
+    field: {
+      de: 'Feld',
+      en: 'Field',
+      fr: 'Champ',
+      it: 'Campo',
+    },
     file: {
       de: 'Datei',
       en: 'File',
       fr: 'Fichier',
       it: 'File',
+    },
+    firstName: {
+      de: 'Vorname',
+      en: 'First name',
+      fr: 'Prénom',
+      it: 'Nome',
     },
     fragment: {
       de: 'Prozessfragment',
@@ -210,11 +358,23 @@ export const I18nCollection = {
       fr: 'Italien',
       it: 'Italiano',
     },
+    itemType: {
+      de: 'Elementtyp',
+      en: 'Item type',
+      fr: "Type d'élément",
+      it: 'Tipo di elemento',
+    },
     keypoints: {
       de: 'Merkpunkte',
       en: 'Key points',
       fr: 'Points clés',
       it: 'Punti chiave',
+    },
+    lastName: {
+      de: 'Nachname',
+      en: 'Last name',
+      fr: 'Nom',
+      it: 'Cognome',
     },
     link: {
       de: 'Link',
@@ -318,6 +478,18 @@ export const I18nCollection = {
       fr: 'Rôle',
       it: 'Ruolo',
     },
+    roles: {
+      de: 'Rollen',
+      en: 'Roles',
+      fr: 'Rôles',
+      it: 'Ruoli',
+    },
+    selectedOrganisation: {
+      de: 'Ausgewählte Organisation',
+      en: 'Selected organisation',
+      fr: 'Organisation sélectionnée',
+      it: 'Organizzazione selezionata',
+    },
     standard: {
       de: 'Standard',
       en: 'Standard',
@@ -378,6 +550,12 @@ export const I18nCollection = {
       fr: 'Tâches',
       it: 'Compiti',
     },
+    text: {
+      de: 'Text',
+      en: 'Text',
+      fr: 'Texte',
+      it: 'Testo',
+    },
     tools: {
       de: 'Werkzeuge',
       en: 'Tools',
@@ -389,6 +567,24 @@ export const I18nCollection = {
       en: 'Topics / Activities',
       fr: 'Sujets / Activités',
       it: 'Argomenti / Attività',
+    },
+    updatedBy: {
+      de: 'Aktualisiert von',
+      en: 'Updated by',
+      fr: 'Mis à jour par',
+      it: 'Aggiornato da',
+    },
+    usageCount: {
+      de: 'Anzahl Verwendungen',
+      en: 'Usage count',
+      fr: "Nombre d'utilisations",
+      it: 'Numero di utilizzi',
+    },
+    usedIn: {
+      de: 'Verwendet in',
+      en: 'Used in',
+      fr: 'Utilisé dans',
+      it: 'Utilizzato in',
     },
     user: {
       de: 'Benutzer',

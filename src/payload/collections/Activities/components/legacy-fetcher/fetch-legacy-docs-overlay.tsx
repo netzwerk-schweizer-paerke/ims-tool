@@ -1,10 +1,11 @@
 'use client'
 
-import { Button, Drawer, toast, useModal } from '@payloadcms/ui'
+import { Button, Drawer, toast, useModal, useTranslation } from '@payloadcms/ui'
 import ky from 'ky'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useMemo, useState } from 'react'
 
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { Activity } from '@/payload-types'
 import { DrawerHeader } from '@/payload/components/drawer-header'
 
@@ -58,6 +59,7 @@ type Props = {
 export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
   const router = useRouter()
   const { closeModal } = useModal()
+  const { t } = useTranslation<I18nObject, I18nKeys>()
 
   const [isProcessing, setIsProcessing] = useState(false)
   const [dryRun, setDryRun] = useState(true)
@@ -83,7 +85,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
 
     try {
       // Process all activities in a single request
-      setCurrentActivity('Processing all activities...')
+      setCurrentActivity(t('legacyFetcher:processingAll'))
 
       const result = await ky
         .post('/api/activities/fetch-legacy-docs', {
@@ -121,30 +123,35 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
 
       // Show summary toast
       if (stats.totalLinksFound === 0) {
-        toast.info(
-          `No legacy links found in ${stats.activitiesProcessed} ${stats.activitiesProcessed === 1 ? 'activity' : 'activities'}`,
-        )
+        toast.info(t('legacyFetcher:toast:noLinks', { count: stats.activitiesProcessed }))
       } else if (dryRun) {
         toast.success(
-          `Found ${stats.totalLinksFound} legacy links across ${stats.activitiesProcessed} ${stats.activitiesProcessed === 1 ? 'activity' : 'activities'} (dry run)`,
+          t('legacyFetcher:toast:foundLinks', {
+            count: stats.activitiesProcessed,
+            links: stats.totalLinksFound,
+          }),
         )
       } else {
         toast.success(
-          `Successfully migrated ${stats.linksConverted} of ${stats.totalLinksFound} links across ${stats.activitiesProcessed} ${stats.activitiesProcessed === 1 ? 'activity' : 'activities'}`,
+          t('legacyFetcher:toast:migrated', {
+            converted: stats.linksConverted,
+            count: stats.activitiesProcessed,
+            links: stats.totalLinksFound,
+          }),
         )
         if (stats.linksConverted > 0) {
           router.refresh()
         }
       }
     } catch (error_: any) {
-      let errorMessage = 'An error occurred'
+      let errorMessage = t('legacyFetcher:error:generic')
 
       if (error_?.name === 'HTTPError' && error_?.response) {
         try {
           const errorData = await error_.response.json()
           errorMessage = errorData.error || errorData.message || error_.message
         } catch {
-          errorMessage = error_.message || 'Failed to fetch legacy documents'
+          errorMessage = error_.message || t('legacyFetcher:error:fetchFailed')
         }
       } else if (error_ instanceof Error) {
         errorMessage = error_.message
@@ -159,7 +166,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
   }, [dryRun, router])
 
   const formatDuration = (startTime: number, endTime?: number) => {
-    if (!endTime) return 'In progress...'
+    if (!endTime) return t('legacyFetcher:inProgress')
     const duration = endTime - startTime
     const seconds = Math.floor(duration / 1000)
     const minutes = Math.floor(seconds / 60)
@@ -192,16 +199,22 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
     setDryRun(true)
   }
 
+  const runButtonLabel = () => {
+    if (isProcessing) return t('legacyFetcher:processing')
+    if (dryRun) return t('legacyFetcher:scanAll')
+    return t('legacyFetcher:migrateAll')
+  }
+
   return (
     <Drawer
-      Header={<DrawerHeader onClose={handleClose} title="Fetch Legacy Documents" />}
+      Header={<DrawerHeader onClose={handleClose} title={t('legacyFetcher:title')} />}
       slug={drawerSlug}>
       <div className="flex flex-col gap-4">
 
         {/* Configuration */}
         {processResults.length === 0 && (
           <div className="rounded-lg border border-gray-200 p-4">
-            <h3 className="mb-3 font-semibold">Configuration</h3>
+            <h3 className="mb-3 font-semibold">{t('legacyFetcher:configuration')}</h3>
 
             {/* Dry Run Option */}
             <div className="mb-4">
@@ -215,20 +228,20 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                   type="checkbox"
                 />
                 <label className="" htmlFor="dryRun">
-                  Dry run (scan only, don&#39;t make changes)
+                  {t('legacyFetcher:dryRun')}
                 </label>
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="font-medium">This will:</p>
+              <p className="font-medium">{t('legacyFetcher:steps:title')}</p>
               <ul className="ml-5 mt-2 list-disc text-sm">
-                <li>Scan all rich text fields for links to parcs-ims.ch</li>
+                <li>{t('legacyFetcher:steps:scanFields')}</li>
                 {!dryRun && (
                   <>
-                    <li>Download documents from external URLs</li>
-                    <li>Create new document records in the system</li>
-                    <li>Convert external links to internal references</li>
+                    <li>{t('legacyFetcher:steps:downloadDocuments')}</li>
+                    <li>{t('legacyFetcher:steps:createRecords')}</li>
+                    <li>{t('legacyFetcher:steps:convertLinks')}</li>
                   </>
                 )}
               </ul>
@@ -241,7 +254,9 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex items-center gap-3">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-              <span className="font-medium">Processing: {currentActivity}</span>
+              <span className="font-medium">
+                {t('legacyFetcher:processingActivity', { activity: currentActivity })}
+              </span>
             </div>
           </div>
         )}
@@ -251,43 +266,43 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           <>
             {/* Overall Statistics */}
             <div className="rounded-lg border border-gray-200 p-4">
-              <h3 className="mb-3 font-semibold">Overall Results</h3>
+              <h3 className="mb-3 font-semibold">{t('legacyFetcher:overallResults')}</h3>
 
               <div className="grid grid-cols-2 gap-2">
-                <div>Duration:</div>
+                <div>{t('legacyFetcher:duration')}</div>
                 <div className="font-mono">
                   {formatDuration(overallStatistics.startTime, overallStatistics.endTime)}
                 </div>
 
-                <div>Activities Processed:</div>
+                <div>{t('legacyFetcher:activitiesProcessed')}</div>
                 <div className="font-mono">{overallStatistics.activitiesProcessed}</div>
 
-                <div>Total Links Found:</div>
+                <div>{t('legacyFetcher:totalLinksFound')}</div>
                 <div className="font-mono">{overallStatistics.totalLinksFound}</div>
 
                 {!dryRun && (
                   <>
-                    <div>Documents Created:</div>
+                    <div>{t('legacyFetcher:documentsCreated')}</div>
                     <div className="font-mono">{overallStatistics.documentsCreated}</div>
 
-                    <div>Links Converted:</div>
+                    <div>{t('legacyFetcher:linksConverted')}</div>
                     <div className="font-mono">{overallStatistics.linksConverted}</div>
 
-                    <div>Failed Conversions:</div>
+                    <div>{t('legacyFetcher:failedConversions')}</div>
                     <div className="font-mono text-red-600">
                       {overallStatistics.failedConversions}
                     </div>
                   </>
                 )}
 
-                <div>Fields Processed:</div>
+                <div>{t('legacyFetcher:fieldsProcessed')}</div>
                 <div className="font-mono">{overallStatistics.processedFields}</div>
               </div>
             </div>
 
             {/* Individual Activity Results */}
             <div className="rounded-lg border border-gray-200 p-4">
-              <h3 className="mb-3 font-semibold">Activity Details</h3>
+              <h3 className="mb-3 font-semibold">{t('legacyFetcher:activityDetails')}</h3>
               <div className="max-h-96 overflow-y-auto">
                 {overallStatistics.activityBreakdown?.map((activity) => {
                   const isExpanded = expandedActivities.has(activity.id)
@@ -318,17 +333,18 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                         </div>
                         <div className="flex gap-4 text-sm">
                           <span>
-                            Links: <span className="font-mono">{activity.linksFound}</span>
+                            {t('legacyFetcher:links')}{' '}
+                            <span className="font-mono">{activity.linksFound}</span>
                           </span>
                           {!dryRun && (
                             <>
                               <span className="text-green-600">
-                                Converted:{' '}
+                                {t('legacyFetcher:converted')}{' '}
                                 <span className="font-mono">{activity.linksConverted}</span>
                               </span>
                               {activity.failedConversions > 0 && (
                                 <span className="text-red-600">
-                                  Failed:{' '}
+                                  {t('legacyFetcher:failed')}{' '}
                                   <span className="font-mono">{activity.failedConversions}</span>
                                 </span>
                               )}
@@ -342,9 +358,17 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                           <table className="w-full">
                             <thead className="border-b text-left">
                               <tr>
-                                <th className="max-w-fit pb-1">Location</th>
-                                <th className="w-auto pb-1">Original URL</th>
-                                {!dryRun && <th className="w-1/4 pb-1 text-center">Status</th>}
+                                <th className="max-w-fit pb-1">
+                                  {t('legacyFetcher:table:location')}
+                                </th>
+                                <th className="w-auto pb-1">
+                                  {t('legacyFetcher:table:originalUrl')}
+                                </th>
+                                {!dryRun && (
+                                  <th className="w-1/4 pb-1 text-center">
+                                    {t('legacyFetcher:table:status')}
+                                  </th>
+                                )}
                               </tr>
                             </thead>
                             <tbody>
@@ -388,7 +412,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
             {/* Errors */}
             {overallStatistics.errors && overallStatistics.errors.length > 0 && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                <h4 className="mb-2 font-semibold text-red-800">Errors:</h4>
+                <h4 className="mb-2 font-semibold text-red-800">{t('legacyFetcher:errors')}</h4>
                 <div className="max-h-32 overflow-y-auto">
                   {overallStatistics.errors.map((error, index) => (
                     <div className="mb-1 text-red-600" key={index}>
@@ -411,10 +435,10 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           {processResults.length === 0 ? (
             <>
               <Button buttonStyle="secondary" disabled={isProcessing} onClick={handleClose}>
-                Cancel
+                {t('general:cancel')}
               </Button>
               <Button disabled={isProcessing} onClick={handleFetchLegacyDocs}>
-                {isProcessing ? 'Processing...' : dryRun ? 'Scan All' : 'Migrate All'}
+                {runButtonLabel()}
               </Button>
             </>
           ) : (
@@ -427,11 +451,11 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                     setProcessResults([])
                     setOverallStatistics(null)
                   }}>
-                  Proceed with Migration
+                  {t('legacyFetcher:proceedWithMigration')}
                 </Button>
               )}
               <Button buttonStyle="secondary" onClick={handleReset}>
-                Process More
+                {t('legacyFetcher:processMore')}
               </Button>
               <Button
                 buttonStyle={
@@ -440,7 +464,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
                     : 'primary'
                 }
                 onClick={handleClose}>
-                Close
+                {t('general:close')}
               </Button>
             </>
           )}

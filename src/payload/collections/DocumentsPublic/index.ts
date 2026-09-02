@@ -27,6 +27,7 @@ export const DocumentsPublic: CollectionConfig = {
     },
     {
       defaultValue: 'documentsPublic',
+      label: I18nCollection.fieldLabel.itemType,
       name: 'itemType',
       type: 'text',
       virtual: true,

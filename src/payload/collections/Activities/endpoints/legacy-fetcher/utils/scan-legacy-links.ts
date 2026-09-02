@@ -1,5 +1,7 @@
 import type { PayloadRequest } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
+
 export interface LegacyLink {
   context: any
   fieldLabel: string // Human-readable field name (e.g., "Input")
@@ -8,6 +10,8 @@ export interface LegacyLink {
   parentEntity: string // Human-readable parent entity (e.g., "Task Group #1")
   url: string
 }
+
+type AdminLanguage = keyof typeof I18nCollection.fieldLabel.description
 
 /**
  * Recursively scan an object for legacy document links in rich text fields
@@ -31,7 +35,7 @@ export async function scanLegacyLinks(
       // Special handling for blocks array
       let itemLinks
       if (fieldPath.at(-1) === 'blocks' && data[i]?.blockType) {
-        const blockLabel = getBlockLabel(data[i].blockType, i)
+        const blockLabel = getBlockLabel(data[i].blockType, i, adminLanguage(req))
         itemLinks = await scanLegacyLinks(data[i], tracker, req, [...fieldPath, String(i)], {
           entity: blockLabel,
           label: blockLabel,
@@ -53,11 +57,11 @@ export async function scanLegacyLinks(
   // Check if this is a rich text field
   if (isRichTextField(data)) {
     tracker.increment('processedFields')
-    const fieldLabel = getFieldLabel(fieldPath)
+    const fieldLabel = getFieldLabel(fieldPath, adminLanguage(req))
     const links = extractLegacyLinksFromRichText(
       data,
       fieldPath,
-      parentContext.entity || 'Activity',
+      parentContext.entity || I18nCollection.fieldLabel.activity[adminLanguage(req)],
       fieldLabel,
     )
     legacyLinks.push(...links)
@@ -120,6 +124,14 @@ export function getUniqueUrls(links: LegacyLink[]): string[] {
 /**
  * Build location path for user display
  */
+// Payload resolves the admin language from the payload-lng cookie, then Accept-Language, then
+// i18n.fallbackLanguage. Only the four configured languages carry a label, so anything else
+// falls back to the configured default.
+function adminLanguage(req: PayloadRequest): AdminLanguage {
+  const language = req.i18n?.language
+  return (['en', 'fr', 'it'] as string[]).includes(language) ? (language as AdminLanguage) : 'de'
+}
+
 function buildLocationPath(parentEntity: string, fieldLabel: string): string {
   if (parentEntity === 'Activity') {
     return fieldLabel
@@ -210,30 +222,30 @@ function extractLegacyLinksFromRichText(
 /**
  * Get human-readable block label
  */
-function getBlockLabel(blockType: string, index: number): string {
+function getBlockLabel(blockType: string, index: number, lang: AdminLanguage): string {
   const blockLabels: Record<string, string> = {
-    'activity-io': 'Input/Output Task Group',
-    'activity-task': 'Task Group',
+    'activity-io': I18nCollection.blockLabel.inputOutputTaskGroup.singular[lang],
+    'activity-task': I18nCollection.blockLabel.taskGroup.singular[lang],
   }
-  const label = blockLabels[blockType] || 'Block'
+  const label = blockLabels[blockType] || I18nCollection.fieldLabel.block[lang]
   return `${label} #${index + 1}`
 }
 
 /**
  * Get human-readable field label from field path
  */
-function getFieldLabel(fieldPath: string[]): string {
+function getFieldLabel(fieldPath: string[], lang: AdminLanguage): string {
   const fieldLabels: Record<string, string> = {
-    content: 'Content',
-    description: 'Description',
-    input: 'Input',
-    keypoints: 'Key Points',
-    norms: 'Norm Requirements',
-    output: 'Output',
-    support: 'Infos / Support',
-    text: 'Text',
-    tools: 'Tools',
-    topic: 'Topics / Activities',
+    content: I18nCollection.fieldLabel.content[lang],
+    description: I18nCollection.fieldLabel.description[lang],
+    input: I18nCollection.fieldLabel.input[lang],
+    keypoints: I18nCollection.fieldLabel.keypoints[lang],
+    norms: I18nCollection.fieldLabel.normRequirements[lang],
+    output: I18nCollection.fieldLabel.output[lang],
+    support: I18nCollection.fieldLabel.activitySupport[lang],
+    text: I18nCollection.fieldLabel.text[lang],
+    tools: I18nCollection.fieldLabel.tools[lang],
+    topic: I18nCollection.fieldLabel.topic[lang],
   }
 
   // Get the last meaningful field name from the path
@@ -246,7 +258,7 @@ function getFieldLabel(fieldPath: string[]): string {
 
   // Default to the last non-numeric segment
   const lastField = fieldPath.findLast((p) => Number.isNaN(Number(p)))
-  return fieldLabels[lastField || ''] || lastField || 'Field'
+  return fieldLabels[lastField || ''] || lastField || I18nCollection.fieldLabel.field[lang]
 }
 
 /**

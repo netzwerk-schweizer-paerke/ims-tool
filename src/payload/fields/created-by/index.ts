@@ -1,5 +1,6 @@
 import type { Field } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
 
 import { superAdminFieldAccess } from '../../access/super-admins-collection-access'
@@ -15,6 +16,7 @@ export const createdByField: Field = {
     beforeChange: [beforeChangeHook],
   },
   index: true,
+  label: I18nCollection.fieldLabel.createdBy,
   name: 'createdBy',
   relationTo: 'users',
   type: 'relationship',

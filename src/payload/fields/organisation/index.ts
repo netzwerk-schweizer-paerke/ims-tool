@@ -1,5 +1,6 @@
 import type { Field } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
 import { beforeChangeHook } from '@/payload/fields/organisation/hooks/before-change-hook'
 
@@ -12,8 +13,7 @@ export const organisationField: Field = {
     update: superAdminFieldAccess,
   },
   admin: {
-    description:
-      "The organisation this record belongs to. It is set automatically based on the user's role and his or her selected organisation while creating a new record.",
+    description: I18nCollection.fieldDescription.organisation,
   },
   hooks: {
     // automatically set the organisation to the last logged in organisation
@@ -26,6 +26,7 @@ export const organisationField: Field = {
   // to achieve this, create a custom component that conditionally renders the field based on the user's role
   // hidden: true,
   index: true,
+  label: I18nCollection.fieldLabel.organisation,
   name: 'organisation',
   relationTo: 'organisations',
   type: 'relationship',

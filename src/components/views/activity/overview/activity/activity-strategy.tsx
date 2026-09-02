@@ -18,13 +18,15 @@ export const ActivityStrategy: React.FC<Props> = ({ activity, locale }) => {
     return (
       <div>
         <p>
-          This activity is not available in the currently selected locale ({locale.toUpperCase()}).
-          Translate it or switch to a different locale.
+          <Translate
+            k={'activityOverview:notAvailableInLocale'}
+            vars={{ locale: locale.toUpperCase() }}
+          />
         </p>
         <Link
           className={'link-hover link'}
           href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
-          View this activity in edit mode
+          <Translate k={'activityOverview:viewInEditMode'} />
         </Link>
       </div>
     )

@@ -43,6 +43,7 @@ export const Documents: CollectionConfig = {
     },
     {
       defaultValue: 'documents',
+      label: I18nCollection.fieldLabel.itemType,
       name: 'itemType',
       type: 'text',
       virtual: true,
@@ -75,6 +76,7 @@ export const Documents: CollectionConfig = {
     afterRead: [addUsageInfoAfterReadHook],
     beforeChange: [assignOrgToUploadBeforeChangeHook],
   },
+  labels: I18nCollection.collectionLabel.documents,
   slug: 'documents',
   upload: {
     mimeTypes, // Use the configured MIME types for validation

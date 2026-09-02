@@ -180,7 +180,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
     <Modal className="deepltranslate__modal" slug={modalSlug}>
       <div className="deepltranslate__wrapper">
         <button
-          aria-label="Close"
+          aria-label={t('general:close' as any)}
           className="deepltranslate__close"
           onClick={onClose}
           type="button">

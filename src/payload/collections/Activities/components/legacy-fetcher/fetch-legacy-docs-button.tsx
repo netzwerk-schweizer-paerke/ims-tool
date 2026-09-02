@@ -3,6 +3,7 @@ import { toNumber } from 'es-toolkit/compat'
 import { Payload } from 'payload'
 import React from 'react'
 
+import { Translate } from '@/lib/translate'
 import { User } from '@/payload-types'
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
@@ -62,7 +63,7 @@ export const FetchLegacyDocsButton: React.FC<Props> = async ({ payload, user }) 
       <DrawerToggler
         className={`${baseClass}__edit btn btn--size-medium btn--style-secondary`}
         slug={drawerSlug}>
-        Fetch Legacy Documents
+        <Translate k={'legacyFetcher:title'} />
       </DrawerToggler>
       <FetchLegacyDocsOverlay activities={activities.docs} />
     </div>

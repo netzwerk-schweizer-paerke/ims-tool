@@ -43,10 +43,14 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                 })}
               </p>
               <p className="text-[var(--theme-error)]">
-                {successfullyClonedEntities.length} of {results.entities.length} activities were
-                cloned successfully
+                {t('cloneActivity:results:clonedCount', {
+                  succeeded: successfullyClonedEntities.length,
+                  total: results.entities.length,
+                })}
                 {criticalErrorEntities.length > 0 &&
-                  `, but ${criticalErrorEntities.length} have significant issues`}
+                  t('cloneActivity:results:clonedCountWithIssues', {
+                    count: criticalErrorEntities.length,
+                  })}
               </p>
             </>
           ) : (
@@ -55,7 +59,7 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                 {t('cloneActivity:status:allFailed')}
               </p>
               <p className="text-[var(--theme-error)]">
-                All {results.entities.length} activities failed to clone properly
+                {t('cloneActivity:results:allFailedCount', { total: results.entities.length })}
               </p>
             </>
           )}
@@ -118,7 +122,8 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
 
                 {/* Cloned ID Display */}
                 <div className="mb-3 text-sm text-[var(--theme-text-light)]">
-                  <span className="font-medium">Cloned Activity ID:</span> {entity.cloned.id}
+                  <span className="font-medium">{t('cloneActivity:results:clonedActivityId')}</span>{' '}
+                  {entity.cloned.id}
                 </div>
 
                 {/* Statistics Table */}
@@ -144,7 +149,10 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                 {entity.errors.missingDocumentFiles.length > 0 && (
                   <div className="mt-4 rounded border border-[var(--theme-warning-light)] bg-[var(--theme-warning-50)] p-3">
                     <p className="mb-2 text-sm font-medium text-[var(--theme-warning-dark)]">
-                      ⚠️ {entity.errors.missingDocumentFiles.length} missing document file(s)
+                      ⚠️{' '}
+                      {t('cloning:missingDocumentFiles', {
+                        count: entity.errors.missingDocumentFiles.length,
+                      })}
                     </p>
                     <div className="space-y-2">
                       {entity.errors.missingDocumentFiles.slice(0, 8).map((error, errorIdx) => {
@@ -153,11 +161,11 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                         const statusCode = httpStatusMatch ? httpStatusMatch[1] : 'Unknown'
                         const statusLabel =
                           statusCode === '403'
-                            ? 'Forbidden'
+                            ? t('cloning:httpLabel:forbidden')
                             : statusCode === '404'
-                              ? 'Not Found'
+                              ? t('cloning:httpLabel:notFound')
                               : statusCode === '500'
-                                ? 'Server Error'
+                                ? t('cloning:httpLabel:serverError')
                                 : statusCode
 
                         return (
@@ -168,18 +176,26 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                               {error.fileName}
                             </div>
                             <div className="text-xs text-[var(--theme-warning)]">
-                              Document: <span className="font-medium">{error.documentName}</span> •
-                              Location: <span className="font-medium">{error.usageLocation}</span>
+                              {t('cloning:documentLocation', {
+                                document: error.documentName,
+                                location: error.usageLocation,
+                              })}
                             </div>
                             <div className="text-xs text-[var(--theme-error)]">
-                              HTTP {statusCode} ({statusLabel}): {error.error}
+                              {t('cloning:httpStatus', {
+                                label: statusLabel,
+                                message: error.error,
+                                status: statusCode,
+                              })}
                             </div>
                           </div>
                         )
                       })}
                       {entity.errors.missingDocumentFiles.length > 8 && (
                         <div className="text-xs italic text-[var(--theme-warning)]">
-                          ... and {entity.errors.missingDocumentFiles.length - 8} more missing files
+                          {t('cloning:andMoreMissingFiles', {
+                            count: entity.errors.missingDocumentFiles.length - 8,
+                          })}
                         </div>
                       )}
                     </div>
@@ -211,7 +227,9 @@ export const CloneStatusError: React.FC<CloneStatusErrorProps> = ({ results }) =
                 </h4>
                 <div className="flex items-center gap-2">
                   <XCircle className="h-5 w-5 text-[var(--theme-error)]" />
-                  <span className="font-semibold text-[var(--theme-error)]">Clone Failed</span>
+                  <span className="font-semibold text-[var(--theme-error)]">
+                    {t('cloneActivity:status:cloneFailed')}
+                  </span>
                 </div>
               </div>
 

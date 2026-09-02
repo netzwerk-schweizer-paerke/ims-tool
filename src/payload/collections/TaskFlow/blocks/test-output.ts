@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
@@ -59,9 +60,6 @@ export const ProcessTestOutputBlock: Block = {
   imageAltText: 'Test with optional output',
   imageURL: '/process-block-shapes/block-test.svg',
   interfaceName: 'ProcessTestOutputBlock',
-  labels: {
-    plural: 'Tests with optional output',
-    singular: 'Test with optional output',
-  },
+  labels: I18nCollection.blockLabel.testWithOptionalOutput,
   slug: 'proc-test',
 }

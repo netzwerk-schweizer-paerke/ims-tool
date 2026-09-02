@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
@@ -39,9 +40,6 @@ export const ActivityIOBlock: Block = {
   imageAltText: 'Input/output task group',
   imageURL: '/process-block-shapes/input-output.svg',
   interfaceName: 'ActivityIOBlock',
-  labels: {
-    plural: 'Input/output task groups',
-    singular: 'Input/output task group',
-  },
+  labels: I18nCollection.blockLabel.inputOutputTaskGroup,
   slug: 'activity-io',
 }

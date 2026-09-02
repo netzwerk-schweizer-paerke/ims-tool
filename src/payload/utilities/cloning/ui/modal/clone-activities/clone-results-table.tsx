@@ -43,7 +43,9 @@ export const CloneResultsTable: React.FC<CloneResultsTableProps> = ({ statistics
         </thead>
         <tbody className="divide-y divide-[var(--theme-border)]">
           <tr className="hover:bg-[var(--theme-elevation-50)]">
-            <td className="px-4 py-2 text-sm text-[var(--theme-text)]">ID</td>
+            <td className="px-4 py-2 text-sm text-[var(--theme-text)]">
+              {t('cloneActivity:table:id')}
+            </td>
             <td className="px-4 py-2 text-center text-sm">{statistics.source.id}</td>
             <td className="px-4 py-2 text-center text-sm">{statistics.cloned.id}</td>
             <td className="px-4 py-2 text-center">

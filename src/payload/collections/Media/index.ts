@@ -37,6 +37,7 @@ export const Media: CollectionConfig = {
   hooks: {
     beforeChange: [assignOrgToUploadBeforeChangeHook],
   },
+  labels: I18nCollection.collectionLabel.media,
   slug: 'media',
   upload: {
     imageSizes: [

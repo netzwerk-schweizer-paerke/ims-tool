@@ -112,11 +112,14 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
                   {entity.errors.missingDocumentFiles.length > 0 && (
                     <div className="mt-3 rounded border border-[var(--theme-warning)] bg-[var(--theme-warning-50)] p-2">
                       <p className="text-sm font-medium text-[var(--theme-warning-dark)]">
-                        ⚠️ {entity.errors.missingDocumentFiles.length} missing document file(s)
+                        ⚠️{' '}
+                        {t('cloning:missingDocumentFiles', {
+                          count: entity.errors.missingDocumentFiles.length,
+                        })}
                       </p>
                       <details className="mt-1">
                         <summary className="cursor-pointer text-xs text-[var(--theme-warning)] hover:text-[var(--theme-warning-darker)]">
-                          View detailed errors
+                          {t('cloning:viewDetailedErrors')}
                         </summary>
                         <ul className="mt-1 space-y-0.5 text-xs text-[var(--theme-warning)]">
                           {entity.errors.missingDocumentFiles.slice(0, 3).map((error, errorIdx) => (
@@ -126,7 +129,9 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
                           ))}
                           {entity.errors.missingDocumentFiles.length > 3 && (
                             <li className="italic">
-                              ... and {entity.errors.missingDocumentFiles.length - 3} more
+                              {t('cloning:andMoreItems', {
+                                count: entity.errors.missingDocumentFiles.length - 3,
+                              })}
                             </li>
                           )}
                         </ul>

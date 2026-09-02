@@ -132,7 +132,9 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
           </FormSection>
           {Object.values(formState).some(Boolean) && (
             <p className="mt-1 text-[var(--theme-text-light)]">
-              {Object.values(formState).filter(Boolean).length} activities selected
+              {t('cloneActivity:form:selectedCount', {
+                count: Object.values(formState).filter(Boolean).length,
+              })}
             </p>
           )}
         </div>

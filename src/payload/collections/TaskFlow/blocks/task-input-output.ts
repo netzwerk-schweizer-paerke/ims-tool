@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
@@ -58,9 +59,6 @@ export const ProcessTaskInputOutputBlock: Block = {
   imageAltText: 'Task with optional input/output',
   imageURL: '/process-block-shapes/block-start.svg',
   interfaceName: 'ProcessTaskIOBlock',
-  labels: {
-    plural: 'TaskFlows with optional input/output',
-    singular: 'Task with optional input/output',
-  },
+  labels: I18nCollection.blockLabel.taskWithOptionalIo,
   slug: 'proc-task-io',
 }

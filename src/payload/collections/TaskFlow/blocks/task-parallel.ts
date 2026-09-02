@@ -1,5 +1,6 @@
 import { Block } from 'payload'
 
+import { I18nCollection } from '@/lib/i18n-collection'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
@@ -47,9 +48,6 @@ export const ProcessTaskParallelBlock: Block = {
   imageAltText: 'Two parallel tasks',
   imageURL: '/process-block-shapes/block-parallel.svg',
   interfaceName: 'ProcessTaskParallelBlock',
-  labels: {
-    plural: 'Two parallel tasks',
-    singular: 'Two parallel tasks',
-  },
+  labels: I18nCollection.blockLabel.twoParallelTasks,
   slug: 'proc-task-p',
 }

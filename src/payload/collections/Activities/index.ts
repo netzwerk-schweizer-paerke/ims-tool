@@ -77,6 +77,7 @@ export const Activities: CollectionConfig = {
     // This is temporary until payload-enchants/docs_reorder is updated
     {
       index: true,
+      label: I18nCollection.fieldLabel.order,
       name: 'docOrder',
       type: 'number',
     },

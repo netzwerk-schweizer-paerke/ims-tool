@@ -5,9 +5,10 @@ import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
 type Props = {
   k: I18nKeys
+  vars?: Record<string, unknown>
 }
 
-export const Translate: React.FC<Props> = ({ k }) => {
+export const Translate = ({ k, vars }: Props) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
-  return <>{t(k)}</>
+  return <>{t(k, vars)}</>
 }
