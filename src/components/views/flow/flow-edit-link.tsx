@@ -7,7 +7,7 @@ type Props = {
   locale: string
 }
 
-export const FlowEditLink: React.FC<Props> = ({ id, locale }) => {
+export const FlowEditLink = ({ id, locale }: Props) => {
   return (
     <Link
       className={'link-hover link'}

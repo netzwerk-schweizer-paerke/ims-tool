@@ -3,7 +3,6 @@ import { compact } from 'es-toolkit'
 import { headers as getHeaders } from 'next/headers'
 import { redirect, RedirectType } from 'next/navigation'
 import { getPayload } from 'payload'
-import React from 'react'
 
 import { UserOrganisationSelect } from '@/components/organisation-select/dropdown'
 import { Translate } from '@/lib/translate'
@@ -11,7 +10,7 @@ import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
-export const OrganisationSelect: React.FC = async () => {
+export const OrganisationSelect = async () => {
   const headers = await getHeaders()
   const client = await getPayload({ config })
 

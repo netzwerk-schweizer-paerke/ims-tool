@@ -1,6 +1,5 @@
 import { DrawerToggler } from '@payloadcms/ui'
 import { toNumber } from 'es-toolkit/compat'
-import React from 'react'
 
 import { Translate } from '@/lib/translate'
 import { User } from '@/payload-types'
@@ -22,7 +21,7 @@ type Props = {
  * Super-admin only, matching the endpoint: the checker reads with `overrideAccess` and the
  * report can name rows in other organisations.
  */
-export const TenantHealthButton: React.FC<Props> = ({ user }) => {
+export const TenantHealthButton = ({ user }: Props) => {
   if (!user || !checkUserRoles([ROLE_SUPER_ADMIN], user)) {
     return null
   }

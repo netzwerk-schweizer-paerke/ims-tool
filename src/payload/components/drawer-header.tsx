@@ -1,6 +1,5 @@
 'use client'
 import { useTranslation, XIcon } from '@payloadcms/ui'
-import React from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
@@ -24,7 +23,7 @@ interface DrawerHeaderProps {
  *
  * The class names are Payload's, so this inherits the same layout and styling.
  */
-export const DrawerHeader: React.FC<DrawerHeaderProps> = ({ onClose, title }) => {
+export const DrawerHeader = ({ onClose, title }: DrawerHeaderProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
 
   return (

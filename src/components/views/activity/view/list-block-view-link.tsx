@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import { FC, PropsWithChildren } from 'react'
+import { PropsWithChildren } from 'react'
 
 type Props = PropsWithChildren & {
   listId: number
 }
 
-export const ListBlockViewLink: FC<Props> = ({ children, listId }) => {
+export const ListBlockViewLink = ({ children, listId }: Props) => {
   return (
     <Link
       className={'link hyphens-auto no-underline hover:underline'}

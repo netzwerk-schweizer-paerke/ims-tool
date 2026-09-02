@@ -10,7 +10,7 @@ type Props = {
   locale: string
 }
 
-export const ActivitySupport: React.FC<Props> = ({ activity, locale }) => {
+export const ActivitySupport = ({ activity, locale }: Props) => {
   if (!activity.name) {
     return (
       <div>

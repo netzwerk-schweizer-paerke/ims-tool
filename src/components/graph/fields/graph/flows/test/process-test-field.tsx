@@ -65,7 +65,7 @@ const booleanOutputCssMap = {
   [BooleanOutput.TRUE]: 'text-green-600',
 }
 
-const DisplayBoolean: React.FC<{ booleanOutput: BooleanOutput }> = memo(({ booleanOutput }) => {
+const DisplayBoolean = memo(({ booleanOutput }: { booleanOutput: BooleanOutput }) => {
   return (
     <div className={`text-center text-sm font-bold ${booleanOutputCssMap[booleanOutput]}`}>
       {booleanOutputMap[booleanOutput]}

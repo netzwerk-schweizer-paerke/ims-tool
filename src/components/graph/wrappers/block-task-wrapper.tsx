@@ -1,7 +1,7 @@
 'use client'
 import { PropsWithChildren } from 'react'
 
-export const BlockTaskWrapper: React.FC<PropsWithChildren> = ({ children }) => {
+export const BlockTaskWrapper = ({ children }: PropsWithChildren) => {
   return (
     <div
       className={

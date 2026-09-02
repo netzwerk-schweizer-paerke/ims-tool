@@ -7,7 +7,7 @@ type Props = PropsWithChildren & {
   mode?: 'edit' | 'view'
 }
 
-export const TestShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) => {
+export const TestShapeWrapper = ({ children, mode = 'view' }: Props) => {
   // The overlay is absolutely positioned, so `w-full` resolves against the nearest positioned
   // ancestor. In the view that is BlockWrapper's `min-w-48` box; in edit mode it is RootTarget,
   // which has no size of its own and collapses to the `h-6 w-10` diamond below. Edit mode

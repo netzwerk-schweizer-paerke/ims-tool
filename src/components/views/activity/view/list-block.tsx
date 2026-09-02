@@ -6,7 +6,7 @@ type Props = {
   list: number | TaskList
 }
 
-export const ListBlock: React.FC<Props> = ({ list }) => {
+export const ListBlock = ({ list }: Props) => {
   if (typeof list === 'number') {
     throw new TypeError('ListBlock flow prop should be a List object')
   }

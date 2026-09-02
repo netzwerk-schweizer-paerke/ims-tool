@@ -31,7 +31,7 @@ type Props = {
 }
 
 // Define the component
-const OuterTargetsComponent: React.FC<Props> = ({ id }) => {
+const OuterTargetsComponent = ({ id }: Props) => {
   const debug = process.env.NODE_ENV === 'development'
   const debugClass = debug ? 'bg-red-400' : ''
   const style = { height: '2px', width: '2px' }

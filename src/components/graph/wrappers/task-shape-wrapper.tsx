@@ -5,7 +5,7 @@ type Props = PropsWithChildren & {
   mode?: 'edit' | 'view'
 }
 
-export const TaskShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) => {
+export const TaskShapeWrapper = ({ children, mode = 'view' }: Props) => {
   const wrapperClasses = mode === 'edit' ? 'h-32 overflow-visible' : 'size-full overflow-visible'
 
   return (

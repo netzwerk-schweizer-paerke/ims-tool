@@ -31,11 +31,7 @@ interface HealthReportProps {
  * Renders a health report. Shared by the park-wide check on the activities list and the
  * per-document check on the edit view, so both read identically.
  */
-export const HealthReport: React.FC<HealthReportProps> = ({
-  onJump,
-  report,
-  showOrganisation = false,
-}) => {
+export const HealthReport = ({ onJump, report, showOrganisation = false }: HealthReportProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const translate = t as Translator
 
@@ -129,7 +125,7 @@ interface EntityLinkProps {
   target: TenantHealthEntityRef
 }
 
-const EntityLink: React.FC<EntityLinkProps> = ({ anchor, label, onJump, target }) => {
+const EntityLink = ({ anchor, label, onJump, target }: EntityLinkProps) => {
   const href = `/admin/collections/${target.collection}/${target.id}${anchor ? `#${anchor}` : ''}`
   const isCurrentDocument =
     typeof window !== 'undefined' && window.location.pathname === href.split('#', 1)[0]
@@ -196,13 +192,7 @@ interface FindingGroupProps {
   title: string
 }
 
-const FindingGroup: React.FC<FindingGroupProps> = ({
-  findings,
-  hint,
-  onJump,
-  severity,
-  title,
-}) => {
+const FindingGroup = ({ findings, hint, onJump, severity, title }: FindingGroupProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const translate = t as Translator
 

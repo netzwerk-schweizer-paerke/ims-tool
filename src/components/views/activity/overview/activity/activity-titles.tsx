@@ -6,7 +6,7 @@ type Props = {
   locale: string
 }
 
-export const ActivityTitles: React.FC<Props> = ({ activity, locale }) => {
+export const ActivityTitles = ({ activity, locale }: Props) => {
   return (
     <div className={'px-4 text-center'}>
       <h2 className={'hyphens-auto text-xl font-bold'}>{activity.name}</h2>

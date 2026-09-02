@@ -6,7 +6,7 @@ type Props = PropsWithChildren & {
   blockId: null | string | undefined
 }
 
-export const ActivityBlockViewLink: React.FC<Props> = ({ activityId, blockId, children }) => {
+export const ActivityBlockViewLink = ({ activityId, blockId, children }: Props) => {
   return (
     <Link
       className={'link hyphens-auto no-underline hover:underline'}

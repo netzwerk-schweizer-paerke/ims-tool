@@ -12,7 +12,7 @@ type Props = {
   locale: string
 }
 
-export const ActivityFlow: React.FC<Props> = ({ activity, locale }) => {
+export const ActivityFlow = ({ activity, locale }: Props) => {
   if (!activity.name) {
     return (
       <div>

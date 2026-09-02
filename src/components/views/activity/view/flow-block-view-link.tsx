@@ -5,7 +5,7 @@ type Props = PropsWithChildren & {
   flowId: number
 }
 
-export const FlowBlockViewLink: React.FC<Props> = ({ children, flowId }) => {
+export const FlowBlockViewLink = ({ children, flowId }: Props) => {
   return (
     <Link
       className={'link hyphens-auto no-underline hover:underline'}

@@ -7,7 +7,7 @@ type Props = PropsWithChildren & {
   id: null | string | undefined
 }
 
-export const BlockWrapper: React.FC<Props> = ({ children, id }) => {
+export const BlockWrapper = ({ children, id }: Props) => {
   if (!id) {
     throw new Error('BlockWrapper requires an id prop')
   }

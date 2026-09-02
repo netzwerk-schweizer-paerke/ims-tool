@@ -13,7 +13,7 @@ type Props = {
   user: User
 }
 
-export const CloneTaskListsButton: React.FC<Props> = async ({ payload, user }) => {
+export const CloneTaskListsButton = async ({ payload, user }: Props) => {
   return (
     <GenericCloneButton
       baseClass={baseClass}

@@ -16,13 +16,13 @@ type ScrollDirection = 'both' | 'horizontal' | 'vertical'
  * A wrapper component that enables drag-to-scroll functionality
  * Click and drag to scroll through the content in the specified direction
  */
-export const DragScrollWrapper: React.FC<DragScrollWrapperProps> = ({
+export const DragScrollWrapper = ({
   children,
   className = '',
   direction = 'horizontal',
   scrollSpeed = 1,
   showScrollbar = false,
-}) => {
+}: DragScrollWrapperProps) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)

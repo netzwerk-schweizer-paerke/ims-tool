@@ -12,7 +12,7 @@ type Props = {
   user: User
 }
 
-export const BeforeListTableWrapper: React.FC<Props> = async ({ payload, user }) => {
+export const BeforeListTableWrapper = async ({ payload, user }: Props) => {
   // const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
 
   return (

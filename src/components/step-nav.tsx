@@ -17,13 +17,7 @@ type Props = {
   listBlock?: Fields
 }
 
-export const StepNav: React.FC<Props> = ({
-  activity,
-  activityBlock,
-  flowBlock,
-  home = false,
-  listBlock,
-}) => {
+export const StepNav = ({ activity, activityBlock, flowBlock, home = false, listBlock }: Props) => {
   const step = useStepNav()
   const { t } = useTranslation<I18nObject, I18nKeys>()
 

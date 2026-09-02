@@ -10,7 +10,7 @@ type Props = {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-export const ToggleSwitch: React.FC<Props> = ({ ariaLabel, checked, label, onChange }) => {
+export const ToggleSwitch = ({ ariaLabel, checked, label, onChange }: Props) => {
   const id = useId()
   return (
     <div>

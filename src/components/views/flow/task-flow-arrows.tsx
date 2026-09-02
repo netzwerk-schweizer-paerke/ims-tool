@@ -28,7 +28,7 @@ type Props = {
   taskFlowBlock: ProcessTaskCompoundBlock
 }
 
-export const TaskFlowArrows: React.FC<Props> = ({ taskFlowBlock }) => {
+export const TaskFlowArrows = ({ taskFlowBlock }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const updateXarrow = useXarrow()
   const [isLoaded, setIsLoaded] = useState(false)

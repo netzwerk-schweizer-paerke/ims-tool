@@ -1,6 +1,6 @@
 'use client'
 import { Button, Drawer, useTranslation } from '@payloadcms/ui'
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import {
@@ -14,7 +14,7 @@ type Props = {
   organisationId: number
 }
 
-export const TenantHealthOverlay: React.FC<Props> = ({ organisationId }) => {
+export const TenantHealthOverlay = ({ organisationId }: Props) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const { error, report, run, running } = useHealthCheck()
   const [checkExternalUrls, setCheckExternalUrls] = useState(false)

@@ -1,6 +1,6 @@
 'use client'
 import { Button, Drawer, useDocumentInfo, useModal, useTranslation } from '@payloadcms/ui'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { focusAnchor, HealthReport } from '@/payload/components/health/health-report'
@@ -19,7 +19,7 @@ const drawerSlug = 'document-health'
  * It reads the *saved* row — unsaved edits in the open form are not considered, so save
  * first if you want to check what you just typed.
  */
-export const DocumentHealthButton: React.FC = () => {
+export const DocumentHealthButton = () => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const { collectionSlug, id } = useDocumentInfo()
   const { closeModal, openModal } = useModal()

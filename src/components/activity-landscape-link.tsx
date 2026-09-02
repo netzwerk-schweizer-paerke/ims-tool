@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { Translate } from '@/lib/translate'
 
-export const ActivityLandscapeLink: React.FC = () => {
+export const ActivityLandscapeLink = () => {
   return (
     <div className={'nav-group pb-8'}>
       <div className={'nav-group__toggle'}>

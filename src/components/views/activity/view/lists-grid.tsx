@@ -5,7 +5,7 @@ type Props = {
   lists: (number | TaskList)[] | null | undefined
 }
 
-export const ListsGrid: React.FC<Props> = ({ lists }) => {
+export const ListsGrid = ({ lists }: Props) => {
   if (!lists) {
     return null
   }

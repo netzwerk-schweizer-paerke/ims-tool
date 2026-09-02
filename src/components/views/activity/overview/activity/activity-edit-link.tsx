@@ -7,7 +7,7 @@ type Props = {
   locale: string
 }
 
-export const ActivityEditLink: React.FC<Props> = ({ id, locale }) => {
+export const ActivityEditLink = ({ id, locale }: Props) => {
   return (
     <Link
       className={'link-hover link'}

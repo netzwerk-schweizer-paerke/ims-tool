@@ -7,7 +7,7 @@ type Props = {
 }
 
 // Define the component
-const BooleanButtonComponent: React.FC<Props> = ({ children, className, onClick }) => {
+const BooleanButtonComponent = ({ children, className, onClick }: Props) => {
   return (
     <button
       className={`bg-gray-700/60 p-1 font-bold text-white hover:bg-gray-700/90 ${className}`}

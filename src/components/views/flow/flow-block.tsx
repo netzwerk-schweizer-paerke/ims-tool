@@ -14,7 +14,7 @@ type Props = {
   block?: ProcessTaskCompoundBlock
 }
 
-export const FlowBlock: React.FC<Props> = ({ block }) => {
+export const FlowBlock = ({ block }: Props) => {
   if (!block) {
     return null
   }

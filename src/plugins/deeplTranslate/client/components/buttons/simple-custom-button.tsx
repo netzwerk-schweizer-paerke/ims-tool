@@ -1,5 +1,4 @@
 import { PublishButton, SaveButton } from '@payloadcms/ui'
-import React from 'react'
 
 import { TranslationIndicator } from '../indicators/translation-indicator'
 import { SimpleTranslateButton } from './simple-translate-button'
@@ -9,7 +8,7 @@ interface Props {
   type: 'publish' | 'save'
 }
 
-export const SimpleCustomButton: React.FC<Props> = ({ CustomComponent, type }) => {
+export const SimpleCustomButton = ({ CustomComponent, type }: Props) => {
   const DefaultButton = type === 'publish' ? PublishButton : SaveButton
   const ButtonComponent = CustomComponent || DefaultButton
 

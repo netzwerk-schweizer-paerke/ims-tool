@@ -12,7 +12,7 @@ type Props = {
   activity: Activity
 }
 
-export const ActivityFlowArrows: React.FC<Props> = ({ activity }) => {
+export const ActivityFlowArrows = ({ activity }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const updateXarrow = useXarrow()
   const [isLoaded, setIsLoaded] = useState(false)

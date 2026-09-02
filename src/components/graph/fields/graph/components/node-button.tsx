@@ -7,7 +7,7 @@ type Props = {
 }
 
 // Define the component
-const NodeButtonComponent: React.FC<Props> = ({ children, className, onClick }) => {
+const NodeButtonComponent = ({ children, className, onClick }: Props) => {
   return (
     <button
       className={`size-6 rounded-full border border-gray-400 bg-gray-700/70 p-1 font-bold text-white hover:bg-blue-500/90 ${className}`}

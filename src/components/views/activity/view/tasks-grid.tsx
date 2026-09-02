@@ -12,7 +12,7 @@ type Props = {
     | undefined
 }
 
-export const TasksGrid: React.FC<Props> = ({ tasks }) => {
+export const TasksGrid = ({ tasks }: Props) => {
   if (!tasks) {
     return null
   }

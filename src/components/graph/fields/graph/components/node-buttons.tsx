@@ -7,7 +7,7 @@ type Props = {
 }
 
 // Define the component
-const ButtonCenterRightComponent: React.FC<Props> = ({ onClickFn }) => {
+const ButtonCenterRightComponent = ({ onClickFn }: Props) => {
   return (
     <div
       className={'absolute right-0 top-1/2 z-10 size-6 -translate-y-1/2 translate-x-1/2'}
@@ -18,7 +18,7 @@ const ButtonCenterRightComponent: React.FC<Props> = ({ onClickFn }) => {
 }
 
 // Define the component
-const ButtonBottomCenterComponent: React.FC<Props> = ({ onClickFn }) => {
+const ButtonBottomCenterComponent = ({ onClickFn }: Props) => {
   return (
     <div
       className={'absolute bottom-0 right-1/2 z-10 size-6 translate-x-1/2 translate-y-1/2'}
@@ -29,7 +29,7 @@ const ButtonBottomCenterComponent: React.FC<Props> = ({ onClickFn }) => {
 }
 
 // Define the component
-const ButtonCenterLeftComponent: React.FC<Props> = ({ onClickFn }) => {
+const ButtonCenterLeftComponent = ({ onClickFn }: Props) => {
   return (
     <div
       className={'absolute left-0 top-1/2 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}
@@ -40,7 +40,7 @@ const ButtonCenterLeftComponent: React.FC<Props> = ({ onClickFn }) => {
 }
 
 // Define the component
-const ButtonTopCenterComponent: React.FC<Props> = ({ onClickFn }) => {
+const ButtonTopCenterComponent = ({ onClickFn }: Props) => {
   return (
     <div
       className={'absolute left-1/2 top-0 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}

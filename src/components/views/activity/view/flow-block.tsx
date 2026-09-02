@@ -6,7 +6,7 @@ type Props = {
   flow: number | TaskFlow
 }
 
-export const FlowBlock: React.FC<Props> = ({ flow }) => {
+export const FlowBlock = ({ flow }: Props) => {
   if (typeof flow === 'number') {
     throw new TypeError('FlowBlock flow prop should be a TaskFlow object')
   }

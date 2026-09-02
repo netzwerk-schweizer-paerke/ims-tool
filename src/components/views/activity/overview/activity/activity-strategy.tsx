@@ -13,7 +13,7 @@ type Props = {
   locale: string
 }
 
-export const ActivityStrategy: React.FC<Props> = ({ activity, locale }) => {
+export const ActivityStrategy = ({ activity, locale }: Props) => {
   if (!activity.name) {
     return (
       <div>

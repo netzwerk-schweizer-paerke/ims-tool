@@ -17,7 +17,7 @@ type Props = {
   type: 'empty' | 'input' | 'output' | 'task'
 }
 
-export const ActivityBlock: React.FC<Props> = ({ activityId, block, type }) => {
+export const ActivityBlock = ({ activityId, block, type }: Props) => {
   if (!block || type === 'empty') {
     return <div className="activity-block"></div>
   }

@@ -5,7 +5,7 @@ type Props = PropsWithChildren & {
   mode?: 'edit' | 'view'
 }
 
-export const IOShapeWrapper: React.FC<Props> = ({ children, mode = 'view' }) => {
+export const IOShapeWrapper = ({ children, mode = 'view' }: Props) => {
   const wrapperClasses =
     mode === 'edit' ? 'h-32 overflow-visible max-w-64' : 'size-full overflow-visible'
 
