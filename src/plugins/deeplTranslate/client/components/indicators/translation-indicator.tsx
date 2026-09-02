@@ -1,6 +1,8 @@
 'use client'
 
-import { useFormFields, useLocale, useTranslation } from '@payloadcms/ui'
+import { useConfig, useFormFields, useLocale, useTranslation } from '@payloadcms/ui'
+import { formatDate } from '@payloadcms/ui/shared'
+import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 
 import type { TranslationMeta } from '../../../fields/translation-meta-field'
@@ -9,27 +11,21 @@ interface Props {
   metaFieldName?: string
 }
 
-const getRelativeTime = (date: string): string => {
-  const now = new Date()
-  const past = new Date(date)
-  const diffMs = now.getTime() - past.getTime()
-  const diffMins = Math.floor(diffMs / 60_000)
-  const diffHours = Math.floor(diffMs / 3_600_000)
-  const diffDays = Math.floor(diffMs / 86_400_000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
-  if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
-
-  return past.toLocaleDateString()
-}
-
-export const TranslationIndicator: React.FC<Props> = ({ metaFieldName = 'translationMeta' }) => {
+export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Props) => {
   const locale = useLocale()
-  const { t } = useTranslation()
+  const { config } = useConfig()
+  const { i18n, t } = useTranslation()
   const fields = useFormFields(([fields]) => fields)
   const [showTooltip, setShowTooltip] = React.useState(false)
+
+  const dateFormat = config.admin.dateFormat
+
+  // TranslationProvider loads i18n.dateFNS in an effect, so it is undefined on the first render.
+  // Payload's own formatTimeToNow omits addSuffix, which makes German read "vor 4 Monate".
+  const relativeTime = (date: string) =>
+    i18n.dateFNS
+      ? formatDistanceToNow(new Date(date), { addSuffix: true, locale: i18n.dateFNS })
+      : `${t('general:loading')}...`
 
   // Get the translation metadata from form fields
   const metaField = fields[metaFieldName]
@@ -76,33 +72,23 @@ export const TranslationIndicator: React.FC<Props> = ({ metaFieldName = 'transla
         <div className="mt-2 border-t border-[var(--theme-elevation-900)] pt-2">
           <p className="text-[var(--font-size-small)] text-[var(--theme-elevation-400)]">
             {t('plugin-deepltranslate:translation_outdated_lastTranslated' as any)}:{' '}
-            <strong>{getRelativeTime(currentTranslation.date)}</strong>
+            <strong>{relativeTime(currentTranslation.date)}</strong>
           </p>
           <p className="text-[var(--font-size-small)] text-[var(--theme-elevation-400)] opacity-60">
-            {new Date(currentTranslation.date).toLocaleString(undefined, {
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              month: 'short',
-              second: '2-digit',
-              year: 'numeric',
-            })}
+            {formatDate({ date: currentTranslation.date, i18n, pattern: dateFormat })}
           </p>
           {sourceLastModified && (
             <>
               <p className="mt-2 text-[var(--font-size-small)] text-[var(--theme-elevation-400)]">
-                {sourceLocale?.toUpperCase()} modified:{' '}
-                <strong>{getRelativeTime(sourceLastModified)}</strong>
+                {t('plugin-deepltranslate:translation_outdated_source_modified' as any).replaceAll(
+                  '{{source}}',
+                  sourceLocale?.toUpperCase() || '',
+                )}
+                :{' '}
+                <strong>{relativeTime(sourceLastModified)}</strong>
               </p>
               <p className="text-[var(--font-size-small)] text-[var(--theme-elevation-400)] opacity-60">
-                {new Date(sourceLastModified).toLocaleString(undefined, {
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  month: 'short',
-                  second: '2-digit',
-                  year: 'numeric',
-                })}
+                {formatDate({ date: sourceLastModified, i18n, pattern: dateFormat })}
               </p>
             </>
           )}

@@ -24,6 +24,7 @@ export const translations = {
       translation_outdated_description:
         'Diese Übersetzung aus {{source}} ist veraltet. Der {{source}} Inhalt wurde seit der Übersetzung geändert.',
       translation_outdated_lastTranslated: 'Zuletzt übersetzt',
+      translation_outdated_source_modified: '{{source}} geändert',
       translation_outdated_title: 'Übersetzung veraltet',
     },
   },
@@ -53,10 +54,6 @@ export const translations = {
       translation_outdated_lastTranslated: 'Last translated',
       translation_outdated_source_modified: '{{source}} modified',
       translation_outdated_title: 'Translation Outdated',
-      translation_time_days_ago: '{{count}} day{{plural}} ago',
-      translation_time_hours_ago: '{{count}} hour{{plural}} ago',
-      translation_time_just_now: 'just now',
-      translation_time_minutes_ago: '{{count}} minute{{plural}} ago',
     },
   },
   fr: {
@@ -86,6 +83,7 @@ export const translations = {
       translation_outdated_description:
         'Cette traduction de {{source}} est obsolète. Le contenu {{source}} a été modifié depuis cette traduction.',
       translation_outdated_lastTranslated: 'Dernière traduction',
+      translation_outdated_source_modified: '{{source}} modifié',
       translation_outdated_title: 'Traduction obsolète',
     },
   },
@@ -115,6 +113,7 @@ export const translations = {
       translation_outdated_description:
         'Questa traduzione da {{source}} è obsoleta. Il contenuto {{source}} è stato modificato dopo questa traduzione.',
       translation_outdated_lastTranslated: 'Ultima traduzione',
+      translation_outdated_source_modified: '{{source}} modificato',
       translation_outdated_title: 'Traduzione obsoleta',
     },
   },

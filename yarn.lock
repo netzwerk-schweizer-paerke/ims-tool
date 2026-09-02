@@ -12207,6 +12207,7 @@ __metadata:
     autoprefixer: "npm:^10.5.4"
     babel-plugin-react-compiler: "npm:1.0.0"
     cross-env: "npm:^10.1.0"
+    date-fns: "npm:4.1.0"
     deepl-node: "npm:^1.28.0"
     dotenv: "npm:^17.4.2"
     es-toolkit: "npm:^1.52.0"

@@ -66,6 +66,9 @@ export default buildConfig({
         },
       },
     },
+    // Payload defaults to 'MMMM do yyyy, h:mm a', which renders an English ordinal and a 12-hour
+    // clock in every admin language. Swiss usage is day-first with a 24-hour clock.
+    dateFormat: 'dd.MM.yyyy HH:mm',
     importMap: {
       baseDir: path.resolve(dirname),
     },
