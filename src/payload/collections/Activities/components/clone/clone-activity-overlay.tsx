@@ -115,9 +115,12 @@ export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganis
                   )}
                 </Button>
               )}
+              {/* Close schedules a reload of this page. A reload after the switch lands on a
+                  document of the previous organisation, so block it while the switch runs. */}
               <Button
                 buttonStyle="secondary"
                 className={`${baseClass}__cancel`}
+                disabled={isSwitching}
                 onClick={handleClose}>
                 {t('general:close')}
               </Button>

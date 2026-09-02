@@ -38,6 +38,8 @@ export const en = {
       orgLanguageMismatch:
         'Please note that you are currently editing content not in the organisation language.',
       reset: 'Reset to default language',
+      switchedAwayFromDocument:
+        'You changed the organisation. The page you had open belongs to the previous organisation, so it is not available here.',
       title: 'Choose active organisation',
     },
   },

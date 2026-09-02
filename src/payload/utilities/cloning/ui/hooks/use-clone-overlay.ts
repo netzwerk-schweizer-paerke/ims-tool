@@ -18,9 +18,17 @@ export function useCloneOverlay(
 
   // Initialize sub-hooks
   useCloneLoadingState(cloning)
-  const { handleClose } = useCloneModal(drawerSlug, cloneResults, cloneState.resetState)
+  const { handleClose: closeOverlay } = useCloneModal(drawerSlug, cloneResults, cloneState.resetState)
   const { handleOrgSwitch, isSwitching } = useCloneOrgSwitch(targetOrgId, targetOrganisations)
   const { handleSubmit } = useCloneFormSubmit(cloneState)
+
+  // A close arms a reload of the current page. The switch leaves the previous organisation, so
+  // that reload lands on a document the new organisation cannot read. Every close path is
+  // guarded here, because the drawer header and the footer both call this one function.
+  const handleClose = () => {
+    if (isSwitching) return
+    closeOverlay()
+  }
 
   return {
     cloneResults: cloneState.cloneResults,

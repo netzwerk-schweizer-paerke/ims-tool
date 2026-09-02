@@ -38,6 +38,8 @@ export const it = {
       orgLanguageMismatch:
         "Si prega di notare che attualmente si stanno modificando contenuti non nella lingua dell'organizzazione.",
       reset: 'Ripristina la lingua predefinita',
+      switchedAwayFromDocument:
+        "Hai cambiato organizzazione. La pagina aperta appartiene all'organizzazione precedente e non è disponibile qui.",
       title: 'Scegli organizzazione attiva',
     },
   },

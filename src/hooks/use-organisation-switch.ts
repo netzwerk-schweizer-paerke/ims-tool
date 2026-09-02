@@ -4,6 +4,7 @@ import { usePreferences } from '@payloadcms/ui'
 import ky from 'ky'
 import { useState } from 'react'
 
+import { navigateAfterOrganisationSwitch } from '@/lib/organisation-switch-target'
 import { Organisation } from '@/payload-types'
 
 type UseOrganisationSwitchResult = {
@@ -42,9 +43,14 @@ export function useOrganisationSwitch(): UseOrganisationSwitchResult {
         },
       })
 
-      // Update language preference if the target org has a language set
+      // The organisation changed above. Everything after it must not abort the redirect, because
+      // the caller then stays on a document that the new organisation cannot read.
       if (targetOrg?.organisationLanguage) {
-        await setPreference('locale', targetOrg.organisationLanguage)
+        try {
+          await setPreference('locale', targetOrg.organisationLanguage)
+        } catch (preferenceError) {
+          console.error('Failed to set the locale preference after the switch:', preferenceError)
+        }
       }
 
       // Remove locale parameter from URL if it exists
@@ -54,8 +60,9 @@ export function useOrganisationSwitch(): UseOrganisationSwitchResult {
         window.history.replaceState({}, '', url)
       }
 
-      // Reload to apply the new organisation context
-      window.location.reload()
+      // Apply the new organisation context. A document of the previous organisation is
+      // unreadable now, so the helper leaves that page instead of reloading it.
+      navigateAfterOrganisationSwitch()
     } catch (error_) {
       const errorMessage = error_ instanceof Error ? error_.message : 'Failed to switch organisation'
       setError(errorMessage)
