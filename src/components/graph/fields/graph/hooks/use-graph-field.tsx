@@ -1,6 +1,6 @@
 'use client'
 import { useField } from '@payloadcms/ui'
-import { JSONFieldClientProps } from 'payload'
+import { JSONFieldClientProps, Validate } from 'payload'
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
@@ -31,12 +31,15 @@ export const useGraphField = <TState extends ConnectionStateType>({
     validate,
   } = props
 
-  const memoizedValidate = useCallback(
-    (value: any, options: any) => {
-      if (typeof validate === 'function') {
-        return validate(value, { ...options, required })
+  // Payload declares two validate types that do not compose. `useField` accepts `Validate`, which
+  // erases the field config to `object`. `props.validate` is the JSON field validator, whose
+  // options require that config. Payload passes the full options at run time, so the cast holds.
+  const memoizedValidate = useCallback<Validate>(
+    (value, options) => {
+      if (typeof validate !== 'function') {
+        return true // Validation passes when no validate function is provided
       }
-      return true // Validation passes when no validate function is provided
+      return (validate as Validate)(value, { ...options, required })
     },
     [validate, required],
   )

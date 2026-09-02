@@ -10,7 +10,7 @@ import {
   xarrowPropsType,
 } from '../types'
 import { getElementByPropGiven, getElemPos, xStr2absRelative } from './utils'
-import { isEqual, isArray, isObject } from 'es-toolkit/compat'
+import { isArray, isObject } from 'es-toolkit/compat'
 import { arrowShapes, cAnchorEdge, cArrowShapes } from '../constants'
 import { anchorEdgeType, dimensionType } from '../privateTypes'
 
@@ -252,6 +252,27 @@ const defaultProps = {
   _cpy2Offset: 0,
 } as const satisfies xarrowPropsType
 
+// The loop in the hook below registers one layout effect per entry, so this list must have a
+// constant length. `createParsedProps` seeds every prop with its parsed default, and the loop is
+// what applies a caller's value on top. A prop left out here therefore keeps its default forever.
+// This project passes only these twelve. The three colour props are derived from `color`.
+const observedProps = [
+  'start',
+  'end',
+  'startAnchor',
+  'endAnchor',
+  'showHead',
+  'showTail',
+  'color',
+  'lineColor',
+  'headColor',
+  'tailColor',
+  'path',
+  'strokeWidth',
+] as const satisfies readonly (keyof xarrowPropsType)[]
+
+const observedPropsSet: Set<string> = new Set(observedProps)
+
 type parsedXarrowProps = {
   shouldUpdatePosition: React.MutableRefObject<boolean>
   start: HTMLElement
@@ -314,26 +335,9 @@ const createValVars = () => ({
 
 // const parseAllProps = () => parseGivenProps(defaultProps, initialParsedProps);
 
-function deepCompareEquals<T>(a: T, b: T): boolean {
-  return isEqual(a, b)
-}
-
-function useDeepCompareMemoize<T>(value: T): T {
-  const ref = useRef<T>(value)
-  // it can be done by using useMemo as well
-  // but useRef is rather cleaner and easier
-
-  if (!deepCompareEquals(value, ref.current)) {
-    ref.current = value
-  }
-
-  return ref.current
-}
-
-function useDeepCompareEffect(callback: React.EffectCallback, dependencies: unknown[]): void {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useLayoutEffect(callback, dependencies.map(useDeepCompareMemoize))
-}
+// A measured rectangle holds four numbers, so an equality check does not need a deep compare.
+const samePos = (a: dimensionType, b: dimensionType): boolean =>
+  a.x === b.x && a.y === b.y && a.right === b.right && a.bottom === b.bottom
 
 /**
  * smart hook that provides parsed props to Xarrow and will trigger rerender whenever given prop is changed.
@@ -349,15 +353,29 @@ const useXarrowProps = (
   propsRefs['shouldUpdatePosition'] = shouldUpdatePosition
   const curProps = { ...defaultProps, ...userProps }
 
+  // A prop this hook does not observe keeps its default and the caller's value never applies.
+  // The failure is silent, so report it in development.
+  useLayoutEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+    for (const propName of Object.keys(userProps)) {
+      if (!(propName in parsePropsFuncs)) continue
+      if (observedPropsSet.has(propName)) continue
+      console.warn(
+        `[xarrow] the prop "${propName}" is not in observedProps, so its value is ignored. Add it to that list.`,
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProps])
+
   // react states the number of hooks per render must stay constant,
-  // this is ok we are using these hooks in a loop, because the number of props in defaultProps is constant,
+  // this is ok we are using these hooks in a loop, because the number of props in observedProps is constant,
   // so the number of hook we will fire each render will always be the same.
 
   // update the value of the ref that represents the corresponding prop
   // for example: if given 'start' prop would change call getElementByPropGiven(props.start) and save value into propsRefs.start.current
   // why to save refs to props parsed values? some of the props require relatively expensive computations(like 'start' and 'startAnchor').
   // this will always run in the same order and THAT'S WAY ITS LEGAL
-  for (const propName of Object.keys(defaultProps) as (keyof xarrowPropsType)[]) {
+  for (const propName of observedProps as readonly (keyof xarrowPropsType)[]) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useLayoutEffect(
       () => {
@@ -379,20 +397,19 @@ const useXarrowProps = (
 
   // rerender whenever position of start element or end element changes
   const [valVars, setValVars] = useState(createValVars)
-  const startPos = getElemPos(propsRefs.start)
-  useDeepCompareEffect(() => {
+
+  // The two measurements run after the commit, never in the render body. A read during render
+  // forces a layout pass for every arrow on every render, including a render that moved nothing.
+  // The in-place write stays: Xarrow's own layout effect reads valVars later in this same commit.
+  useLayoutEffect(() => {
+    const startPos = getElemPos(propsRefs.start)
+    const endPos = getElemPos(propsRefs.end)
+    if (samePos(valVars.startPos, startPos) && samePos(valVars.endPos, endPos)) return
     valVars.startPos = startPos
-    shouldUpdatePosition.current = true
-    setValVars({ ...valVars })
-    // console.log('start update pos', startPos);
-  }, [startPos])
-  const endPos = getElemPos(propsRefs.end)
-  useDeepCompareEffect(() => {
     valVars.endPos = endPos
     shouldUpdatePosition.current = true
     setValVars({ ...valVars })
-    // console.log('end update pos', endPos);
-  }, [endPos])
+  })
 
   useLayoutEffect(() => {
     // console.log('svg shape changed!');

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * Mirrors a text field's value in local state so the textarea keeps its text and caret if
@@ -17,7 +17,7 @@ import { useCallback, useEffect, useState } from 'react'
  * @param fieldName The field name in the parent value object (defaults to 'text')
  * @returns An object with the local text value and a change handler
  */
-export function useTextField<T extends Record<string, any>>(
+export function useTextField<T extends Record<string, unknown>>(
   value: T | undefined,
   setValue: (value: T) => void,
   initialText: string = '',
@@ -26,22 +26,33 @@ export function useTextField<T extends Record<string, any>>(
   // What the textarea shows, independent of what the form currently holds
   const [localText, setLocalText] = useState(initialText)
 
-  // Sync local state with parent value
+  // The text this hook wrote last. It stays set until the form reports that same text back.
+  const pendingWrite = useRef<null | string>(null)
+
+  // Payload can report text older than what the user has typed. The Edit view merges a
+  // server form-state response about 250ms after a change, and that response lags the
+  // textarea. A rewrite with the older text then sends the caret to the end of the box.
   useEffect(() => {
     if (!value) {
       return
     }
-    if (value[fieldName] !== localText) {
-      // Only update local text if it differs from the field value
-      setLocalText((value[fieldName] as string) || '')
+    const incoming = (value[fieldName] as string | undefined) ?? ''
+    // Accept an incoming value only after the form catches up with the last local write.
+    if (pendingWrite.current !== null) {
+      if (incoming !== pendingWrite.current) {
+        return
+      }
+      pendingWrite.current = null
     }
-  }, [value, localText, fieldName])
+    setLocalText((previous) => (previous === incoming ? previous : incoming))
+  }, [value, fieldName])
 
   const handleTextChange = useCallback(
     (text: string) => {
       setLocalText(text)
       // Only update the actual value when necessary
       if (value && text !== value[fieldName]) {
+        pendingWrite.current = text
         setValue({ ...value, [fieldName]: text })
       }
     },

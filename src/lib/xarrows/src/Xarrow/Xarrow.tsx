@@ -39,6 +39,55 @@ const subscribeToWindowResize = (subscriber: () => void) => {
   }
 }
 
+// One ResizeObserver for every arrow on the page. Each arrow watches its two endpoints and
+// their positioned parents, and the arrows of one block resolve to the same few elements.
+// A block with N arrows used to create N observers over that same small set.
+const resizeCallbacks = new WeakMap<Element, Set<() => void>>()
+let sharedResizeObserver: null | ResizeObserver = null
+
+const flushResizeEntries = (entries: ResizeObserverEntry[]) => {
+  // One arrow subscribes the same callback to both endpoints and to their shared parent,
+  // so a single resize can reach that callback more than once per batch.
+  const called = new Set<() => void>()
+  for (const entry of entries) {
+    const callbacks = resizeCallbacks.get(entry.target)
+    if (!callbacks) continue
+    for (const callback of callbacks) {
+      if (called.has(callback)) continue
+      called.add(callback)
+      callback()
+    }
+  }
+}
+
+const observeResize = (element: Element, callback: () => void) => {
+  if (!sharedResizeObserver) sharedResizeObserver = new ResizeObserver(flushResizeEntries)
+  let callbacks = resizeCallbacks.get(element)
+  const isFirstSubscriber = !callbacks
+  if (!callbacks) {
+    callbacks = new Set()
+    resizeCallbacks.set(element, callbacks)
+  }
+  callbacks.add(callback)
+
+  if (isFirstSubscriber) {
+    sharedResizeObserver.observe(element)
+  } else {
+    // ResizeObserver delivers its initial callback only for a new observation. A later
+    // subscriber to an already-observed element must get that first call another way.
+    callback()
+  }
+
+  return () => {
+    const current = resizeCallbacks.get(element)
+    if (!current) return
+    current.delete(callback)
+    if (current.size > 0) return
+    resizeCallbacks.delete(element)
+    sharedResizeObserver?.unobserve(element)
+  }
+}
+
 const Xarrow: React.FC<xarrowPropsType> = (props: xarrowPropsType) => {
   const mainRef = useRef({
     svgRef: useRef<SVGSVGElement>(null),

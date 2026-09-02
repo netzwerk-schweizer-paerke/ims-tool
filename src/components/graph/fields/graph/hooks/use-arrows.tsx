@@ -86,9 +86,14 @@ export const useArrows = ({ connections, setState, state }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Only the connections drive the arrows. The text lives in the same state object, and
+  // `setValue` spreads that object on every keystroke while it keeps this array's identity.
+  // A dependency on the whole state therefore redrew every arrow of the block on each keystroke.
+  const stateConnections = state?.connections
+
   const renderArrows = useCallback(() => {
-    if (!state?.connections) return null
-    return state.connections
+    if (!stateConnections) return null
+    return stateConnections
       .flatMap((connection) => {
         // The JSON schema only checks that position and type are strings, so stored
         // values that no longer exist in the definitions must be skipped — throwing
@@ -122,7 +127,7 @@ export const useArrows = ({ connections, setState, state }: Props) => {
         const props = { ...arrow, end, start, ...arrowStyle }
         return <Xarrow key={key} {...props} />
       })
-  }, [state, connections, arrowSetId])
+  }, [stateConnections, connections, arrowSetId])
 
   return { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType, updateXarrow }
 }
