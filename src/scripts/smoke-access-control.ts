@@ -1,8 +1,39 @@
-export {}
+import { z } from 'zod'
 
 // Run this against a local dev server. `before` asserts the current behaviour.
 // `after` asserts the fixed behaviour. A row marked INVARIANT expects the same
 // result in both modes, so those rows are the regression guard.
+
+// Every response field the test reads. A schema both verifies the payload and types
+// it, so a shape change fails the run instead of reading as undefined.
+const relationSchema = z.union([z.number(), z.object({ id: z.number() })]).nullish()
+
+const membershipSchema = z.object({
+  organisation: z.union([z.number(), z.object({ id: z.number() })]),
+})
+
+const userSchema = z.object({
+  id: z.number(),
+  organisations: z.array(membershipSchema).nullish(),
+  selectedOrganisation: relationSchema,
+})
+
+const listSchema = z.object({
+  docs: z.array(z.object({ id: z.number() })),
+  totalDocs: z.number(),
+})
+
+const createdSchema = z.object({
+  doc: z.object({ id: z.number(), organisation: relationSchema }),
+})
+
+const meSchema = z.object({ user: userSchema.nullish() })
+
+const loginSchema = z.object({ user: userSchema })
+
+const describedSchema = z.object({ description: z.string().nullish(), id: z.number() })
+
+const describedListSchema = z.object({ docs: z.array(describedSchema) })
 
 const BASE_URL = process.env.SMOKE_BASE_URL ?? 'http://localhost:3000'
 const ADMIN_EMAIL = process.env.SMOKE_ADMIN_EMAIL ?? 'admin@test.com'
@@ -31,6 +62,13 @@ const record = (kind: Kind, name: string, before: string, after: string, actual:
   checks.push({ actual, after, before, kind, name })
 }
 
+// Returns null when the payload does not match. A caller that needs the value then
+// records a miss, which fails the row rather than reading as undefined.
+const parse = <T>(schema: z.ZodType<T>, value: unknown): null | T => {
+  const result = schema.safeParse(value)
+  return result.success ? result.data : null
+}
+
 const relationId = (value: unknown): null | number => {
   if (typeof value === 'number') return value
   if (value && typeof value === 'object' && 'id' in value) return (value as { id: number }).id
@@ -40,7 +78,7 @@ const relationId = (value: unknown): null | number => {
 const request = async (
   path: string,
   init: { as?: string; body?: unknown; method?: string } = {},
-): Promise<{ json: any; status: number }> => {
+): Promise<{ json: unknown; status: number }> => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (init.as && sessionCookie[init.as]) headers.cookie = sessionCookie[init.as]
 
@@ -54,7 +92,11 @@ const request = async (
   return { json, status: response.status }
 }
 
-const login = async (as: string, email: string, password: string): Promise<any> => {
+const login = async (
+  as: string,
+  email: string,
+  password: string,
+): Promise<null | z.infer<typeof userSchema>> => {
   const response = await fetch(`${API}/users/login`, {
     body: JSON.stringify({ email, password }),
     headers: { 'Content-Type': 'application/json' },
@@ -62,18 +104,18 @@ const login = async (as: string, email: string, password: string): Promise<any> 
   })
   if (response.status !== 200) return null
   sessionCookie[as] = (response.headers.get('set-cookie') ?? '').split(';', 1)[0]
-  const body = await response.json()
-  return body.user
+  const body: unknown = await response.json()
+  return parse(loginSchema, body)?.user ?? null
 }
 
 const totalDocs = async (as: string, collection: string): Promise<number> => {
   const { json } = await request(`/${collection}?limit=1&depth=0`, { as })
-  return json?.totalDocs ?? -1
+  return parse(listSchema, json)?.totalDocs ?? -1
 }
 
-const docsOf = async (path: string, as: string): Promise<any[]> => {
+const docsOf = async (path: string, as: string): Promise<{ id: number }[]> => {
   const { json } = await request(path, { as })
-  return json?.docs ?? []
+  return parse(listSchema, json)?.docs ?? []
 }
 
 const moreThanZero = (count: number): string => (count > 0 ? 'more than 0' : String(count))
@@ -82,7 +124,7 @@ const moreThanZero = (count: number): string => (count > 0 ? 'more than 0' : Str
 const readOutcome = async (as: string, collection: string): Promise<string> => {
   const { json, status } = await request(`/${collection}?limit=1&depth=0`, { as })
   if (status !== 200) return String(status)
-  return moreThanZero(json?.totalDocs ?? -1)
+  return moreThanZero(parse(listSchema, json)?.totalDocs ?? -1)
 }
 
 const run = async (mode: Mode) => {
@@ -117,7 +159,7 @@ const run = async (mode: Mode) => {
       `/activities?limit=1&depth=0&where[organisation][equals]=${org.id}`,
       { as: 'admin' },
     )
-    if ((json?.totalDocs ?? 0) > 0) withContent.push(org.id)
+    if ((parse(listSchema, json)?.totalDocs ?? 0) > 0) withContent.push(org.id)
     if (withContent.length === 3) break
   }
   if (withContent.length < 3) {
@@ -142,7 +184,7 @@ const run = async (mode: Mode) => {
       },
       method: 'POST',
     })
-    parkUserId = userDoc.json?.doc?.id ?? null
+    parkUserId = parse(createdSchema, userDoc.json)?.doc.id ?? null
 
     const adminDoc = await request('/users', {
       as: 'admin',
@@ -156,7 +198,7 @@ const run = async (mode: Mode) => {
       },
       method: 'POST',
     })
-    parkAdminId = adminDoc.json?.doc?.id ?? null
+    parkAdminId = parse(createdSchema, adminDoc.json)?.doc.id ?? null
 
     if (!parkUserId || !parkAdminId) throw new Error('Could not create the fixture users.')
 
@@ -172,7 +214,7 @@ const run = async (mode: Mode) => {
       'afterLogin selects a park for a new user',
       'a park is stored',
       'a park is stored',
-      relationId(storedUser.json?.selectedOrganisation) === homeOrg
+      relationId(parse(userSchema, storedUser.json)?.selectedOrganisation) === homeOrg
         ? 'a park is stored'
         : 'no park is stored',
     )
@@ -185,7 +227,7 @@ const run = async (mode: Mode) => {
       'a park user lists only their own parks',
       `[${homeOrg}]`,
       `[${homeOrg}]`,
-      `[${visibleOrgs.map((o: any) => o.id).join(',')}]`,
+      `[${visibleOrgs.map((org) => org.id).join(',')}]`,
     )
 
     const ownActivities = await totalDocs('user', 'activities')
@@ -203,7 +245,8 @@ const run = async (mode: Mode) => {
       body: { name: 'SMOKE TEST — delete me', variant: 'standard' },
       method: 'POST',
     })
-    createdActivityId = created.json?.doc?.id ?? null
+    const createdActivity = parse(createdSchema, created.json)
+    createdActivityId = createdActivity?.doc.id ?? null
     if (created.status !== 201) {
       console.error(`activity create failed: ${JSON.stringify(created.json).slice(0, 400)}\n`)
     }
@@ -219,7 +262,7 @@ const run = async (mode: Mode) => {
       'the new activity carries the park of the creator',
       String(homeOrg),
       String(homeOrg),
-      String(relationId(created.json?.doc?.organisation)),
+      String(relationId(createdActivity?.doc.organisation)),
     )
 
     if (createdActivityId) {
@@ -346,8 +389,8 @@ const run = async (mode: Mode) => {
       'a park user cannot write their own memberships',
       `[${homeOrg}]`,
       `[${homeOrg}]`,
-      `[${(afterForge.json?.organisations ?? [])
-        .map((membership: any) => relationId(membership.organisation))
+      `[${(parse(userSchema, afterForge.json)?.organisations ?? [])
+        .map((membership) => relationId(membership.organisation))
         .join(',')}]`,
     )
 
@@ -364,7 +407,7 @@ const run = async (mode: Mode) => {
       'C2 a forced foreign park is corrected on write',
       String(foreignOrg),
       String(homeOrg),
-      String(relationId(forced.json?.selectedOrganisation)),
+      String(relationId(parse(userSchema, forced.json)?.selectedOrganisation)),
     )
     record(
       'INVARIANT',
@@ -386,7 +429,7 @@ const run = async (mode: Mode) => {
       'C2 a revoked membership moves the selection',
       String(homeOrg),
       String(secondOrg),
-      String(relationId(revoked.json?.selectedOrganisation)),
+      String(relationId(parse(userSchema, revoked.json)?.selectedOrganisation)),
     )
     record(
       'INVARIANT',
@@ -444,7 +487,7 @@ const run = async (mode: Mode) => {
 
     // ---- FIX H1: who may edit the organisation record ----------------------
     const orgRow = await request(`/organisations/${homeOrg}?depth=0`, { as: 'admin' })
-    const orgDescription = orgRow.json?.description ?? null
+    const orgDescription = parse(describedSchema, orgRow.json)?.description ?? null
     const orgEditByAdmin = await request(`/organisations/${homeOrg}`, {
       as: 'padmin',
       body: { description: 'SMOKE TEST — should fail' },
@@ -542,12 +585,12 @@ const run = async (mode: Mode) => {
       'M4 a park user reads their own selectedOrganisation',
       'undefined',
       String(homeOrg),
-      String(relationId(meAgain.json?.user?.selectedOrganisation)),
+      String(relationId(parse(meSchema, meAgain.json)?.user?.selectedOrganisation)),
     )
 
     // ---- FIX H2: the shared document pool ----------------------------------
-    const publicDocs = await docsOf('/documents-public?limit=1&depth=0', 'user')
-    const publicDoc = publicDocs[0]
+    const publicList = await request('/documents-public?limit=1&depth=0', { as: 'user' })
+    const [publicDoc] = parse(describedListSchema, publicList.json)?.docs ?? []
     if (publicDoc) {
       const original = publicDoc.description ?? null
       const patch = await request(`/documents-public/${publicDoc.id}`, {
