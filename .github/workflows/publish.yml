@@ -53,11 +53,12 @@ jobs:
             echo "STATUS_MESSAGE=:boom: :boom: :boom: Build failed, more information is available in the GitHub action logs." >> $GITHUB_ENV
           fi
 
-      - name: Mattermost Notification
-        uses: mattermost/action-mattermost-notify@master
-        with:
-          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
-          TEXT: |
-            This is a message from ${{ github.repository }}.
-            [Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) ${{ env.STATUS_MESSAGE }}
-          MATTERMOST_USERNAME: ${{ github.triggering_actor }}
+      # Temporarily disabled. Re-enable this step to restore the build notification.
+      # - name: Mattermost Notification
+      #   uses: mattermost/action-mattermost-notify@master
+      #   with:
+      #     MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+      #     TEXT: |
+      #       This is a message from ${{ github.repository }}.
+      #       [Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) ${{ env.STATUS_MESSAGE }}
+      #     MATTERMOST_USERNAME: ${{ github.triggering_actor }}
