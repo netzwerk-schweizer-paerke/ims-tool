@@ -1,22 +1,42 @@
-import { isArray, isObject } from 'es-toolkit/compat'
+import { isArray, isString } from 'es-toolkit/compat'
 import { CollectionAfterReadHook } from 'payload'
 
-import { DocumentUsage } from '@/lib/document-usage'
+import { DocumentUsage, DocumentUsageReference } from '@/lib/document-usage'
 import { getLocaleCodesFromRequest, getLocalizedValue } from '@/lib/locale-utils'
+
+/** The part of a block reference that says which field inside the block holds the document. */
+interface BlockFieldInfo {
+  blockId?: string
+  blockType?: string
+  field?: string
+  taskIndex?: number
+}
+
+/** Where a document reference sits inside a `blocks` array. */
+interface BlockReferenceDetails extends BlockFieldInfo {
+  blockIndex: number
+  locale?: string
+  path: string
+}
+
+/** `details` is present exactly when `found` is true, so a caller needs no second guard. */
+type BlockSearchResult =
+  | { details: BlockReferenceDetails; found: true }
+  | { details?: undefined; found: false }
 
 /**
  * Recursively check any value for document references
  * Handles both rich text fields and nested structures
  */
 function checkForDocumentReference(
-  value: any,
+  value: unknown,
   documentId: number,
   collectionSlug: string,
 ): boolean {
   if (!value) return false
 
   // If it's a rich text field
-  if (value.root) {
+  if (isRecord(value) && value.root) {
     return isDocumentReferencedInRichText(value, documentId, collectionSlug)
   }
 
@@ -26,7 +46,7 @@ function checkForDocumentReference(
   }
 
   // If it's an object, check all properties
-  if (typeof value === 'object') {
+  if (isRecord(value)) {
     return Object.values(value).some((val) =>
       checkForDocumentReference(val, documentId, collectionSlug),
     )
@@ -37,17 +57,20 @@ function checkForDocumentReference(
 
 /**
  * Get the description from a potentially localized field
+ *
+ * The result is either a rich text value or one locale's entry of it. Neither shape is
+ * validated here, so the caller passes it straight to `isDocumentReferencedInRichText`.
  */
-function getDescription(descField: any, locales: string[]): any {
+function getDescription(descField: unknown, locales: string[]): unknown {
   if (!descField) return null
 
   // If it's already a rich text object, return it
-  if (descField.root) {
+  if (isRecord(descField) && descField.root) {
     return descField
   }
 
   // If it's a localized object, check each locale
-  if (typeof descField === 'object') {
+  if (isRecord(descField)) {
     for (const locale of locales) {
       if (descField[locale]) {
         return descField[locale]
@@ -62,7 +85,7 @@ function getDescription(descField: any, locales: string[]): any {
  * Get the name from a potentially localized field
  * When locale: 'all' is used, localized fields are returned as objects
  */
-function getName(nameField: any, locales: string[]): string {
+function getName(nameField: unknown, locales: string[]): string {
   return getLocalizedValue(nameField, locales)
 }
 
@@ -71,39 +94,50 @@ function getName(nameField: any, locales: string[]): string {
  * Searches for link nodes with document references (Lexical editor format)
  */
 function isDocumentReferencedInRichText(
-  richText: any,
+  richText: unknown,
   documentId: number,
   collectionSlug: string,
 ): boolean {
-  if (!richText || !richText.root) return false
+  if (!richText || !isRecord(richText) || !richText.root) return false
 
   // Recursively search through the rich text structure
-  function searchNode(node: any): boolean {
-    if (!node) return false
+  function searchNode(node: unknown): boolean {
+    if (!node || !isRecord(node)) return false
 
     // Check if this is a link node with a document reference (Lexical format)
-    if (
-      node.type === 'link' &&
-      node.fields?.doc?.relationTo === collectionSlug &&
-      node.fields?.doc?.value?.id === documentId
-    ) {
-      return true
+    if (node.type === 'link') {
+      const linkFields = node.fields
+      if (isRecord(linkFields)) {
+        const linkedDoc = linkFields.doc
+        if (isRecord(linkedDoc) && linkedDoc.relationTo === collectionSlug) {
+          const linkedValue = linkedDoc.value
+          if (isRecord(linkedValue) && linkedValue.id === documentId) {
+            return true
+          }
+        }
+      }
     }
-
     // Check if this is a relationship node pointing to our document (older format)
-    if (node.type === 'relationship' || node.type === 'upload') {
-      if (node.relationTo === collectionSlug && node.value?.id === documentId) {
+    // `else if` and a second `if` behave the same: `type` is never 'link' and 'relationship'.
+    else if (node.type === 'relationship' || node.type === 'upload') {
+      const nodeValue = node.value
+      if (
+        node.relationTo === collectionSlug &&
+        isRecord(nodeValue) &&
+        nodeValue.id === documentId
+      ) {
         return true
       }
       // Also check if value is directly the ID (some formats store it differently)
-      if (node.relationTo === collectionSlug && node.value === documentId) {
+      if (node.relationTo === collectionSlug && nodeValue === documentId) {
         return true
       }
     }
 
     // Check children nodes
-    if (node.children && isArray(node.children)) {
-      for (const child of node.children) {
+    const children = node.children
+    if (children && isArray(children)) {
+      for (const child of children) {
         if (searchNode(child)) return true
       }
     }
@@ -117,6 +151,15 @@ function isDocumentReferencedInRichText(
   }
 
   return searchNode(richText.root)
+}
+
+/**
+ * A read with `locale: 'all'` returns each localized field as an object keyed by locale code.
+ * `payload-types.ts` describes the single-locale shape instead, so every value this hook walks
+ * is unvalidated. This guard is the entry point for narrowing one.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
 /**
@@ -242,43 +285,50 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
       if (activity.blocks) {
         // Enhanced block checking with detailed location tracking
-        const checkBlocksWithDetails = (
-          blocks: any,
-          locale?: string,
-        ): { details?: any; found: boolean; } => {
+        const checkBlocksWithDetails = (blocks: unknown, locale?: string): BlockSearchResult => {
           if (!blocks || !isArray(blocks)) return { found: false }
 
           for (let i = 0; i < blocks.length; i++) {
-            const block = blocks[i]
+            const block: unknown = blocks[i]
 
             // Check all fields in the block recursively
             if (checkForDocumentReference(block, doc.id, collectionSlug)) {
               // Try to get more specific location
               let fieldPath = ''
-              const blockInfo: any = {
-                blockId: block.id,
-                blockType: block.blockType,
+              const blockRecord: Record<string, unknown> = isRecord(block) ? block : {}
+              const blockType = isString(blockRecord.blockType) ? blockRecord.blockType : undefined
+              const blockInfo: BlockFieldInfo = {
+                blockId: isString(blockRecord.id) ? blockRecord.id : undefined,
+                blockType,
               }
 
               // Check specific fields based on block type
-              if (block.blockType === 'activity-io') {
-                if (block.io && checkForDocumentReference(block.io, doc.id, collectionSlug)) {
+              if (blockType === 'activity-io') {
+                const io = blockRecord.io
+                const infos = blockRecord.infos
+                if (io && checkForDocumentReference(io, doc.id, collectionSlug)) {
                   fieldPath = locale ? `blocks.${locale}[${i}].io` : `blocks[${i}].io`
                   blockInfo.field = 'io'
-                } else if (block.infos && checkForDocumentReference(block.infos, doc.id, collectionSlug)) {
+                } else if (infos && checkForDocumentReference(infos, doc.id, collectionSlug)) {
                   fieldPath = locale ? `blocks.${locale}[${i}].infos` : `blocks[${i}].infos`
                   blockInfo.field = 'infos'
                 }
-              } else if (block.blockType === 'activity-task' && block.relations?.tasks) {
-                for (let j = 0; j < block.relations.tasks.length; j++) {
-                  const task = block.relations.tasks[j]
-                  if (checkForDocumentReference(task, doc.id, collectionSlug)) {
-                    fieldPath = locale
-                      ? `blocks.${locale}[${i}].relations.tasks[${j}]`
-                      : `blocks[${i}].relations.tasks[${j}]`
-                    blockInfo.field = 'relations.tasks'
-                    blockInfo.taskIndex = j
-                    break
+              } else if (blockType === 'activity-task') {
+                const relations = blockRecord.relations
+                const tasks = isRecord(relations) ? relations.tasks : undefined
+                // The original guarded on a truthy `tasks` and then read `.length`, which only
+                // ever iterates an array. `isArray` is the typed form of the same condition.
+                if (isArray(tasks)) {
+                  for (let j = 0; j < tasks.length; j++) {
+                    const task: unknown = tasks[j]
+                    if (checkForDocumentReference(task, doc.id, collectionSlug)) {
+                      fieldPath = locale
+                        ? `blocks.${locale}[${i}].relations.tasks[${j}]`
+                        : `blocks[${i}].relations.tasks[${j}]`
+                      blockInfo.field = 'relations.tasks'
+                      blockInfo.taskIndex = j
+                      break
+                    }
                   }
                 }
               }
@@ -298,7 +348,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         }
 
         // Check blocks - might be localized
-        let blockDetails: any = null
+        let blockDetails: BlockReferenceDetails | null = null
         if (typeof activity.blocks === 'object' && !isArray(activity.blocks)) {
           // Localized blocks - check all locales
           // Use locales from config
@@ -409,19 +459,23 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
       // Check blocks for TaskFlows with detailed location
       let blockLocale: string | undefined
       let blockPath = 'blocks'
-      let blockDetails: any = null
+      let blockDetails: BlockReferenceDetails | null = null
 
       if (!foundInTaskFlow && taskFlow.blocks) {
         // Helper to find block with document reference and get details
-        const findBlockWithDoc = (blocks: any[], locale?: string): any => {
+        const findBlockWithDoc = (
+          blocks: unknown,
+          locale?: string,
+        ): BlockReferenceDetails | null => {
           if (!isArray(blocks)) return null
           for (let i = 0; i < blocks.length; i++) {
-            const block = blocks[i]
+            const block: unknown = blocks[i]
             if (checkForDocumentReference(block, doc.id, collectionSlug)) {
+              const blockRecord: Record<string, unknown> = isRecord(block) ? block : {}
               return {
-                blockId: block.id,
+                blockId: isString(blockRecord.id) ? blockRecord.id : undefined,
                 blockIndex: i,
-                blockType: block.blockType,
+                blockType: isString(blockRecord.blockType) ? blockRecord.blockType : undefined,
                 locale,
                 path: locale ? `blocks.${locale}[${i}]` : `blocks[${i}]`,
               }
@@ -457,7 +511,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
       if (foundInTaskFlow) {
         const taskFlowName = getName(taskFlow.name, locales)
-        const referenceDetails: any = {
+        const referenceDetails: DocumentUsageReference = {
           id: taskFlow.id,
           name: taskFlowName || `TaskFlow ${taskFlow.id}`,
           referenceType: 'richtext',
@@ -474,7 +528,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           referenceDetails.field = 'blocks'
           referenceDetails.path = blockPath || 'blocks'
           if (blockLocale || blockDetails?.locale)
-            referenceDetails.locale = blockLocale || blockDetails.locale
+            referenceDetails.locale = blockLocale || blockDetails?.locale
           if (blockDetails?.blockId) referenceDetails.blockId = blockDetails.blockId
           if (blockDetails?.blockType) referenceDetails.blockType = blockDetails.blockType
         }
@@ -564,7 +618,9 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
             	continue;
             }
 
-            const items = taskList.items[locale] as any[]
+            // The generated type says `items` is a single-locale array, so indexing it by a
+            // locale code leaves `never`. The `isArray` guard above proves the real shape.
+            const items: unknown[] = taskList.items[locale]
             for (let i = 0; i < items.length; i++) {
               if (checkForDocumentReference(items[i], doc.id, collectionSlug)) {
                 foundInTaskList = true
@@ -590,7 +646,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
       if (foundInTaskList) {
         const taskListName = getName(taskList.name, locales)
-        const referenceDetails: any = {
+        const referenceDetails: DocumentUsageReference = {
           id: taskList.id,
           name: taskListName || `TaskList ${taskList.id}`,
           referenceType: 'richtext',

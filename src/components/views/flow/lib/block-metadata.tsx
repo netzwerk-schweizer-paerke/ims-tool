@@ -10,13 +10,13 @@ export const BlockMetadata: React.FC<Props> = ({ block }) => {
   return (
     <>
       <BlockMetaWrapper>
-        <PayloadLexicalReactRenderer content={block.keypoints?.keypoints as any} />
+        <PayloadLexicalReactRenderer content={block.keypoints?.keypoints} />
       </BlockMetaWrapper>
       <BlockMetaWrapper>
-        <PayloadLexicalReactRenderer content={block.tools?.tools as any} />
+        <PayloadLexicalReactRenderer content={block.tools?.tools} />
       </BlockMetaWrapper>
       <BlockMetaWrapper>
-        <PayloadLexicalReactRenderer content={block.responsibility?.responsibility as any} />
+        <PayloadLexicalReactRenderer content={block.responsibility?.responsibility} />
       </BlockMetaWrapper>
     </>
   )

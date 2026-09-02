@@ -1,5 +1,6 @@
 import { useTranslation } from '@payloadcms/ui'
-import React from 'react'
+
+import type { DeepLTranslationKeys, DeepLTranslationsObject } from '../../../i18n-types'
 
 interface TranslationOptionsProps {
   disabled?: boolean
@@ -7,12 +8,12 @@ interface TranslationOptionsProps {
   onIncludeRelationshipsChange: (checked: boolean) => void
 }
 
-export const TranslationOptions: React.FC<TranslationOptionsProps> = ({
+export const TranslationOptions = ({
   disabled = false,
   includeRelationships,
   onIncludeRelationshipsChange,
-}) => {
-  const { t } = useTranslation()
+}: TranslationOptionsProps) => {
+  const { t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
 
   return (
     <div className="mb-4">
@@ -24,10 +25,10 @@ export const TranslationOptions: React.FC<TranslationOptionsProps> = ({
           onChange={(e) => onIncludeRelationshipsChange(e.target.checked)}
           type="checkbox"
         />
-        <span className="">{t('plugin-deepltranslate:resolver_deepl_includeRelated' as any)}</span>
+        <span className="">{t('plugin-deepltranslate:resolver_deepl_includeRelated')}</span>
       </label>
       <p className="ml-6 mt-1 italic text-[var(--theme-elevation-600)]">
-        {t('plugin-deepltranslate:resolver_deepl_includeRelatedHelp' as any)}
+        {t('plugin-deepltranslate:resolver_deepl_includeRelatedHelp')}
       </p>
     </div>
   )

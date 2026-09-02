@@ -1,7 +1,7 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { toNumber } from 'es-toolkit/compat'
 import { headers as getHeaders } from 'next/headers'
-import { AdminViewProps, AdminViewServerProps } from 'payload'
+import { AdminViewServerProps } from 'payload'
 import React from 'react'
 import { assert } from 'ts-essentials'
 
@@ -10,6 +10,7 @@ import { StepNav } from '@/components/step-nav'
 import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
 import { TasksGrid } from '@/components/views/activity/view/tasks-grid'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 
 import './landscape-bg.css'
@@ -24,7 +25,10 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   const headers = await getHeaders()
   const { req } = initPageResult
   const { user } = await req.payload.auth({ headers })
-  const locale = req.locale || req.payload.config.i18n.fallbackLanguage
+  // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
+  // A query needs the content locale, so narrow it and let Payload default when it is absent.
+  const locale = toContentLocale(req.locale, req.payload.config)
+  const localeCode = locale ?? getDefaultLocaleCode(req.payload.config)
 
   const selectedOrganisationId = getIdFromRelation(user?.selectedOrganisation)
 
@@ -50,7 +54,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
     .find({
       collection: 'activities',
       depth: 2,
-      locale: locale as any,
+      locale,
       where: activityWhere,
       //   TODO: Implement doc order sorting
     })
@@ -93,7 +97,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   }
 
   const activityBlock =
-    blocks.find((block) => block.id === (activityBlockId as any)) ??
+    blocks.find((block) => block.id === activityBlockId) ??
     (activity ? await resolveBlockByPosition() : undefined)
 
   const findTitle = (a: typeof activity, block: typeof activityBlock) => {
@@ -133,7 +137,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           </h3>
         </div>
         <LastUpdated date={activity?.updatedAt} />
-        <ActivityEditLink id={activityid} locale={locale} />
+        <ActivityEditLink id={activityid} locale={localeCode} />
         <div className={'mt-8 grid grid-cols-[28%_auto_28%]'}>
           {activityBlock ? (
             <>
@@ -143,7 +147,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
                     <Translate k={'activityBlock:input:title'} />
                   </h3>
                   {activityBlock.io?.input ? (
-                    <PayloadLexicalReactRenderer content={activityBlock.io.input as any} />
+                    <PayloadLexicalReactRenderer content={activityBlock.io.input} />
                   ) : (
                     <p>
                       <Translate k={'common:noContentDefined'} />
@@ -169,7 +173,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
                     <Translate k={'activityBlock:output:title'} />
                   </h3>
                   {activityBlock.io?.input ? (
-                    <PayloadLexicalReactRenderer content={activityBlock.io.output as any} />
+                    <PayloadLexicalReactRenderer content={activityBlock.io.output} />
                   ) : (
                     <p>
                       <Translate k={'common:noContentDefined'} />
@@ -190,7 +194,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
               <Translate k={'activityBlock:infos:norms'} />
             </h3>
             {activityBlock?.infos?.norms ? (
-              <PayloadLexicalReactRenderer content={activityBlock.infos?.norms as any} />
+              <PayloadLexicalReactRenderer content={activityBlock.infos?.norms} />
             ) : (
               <p>
                 <Translate k={'common:noContentDefined'} />
@@ -202,7 +206,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
               <Translate k={'activityBlock:infos:support'} />
             </h3>
             {activityBlock?.infos?.support ? (
-              <PayloadLexicalReactRenderer content={activityBlock.infos?.support as any} />
+              <PayloadLexicalReactRenderer content={activityBlock.infos?.support} />
             ) : (
               <p>
                 <Translate k={'common:noContentDefined'} />

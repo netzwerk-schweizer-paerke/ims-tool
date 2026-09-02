@@ -10,6 +10,7 @@ import { ActivityFlow } from '@/components/views/activity/overview/activity/acti
 import { ActivityStrategy } from '@/components/views/activity/overview/activity/activity-strategy'
 import { ActivitySupport } from '@/components/views/activity/overview/activity/activity-support'
 import { ActivityTitles } from '@/components/views/activity/overview/activity/activity-titles'
+import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { Translate } from '@/lib/translate'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
@@ -23,7 +24,10 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
   const headers = await getHeaders()
   const { req } = initPageResult
   const { user } = await req.payload.auth({ headers })
-  const locale = req.locale || req.payload.config.i18n.fallbackLanguage
+  // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
+  // A query needs the content locale, so narrow it and let Payload default when it is absent.
+  const locale = toContentLocale(req.locale, req.payload.config)
+  const localeCode = locale ?? getDefaultLocaleCode(req.payload.config)
 
   const selectedOrganisationId = getIdFromRelation(user?.selectedOrganisation)
 
@@ -31,7 +35,7 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
     .find({
       collection: 'activities',
       depth: 2,
-      locale: locale as any,
+      locale,
       sort: 'docOrder',
       where: {
         organisation: {
@@ -87,7 +91,7 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
                       <div
                         className={'landscape-bg flex flex-row items-stretch justify-stretch pt-2'}>
                         {strategicActivity.map((activity) => (
-                          <ActivityStrategy activity={activity} key={activity.id} locale={locale} />
+                          <ActivityStrategy activity={activity} key={activity.id} locale={localeCode} />
                         ))}
                       </div>
                       <div className={'landscape-bg-arrow-right w-12'}></div>
@@ -105,12 +109,12 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
                       }}>
                       <div className={'col-span-full grid grid-cols-subgrid'}>
                         {standardActivities.map((activity) => (
-                          <ActivityTitles activity={activity} key={activity.id} locale={locale} />
+                          <ActivityTitles activity={activity} key={activity.id} locale={localeCode} />
                         ))}
                       </div>
                       <div className={'col-span-full grid grid-cols-subgrid'}>
                         {standardActivities.map((activity) => (
-                          <ActivityFlow activity={activity} key={activity.id} locale={locale} />
+                          <ActivityFlow activity={activity} key={activity.id} locale={localeCode} />
                         ))}
                       </div>
                     </div>
@@ -128,7 +132,7 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
               <div className={'landscape-bg-arrow-top h-12'}></div>
               <div className={'landscape-bg flex flex-row items-stretch justify-stretch pt-2'}>
                 {supportActivities.map((activity) => (
-                  <ActivitySupport activity={activity} key={activity.id} locale={locale} />
+                  <ActivitySupport activity={activity} key={activity.id} locale={localeCode} />
                 ))}
               </div>
             </div>

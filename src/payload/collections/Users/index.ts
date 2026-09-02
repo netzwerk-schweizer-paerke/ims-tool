@@ -3,7 +3,7 @@ import { CollectionConfig } from 'payload'
 import { renderPasswordResetEmail } from '@/lib/email-renderer'
 import { isProduction } from '@/lib/environment'
 import { I18nCollection } from '@/lib/i18n-collection'
-import { getLocaleCodes } from '@/lib/locale-utils'
+import { getLocaleCodes, toContentLocale } from '@/lib/locale-utils'
 import {
   superAdminFieldAccess,
   superAdminsCollectionAccess,
@@ -11,7 +11,6 @@ import {
 import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
 import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
 import { enforceSelectedOrganisationMembershipHook } from '@/payload/collections/Users/hooks/enforce-selected-organisation-membership-hook'
-import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
 import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
@@ -46,7 +45,8 @@ export const Users: CollectionConfig = {
           throw new Error('Missing required user email or token')
         }
 
-        const systemLocales = req?.payload.config ? getLocaleCodes(req?.payload.config) : false
+        const config = req?.payload.config
+        const systemLocales = config ? getLocaleCodes(config) : false
         const defaultLocale = 'en'
 
         // Determine user's preferred locale (fallback to 'en')
@@ -55,9 +55,13 @@ export const Users: CollectionConfig = {
         const supportedLocales = systemLocales || [defaultLocale]
         const userLocale = supportedLocales.includes(locale) ? locale : defaultLocale
 
+        // The email template also accepts `en`, which is not a content locale. An English or an
+        // unknown code narrows to undefined here, and the template then applies its own `en` default.
+        const emailLocale = config ? toContentLocale(userLocale, config) : undefined
+
         // Generate the HTML using React Email
         const emailHtml = await renderPasswordResetEmail({
-          locale: userLocale as any,
+          locale: emailLocale,
           token,
           userEmail: user.email,
         })
@@ -172,7 +176,6 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [loginAfterCreateUserAfterChangeHook],
     afterLogin: [recordSelectedOrganisationAfterLoginHook],
     beforeChange: [enforceSelectedOrganisationMembershipHook],
   },

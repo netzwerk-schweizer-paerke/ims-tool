@@ -1,6 +1,8 @@
 import { Endpoint, PayloadRequest } from 'payload'
 import { z } from 'zod'
 
+import { toContentLocale } from '@/lib/locale-utils'
+import { Activity } from '@/payload-types'
 import { cloneActivity } from '@/payload/collections/Activities/endpoints/clone/utils/clone-activity'
 import {
   CloneHttpError,
@@ -60,7 +62,18 @@ export const cloneActivityTransactional: Endpoint = {
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { ids: activityIds, locale, targetOrganisationId } = validatedBody
+    const { ids: activityIds, locale: requestedLocale, targetOrganisationId } = validatedBody
+
+    // Narrow the request locale to a configured content locale before any write starts.
+    const locale = toContentLocale(requestedLocale, req.payload.config)
+
+    if (!locale) {
+      req.payload.logger.warn({
+        msg: 'Unsupported locale in batch clone request',
+        requestedLocale,
+      })
+      return Response.json({ error: 'Unsupported locale' }, { status: 400 })
+    }
 
     const transactionID = await req.payload.db.beginTransaction()
 
@@ -78,7 +91,7 @@ export const cloneActivityTransactional: Endpoint = {
       })
 
       const allDocumentIds: number[] = []
-      const activityData: Array<{ activity: any; id: number; }> = []
+      const activityData: Array<{ activity: Activity; id: number; }> = []
 
       // First, fetch all activities and scan for document IDs
       for (const activityId of activityIds) {
@@ -103,7 +116,7 @@ export const cloneActivityTransactional: Endpoint = {
           collection: 'activities',
           depth: 2, // Need depth for scanning nested content
           id: activityId,
-          locale: locale as any,
+          locale,
           req,
         })
 

@@ -1,8 +1,10 @@
-import type { PayloadRequest } from 'payload'
+import type { File as PayloadFile, PayloadRequest } from 'payload'
 
 import path from 'node:path'
 
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
+import type { FetchLegacyDocsTracker } from './statistics-tracker'
 
 import { EXCLUDED_EXTENSIONS, LEGACY_DOMAINS } from './scan-legacy-links'
 
@@ -21,7 +23,7 @@ export async function downloadExternalDocument(
   url: string,
   organisationId: number,
   req: PayloadRequest,
-  tracker: any,
+  tracker: FetchLegacyDocsTracker,
 ): Promise<null | number> {
   try {
     // Validate URL for security before any processing
@@ -55,12 +57,12 @@ export async function downloadExternalDocument(
     const uniqueFilename = `legacy_${timestamp}_${filename}`
 
     // Create file object for Payload upload
-    const file = {
+    const file: PayloadFile = {
       data: buffer,
       mimetype: mimeType,
       name: uniqueFilename,
       size: buffer.length,
-    } as any
+    }
 
     // Create document with file directly
     const document = await req.payload.create({
@@ -160,7 +162,7 @@ function validateLegacyUrl(url: string): ValidationResult {
     const ipRegex = /^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/
     const ipMatch = hostname.match(ipRegex)
     if (ipMatch) {
-      const [, a, b, c, d] = ipMatch.map(Number)
+      const [, a, b] = ipMatch.map(Number)
 
       // 10.0.0.0/8
       if (a === 10) {

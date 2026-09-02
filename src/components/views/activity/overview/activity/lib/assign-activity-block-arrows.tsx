@@ -1,4 +1,8 @@
 import { activityConnections } from '@/components/graph/fields/graph/activities/connection-definitions'
+import {
+  ConnectionDefinition,
+  ConnectionType,
+} from '@/components/graph/fields/graph/lib/connection-types'
 import { ActivityTaskCompoundBlock } from '@/components/views/activity/overview/activity/block'
 import { Activity } from '@/payload-types'
 
@@ -15,7 +19,10 @@ export const assignActivityBlockArrows = (activity: Activity) => {
     }
   }
 
-  const arrowSet: { arrows: any; id: string }[] = []
+  const arrowSet: {
+    arrows: NonNullable<ConnectionDefinition['definitions'][ConnectionType]>
+    id: string
+  }[] = []
 
   for (const blocks of Object.values(categorizedBlocks)) {
     for (const block of blocks) {

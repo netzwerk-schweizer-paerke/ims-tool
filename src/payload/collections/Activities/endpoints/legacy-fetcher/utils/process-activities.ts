@@ -1,6 +1,8 @@
 import type { PayloadRequest } from 'payload'
 
-import type { LegacyDocsStatistics } from '../types'
+import type { Activity } from '@/payload-types'
+
+import type { LegacyDocsActivityBreakdown, LegacyDocsLinkDetail } from '../types'
 
 import { convertLinks } from './convert-links'
 import { downloadExternalDocument } from './download-external-document'
@@ -8,7 +10,7 @@ import { scanLegacyLinks } from './scan-legacy-links'
 import { FetchLegacyDocsTracker } from './statistics-tracker'
 
 interface ProcessActivitiesParams {
-  activities: any[]
+  activities: Activity[]
   dryRun: boolean
   req: PayloadRequest
   tracker: FetchLegacyDocsTracker
@@ -21,7 +23,7 @@ export async function processActivities({
   tracker,
 }: ProcessActivitiesParams): Promise<void> {
   const globalDocumentMap = new Map<string, number>() // Global URL to document ID mapping
-  const activityBreakdown: any[] = []
+  const activityBreakdown: LegacyDocsActivityBreakdown[] = []
 
   // Process each activity
   for (const activity of activities) {
@@ -29,14 +31,7 @@ export async function processActivities({
       documentsCreated: 0,
       failedConversions: 0,
       id: activity.id.toString(),
-      linkDetails: [] as Array<{
-        converted?: boolean
-        error?: string
-        fieldLabel: string
-        locationPath: string
-        parentEntity: string
-        url: string
-      }>,
+      linkDetails: [] as LegacyDocsLinkDetail[],
       linksConverted: 0,
       linksFound: 0,
       name: activity.name,
@@ -133,7 +128,7 @@ export async function processActivities({
         }
 
         // Convert links in the activity
-        const updatedActivity = await convertLinks(activity, activityDocumentMap, tracker, req)
+        const updatedActivity = await convertLinks(activity, activityDocumentMap, tracker)
 
         // Update the activity with converted content
         await req.payload.update({

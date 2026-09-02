@@ -1,17 +1,18 @@
 'use client'
 
 import { Button, useConfig, useModal, useTranslation } from '@payloadcms/ui'
-import React from 'react'
 
 import { hasLocalization } from '@/lib/locale-utils'
+
+import type { DeepLTranslationKeys, DeepLTranslationsObject } from '../../../i18n-types'
 
 import { StandaloneTranslatorModal } from '../modals/translator-modal'
 
 const modalSlug = 'deepltranslate-modal'
 
-export const SimpleTranslateButton: React.FC = () => {
+export const SimpleTranslateButton = () => {
   const modal = useModal()
-  const { t } = useTranslation()
+  const { t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
   const { config } = useConfig()
 
   if (!hasLocalization(config)) {
@@ -30,7 +31,7 @@ export const SimpleTranslateButton: React.FC = () => {
     <>
       {/* Medium to match the other document controls (health check, Save). */}
       <Button buttonStyle="secondary" onClick={openTranslator} size="medium">
-        {t('plugin-deepltranslate:resolver_deepl_buttonLabel' as any)}
+        {t('plugin-deepltranslate:resolver_deepl_buttonLabel')}
       </Button>
       <StandaloneTranslatorModal modalSlug={modalSlug} onClose={closeTranslator} />
     </>

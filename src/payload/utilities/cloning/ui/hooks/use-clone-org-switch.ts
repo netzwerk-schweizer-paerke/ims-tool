@@ -27,11 +27,11 @@ export function useCloneOrgSwitch(
         typeof user.id === 'string' ? parseInt(user.id, 10) : user.id,
         targetOrgId,
         targetOrg
-          ? ({
+          ? {
               id: targetOrg.value,
               name: targetOrg.label,
               organisationLanguage: locale?.code,
-            } as any)
+            }
           : undefined,
       )
     } catch (error) {

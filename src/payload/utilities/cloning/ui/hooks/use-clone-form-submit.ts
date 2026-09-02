@@ -60,7 +60,7 @@ export function useCloneFormSubmit(cloneState: UseCloneStateResult): UseCloneFor
       } else {
         setStatus('error')
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Failed to clone ${config.resourceName}:`, error)
       const errorMessage = await processError(error)
       setErrorMessage(errorMessage)

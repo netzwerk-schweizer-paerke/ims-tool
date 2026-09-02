@@ -11,7 +11,7 @@ export type DeepLResolverArgs = {
   /** Locale to translate to */
   localeTo: string
   /** Optional DeepL API options (e.g., tag_handling for HTML) */
-  options?: any
+  options?: Record<string, unknown>
   req: PayloadRequest
   texts: string[]
 }
@@ -19,7 +19,7 @@ export type DeepLResolverArgs = {
 export type DeepLResolverResponse =
   | {
       error?: {
-        details?: any
+        details?: unknown
         message: string
         type: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
       }

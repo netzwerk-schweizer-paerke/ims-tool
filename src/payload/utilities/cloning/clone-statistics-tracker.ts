@@ -1,4 +1,4 @@
-import { CollectionSlug } from 'payload'
+import { CollectionSlug, PayloadRequest } from 'payload'
 
 import { GenericCloneStatistics, MissingDocumentFileError, OtherErrors } from './types'
 
@@ -8,7 +8,7 @@ export class CloneStatisticsTracker {
   private documentCloneMaps: Map<number, Map<number, number>> = new Map()
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
 
-  private constructor(id: string) {
+  private constructor() {
     this.reset()
   }
 
@@ -16,10 +16,16 @@ export class CloneStatisticsTracker {
     this.instances.clear()
   }
 
-  static getInstance(transactionId: any): CloneStatisticsTracker {
+  // Payload declares `transactionID` as optional, so every call site can pass undefined.
+  // Reading `.toString()` off undefined already threw here, so keep the failure explicit.
+  static getInstance(transactionId: PayloadRequest['transactionID']): CloneStatisticsTracker {
+    if (transactionId === undefined) {
+      throw new Error('CloneStatisticsTracker.getInstance requires a transaction id')
+    }
+
     const id = transactionId.toString()
     if (!this.instances.has(id)) {
-      this.instances.set(id, new CloneStatisticsTracker(id))
+      this.instances.set(id, new CloneStatisticsTracker())
     }
     return this.instances.get(id) as CloneStatisticsTracker
   }
@@ -272,7 +278,8 @@ export class CloneStatisticsTracker {
   processRichTextResults(
     result: {
       documentIds: number[]
-      errors: MissingDocumentFileError[]
+      // A caller carries an extra `location` that MissingDocumentFileError does not declare.
+      errors: (MissingDocumentFileError & { location?: string })[]
       publicDocumentIds: number[]
     },
     location?: string,
@@ -288,13 +295,14 @@ export class CloneStatisticsTracker {
       }
     }
     if (result.errors) {
-      // `any` preserves the pre-existing looseness here: callers pass errors
-      // carrying an extra `location` that MissingDocumentFileError doesn't declare.
-      for (const error of result.errors as any[]) {
-        this.addMissingFileError({
+      for (const error of result.errors) {
+        // A named local carries the extra key through. An object literal would trip the
+        // excess property check on `addMissingFileError`.
+        const entry: MissingDocumentFileError & { location?: string } = {
           ...error,
           location: error.location || location,
-        })
+        }
+        this.addMissingFileError(entry)
       }
     }
   }

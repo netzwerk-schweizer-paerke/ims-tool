@@ -1,5 +1,6 @@
 import { Button, useTranslation } from '@payloadcms/ui'
-import React from 'react'
+
+import type { DeepLTranslationKeys, DeepLTranslationsObject } from '../../../i18n-types'
 
 interface TranslationResultProps {
   error?: string
@@ -12,7 +13,7 @@ interface TranslationResultProps {
   success: boolean
 }
 
-export const TranslationResult: React.FC<TranslationResultProps> = ({
+export const TranslationResult = ({
   error,
   errorType,
   onClose,
@@ -21,36 +22,36 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
   selectedFromLabel,
   selectedToLabel,
   success,
-}) => {
-  const { t } = useTranslation()
+}: TranslationResultProps) => {
+  const { t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
 
   if (success) {
     return (
       <div>
         <div className="mb-4 rounded border border-[var(--theme-success-200)] bg-[var(--theme-success-50)] p-4 text-[var(--theme-success-600)]">
-          ✓ {t('plugin-deepltranslate:resolver_deepl_successMessage' as any)}
+          ✓ {t('plugin-deepltranslate:resolver_deepl_successMessage')}
         </div>
         {selectedFromLabel && selectedToLabel && (
           <div className="mb-4">
             <div>
-              {t('plugin-deepltranslate:resolver_deepl_translateFrom' as any)}:{' '}
+              {t('plugin-deepltranslate:resolver_deepl_translateFrom')}:{' '}
               <strong>{selectedFromLabel}</strong>
             </div>
             <div>
-              {t('plugin-deepltranslate:resolver_deepl_translateTo' as any)}:{' '}
+              {t('plugin-deepltranslate:resolver_deepl_translateTo')}:{' '}
               <strong>{selectedToLabel}</strong>
             </div>
           </div>
         )}
         <div className="deepltranslate__buttons flex gap-4">
           <Button buttonStyle="primary" onClick={onViewTranslation}>
-            {t('plugin-deepltranslate:resolver_deepl_viewTranslation' as any).replace(
+            {t('plugin-deepltranslate:resolver_deepl_viewTranslation').replace(
               '{{language}}',
               selectedToLabel || '',
             )}
           </Button>
           <Button buttonStyle="secondary" onClick={onClose}>
-            {t('plugin-deepltranslate:resolver_deepl_close' as any)}
+            {t('plugin-deepltranslate:resolver_deepl_close')}
           </Button>
         </div>
       </div>
@@ -70,7 +71,7 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
         return 'Translation quota exceeded. Please check your DeepL account limits.'
       }
       default: {
-        return error || t('plugin-deepltranslate:resolver_deepl_errorMessage' as any)
+        return error || t('plugin-deepltranslate:resolver_deepl_errorMessage')
       }
     }
   }
@@ -82,7 +83,7 @@ export const TranslationResult: React.FC<TranslationResultProps> = ({
       </div>
       <div className="deepltranslate__buttons">
         <Button buttonStyle="secondary" onClick={onTryAgain}>
-          {t('plugin-deepltranslate:resolver_deepl_tryAgain' as any)}
+          {t('plugin-deepltranslate:resolver_deepl_tryAgain')}
         </Button>
       </div>
     </div>

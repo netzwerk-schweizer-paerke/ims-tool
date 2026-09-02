@@ -2,8 +2,10 @@ import type { PayloadRequest } from 'payload'
 
 import { I18nCollection } from '@/lib/i18n-collection'
 
+import type { FetchLegacyDocsTracker } from './statistics-tracker'
+
 export interface LegacyLink {
-  context: any
+  context: unknown
   fieldLabel: string // Human-readable field name (e.g., "Input")
   fieldPath: string[]
   locationPath: string // Full path context (e.g., "Introduction block > Input field")
@@ -17,35 +19,36 @@ type AdminLanguage = keyof typeof I18nCollection.fieldLabel.description
  * Recursively scan an object for legacy document links in rich text fields
  */
 export async function scanLegacyLinks(
-  data: any,
-  tracker: any,
+  data: unknown,
+  tracker: FetchLegacyDocsTracker,
   req: PayloadRequest,
   fieldPath: string[] = [],
   parentContext: { entity?: string; label?: string } = {},
 ): Promise<LegacyLink[]> {
   const legacyLinks: LegacyLink[] = []
 
-  if (!data || typeof data !== 'object') {
+  if (!isRecord(data)) {
     return legacyLinks
   }
 
   // Handle arrays
   if (Array.isArray(data)) {
-    for (let i = 0; i < data.length; i++) {
+    for (const [index, item] of data.entries()) {
       // Special handling for blocks array
       let itemLinks
-      if (fieldPath.at(-1) === 'blocks' && data[i]?.blockType) {
-        const blockLabel = getBlockLabel(data[i].blockType, i, adminLanguage(req))
-        itemLinks = await scanLegacyLinks(data[i], tracker, req, [...fieldPath, String(i)], {
+      const blockType = isRecord(item) ? item.blockType : undefined
+      if (fieldPath.at(-1) === 'blocks' && typeof blockType === 'string' && blockType) {
+        const blockLabel = getBlockLabel(blockType, index, adminLanguage(req))
+        itemLinks = await scanLegacyLinks(item, tracker, req, [...fieldPath, String(index)], {
           entity: blockLabel,
           label: blockLabel,
         })
       } else {
         itemLinks = await scanLegacyLinks(
-          data[i],
+          item,
           tracker,
           req,
-          [...fieldPath, String(i)],
+          [...fieldPath, String(index)],
           parentContext,
         )
       }
@@ -143,7 +146,7 @@ function buildLocationPath(parentEntity: string, fieldLabel: string): string {
  * Extract legacy links from a rich text field
  */
 function extractLegacyLinksFromRichText(
-  richText: any,
+  richText: unknown,
   fieldPath: string[],
   parentEntity: string,
   fieldLabel: string,
@@ -151,15 +154,16 @@ function extractLegacyLinksFromRichText(
   const links: LegacyLink[] = []
 
   // Recursive function to traverse rich text nodes
-  function traverseNode(node: any, nodePath: string[] = []): void {
-    if (!node || typeof node !== 'object') {
+  function traverseNode(node: unknown, nodePath: string[] = []): void {
+    if (!isRecord(node)) {
       return
     }
 
     // Check if this is a link node with a legacy URL
-    if (node.type === 'link' && node.fields) {
-      const url = node.fields.url || node.url
-      const linkType = node.fields.linkType || node.linkType
+    const nodeFields = isRecord(node.fields) ? node.fields : undefined
+    if (node.type === 'link' && nodeFields) {
+      const url = nodeFields.url || node.url
+      const linkType = nodeFields.linkType || node.linkType
 
       // Check if it's a custom link to parcs-ims.ch with a file extension
       if (linkType === 'custom' && url && typeof url === 'string' && isLegacyDocumentUrl(url)) {
@@ -183,8 +187,9 @@ function extractLegacyLinksFromRichText(
     }
 
     // Traverse children
-    if (node.children && Array.isArray(node.children)) {
-      for (const [index, child] of (node.children as any[]).entries()) {
+    const children = node.children
+    if (Array.isArray(children)) {
+      for (const [index, child] of children.entries()) {
         traverseNode(child, [...nodePath, 'children', String(index)])
       }
     }
@@ -292,13 +297,27 @@ function isLegacyDocumentUrl(url: string): boolean {
 }
 
 /**
+ * Check if a value is a non-null object. An array passes as well, because the walkers
+ * above treat an array of nodes as a valid rich text shape.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
  * Check if a field appears to be a rich text field
  */
-function isRichTextField(data: any): boolean {
+function isRichTextField(data: unknown): boolean {
+  // Or they might be an array of content blocks
+  if (Array.isArray(data)) {
+    return data.some((item) => isRecord(item) && item.type && item.children)
+  }
+
+  if (!isRecord(data)) {
+    return false
+  }
+
   // Rich text fields typically have a root property with children
-  return (
-    (data?.root?.type === 'root' && Array.isArray(data.root.children)) ||
-    // Or they might be an array of content blocks
-    (Array.isArray(data) && data.some((item) => item?.type && item.children))
-  )
+  const root = data.root
+  return isRecord(root) && root.type === 'root' && Array.isArray(root.children)
 }

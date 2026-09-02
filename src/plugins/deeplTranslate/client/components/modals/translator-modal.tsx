@@ -15,6 +15,8 @@ import React from 'react'
 
 import { hasLocalization } from '@/lib/locale-utils'
 
+import type { DeepLTranslationKeys, DeepLTranslationsObject } from '../../../i18n-types'
+
 import { translateDocument } from '../../api/translate-api'
 import { LanguageSelectors } from './language-selectors'
 import { TranslationOptions } from './translation-options'
@@ -46,7 +48,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
 
   const { collectionSlug, globalSlug, id } = useDocumentInfo()
   const locale = useLocale()
-  const { i18n, t } = useTranslation()
+  const { i18n, t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
   const { config } = useConfig()
   const { setPreference } = usePreferences()
 
@@ -131,7 +133,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
 
   const onClickTranslate = async () => {
     if (!selectedFromLocale || !selectedToLocale) {
-      toast.error(t('plugin-deepltranslate:resolver_deepl_selectBothLanguages' as any))
+      toast.error(t('plugin-deepltranslate:resolver_deepl_selectBothLanguages'))
       return
     }
 
@@ -154,7 +156,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
         setTranslationResult({ success: true })
       } else {
         setTranslationResult({
-          error: result.error || t('plugin-deepltranslate:resolver_deepl_errorMessage' as any),
+          error: result.error || t('plugin-deepltranslate:resolver_deepl_errorMessage'),
           errorType: result.errorType || 'generic',
           success: false,
         })
@@ -163,7 +165,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
       console.error(error)
       setBusy(false)
       setTranslationResult({
-        error: t('plugin-deepltranslate:resolver_deepl_errorMessage' as any),
+        error: t('plugin-deepltranslate:resolver_deepl_errorMessage'),
         errorType: 'generic',
         success: false,
       })
@@ -180,7 +182,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
     <Modal className="deepltranslate__modal" slug={modalSlug}>
       <div className="deepltranslate__wrapper">
         <button
-          aria-label={t('general:close' as any)}
+          aria-label={t('general:close')}
           className="deepltranslate__close"
           onClick={onClose}
           type="button">
@@ -188,7 +190,7 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
         </button>
 
         <div className="deepltranslate__content">
-          <h2>{t('plugin-deepltranslate:resolver_deepl_modalTitle' as any)}</h2>
+          <h2>{t('plugin-deepltranslate:resolver_deepl_modalTitle')}</h2>
 
           {/* Show translation result if available */}
           {translationResult ? (
@@ -229,8 +231,8 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
                       must stay static literals so the extractor can find them. */}
                   {/* eslint-disable-next-line unicorn/prefer-minimal-ternary */}
                   {busy
-                    ? t('plugin-deepltranslate:resolver_deepl_pleaseWait' as any)
-                    : t('plugin-deepltranslate:resolver_deepl_submitButtonLabelFull' as any)}
+                    ? t('plugin-deepltranslate:resolver_deepl_pleaseWait')
+                    : t('plugin-deepltranslate:resolver_deepl_submitButtonLabelFull')}
                 </Button>
               </div>
             </>

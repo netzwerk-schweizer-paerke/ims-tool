@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
 import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
 import { assignActivityBlockArrows } from '@/components/views/activity/overview/activity/lib/assign-activity-block-arrows'
-import Xarrow, { useXarrow, xarrowPropsType } from '@/lib/xarrows/src'
+import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 import { Activity } from '@/payload-types'
 
 type Props = {
@@ -45,7 +45,7 @@ export const ActivityFlowArrows = ({ activity }: Props) => {
     const arrowSet = assignActivityBlockArrows(activity)
 
     return arrowSet.map(({ arrows, id }) => {
-      return arrows.map((arrow: xarrowPropsType, index: number) => {
+      return arrows.map((arrow, index) => {
         const end = `${id}-${arrow.end}`
         const start = `${id}-${arrow.start}`
         const props = { ...arrow, end, start, ...arrowStyle }

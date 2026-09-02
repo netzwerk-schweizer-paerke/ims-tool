@@ -1,5 +1,6 @@
 import { Select, useTranslation } from '@payloadcms/ui'
-import React from 'react'
+
+import type { DeepLTranslationKeys, DeepLTranslationsObject } from '../../../i18n-types'
 
 interface LanguageSelectorsProps {
   disabled?: boolean
@@ -18,7 +19,7 @@ type Option<TValue> = {
   value: TValue
 }
 
-export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
+export const LanguageSelectors = ({
   disabled = false,
   fromSelectOptions,
   onFromSelectChange,
@@ -26,14 +27,14 @@ export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
   selectedFromOption,
   selectedToOption,
   toSelectOptions,
-}) => {
-  const { t } = useTranslation()
+}: LanguageSelectorsProps) => {
+  const { t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
 
   return (
     <div className="mb-4 flex w-full items-center gap-4">
       <div className="flex-1">
         <label className="mb-2 block font-medium">
-          {t('plugin-deepltranslate:resolver_deepl_translateFrom' as any)}
+          {t('plugin-deepltranslate:resolver_deepl_translateFrom')}
         </label>
         <Select
           disabled={disabled}
@@ -51,7 +52,7 @@ export const LanguageSelectors: React.FC<LanguageSelectorsProps> = ({
 
       <div className="flex-1">
         <label className="mb-2 block font-medium">
-          {t('plugin-deepltranslate:resolver_deepl_translateTo' as any)}
+          {t('plugin-deepltranslate:resolver_deepl_translateTo')}
         </label>
         <Select
           disabled={disabled}

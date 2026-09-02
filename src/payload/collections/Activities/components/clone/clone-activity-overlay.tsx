@@ -67,7 +67,7 @@ export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganis
   return (
     <Drawer
       Header={
-        <DrawerHeader onClose={handleClose} title={t('cloneActivity:title' as any)} />
+        <DrawerHeader onClose={handleClose} title={t('cloneActivity:title')} />
       }
       slug={drawerSlug}>
       <div className={'flex w-full flex-col gap-8'}>
@@ -106,11 +106,11 @@ export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganis
                   {isSwitching ? (
                     <span className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      {t('general:switching' as any)}
+                      {t('general:switching')}
                     </span>
                   ) : (
                     <span>
-                      {t('cloneActivity:switchToTarget' as any) || `Switch to ${targetOrgName}`}
+                      {t('cloneActivity:switchToTarget') || `Switch to ${targetOrgName}`}
                     </span>
                   )}
                 </Button>

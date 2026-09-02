@@ -2,7 +2,7 @@ import { CollectionSlug, GlobalSlug, TypedLocale } from 'payload'
 
 export type TranslateArgs = {
   collectionSlug?: CollectionSlug
-  data?: Record<string, any>
+  data?: Record<string, unknown>
   emptyOnly?: boolean
   globalSlug?: GlobalSlug
   id?: number | string
@@ -18,7 +18,7 @@ export type TranslateEndpointArgs = Omit<TranslateArgs, 'update'>
 export type TranslateResult =
   | {
       error?: {
-        details?: any
+        details?: unknown
         message: string
         type: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
       }
@@ -26,7 +26,7 @@ export type TranslateResult =
     }
   | {
       success: true
-      translatedData: Record<string, any>
+      translatedData: Record<string, unknown>
     }
 
 export type ValueToTranslate = {

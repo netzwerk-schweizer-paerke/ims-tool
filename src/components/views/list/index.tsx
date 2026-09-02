@@ -2,7 +2,7 @@ import { DefaultTemplate } from '@payloadcms/next/templates'
 import { toNumber } from 'es-toolkit/compat'
 import { headers as getHeaders } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { AdminViewProps, AdminViewServerProps } from 'payload'
+import { AdminViewServerProps } from 'payload'
 import React from 'react'
 import { assert } from 'ts-essentials'
 
@@ -11,13 +11,20 @@ import { StepNav } from '@/components/step-nav'
 import { BlockMetaWrapper } from '@/components/views/flow/lib/block-meta-wrapper'
 import { ListEditLink } from '@/components/views/list/list-edit-link'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { Translate } from '@/lib/translate'
 import { TaskFlow } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
-function isTaskFlowArray(listRelation: any): listRelation is TaskFlow[] {
-  return Array.isArray(listRelation) && listRelation.every((list) => typeof list.id === 'number')
+function isTaskFlowArray(listRelation: unknown): listRelation is TaskFlow[] {
+  return (
+    Array.isArray(listRelation) &&
+    listRelation.every(
+      (list) =>
+        typeof list === 'object' && list !== null && 'id' in list && typeof list.id === 'number',
+    )
+  )
 }
 
 export const ListBlockView: React.FC<AdminViewServerProps> = async ({
@@ -26,9 +33,12 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
   searchParams,
 }) => {
   const headers = await getHeaders()
-  const { permissions, req } = initPageResult
+  const { req } = initPageResult
   const { user } = await req.payload.auth({ headers })
-  const locale = req.locale || req.payload.config.i18n.fallbackLanguage
+  // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
+  // A query needs the content locale, so narrow it and let Payload default when it is absent.
+  const locale = toContentLocale(req.locale, req.payload.config)
+  const localeCode = locale ?? getDefaultLocaleCode(req.payload.config)
 
   const selectedOrganisationId = getIdFromRelation(user?.selectedOrganisation)
 
@@ -41,7 +51,7 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
     .find({
       collection: 'task-lists',
       depth: 2,
-      locale: locale as any,
+      locale,
       where: {
         and: [
           {
@@ -76,7 +86,7 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
     .find({
       collection: 'activities',
       depth: 2,
-      locale: locale as any,
+      locale,
       where: {
         and: [
           {
@@ -147,12 +157,12 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
             <Translate k={'listBlock:title'} />
           </h3>
           <LastUpdated date={listBlock?.updatedAt} />
-          <ListEditLink id={listBlock.id} locale={locale} />
+          <ListEditLink id={listBlock.id} locale={localeCode} />
         </div>
         {listBlock.description && (
           <div className={'mt-8'}>
             <div className={'prose prose-lg py-6 pl-4'}>
-              <PayloadLexicalReactRenderer content={listBlock.description as any} />
+              <PayloadLexicalReactRenderer content={listBlock.description} />
             </div>
           </div>
         )}
@@ -170,13 +180,13 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
             {blocks.map((block, i) => (
               <React.Fragment key={i}>
                 <BlockMetaWrapper>
-                  <PayloadLexicalReactRenderer content={block.topic as any} />
+                  <PayloadLexicalReactRenderer content={block.topic} />
                 </BlockMetaWrapper>
                 <BlockMetaWrapper>
-                  <PayloadLexicalReactRenderer content={block.tools as any} />
+                  <PayloadLexicalReactRenderer content={block.tools} />
                 </BlockMetaWrapper>
                 <BlockMetaWrapper>
-                  <PayloadLexicalReactRenderer content={block.responsibility as any} />
+                  <PayloadLexicalReactRenderer content={block.responsibility} />
                 </BlockMetaWrapper>
               </React.Fragment>
             ))}

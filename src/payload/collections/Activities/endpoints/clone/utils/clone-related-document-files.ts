@@ -1,5 +1,5 @@
 import { isArray } from 'es-toolkit/compat'
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
@@ -11,7 +11,7 @@ import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-re
 type CloneActivityDocumentsParams = {
   collectionName: 'activities' | 'task-flows' | 'task-lists'
   documentPreloader?: DocumentPreloader
-  locale: string
+  locale: TypedLocale
   req: PayloadRequest
   sourceEntity: Activity | TaskFlow | TaskList
   targetEntityId: number
@@ -37,7 +37,7 @@ export async function cloneRelatedDocumentFiles(
     return
   }
 
-  const clonedFiles: any[] = []
+  const clonedFiles: { document: number }[] = []
 
   for (const fileItem of sourceEntity.files) {
     if (fileItem.document === null || fileItem.document === undefined) {
@@ -105,7 +105,7 @@ export async function cloneRelatedDocumentFiles(
           collection: 'documents',
           depth: 1,
           id: documentId,
-          locale: locale as any,
+          locale,
           req,
         })
 
@@ -146,7 +146,7 @@ export async function cloneRelatedDocumentFiles(
         files: clonedFiles,
       },
       id: targetEntityId,
-      locale: locale as any,
+      locale,
       req: mergeReqContextTargetOrgId(req, targetOrgId),
     })
 

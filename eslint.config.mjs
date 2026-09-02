@@ -86,19 +86,14 @@ const config = [
     },
   },
   {
-    // Relax unused-vars to a warning with the project's `_`/`ignored` escape
-    // hatch (mirrors globe-website). Lint has no --max-warnings, so warnings
-    // don't fail `yarn check`.
+    // Both rules are errors, so a new `any` or a new unused binding fails `yarn check`.
+    // The `_`/`ignored` prefix stays the escape hatch for a parameter that a signature
+    // forces. `no-explicit-any` now matches globe-website; `no-unused-vars` is stricter.
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      // DEVIATION from globe-website (which keeps this at tseslint's default
-      // `error`): this codebase carries 253 pre-existing `any` sites, mostly in
-      // the cloning utilities and the deeplTranslate plugin. Downgraded so
-      // `yarn check` is usable; fix opportunistically, then restore to `error`
-      // for full parity.
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           args: 'after-used',
           argsIgnorePattern: '^(_|ignored)',

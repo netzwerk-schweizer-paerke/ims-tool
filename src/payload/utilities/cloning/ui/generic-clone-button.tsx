@@ -1,10 +1,11 @@
 import { DrawerToggler } from '@payloadcms/ui'
 import { compact } from 'es-toolkit'
 import { toNumber } from 'es-toolkit/compat'
-import { Payload } from 'payload'
+import { DataFromCollectionSlug, Payload } from 'payload'
 import React from 'react'
 
 import { Translate } from '@/lib/translate'
+import { I18nKeys } from '@/lib/use-translation-custom-types'
 import { User } from '@/payload-types'
 import { isOrganisation } from '@/payload/assertions'
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
@@ -12,17 +13,24 @@ import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
-export interface GenericCloneButtonProps {
+export interface GenericCloneButtonProps<TSlug extends CloneableSlug> {
   baseClass: string
-  collectionSlug: string
+  collectionSlug: TSlug
   drawerSlug: string
-  OverlayComponent: React.ComponentType<any>
+  /** The overlay receives the documents of the collection that `collectionSlug` names. */
+  OverlayComponent: React.ComponentType<{
+    documents: DataFromCollectionSlug<TSlug>[]
+    targetOrganisations: { label: string; value: number }[]
+  }>
   payload: Payload
-  translationKey: string
+  translationKey: I18nKeys
   user: User
 }
 
-export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
+/** The three collections that carry a clone endpoint. */
+type CloneableSlug = 'activities' | 'task-flows' | 'task-lists'
+
+export const GenericCloneButton = async <TSlug extends CloneableSlug>({
   baseClass,
   collectionSlug,
   drawerSlug,
@@ -30,7 +38,7 @@ export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
   payload,
   translationKey,
   user,
-}) => {
+}: GenericCloneButtonProps<TSlug>) => {
   if (!user) return null
 
   const selectedOrgId = toNumber(getIdFromRelation(user.selectedOrganisation))
@@ -43,7 +51,7 @@ export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
   })
 
   const documents = await payload.find({
-    collection: collectionSlug as any,
+    collection: collectionSlug,
     depth: 0,
     limit: 0,
     where: {
@@ -102,7 +110,7 @@ export const GenericCloneButton: React.FC<GenericCloneButtonProps> = async ({
       <DrawerToggler
         className={`${baseClass}__edit btn btn--size-medium btn--style-secondary`}
         slug={drawerSlug}>
-        <Translate k={translationKey as any} />
+        <Translate k={translationKey} />
       </DrawerToggler>
       <OverlayComponent documents={documents.docs} targetOrganisations={targetOrganisations} />
     </div>

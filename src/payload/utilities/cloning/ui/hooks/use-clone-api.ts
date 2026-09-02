@@ -1,5 +1,7 @@
 import { toNumber } from 'es-toolkit/compat'
-import ky from 'ky'
+import ky, { isHTTPError, isTimeoutError } from 'ky'
+
+import { isRecord, isUnknownArray } from '@/payload/assertions'
 
 import { GenericCloneStatisticsFinalized } from '../../types'
 import { CloneApiResponse, CloneConfig, CloneFormData, UseCloneApiResult } from './types'
@@ -46,13 +48,13 @@ export function useCloneApi(): UseCloneApiResult {
     return response.results
   }
 
-  const processError = async (error: any): Promise<string> => {
-    if (error?.name === 'TimeoutError') {
+  const processError = async (error: unknown): Promise<string> => {
+    if (isTimeoutError(error)) {
       return '⏱️ Request timed out. The items may be too large to clone.'
     }
 
-    if (error?.name !== 'HTTPError' || !error.response) {
-      return error?.message || 'Unknown error occurred'
+    if (!isHTTPError(error)) {
+      return error instanceof Error ? error.message : 'Unknown error occurred'
     }
 
     const { status } = error.response
@@ -64,19 +66,22 @@ export function useCloneApi(): UseCloneApiResult {
     // The endpoints put the actual cause in the body. Without reading it the
     // user only ever sees "HTTP 500 error", which is not actionable.
     try {
-      const body = await error.response.clone().json()
+      const body: unknown = await error.response.clone().json()
 
-      if (typeof body?.error === 'string') {
-        return body.error
-      }
+      if (isRecord(body)) {
+        if (typeof body.error === 'string') {
+          return body.error
+        }
 
-      if (Array.isArray(body?.errors) && body.errors.length > 0) {
-        const issues = body.errors as { field?: string; message?: string }[]
-        const details = issues
-          .map((issue) => [issue.field, issue.message].filter(Boolean).join(': '))
-          .join(', ')
+        if (isUnknownArray(body.errors) && body.errors.length > 0) {
+          const details = body.errors
+            .map((issue) =>
+              isRecord(issue) ? [issue.field, issue.message].filter(Boolean).join(': ') : '',
+            )
+            .join(', ')
 
-        return [body.message, details].filter(Boolean).join(' — ')
+          return [body.message, details].filter(Boolean).join(' — ')
+        }
       }
     } catch {
       // Body was absent or not JSON — fall through to the status-only message.

@@ -3,15 +3,22 @@
  * This replaces the translateRelationships function with a simpler collection approach
  */
 
+import type { Field } from 'payload'
+
 import { isArray } from 'es-toolkit/compat'
+import { tabHasName } from 'payload/shared'
 
 import type { RelationshipCollector } from '../collectors/relationship-collector'
+
+/** Narrows an unknown document value so the walk can index into it. */
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
 
 export async function collectRelationships(args: {
   collector: RelationshipCollector
   depth: number
-  doc: Record<string, any>
-  fields: any[]
+  doc: Record<string, unknown>
+  fields: Field[]
   path?: string
 }): Promise<void> {
   const { collector, depth, doc, fields, path = 'root' } = args
@@ -21,15 +28,17 @@ export async function collectRelationships(args: {
   }
 
   for (const field of fields) {
-    const fieldPath = `${path}.${field.name || field.type}`
+    const fieldPath = `${path}.${'name' in field ? field.name : field.type}`
 
     // Handle relationship fields
     if (field.type === 'relationship' && doc[field.name]) {
       const relationValue = doc[field.name]
-      const relationTo = isArray(field.relationTo) ? field.relationTo : [field.relationTo]
+      const relationTo: string[] = isArray(field.relationTo)
+        ? field.relationTo
+        : [field.relationTo]
 
       // Handle single or multiple relationships
-      const relations = isArray(relationValue) ? relationValue : [relationValue]
+      const relations: unknown[] = isArray(relationValue) ? relationValue : [relationValue]
 
       for (const relation of relations) {
         if (!relation) continue
@@ -39,9 +48,9 @@ export async function collectRelationships(args: {
         if (!relationId) continue
 
         // Determine collection - for polymorphic relationships, check if relation has relationTo
-        let relationCollection = null
-        if (typeof relation === 'object' && 'relationTo' in relation) {
-          relationCollection = relation.relationTo
+        let relationCollection: null | string = null
+        if (isRecord(relation) && 'relationTo' in relation) {
+          relationCollection = typeof relation.relationTo === 'string' ? relation.relationTo : null
         } else if (relationTo.length === 1) {
           relationCollection = relationTo[0]
         }
@@ -53,14 +62,17 @@ export async function collectRelationships(args: {
     }
 
     // Handle nested fields in groups
-    if (field.type === 'group' && field.fields && doc[field.name]) {
-      await collectRelationships({
-        collector,
-        depth,
-        doc: doc[field.name],
-        fields: field.fields,
-        path: fieldPath,
-      })
+    if (field.type === 'group' && 'name' in field) {
+      const groupDoc = doc[field.name]
+      if (isRecord(groupDoc)) {
+        await collectRelationships({
+          collector,
+          depth,
+          doc: groupDoc,
+          fields: field.fields,
+          path: fieldPath,
+        })
+      }
     }
 
     // Handle row fields - these contain nested fields
@@ -77,11 +89,15 @@ export async function collectRelationships(args: {
     // Handle tabs fields - these contain tabs with nested fields
     if (field.type === 'tabs' && field.tabs) {
       for (const tab of field.tabs) {
-        if (tab.fields && doc[tab.name]) {
+        // An unnamed tab has no own key in the document, so the walk cannot descend into it.
+        if (!tabHasName(tab)) continue
+
+        const tabDoc = doc[tab.name]
+        if (tab.fields && isRecord(tabDoc)) {
           await collectRelationships({
             collector,
             depth,
-            doc: doc[tab.name],
+            doc: tabDoc,
             fields: tab.fields,
             path: `${fieldPath}.${tab.name}`,
           })
@@ -94,18 +110,20 @@ export async function collectRelationships(args: {
       const blocks = doc[field.name]
       if (isArray(blocks)) {
         for (let i = 0; i < blocks.length; i++) {
-          const block = blocks[i]
-          if (!block || !block.blockType) continue
+          const block: unknown = blocks[i]
+          if (!isRecord(block) || typeof block.blockType !== 'string') continue
+
+          const blockType = block.blockType
 
           // Find the block definition
-          const blockDef = field.blocks.find((b: any) => b.slug === block.blockType)
+          const blockDef = field.blocks.find((b) => b.slug === blockType)
           if (blockDef && blockDef.fields) {
             await collectRelationships({
               collector,
               depth,
               doc: block,
               fields: blockDef.fields,
-              path: `${fieldPath}[${i}].${block.blockType}`,
+              path: `${fieldPath}[${i}].${blockType}`,
             })
           }
         }
@@ -117,8 +135,8 @@ export async function collectRelationships(args: {
       const arrayItems = doc[field.name]
       if (isArray(arrayItems)) {
         for (let i = 0; i < arrayItems.length; i++) {
-          const item = arrayItems[i]
-          if (!item) continue
+          const item: unknown = arrayItems[i]
+          if (!isRecord(item)) continue
           await collectRelationships({
             collector,
             depth,
@@ -133,16 +151,16 @@ export async function collectRelationships(args: {
 }
 
 // Helper function to extract ID from polymorphic relationships
-function extractIdFromPolymorphicRelation(relation: any): null | number | string {
+function extractIdFromPolymorphicRelation(relation: unknown): null | number | string {
   // Handle polymorphic relationships: { relationTo: "collection", value: { id: 123, ... } }
-  if (relation && typeof relation === 'object' && 'relationTo' in relation && 'value' in relation) {
+  if (isRecord(relation) && 'relationTo' in relation && 'value' in relation) {
     const value = relation.value
-    if (value && typeof value === 'object' && 'id' in value) {
+    if (isRecord(value) && 'id' in value) {
       return value.id as number | string
     }
   }
   // Handle regular populated relationships: { id: 123, ... }
-  if (relation && typeof relation === 'object' && 'id' in relation) {
+  if (isRecord(relation) && 'id' in relation) {
     return relation.id as number | string
   }
   // Handle simple ID references

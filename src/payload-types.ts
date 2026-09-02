@@ -741,13 +741,7 @@ export interface Document {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
-  /**
-   * Number of places this document is used
-   */
   usageCount?: number | null;
-  /**
-   * Where this document is referenced
-   */
   usedIn?:
     | {
         [k: string]: unknown;
@@ -987,13 +981,7 @@ export interface DocumentsPublic {
   id: number;
   description?: string | null;
   itemType?: string | null;
-  /**
-   * Number of places this document is used
-   */
   usageCount?: number | null;
-  /**
-   * Where this document is referenced
-   */
   usedIn?:
     | {
         [k: string]: unknown;

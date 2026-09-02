@@ -219,7 +219,7 @@ export type TaskListCloneRequest = z.infer<typeof taskListCloneRequestSchema>
  * @param error - Zod validation error
  * @returns Formatted error object for API response
  */
-export function formatValidationErrors(error: z.ZodError<any>) {
+export function formatValidationErrors(error: z.ZodError) {
   return {
     errors: error.issues.map((issue) => ({
       code: issue.code,

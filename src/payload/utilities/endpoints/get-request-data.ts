@@ -6,7 +6,7 @@ type RequestData<TParams, TBody> = {
   params?: TParams
 }
 
-export const getRequestData = async <TData extends { body?: any; params?: any; }>(
+export const getRequestData = async <TData extends { body?: unknown; params?: unknown }>(
   req: PayloadRequest,
 ): Promise<RequestData<TData['params'], TData['body']>> => {
   await addDataAndFileToRequest(req)

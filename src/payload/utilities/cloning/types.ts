@@ -35,8 +35,12 @@ export type OtherErrors = {
   op: string
 }
 
-export type RichTextProcessingResult = {
-  content: any
+/**
+ * `processRichTextField` preserves the shape of the value it receives, so the result carries the
+ * caller's own field type back. Every `strip-*` assignment is then checked against that field.
+ */
+export type RichTextProcessingResult<TContent = unknown> = {
+  content: TContent
   errors: MissingDocumentFileError[]
 }
 

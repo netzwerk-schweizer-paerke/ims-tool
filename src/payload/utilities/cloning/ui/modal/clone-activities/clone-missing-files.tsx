@@ -18,7 +18,7 @@ export const CloneMissingFiles: React.FC<CloneMissingFilesProps> = ({ errors }) 
   return (
     <div className="pl-4">
       <p className="mb-2 font-medium text-[var(--theme-warning)]">
-        ⚠️ {t('cloneActivity:results:missingDocuments' as any)}
+        ⚠️ {t('cloneActivity:results:missingDocuments')}
       </p>
       <div className="space-y-3 pl-4">
         {errors.map((file, fileIdx) => (
@@ -28,13 +28,13 @@ export const CloneMissingFiles: React.FC<CloneMissingFilesProps> = ({ errors }) 
             </p>
             <div className="mt-1 space-y-1 pl-2">
               <p className="">
-                <span className="font-medium">{t('cloneActivity:results:file' as any)}</span>{' '}
+                <span className="font-medium">{t('cloneActivity:results:file')}</span>{' '}
                 {file.fileName || 'Unknown'}
               </p>
               {file.usageLocation && (
                 <div className="">
                   <span className="font-medium">
-                    {t('cloneActivity:results:usageInformation' as any)}
+                    {t('cloneActivity:results:usageInformation')}
                   </span>
                   {file.usageLocation.startsWith('{') || file.usageLocation.startsWith('[') ? (
                     <pre className="mt-1 overflow-x-auto rounded bg-[var(--theme-elevation-50)] p-2">
@@ -46,7 +46,7 @@ export const CloneMissingFiles: React.FC<CloneMissingFilesProps> = ({ errors }) 
                 </div>
               )}
               <p className="text-[var(--theme-error)]">
-                <span className="font-medium">{t('cloneActivity:results:error' as any)}</span>{' '}
+                <span className="font-medium">{t('cloneActivity:results:error')}</span>{' '}
                 {file.error}
               </p>
             </div>

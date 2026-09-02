@@ -4,12 +4,16 @@ import { getDefaultLocaleCode } from '@/lib/locale-utils'
 
 import type { TranslationMeta } from '../fields/translation-meta-field'
 
+/** Narrows an unknown value so the code can read a property off it. */
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 /**
  * Check if any localized fields have changed
  */
 function checkForLocalizedFieldChanges(
-  newData: Record<string, any>,
-  originalData: Record<string, any>,
+  newData: Record<string, unknown>,
+  originalData: Record<string, unknown>,
   locale: string,
 ): boolean {
   // When updating via API with locale parameter, the update data contains
@@ -33,7 +37,7 @@ function checkForLocalizedFieldChanges(
     }
 
     // Also check if the field itself is an object with locale keys
-    if (originalValue && typeof originalValue === 'object' && locale in originalValue) {
+    if (isRecord(originalValue) && locale in originalValue) {
       originalValue = originalValue[locale]
     }
 
@@ -43,25 +47,6 @@ function checkForLocalizedFieldChanges(
     }
   }
 
-  return false
-}
-
-/**
- * Check if a locale has any content (has been saved before)
- */
-function hasLocaleContent(data: Record<string, any>, locale: string): boolean {
-  // Check if any localized field has content for this locale
-  for (const key in data) {
-    if (!(key.endsWith(`.${locale}`) || key === locale)) {
-    	continue;
-    }
-
-    const value = data[key]
-    // Check if the value is not null, undefined, or empty string
-    if (value !== null && value !== undefined && value !== '') {
-      return true
-    }
-  }
   return false
 }
 
@@ -194,12 +179,9 @@ export const createClearOutdatedHookForCollection = (
       const fromLocale = context?.fromLocale
 
       if (locale && fromLocale) {
-        // Get the metadata from the original doc or the data being saved
-        const bodyData =
-          req.body && typeof req.body === 'object' && !(req.body instanceof ReadableStream)
-            ? (req.body as Record<string, any>)
-            : {}
-        const existingMeta = data[metaFieldName] || bodyData[metaFieldName] || {}
+        // `beforeValidate` fills `data` from the stored document before this hook runs, so it
+        // already carries the existing metadata. `req.body` is the raw stream and never held it.
+        const existingMeta = data[metaFieldName] || {}
         const translationMeta: TranslationMeta = structuredClone(existingMeta)
 
         // Ensure structure exists
@@ -239,12 +221,9 @@ export const createClearOutdatedHookForGlobal = (metaFieldName: string): GlobalB
       const fromLocale = context?.fromLocale
 
       if (locale && fromLocale) {
-        // Get the metadata from the original doc or the data being saved
-        const bodyData =
-          req.body && typeof req.body === 'object' && !(req.body instanceof ReadableStream)
-            ? (req.body as Record<string, any>)
-            : {}
-        const existingMeta = data[metaFieldName] || bodyData[metaFieldName] || {}
+        // `beforeValidate` fills `data` from the stored document before this hook runs, so it
+        // already carries the existing metadata. `req.body` is the raw stream and never held it.
+        const existingMeta = data[metaFieldName] || {}
         const translationMeta: TranslationMeta = structuredClone(existingMeta)
 
         // Ensure structure exists

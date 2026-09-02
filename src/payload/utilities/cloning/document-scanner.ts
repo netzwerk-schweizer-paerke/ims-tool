@@ -3,29 +3,27 @@
  * This allows pre-loading documents before starting the transaction
  */
 
+import { isRecord, isUnknownArray } from '@/payload/assertions'
+
 /**
  * Scans an activity for all document IDs that will need to be cloned
  */
-export function scanActivityForDocumentIds(activity: any): number[] {
+export function scanActivityForDocumentIds(activity: unknown): number[] {
   const documentIds: number[] = []
 
-  if (!activity) {
+  if (!isRecord(activity)) {
     return documentIds
   }
 
   // Direct file references
-  if (Array.isArray(activity.files)) {
+  if (isUnknownArray(activity.files)) {
     for (const fileRef of activity.files) {
-      if (fileRef.document && typeof fileRef.document === 'number') {
-        documentIds.push(fileRef.document)
-      } else if (fileRef.document?.id) {
-        documentIds.push(fileRef.document.id)
-      }
+      documentIds.push(...readFileReferenceId(fileRef))
     }
   }
 
   // Rich text content in blocks
-  if (Array.isArray(activity.blocks)) {
+  if (isUnknownArray(activity.blocks)) {
     for (const block of activity.blocks) {
       documentIds.push(...scanForDocumentIds(block))
     }
@@ -39,18 +37,18 @@ export function scanActivityForDocumentIds(activity: any): number[] {
   return documentIds
 }
 
-export function scanForDocumentIds(content: any): number[] {
+export function scanForDocumentIds(content: unknown): number[] {
   const documentIds: number[] = []
 
-  if (!content || typeof content !== 'object') {
-    return documentIds
-  }
-
   // Handle arrays
-  if (Array.isArray(content)) {
+  if (isUnknownArray(content)) {
     for (const item of content) {
       documentIds.push(...scanForDocumentIds(item))
     }
+    return documentIds
+  }
+
+  if (!isRecord(content)) {
     return documentIds
   }
 
@@ -77,21 +75,17 @@ export function scanForDocumentIds(content: any): number[] {
 /**
  * Scans a task flow for all document IDs that will need to be cloned
  */
-export function scanTaskFlowForDocumentIds(taskFlow: any): number[] {
+export function scanTaskFlowForDocumentIds(taskFlow: unknown): number[] {
   const documentIds: number[] = []
 
-  if (!taskFlow) {
+  if (!isRecord(taskFlow)) {
     return documentIds
   }
 
   // Direct file references
-  if (Array.isArray(taskFlow.files)) {
+  if (isUnknownArray(taskFlow.files)) {
     for (const fileRef of taskFlow.files) {
-      if (fileRef.document && typeof fileRef.document === 'number') {
-        documentIds.push(fileRef.document)
-      } else if (fileRef.document?.id) {
-        documentIds.push(fileRef.document.id)
-      }
+      documentIds.push(...readFileReferenceId(fileRef))
     }
   }
 
@@ -101,9 +95,9 @@ export function scanTaskFlowForDocumentIds(taskFlow: any): number[] {
   }
 
   // Task content
-  if (Array.isArray(taskFlow.tasks)) {
+  if (isUnknownArray(taskFlow.tasks)) {
     for (const task of taskFlow.tasks) {
-      if (task.content) {
+      if (isRecord(task) && task.content) {
         documentIds.push(...scanForDocumentIds(task.content))
       }
     }
@@ -115,21 +109,17 @@ export function scanTaskFlowForDocumentIds(taskFlow: any): number[] {
 /**
  * Scans a task list for all document IDs that will need to be cloned
  */
-export function scanTaskListForDocumentIds(taskList: any): number[] {
+export function scanTaskListForDocumentIds(taskList: unknown): number[] {
   const documentIds: number[] = []
 
-  if (!taskList) {
+  if (!isRecord(taskList)) {
     return documentIds
   }
 
   // Direct file references
-  if (Array.isArray(taskList.files)) {
+  if (isUnknownArray(taskList.files)) {
     for (const fileRef of taskList.files) {
-      if (fileRef.document && typeof fileRef.document === 'number') {
-        documentIds.push(fileRef.document)
-      } else if (fileRef.document?.id) {
-        documentIds.push(fileRef.document.id)
-      }
+      documentIds.push(...readFileReferenceId(fileRef))
     }
   }
 
@@ -139,9 +129,9 @@ export function scanTaskListForDocumentIds(taskList: any): number[] {
   }
 
   // Task content
-  if (Array.isArray(taskList.tasks)) {
+  if (isUnknownArray(taskList.tasks)) {
     for (const task of taskList.tasks) {
-      if (task.description) {
+      if (isRecord(task) && task.description) {
         documentIds.push(...scanForDocumentIds(task.description))
       }
     }
@@ -150,20 +140,40 @@ export function scanTaskListForDocumentIds(taskList: any): number[] {
   return documentIds
 }
 
-function scanNode(node: any): number[] {
+/**
+ * Reads the document id from one `files` row, which holds either a raw id or a populated document.
+ */
+function readFileReferenceId(fileRef: unknown): number[] {
+  if (!isRecord(fileRef)) {
+    return []
+  }
+
+  const { document } = fileRef
+
+  if (typeof document === 'number') {
+    return [document]
+  }
+
+  if (isRecord(document) && typeof document.id === 'number') {
+    return [document.id]
+  }
+
+  return []
+}
+
+function scanNode(node: unknown): number[] {
   const documentIds: number[] = []
 
-  if (!node || typeof node !== 'object') {
+  if (!isRecord(node)) {
     return documentIds
   }
 
   // Handle document relationships in links
-  if (node.type === 'link' && node.fields?.doc) {
+  if (node.type === 'link' && isRecord(node.fields) && isRecord(node.fields.doc)) {
     const relationship = node.fields.doc
 
     if (relationship.relationTo === 'documents' && relationship.value) {
-      const docId =
-        typeof relationship.value === 'object' ? relationship.value.id : relationship.value
+      const docId = isRecord(relationship.value) ? relationship.value.id : relationship.value
       if (typeof docId === 'number') {
         documentIds.push(docId)
       }
@@ -171,7 +181,7 @@ function scanNode(node: any): number[] {
   }
 
   // Recursively scan children
-  if (Array.isArray(node.children)) {
+  if (isUnknownArray(node.children)) {
     for (const child of node.children) {
       documentIds.push(...scanNode(child))
     }

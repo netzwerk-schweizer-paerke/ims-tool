@@ -1,6 +1,8 @@
-import type { Endpoint } from 'payload'
+import type { Endpoint, PayloadRequest } from 'payload'
 
 import { z } from 'zod'
+
+import type { Activity } from '@/payload-types'
 
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
@@ -16,7 +18,7 @@ export const fetchLegacyDocsTransactional: Endpoint = {
   handler: async (req) => {
     // Step 1: Verify authentication
     requireAuthentication(req)
-    const user = req.user as any
+    const user = req.user
 
     // Step 2: Validate and parse request parameters
     let validatedParams: FetchLegacyDocsParams
@@ -55,10 +57,10 @@ export const fetchLegacyDocsTransactional: Endpoint = {
 
     try {
       // Step 4: Determine which activities to process
-      let activitiesToProcess: any[] = []
+      let activitiesToProcess: Activity[] = []
 
       // Bulk processing mode - fetch all activities the user has access to
-      const selectedOrgId = user.selectedOrganisation
+      const selectedOrgId = user?.selectedOrganisation
         ? typeof user.selectedOrganisation === 'object'
           ? user.selectedOrganisation.id
           : user.selectedOrganisation
@@ -119,19 +121,33 @@ export const fetchLegacyDocsTransactional: Endpoint = {
       activitiesToProcess = activitiesResult.docs
 
       // Step 5: Start transaction for atomic operation
-      const transactionID = (await req.payload.db.beginTransaction()) as string
+      const transactionID = await req.payload.db.beginTransaction()
+
+      if (transactionID === null) {
+        return Response.json(
+          createCloneError(
+            'Failed to fetch legacy documents',
+            'The database adapter did not start a transaction',
+          ),
+          { status: 500 },
+        )
+      }
+
+      // A query joins the transaction only when its own request carries the id. The original `req`
+      // does not, so every write inside would run on a separate connection and survive a rollback.
+      const transactionalReq: PayloadRequest = { ...req, transactionID }
 
       try {
         // Step 6: Process activities using extracted logic
         await processActivities({
           activities: activitiesToProcess,
           dryRun,
-          req,
+          req: transactionalReq,
           tracker,
         })
 
         // Step 7: Commit transaction
-        await req.payload.db.commitTransaction(transactionID as any)
+        await req.payload.db.commitTransaction(transactionID)
 
         // Step 8: Finalize statistics
         const finalStats = tracker.getStatistics()
@@ -149,7 +165,7 @@ export const fetchLegacyDocsTransactional: Endpoint = {
         })
       } catch (error) {
         // Rollback transaction on error
-        await req.payload.db.rollbackTransaction(transactionID as any)
+        await req.payload.db.rollbackTransaction(transactionID)
         throw error
       }
     } catch (error) {

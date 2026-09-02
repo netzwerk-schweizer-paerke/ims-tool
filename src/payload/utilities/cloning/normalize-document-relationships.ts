@@ -1,50 +1,61 @@
-import { isObject } from 'es-toolkit/compat'
+import { isRecord, isUnknownArray } from '@/payload/assertions'
 
 /**
  * Normalizes resolved document entities to unresolved format.
  * Converts { value: { id: 123, ... } } to { value: 123 }
  */
-export function normalizeDocumentRelationships(node: any): any {
+export function normalizeDocumentRelationships(node: unknown): unknown {
   if (!node || typeof node !== 'object') return node
 
   // Create a shallow copy to avoid mutating the original
-  const normalizedNode = Array.isArray(node) ? [...node] : { ...node }
+  if (isUnknownArray(node)) return [...node]
+  if (!isRecord(node)) return node
+
+  const normalizedNode: Record<string, unknown> = { ...node }
 
   // Handle link nodes with document relationships
   // Check if it's a resolved entity (value is an object with an id)
-    if (normalizedNode.type === 'link' && normalizedNode.fields?.doc?.value && isObject(normalizedNode.fields.doc.value) && 'id' in normalizedNode.fields.doc.value) {
-      // Convert resolved to unresolved by extracting just the ID
-      normalizedNode.fields = {
-        ...normalizedNode.fields,
-        doc: {
-          ...normalizedNode.fields.doc,
-          value: normalizedNode.fields.doc.value.id,
-        },
-      }
+  const linkFields = normalizedNode.fields
+  if (
+    normalizedNode.type === 'link' &&
+    isRecord(linkFields) &&
+    isRecord(linkFields.doc) &&
+    isRecord(linkFields.doc.value) &&
+    'id' in linkFields.doc.value
+  ) {
+    // Convert resolved to unresolved by extracting just the ID
+    normalizedNode.fields = {
+      ...linkFields,
+      doc: {
+        ...linkFields.doc,
+        value: linkFields.doc.value.id,
+      },
     }
+  }
 
   // Handle upload nodes with resolved documents
   if (normalizedNode.type === 'upload') {
     // For Slate format upload nodes
-    if (isObject(normalizedNode.value) && 'id' in normalizedNode.value) {
+    const uploadValue = normalizedNode.value
+    if (isRecord(uploadValue) && 'id' in uploadValue) {
       // Store just the ID for processing
-      normalizedNode.value = { id: normalizedNode.value.id }
+      normalizedNode.value = { id: uploadValue.id }
     }
 
     // For Lexical format upload nodes (fields.value structure)
-    if (isObject(normalizedNode.fields?.value) && 'id' in normalizedNode.fields.value) {
+    const uploadFields = normalizedNode.fields
+    if (isRecord(uploadFields) && isRecord(uploadFields.value) && 'id' in uploadFields.value) {
       normalizedNode.fields = {
-        ...normalizedNode.fields,
-        value: { id: normalizedNode.fields.value.id },
+        ...uploadFields,
+        value: { id: uploadFields.value.id },
       }
     }
   }
 
   // Recursively process children nodes
-  if (normalizedNode.children && Array.isArray(normalizedNode.children)) {
-    normalizedNode.children = normalizedNode.children.map((child: any) =>
-      normalizeDocumentRelationships(child),
-    )
+  const children = normalizedNode.children
+  if (isUnknownArray(children)) {
+    normalizedNode.children = children.map((child) => normalizeDocumentRelationships(child))
   }
 
   // Handle Lexical root structure

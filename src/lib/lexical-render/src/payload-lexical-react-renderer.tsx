@@ -128,13 +128,15 @@ export type PayloadLexicalReactRendererContent = {
   root: Root
 }
 
-export type PayloadLexicalReactRendererProps<Blocks extends { [key: string]: any }> = {
+export type PayloadLexicalReactRendererProps<
+  Blocks extends { [key: string]: Record<string, unknown> },
+> = {
   blockRenderers?: {
     [BlockName in Extract<keyof Blocks, string>]?: (
       props: BlockNode<Blocks[BlockName], BlockName>,
     ) => React.ReactNode
   }
-  content: PayloadLexicalReactRendererContent
+  content: null | SerializedLexicalContent | undefined
   elementRenderers?: ElementRenderers
   renderMark?: RenderMark
 }
@@ -147,6 +149,17 @@ export type RenderMark = (mark: Mark) => React.ReactNode
 
 export type Root = AbstractElementNode<'root'> & {
   children: Node[]
+}
+
+/**
+ * What a Payload rich text field carries at runtime. `payload-types.ts` types every child
+ * with an index signature, never with the `Node` union, so the renderer narrows each child
+ * itself before it renders one.
+ */
+export type SerializedLexicalContent = {
+  root: {
+    children: unknown[]
+  }
 }
 
 export type Tab = AbstractTextNode<'tab'>
@@ -181,11 +194,21 @@ type UnknownBlockNode = AbstractNode<'block'> & {
   }
 }
 
-const linkTextReplacer = (text: any) => {
+// A serialized child carries no node type in `payload-types.ts`. This narrows it to the
+// union the renderers accept, and it drops a child that carries no string `type`.
+const isRenderableNode = (value: unknown): value is Node =>
+  typeof value === 'object' && value !== null && 'type' in value && typeof value.type === 'string'
+
+// Returns the `children` prop of a React element, and undefined for anything else.
+const childrenOf = (node: React.ReactNode): React.ReactNode =>
+  React.isValidElement<{ children?: React.ReactNode }>(node) ? node.props.children : undefined
+
+const linkTextReplacer = (text: React.ReactNode): React.ReactNode => {
   // Every step is optional: a link node with no children (or whose child is not the
-  // doubly-wrapped element this expects) leaves an intermediate undefined. Without the
-  // `?.`s the chain throws before reaching the `?? text` fallback it already intended.
-  const linktext = text?.[0]?.props?.children?.props?.children ?? text
+  // doubly-wrapped element this expects) leaves an intermediate undefined. The fallback
+  // then returns the original text.
+  const first = Array.isArray(text) ? text[0] : text
+  const linktext = childrenOf(childrenOf(first)) ?? text
   if (typeof linktext === 'string') {
     return linktext.replaceAll('_', '_\u{AD}')
   }
@@ -380,7 +403,9 @@ export const defaultRenderMark: RenderMark = (mark) => {
   return <span style={style}>{mark.text}</span>
 }
 
-export function PayloadLexicalReactRenderer<Blocks extends { [key: string]: any }>({
+export function PayloadLexicalReactRenderer<
+  Blocks extends { [key: string]: Record<string, unknown> },
+>({
   blockRenderers = {},
   content,
   elementRenderers = defaultElementRenderers,
@@ -524,5 +549,5 @@ export function PayloadLexicalReactRenderer<Blocks extends { [key: string]: any 
     return null
   }
 
-  return <>{serialize(content.root.children)}</>
+  return <>{serialize(content.root.children.filter(isRenderableNode))}</>
 }

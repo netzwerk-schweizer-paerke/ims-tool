@@ -1,6 +1,7 @@
 import { Endpoint, PayloadRequest } from 'payload'
 import { z } from 'zod'
 
+import { toContentLocale } from '@/lib/locale-utils'
 import { createTaskList } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
 import { CloneHttpError, getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
@@ -54,7 +55,18 @@ export const cloneTaskListTransactional: Endpoint = {
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { ids: taskListIds, locale, targetOrganisationId } = validatedBody
+    const { ids: taskListIds, locale: requestedLocale, targetOrganisationId } = validatedBody
+
+    // Narrow the request locale to a configured content locale before any write starts.
+    const locale = toContentLocale(requestedLocale, req.payload.config)
+
+    if (!locale) {
+      req.payload.logger.warn({
+        msg: 'Unsupported locale in batch clone request',
+        requestedLocale,
+      })
+      return Response.json({ error: 'Unsupported locale' }, { status: 400 })
+    }
 
     const transactionID = await req.payload.db.beginTransaction()
 
@@ -104,7 +116,7 @@ export const cloneTaskListTransactional: Endpoint = {
           collection: 'task-lists',
           depth: 0,
           id: taskListId,
-          locale: locale as any,
+          locale,
           req: transactionalReq,
         })
 

@@ -6,6 +6,7 @@ import React from 'react'
 import { DateTime, RelativeTime } from '@/components/date-time'
 
 import type { TranslationMeta } from '../../../fields/translation-meta-field'
+import type { DeepLTranslationKeys, DeepLTranslationsObject } from '../../../i18n-types'
 
 interface Props {
   metaFieldName?: string
@@ -13,7 +14,7 @@ interface Props {
 
 export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Props) => {
   const locale = useLocale()
-  const { t } = useTranslation()
+  const { t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
   const fields = useFormFields(([fields]) => fields)
   const [showTooltip, setShowTooltip] = React.useState(false)
 
@@ -34,7 +35,7 @@ export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Prop
     if (!translationMeta?.translations) return []
 
     return Object.entries(translationMeta.translations)
-      .filter(([targetLocale, info]) => info.from === locale.code && info.isOutdated === true)
+      .filter(([, info]) => info.from === locale.code && info.isOutdated === true)
       .map(([targetLocale]) => targetLocale)
   }, [translationMeta, locale.code])
 
@@ -50,10 +51,10 @@ export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Prop
   const tooltipContent = isOutdated ? (
     <>
       <strong className="mb-[var(--spacing-field)] block text-[var(--theme-warning-500)]">
-        {t('plugin-deepltranslate:translation_outdated_title' as any)}
+        {t('plugin-deepltranslate:translation_outdated_title')}
       </strong>
       <p className="mb-[var(--spacing-field)] text-[var(--theme-elevation-200)]">
-        {t('plugin-deepltranslate:translation_outdated_description' as any).replaceAll(
+        {t('plugin-deepltranslate:translation_outdated_description').replaceAll(
           '{{source}}',
           sourceLocale?.toUpperCase() || '',
         )}
@@ -61,7 +62,7 @@ export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Prop
       {currentTranslation?.date && (
         <div className="mt-2 border-t border-[var(--theme-elevation-900)] pt-2">
           <p className="text-[var(--font-size-small)] text-[var(--theme-elevation-400)]">
-            {t('plugin-deepltranslate:translation_outdated_lastTranslated' as any)}:{' '}
+            {t('plugin-deepltranslate:translation_outdated_lastTranslated')}:{' '}
             <strong>
               <RelativeTime date={currentTranslation.date} />
             </strong>
@@ -72,7 +73,7 @@ export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Prop
           {sourceLastModified && (
             <>
               <p className="mt-2 text-[var(--font-size-small)] text-[var(--theme-elevation-400)]">
-                {t('plugin-deepltranslate:translation_outdated_source_modified' as any).replaceAll(
+                {t('plugin-deepltranslate:translation_outdated_source_modified').replaceAll(
                   '{{source}}',
                   sourceLocale?.toUpperCase() || '',
                 )}
@@ -92,10 +93,10 @@ export const TranslationIndicator = ({ metaFieldName = 'translationMeta' }: Prop
   ) : (
     <>
       <strong className="mb-[var(--spacing-field)] block text-[var(--theme-warning-500)]">
-        {t('plugin-deepltranslate:translation_dependents_outdated_title' as any)}
+        {t('plugin-deepltranslate:translation_dependents_outdated_title')}
       </strong>
       <p className="mb-[var(--spacing-field)] text-[var(--theme-elevation-200)]">
-        {t('plugin-deepltranslate:translation_dependents_outdated_description' as any)}
+        {t('plugin-deepltranslate:translation_dependents_outdated_description')}
       </p>
       <ul className="list-inside list-disc text-[var(--theme-elevation-200)]">
         {outdatedDependents.map((dep) => (

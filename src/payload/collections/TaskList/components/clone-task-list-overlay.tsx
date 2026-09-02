@@ -54,7 +54,6 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
 
     status,
     targetOrgId,
-    targetOrgName,
   } = useCloneOverlay(drawerSlug, targetOrganisations)
 
   const onFormSubmit = async (
@@ -70,7 +69,7 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
   return (
     <Drawer
       Header={
-        <DrawerHeader onClose={handleClose} title={t('cloneTaskList:title' as any)} />
+        <DrawerHeader onClose={handleClose} title={t('cloneTaskList:title')} />
       }
       slug={drawerSlug}>
       <div className={'flex w-full flex-col gap-8'}>
@@ -88,7 +87,7 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
           {status === 'partial' && cloneResults && <CloneStatusPartial results={cloneResults} />}
           {status === '' && (
             <CloneConfigurationForm
-              activities={taskLists as any}
+              activities={taskLists}
               baseClass={baseClass}
               isCloning={cloning}
               onCancel={handleClose}
@@ -109,10 +108,10 @@ export const CloneTaskListOverlay: React.FC<Props> = ({
                   {isSwitching ? (
                     <span className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      {t('general:switching' as any)}
+                      {t('general:switching')}
                     </span>
                   ) : (
-                    <span>{t('cloneActivity:switchToTarget' as any)}</span>
+                    <span>{t('cloneActivity:switchToTarget')}</span>
                   )}
                 </Button>
               )}

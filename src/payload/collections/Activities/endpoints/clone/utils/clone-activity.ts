@@ -1,4 +1,4 @@
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import { Activity } from '@/payload-types'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
@@ -11,7 +11,7 @@ import { cloneRelatedDocumentFiles } from './clone-related-document-files'
 
 type ExecuteActivityCloneParams = {
   documentPreloader?: DocumentPreloader
-  locale: string
+  locale: TypedLocale
   req: PayloadRequest
   sourceActivity: Activity
   targetOrgId: number
@@ -36,7 +36,7 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
     collection: 'activities',
     data: strippedActivity,
     depth: 0,
-    locale: locale as any,
+    locale,
     req: mergeReqContextTargetOrgId(req, targetOrgId),
   })
 

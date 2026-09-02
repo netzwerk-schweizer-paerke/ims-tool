@@ -16,7 +16,7 @@ const enabledCollections: CollectionSlug[] = [
 ]
 
 export const lexicalEditorReducedFeatures = lexicalEditor({
-  features: ({ defaultFeatures }) => [
+  features: () => [
     UnorderedListFeature(),
     OrderedListFeature(),
     LinkFeature({

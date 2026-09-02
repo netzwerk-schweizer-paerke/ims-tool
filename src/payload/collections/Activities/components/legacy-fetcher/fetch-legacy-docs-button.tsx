@@ -26,11 +26,11 @@ export const FetchLegacyDocsButton: React.FC<Props> = async ({ payload, user }) 
   const selectedOrgId = toNumber(getIdFromRelation(user.selectedOrganisation))
   const isSuperAdmin = checkUserRoles([ROLE_SUPER_ADMIN], user)
 
-  // Fetch activities from the selected organisation
+  // The button only needs the count, so one row is enough. `totalDocs` ignores `limit`.
   const activities = await payload.find({
     collection: 'activities',
     depth: 0,
-    limit: 1000, // Get all activities
+    limit: 1,
     where: {
       organisation: {
         equals: selectedOrgId,
@@ -65,7 +65,7 @@ export const FetchLegacyDocsButton: React.FC<Props> = async ({ payload, user }) 
         slug={drawerSlug}>
         <Translate k={'legacyFetcher:title'} />
       </DrawerToggler>
-      <FetchLegacyDocsOverlay activities={activities.docs} />
+      <FetchLegacyDocsOverlay />
     </div>
   )
 }

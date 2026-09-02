@@ -1,5 +1,3 @@
-import type { CollectionSlug, GlobalSlug, TypedLocale } from 'payload'
-
 import { z } from 'zod'
 
 /**

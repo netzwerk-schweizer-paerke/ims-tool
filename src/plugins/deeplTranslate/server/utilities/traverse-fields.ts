@@ -11,6 +11,10 @@ import type { ValueToTranslate } from '../types'
 import { isEmpty } from '../../utils/is-empty'
 import { traverseRichText } from './traverse-rich-text'
 
+/** Narrows an unknown value to a writable record. `isObject` narrows only to `object`. */
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 export const traverseFields = ({
   dataFrom,
   emptyOnly,
@@ -203,8 +207,8 @@ export const traverseFields = ({
                   try {
                     // Safely update the text property
                     const targetObject = siblingDataTranslated[field.name]
-                    if (isObject(targetObject) && targetObject !== null) {
-                      ;(targetObject as any).text = translated
+                    if (isRecord(targetObject)) {
+                      targetObject.text = translated
                     }
                   } catch (error) {
                     logger.warn({

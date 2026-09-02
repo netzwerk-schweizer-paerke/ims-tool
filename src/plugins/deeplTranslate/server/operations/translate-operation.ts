@@ -37,7 +37,7 @@ export type WriteTranslationArgs = {
   localeFrom: TypedLocale
   overrideAccess?: boolean
   req: PayloadRequest
-  translatedData: Record<string, any>
+  translatedData: Record<string, unknown>
 }
 
 /**

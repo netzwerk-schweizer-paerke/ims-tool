@@ -14,7 +14,7 @@ export const getErrorMessage = (error: unknown): string => {
   return 'Unknown error occurred'
 }
 
-export const formatError = (error: unknown, context?: Record<string, any>) => {
+export const formatError = (error: unknown, context?: Record<string, unknown>) => {
   return {
     message: getErrorMessage(error),
     ...(error instanceof Error && error.stack && { stack: error.stack }),
@@ -25,8 +25,8 @@ export const formatError = (error: unknown, context?: Record<string, any>) => {
 export const withErrorHandling = async <T>(
   operation: () => Promise<T>,
   errorMessage: string,
-  logger?: any,
-  context?: Record<string, any>,
+  logger?: { error: (payload: Record<string, unknown>) => void },
+  context?: Record<string, unknown>,
 ): Promise<T> => {
   try {
     return await operation()

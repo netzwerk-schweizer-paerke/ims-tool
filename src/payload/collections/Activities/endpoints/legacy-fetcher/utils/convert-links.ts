@@ -1,14 +1,15 @@
-import type { PayloadRequest } from 'payload'
+import type { Activity } from '@/payload-types'
+
+import type { FetchLegacyDocsTracker } from './statistics-tracker'
 
 /**
  * Convert legacy external links to internal document references in the activity data
  */
 export async function convertLinks(
-  activityData: any,
+  activityData: Activity,
   documentMap: Map<string, number>,
-  tracker: any,
-  req: PayloadRequest,
-): Promise<any> {
+  tracker: FetchLegacyDocsTracker,
+): Promise<Activity> {
   // Deep clone the activity data to avoid mutations
   const updatedData = structuredClone(activityData)
 
@@ -23,7 +24,7 @@ export async function convertLinks(
  */
 export function createConversionSummary(
   documentMap: Map<string, number>,
-  tracker: any,
+  tracker: FetchLegacyDocsTracker,
 ): {
   failedMappings: number
   mappingDetails: Array<{ documentId: null | number; url: string; }>
@@ -31,19 +32,21 @@ export function createConversionSummary(
   totalUrls: number
 } {
   const stats = tracker.getStatistics()
-  const mappingDetails = Array.from(documentMap).map(([url, docId]) => ({
+  const mappingDetails: Array<{ documentId: null | number; url: string; }> = Array.from(
+    documentMap,
+  ).map(([url, docId]) => ({
     documentId: docId,
     url,
   }))
 
   // Add failed URLs to the mapping details
   if (stats && stats.errors && Array.isArray(stats.errors)) {
-    const failedUrls = stats.errors.map((e: any) => e.url as string)
+    const failedUrls = stats.errors.map((e) => e.url)
     const uniqueFailedUrls = Array.from(new Set(failedUrls))
 
     for (const url of uniqueFailedUrls) {
       if (typeof url === 'string' && !documentMap.has(url)) {
-        mappingDetails.push({ documentId: null as any, url: url })
+        mappingDetails.push({ documentId: null, url: url })
       }
     }
   }
@@ -59,8 +62,12 @@ export function createConversionSummary(
 /**
  * Recursively convert links in an object
  */
-function convertLinksInObject(data: any, documentMap: Map<string, number>, tracker: any): void {
-  if (!data || typeof data !== 'object') {
+function convertLinksInObject(
+  data: unknown,
+  documentMap: Map<string, number>,
+  tracker: FetchLegacyDocsTracker,
+): void {
+  if (!isRecord(data)) {
     return
   }
 
@@ -90,27 +97,28 @@ function convertLinksInObject(data: any, documentMap: Map<string, number>, track
  * Convert links in a rich text field
  */
 function convertLinksInRichText(
-  richText: any,
+  richText: unknown,
   documentMap: Map<string, number>,
-  tracker: any,
+  tracker: FetchLegacyDocsTracker,
 ): void {
-  function traverseAndConvert(node: any): void {
-    if (!node || typeof node !== 'object') {
+  function traverseAndConvert(node: unknown): void {
+    if (!isRecord(node)) {
       return
     }
 
     // Check if this is a link node with a legacy URL
-    if (node.type === 'link' && node.fields) {
-      const url = node.fields.url || node.url
-      const linkType = node.fields.linkType || node.linkType
+    const nodeFields = isRecord(node.fields) ? node.fields : undefined
+    if (node.type === 'link' && nodeFields) {
+      const url = nodeFields.url || node.url
+      const linkType = nodeFields.linkType || node.linkType
 
       // Check if it's a custom link that we have a mapping for
       if (linkType === 'custom' && url && typeof url === 'string' && documentMap.has(url)) {
         const documentId = documentMap.get(url)
 
         // Convert to internal link
-        node.fields = {
-          ...node.fields,
+        const updatedFields: Record<string, unknown> = {
+          ...nodeFields,
           doc: {
             relationTo: 'documents',
             value: documentId,
@@ -119,7 +127,8 @@ function convertLinksInRichText(
         }
 
         // Remove the URL field as it's no longer needed
-        delete node.fields.url
+        delete updatedFields.url
+        node.fields = updatedFields
 
         tracker.increment('linksConverted')
       }
@@ -170,11 +179,25 @@ function convertLinksInRichText(
 }
 
 /**
+ * Check if a value is a non-null object. An array passes as well, because the walkers
+ * below treat an array of nodes as a valid rich text shape.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
  * Check if a field appears to be a rich text field
  */
-function isRichTextField(data: any): boolean {
-  return (
-    (data?.root?.type === 'root' && Array.isArray(data.root.children)) ||
-    (Array.isArray(data) && data.some((item) => item?.type && item.children))
-  )
+function isRichTextField(data: unknown): boolean {
+  if (Array.isArray(data)) {
+    return data.some((item) => isRecord(item) && item.type && item.children)
+  }
+
+  if (!isRecord(data)) {
+    return false
+  }
+
+  const root = data.root
+  return isRecord(root) && root.type === 'root' && Array.isArray(root.children)
 }

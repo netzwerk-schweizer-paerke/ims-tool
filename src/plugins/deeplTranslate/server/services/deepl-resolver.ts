@@ -11,15 +11,26 @@ export interface DeeplResolverConfig {
   chunkLength?: number
 }
 
+/** Narrows an unknown thrown value so the code can read a property off it. */
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const NETWORK_ERROR_CODES = new Set(['ECONNABORTED', 'ECONNREFUSED', 'ENOTFOUND'])
+
 // Helper function to detect and categorize DeepL API errors
-function categorizeDeepLError(error: any): {
-  details?: any
+function categorizeDeepLError(error: unknown): {
+  details?: unknown
   message: string
   type: 'authentication' | 'generic' | 'network' | 'quota_exceeded'
 } {
+  const status = isRecord(error) ? error.status : undefined
+  const code = isRecord(error) ? error.code : undefined
+  const rawMessage = isRecord(error) ? error.message : undefined
+  const message = typeof rawMessage === 'string' ? rawMessage : undefined
+
   // Check for DeepL specific error types based on error status codes
-  if (error?.status) {
-    switch (error.status) {
+  if (status && (typeof status === 'number' || typeof status === 'string')) {
+    switch (status) {
       case 400: { // Bad request
         return {
           details: error,
@@ -52,11 +63,7 @@ function categorizeDeepLError(error: any): {
   }
 
   // Check for network-related errors
-  if (
-    error?.code === 'ECONNABORTED' ||
-    error?.code === 'ENOTFOUND' ||
-    error?.code === 'ECONNREFUSED'
-  ) {
+  if (typeof code === 'string' && NETWORK_ERROR_CODES.has(code)) {
     return {
       details: error,
       message: 'Network error connecting to DeepL API.',
@@ -65,7 +72,7 @@ function categorizeDeepLError(error: any): {
   }
 
   // Check error message for quota-related keywords
-  const errorMessage = error?.message?.toLowerCase() || ''
+  const errorMessage = message?.toLowerCase() || ''
   if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
     return {
       details: error,
@@ -77,7 +84,7 @@ function categorizeDeepLError(error: any): {
   // Default to generic error
   return {
     details: error,
-    message: error?.message || 'Unknown translation error occurred.',
+    message: message || 'Unknown translation error occurred.',
     type: 'generic',
   }
 }
@@ -99,7 +106,7 @@ async function processChunksSequentially(
   sourceLanguage: deepl.SourceLanguageCode,
   targetLanguage: deepl.TargetLanguageCode,
   req: PayloadRequest,
-  options?: any,
+  options?: deepl.TranslateTextOptions,
 ): Promise<string[]> {
   const results: string[] = []
 
@@ -180,7 +187,7 @@ const deepLResolver = ({ apiKey, chunkLength = 100 }: DeeplResolverConfig): Deep
     } = args as {
       localeFrom: deepl.SourceLanguageCode
       localeTo: deepl.TargetLanguageCode
-      options?: any
+      options?: deepl.TranslateTextOptions
       req: PayloadRequest
       texts: string[]
     }

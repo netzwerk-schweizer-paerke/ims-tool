@@ -260,7 +260,6 @@ class S3OrphanDetector {
   private async collectPayloadFileReferences(): Promise<Set<string>> {
     console.log('🔍 Collecting Payload file references...')
 
-    const startTime = Date.now()
     const fileReferences = new Set<string>()
 
     // Direct file collection references
@@ -416,7 +415,7 @@ class S3OrphanDetector {
     return objects
   }
 
-  private scanDocumentForFileReferences(obj: any, fileReferences: Set<string>): void {
+  private scanDocumentForFileReferences(obj: unknown, fileReferences: Set<string>): void {
     if (!obj || typeof obj !== 'object') return
 
     if (Array.isArray(obj)) {
@@ -427,35 +426,49 @@ class S3OrphanDetector {
     }
 
     // Check for upload/relationship nodes in rich text
-    if (obj.type === 'upload' && obj.value && typeof obj.value === 'object') {
-      if (obj.value.url) {
-        const key = this.extractS3Key(obj.value.url)
+    const uploadValue = 'type' in obj && obj.type === 'upload' && 'value' in obj ? obj.value : null
+    if (uploadValue && typeof uploadValue === 'object') {
+      if ('url' in uploadValue && typeof uploadValue.url === 'string') {
+        const key = this.extractS3Key(uploadValue.url)
         if (key) fileReferences.add(key)
       }
-      if (obj.value.thumbnailURL) {
-        const key = this.extractS3Key(obj.value.thumbnailURL)
+      if ('thumbnailURL' in uploadValue && typeof uploadValue.thumbnailURL === 'string') {
+        const key = this.extractS3Key(uploadValue.thumbnailURL)
         if (key) fileReferences.add(key)
       }
-      if (obj.value.sizes) {
-        for (const sizeData of Object.values(obj.value.sizes)) {
+      if ('sizes' in uploadValue && uploadValue.sizes && typeof uploadValue.sizes === 'object') {
+        for (const sizeData of Object.values(uploadValue.sizes)) {
           if (!(typeof sizeData === 'object' && sizeData && 'url' in sizeData)) {
           	continue;
           }
 
-          const key = this.extractS3Key((sizeData as any).url)
+          const sizeUrl = sizeData.url
+          if (typeof sizeUrl !== 'string') continue
+
+          const key = this.extractS3Key(sizeUrl)
           if (key) fileReferences.add(key)
         }
       }
     }
 
     // Handle relationship references to file collections
-    if (obj.relationTo && ['documents', 'documents-public', 'media'].includes(obj.relationTo) && obj.value && typeof obj.value === 'object' && obj.value.url) {
-        const key = this.extractS3Key(obj.value.url)
-        if (key) fileReferences.add(key)
-      }
+    const relationTo = 'relationTo' in obj ? obj.relationTo : undefined
+    const relationValue = 'value' in obj ? obj.value : undefined
+    if (
+      typeof relationTo === 'string' &&
+      ['documents', 'documents-public', 'media'].includes(relationTo) &&
+      relationValue &&
+      typeof relationValue === 'object' &&
+      'url' in relationValue &&
+      typeof relationValue.url === 'string'
+    ) {
+      const key = this.extractS3Key(relationValue.url)
+      if (key) fileReferences.add(key)
+    }
 
-    // Handle direct upload field references
-    if ((obj.filename || obj.url) && obj.url) {
+    // Handle direct upload field references. The original filename check was redundant, because
+    // the url had to be truthy either way.
+    if ('url' in obj && typeof obj.url === 'string') {
       const key = this.extractS3Key(obj.url)
       if (key) fileReferences.add(key)
     }

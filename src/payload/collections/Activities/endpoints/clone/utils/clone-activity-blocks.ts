@@ -1,5 +1,5 @@
 import { isArray, isNumber } from 'es-toolkit/compat'
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
@@ -13,7 +13,7 @@ import { createTaskFlow, createTaskList } from './clone-task-flow-or-list'
 type CloneActivityBlocksParams = {
   clonedActivity: Activity
   documentPreloader?: DocumentPreloader
-  locale: string
+  locale: TypedLocale
   req: PayloadRequest
   targetOrgId: number
 }
@@ -33,8 +33,6 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
   }
 
   const updatedBlocks: (ActivityIOBlock | ActivityTaskBlock)[] = []
-  let clonedTaskFlowBlocks = 0
-  let clonedTaskListBlocks = 0
 
   // Blocks on activity level
   for (const block of clonedActivity.blocks) {
@@ -62,7 +60,7 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
             collection: 'task-flows',
             depth: 0,
             id: value,
-            locale: locale as any,
+            locale,
             req,
           })
 
@@ -71,16 +69,12 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
             req,
             taskFlow,
             targetOrgId,
-            locale as string,
+            locale,
             documentPreloader,
           )
 
           if (newTaskFlow) {
             newRelations.push({ relationTo, value: newTaskFlow.id })
-
-            if ('blocks' in newTaskFlow && Array.isArray(newTaskFlow.blocks)) {
-              clonedTaskFlowBlocks += newTaskFlow.blocks.length
-            }
           }
 
           req.payload.logger.debug({
@@ -94,7 +88,7 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
             collection: 'task-lists',
             depth: 0,
             id: value,
-            locale: locale as any,
+            locale,
             req,
           })
 
@@ -103,16 +97,12 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
             req,
             taskList,
             targetOrgId,
-            locale as string,
+            locale,
             documentPreloader,
           )
 
           if (newTaskList) {
             newRelations.push({ relationTo, value: newTaskList.id })
-
-            if ('items' in newTaskList && Array.isArray(newTaskList.items)) {
-              clonedTaskListBlocks += newTaskList.items.length
-            }
           }
 
           req.payload.logger.debug({
@@ -160,7 +150,7 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
         blocks: finalBlocks,
       },
       id: clonedActivity.id,
-      locale: locale as any,
+      locale,
       req: mergeReqContextTargetOrgId(req, targetOrgId),
     })
   }

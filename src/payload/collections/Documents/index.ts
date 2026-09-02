@@ -10,13 +10,6 @@ import { adminSettingsField } from '@/payload/fields/admin-settings'
 
 import { addUsageInfoAfterReadHook } from './hooks/add-usage-info'
 
-const isLocalHost = (hostName: string) => {
-  const localhostPatterns = ['localhost', '127.0.0.1', '0.0.0.0']
-  // Extract hostname without port if port is present
-  const hostname = hostName.split(':', 1)[0]
-  return localhostPatterns.includes(hostname)
-}
-
 export const Documents: CollectionConfig = {
   access: {
     create: currentOrganisationCollectionWriteAccess,

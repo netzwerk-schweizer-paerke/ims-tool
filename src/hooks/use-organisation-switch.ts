@@ -5,7 +5,14 @@ import ky from 'ky'
 import { useState } from 'react'
 
 import { navigateAfterOrganisationSwitch } from '@/lib/organisation-switch-target'
-import { Organisation } from '@/payload-types'
+
+// A caller builds this from a picker option, so it is never a full Organisation. The hook reads
+// `organisationLanguage` only. `useLocale().code` is a plain string, so the field stays a string.
+type OrganisationSwitchTarget = {
+  id?: number
+  name?: string
+  organisationLanguage?: null | string
+}
 
 type UseOrganisationSwitchResult = {
   error: null | string
@@ -13,7 +20,7 @@ type UseOrganisationSwitchResult = {
   switchOrganisation: (
     userId: number,
     targetOrgId: number,
-    targetOrg?: Organisation,
+    targetOrg?: OrganisationSwitchTarget,
   ) => Promise<void>
 }
 
@@ -29,7 +36,7 @@ export function useOrganisationSwitch(): UseOrganisationSwitchResult {
   const switchOrganisation = async (
     userId: number,
     targetOrgId: number,
-    targetOrg?: Organisation,
+    targetOrg?: OrganisationSwitchTarget,
   ) => {
     setIsSwitching(true)
     setError(null)

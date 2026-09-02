@@ -1,4 +1,4 @@
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
@@ -11,9 +11,9 @@ export const stripTaskFlow = async (
   obj: TaskFlow,
   req: PayloadRequest,
   organisationId: number,
-  locale: string,
+  locale: TypedLocale,
   documentPreloader?: DocumentPreloader,
-): Promise<any> => {
+) => {
   const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   const locationPrefix = obj.name ? `Task Flow "${obj.name}"` : 'Task Flow'

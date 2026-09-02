@@ -4,8 +4,8 @@ import { APIError } from 'payload'
 
 type Args = {
   collectionSlug?: CollectionSlug
-  context?: Record<string, any> // Add context for hooks
-  data: Record<string, any>
+  context?: Record<string, unknown> // Add context for hooks
+  data: Record<string, unknown>
   depth?: number
   globalSlug?: GlobalSlug
   id?: number | string
@@ -29,36 +29,33 @@ export const updateEntity = ({
     throw new APIError('Bad Request', 400)
   }
 
-  const isGlobal = !!globalSlug
+  // The config registers no globals, so Payload resolves `GlobalSlug` to `never` and typing an
+  // `updateGlobal` call here is impossible. Register a global, then restore that branch.
+  if (globalSlug) {
+    throw new APIError('Global translation is not configured', 400)
+  }
 
-  if (!isGlobal && !id) {
+  if (!id) {
     throw new APIError('Bad Request', 400)
   }
 
   const depth = incomingDepth ?? req.payload.config.defaultDepth
 
-  const currentSlug = isGlobal ? globalSlug : collectionSlug
+  const promise = req.payload.update({
+    collection: collectionSlug as CollectionSlug,
+    context,
+    // The caller names its collection at run time. Payload then types `data` as the intersection
+    // over every collection, which is `{ [key: string]: undefined }` and no document satisfies it.
+    // One assertion is unavoidable while the slug stays the full union.
+    data: data as unknown as Record<string, never>,
+    depth,
+    id,
+    locale,
+    overrideAccess,
+    req,
+  })
 
-  const promise = isGlobal
-    ? req.payload.updateGlobal({
-        context,
-        data,
-        depth,
-        locale: locale as any,
-        overrideAccess,
-        req,
-        slug: currentSlug as GlobalSlug,
-      })
-    : req.payload.update({
-        collection: currentSlug as CollectionSlug,
-        context,
-        data,
-        depth,
-        id: id as number | string,
-        locale: locale as any,
-        overrideAccess,
-        req,
-      })
-
-  return promise as any
+  // Payload types the collection result and the global result as unrelated unions, so neither is
+  // comparable to the declared contract without a widening step first.
+  return promise as unknown as Promise<Record<string, unknown> & TypeWithID>
 }

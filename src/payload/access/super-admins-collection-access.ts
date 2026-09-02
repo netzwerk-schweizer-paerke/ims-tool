@@ -7,6 +7,6 @@ import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 export const superAdminsCollectionAccess: Access = ({ req: { user } }) =>
   checkUserRoles([ROLE_SUPER_ADMIN], user)
 
-export const superAdminFieldAccess: FieldAccess<User> = ({ req: { payload, user } }) => {
+export const superAdminFieldAccess: FieldAccess<User> = ({ req: { user } }) => {
   return checkUserRoles([ROLE_SUPER_ADMIN], user)
 }

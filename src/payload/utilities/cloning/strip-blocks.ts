@@ -1,4 +1,4 @@
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
@@ -9,11 +9,11 @@ export const stripBlocks = async (
   blocks: (ActivityIOBlock | ActivityTaskBlock)[],
   req: PayloadRequest,
   organisationId: number,
-  locale: string,
+  locale: TypedLocale,
   documentPreloader?: DocumentPreloader,
-): Promise<any[]> => {
+) => {
   const strippedBlocks = await Promise.all(
-    blocks.map(async (block, blockIndex) => {
+    blocks.map(async (block) => {
       const { id, ...strippedBlock } = block
       if (block.blockType === 'activity-io' || block.blockType === 'activity-task') {
         if (block.io?.input) {

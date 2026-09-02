@@ -5,11 +5,10 @@ import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 
 type Props = PropsWithChildren & {
   id: null | string | undefined
-  position: 'left' | 'right'
   spacing?: 'auto' | 'full'
 }
 
-export const BlockWrapper: React.FC<Props> = ({ children, id, position, spacing = 'full' }) => {
+export const BlockWrapper: React.FC<Props> = ({ children, id, spacing = 'full' }) => {
   if (!id) {
     throw new Error('BlockWrapper requires an id prop')
   }

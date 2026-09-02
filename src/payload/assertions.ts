@@ -8,7 +8,15 @@ import {
   TaskList,
 } from '@/payload-types'
 
-export const isActivityIOBlock = (block: any): block is ActivityIOBlock => {
+// `isObject` narrows to `object`, and TypeScript permits no property read on that type.
+// A walker over an arbitrary Payload document needs this predicate to read a key.
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+// `Array.isArray` narrows an `unknown` to `any[]`, which leaks `any` into every element.
+export const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value)
+
+export const isActivityIOBlock = (block: unknown): block is ActivityIOBlock => {
   return (
     !isNumber(block) &&
     !isString(block) &&
@@ -18,7 +26,7 @@ export const isActivityIOBlock = (block: any): block is ActivityIOBlock => {
   )
 }
 
-export const isActivityTaskBlock = (block: any): block is ActivityTaskBlock => {
+export const isActivityTaskBlock = (block: unknown): block is ActivityTaskBlock => {
   return (
     !isNumber(block) &&
     !isString(block) &&
@@ -28,15 +36,15 @@ export const isActivityTaskBlock = (block: any): block is ActivityTaskBlock => {
   )
 }
 
-export const isTaskFlow = (task: any): task is TaskFlow => {
+export const isTaskFlow = (task: unknown): task is TaskFlow => {
   return !isNumber(task) && !isString(task) && isObject(task) && 'id' in task
 }
 
-export const isTaskList = (task: any): task is TaskList => {
+export const isTaskList = (task: unknown): task is TaskList => {
   return !isNumber(task) && !isString(task) && isObject(task) && 'id' in task
 }
 
-export const isOrganisation = (organisation: any): organisation is Organisation => {
+export const isOrganisation = (organisation: unknown): organisation is Organisation => {
   return (
     !isNumber(organisation) &&
     !isString(organisation) &&

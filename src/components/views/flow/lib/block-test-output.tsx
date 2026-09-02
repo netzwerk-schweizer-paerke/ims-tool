@@ -39,13 +39,13 @@ export const BlockTestOutput: React.FC<Props> = ({ block }) => {
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           {isOutputEnabled && (
-            <BlockWrapper id={`${block.id}-left`} position={'left'}>
+            <BlockWrapper id={`${block.id}-left`}>
               <IOShapeWrapper>{outputBlockText}</IOShapeWrapper>
             </BlockWrapper>
           )}
         </div>
         <div>
-          <BlockWrapper id={`${block.id}-right`} position={'right'} spacing={'auto'}>
+          <BlockWrapper id={`${block.id}-right`} spacing={'auto'}>
             <TestShapeWrapper>{testBlockText}</TestShapeWrapper>
             {rightBoolean && rightBoolean !== 'none' && (
               <div className={'absolute right-0'}>{getBoolean(rightBoolean)}</div>

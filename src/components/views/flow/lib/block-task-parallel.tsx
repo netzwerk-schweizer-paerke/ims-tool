@@ -21,12 +21,12 @@ export const BlockTaskParallel: React.FC<Props> = ({ block }) => {
     <Xwrapper>
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
-          <BlockWrapper id={`${block.id}-left`} position={'right'}>
+          <BlockWrapper id={`${block.id}-left`}>
             <TaskShapeWrapper>{task?.textLeft}</TaskShapeWrapper>
           </BlockWrapper>
         </div>
         <div>
-          <BlockWrapper id={`${block.id}-right`} position={'right'}>
+          <BlockWrapper id={`${block.id}-right`}>
             <TaskShapeWrapper>{task?.textRight}</TaskShapeWrapper>
           </BlockWrapper>
         </div>

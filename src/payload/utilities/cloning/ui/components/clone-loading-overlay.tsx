@@ -25,10 +25,10 @@ export const CloneLoadingOverlay: React.FC<CloneLoadingOverlayProps> = ({
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--theme-border-color)] border-t-[var(--theme-elevation-400)]" />
           <p className="text-lg font-medium text-[var(--theme-text)]">
-            {title || t('cloneActivity:processing' as any)}
+            {title || t('cloneActivity:processing')}
           </p>
           <p className="text-[var(--theme-text)]/70 text-sm">
-            {subtitle || t('cloning:loadingMessage' as any)}
+            {subtitle || t('cloning:loadingMessage')}
           </p>
         </div>
       </div>

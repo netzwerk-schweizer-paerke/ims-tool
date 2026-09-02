@@ -1,5 +1,5 @@
 import { isArray } from 'es-toolkit/compat'
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
@@ -12,9 +12,9 @@ export const stripActivity = async (
   obj: Activity,
   req: PayloadRequest,
   organisationId: number,
-  locale: string,
+  locale: TypedLocale,
   documentPreloader?: DocumentPreloader,
-): Promise<any> => {
+) => {
   if (!obj) {
     throw new Error('stripActivity requires an object')
   }

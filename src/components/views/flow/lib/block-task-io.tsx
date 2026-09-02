@@ -25,13 +25,13 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           {isIoEnabled && (
-            <BlockWrapper id={`${block.id}-left`} position={'left'}>
+            <BlockWrapper id={`${block.id}-left`}>
               <IOShapeWrapper>{io?.text}</IOShapeWrapper>
             </BlockWrapper>
           )}
         </div>
         <div>
-          <BlockWrapper id={`${block.id}-right`} position={'right'}>
+          <BlockWrapper id={`${block.id}-right`}>
             <TaskShapeWrapper>{task?.text}</TaskShapeWrapper>
           </BlockWrapper>
         </div>

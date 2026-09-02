@@ -1,4 +1,4 @@
-import { PayloadRequest } from 'payload'
+import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
@@ -14,7 +14,7 @@ import { stripTaskList } from '../../../../../utilities/cloning/strip-task-list'
 interface CreateTaskOptions {
   collectionName: TaskType
   documentPreloader?: DocumentPreloader
-  locale: string
+  locale: TypedLocale
   req: PayloadRequest
   targetOrgId: number
   task: Task
@@ -49,7 +49,7 @@ export const cloneTaskFlowOrList = async ({
     const createdTask = await req.payload.create({
       collection: collectionName,
       data: strippedTask,
-      locale: locale as any,
+      locale,
       req: mergeReqContextTargetOrgId(req, targetOrgId),
     })
 
@@ -87,7 +87,7 @@ export const createTaskFlow = async (
   req: PayloadRequest,
   task: TaskFlow,
   organisationId: number,
-  locale: string,
+  locale: TypedLocale,
   documentPreloader?: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
@@ -107,7 +107,7 @@ export const createTaskList = async (
   req: PayloadRequest,
   task: TaskList,
   organisationId: number,
-  locale: string,
+  locale: TypedLocale,
   documentPreloader?: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({

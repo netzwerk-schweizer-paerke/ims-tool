@@ -1,47 +1,25 @@
 'use client'
 
 import { Button, Drawer, toast, useModal, useTranslation } from '@payloadcms/ui'
-import ky from 'ky'
+import ky, { isHTTPError } from 'ky'
 import { useRouter } from 'next/navigation'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
+
+import type {
+  FetchLegacyDocsResponse,
+  LegacyDocsStatistics,
+} from '@/payload/collections/Activities/endpoints/legacy-fetcher/types'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
-import { Activity } from '@/payload-types'
 import { DrawerHeader } from '@/payload/components/drawer-header'
 
 import { drawerSlug } from './fetch-legacy-docs-button'
 
-type LegacyDocsStatistics = {
-  activitiesProcessed?: number
-  activityBreakdown?: Array<{
-    documentsCreated: number
-    failedConversions: number
-    id: string
-    linkDetails?: Array<{
-      converted?: boolean
-      error?: string
-      fieldLabel: string
-      locationPath: string
-      parentEntity: string
-      url: string
-    }>
-    linksConverted: number
-    linksFound: number
-    name: string
-  }>
-  documentsCreated: number
-  endTime?: number
-  errors: Array<{
-    error: string
-    timestamp: number
-    url: string
-  }>
-  failedConversions: number
-  linksConverted: number
-  processedFields: number
-  skippedFields: number
-  startTime: number
-  totalLinksFound: number
+// The endpoint answers a failure with `createCloneError`, which carries `error`.
+// `message` covers a Payload error shape that the endpoint does not produce itself.
+type FetchLegacyDocsErrorBody = {
+  error?: string
+  message?: string
 }
 
 type ProcessResult = {
@@ -52,11 +30,7 @@ type ProcessResult = {
   success: boolean
 }
 
-type Props = {
-  activities: Activity[]
-}
-
-export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
+export const FetchLegacyDocsOverlay = () => {
   const router = useRouter()
   const { closeModal } = useModal()
   const { t } = useTranslation<I18nObject, I18nKeys>()
@@ -68,14 +42,6 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
   const [error, setError] = useState<null | string>(null)
   const [currentActivity, setCurrentActivity] = useState<null | string>(null)
   const [expandedActivities, setExpandedActivities] = useState<Set<string>>(new Set())
-
-  // Prepare activity options for the Select component
-  const activityOptions = useMemo(() => {
-    return activities.map((activity) => ({
-      label: activity.name,
-      value: activity.id.toString(),
-    }))
-  }, [activities])
 
   const handleFetchLegacyDocs = useCallback(async () => {
     setIsProcessing(true)
@@ -94,7 +60,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           },
           timeout: 600_000, // 10 minutes timeout for bulk processing
         })
-        .json<any>()
+        .json<FetchLegacyDocsResponse>()
 
       // Extract statistics and activity breakdown
       const stats = result.statistics
@@ -102,7 +68,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
 
       // Convert activity breakdown to process results
       if (stats.activityBreakdown) {
-        const results: ProcessResult[] = stats.activityBreakdown.map((activity: any) => ({
+        const results: ProcessResult[] = stats.activityBreakdown.map((activity) => ({
           activityId: activity.id,
           activityName: activity.name,
           statistics: {
@@ -143,12 +109,12 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
           router.refresh()
         }
       }
-    } catch (error_: any) {
+    } catch (error_: unknown) {
       let errorMessage = t('legacyFetcher:error:generic')
 
-      if (error_?.name === 'HTTPError' && error_?.response) {
+      if (isHTTPError(error_)) {
         try {
-          const errorData = await error_.response.json()
+          const errorData = await error_.response.json<FetchLegacyDocsErrorBody>()
           errorMessage = errorData.error || errorData.message || error_.message
         } catch {
           errorMessage = error_.message || t('legacyFetcher:error:fetchFailed')
@@ -163,7 +129,7 @@ export const FetchLegacyDocsOverlay: React.FC<Props> = ({ activities }) => {
       setCurrentActivity(null)
       setIsProcessing(false)
     }
-  }, [dryRun, router])
+  }, [dryRun, router, t])
 
   const formatDuration = (startTime: number, endTime?: number) => {
     if (!endTime) return t('legacyFetcher:inProgress')

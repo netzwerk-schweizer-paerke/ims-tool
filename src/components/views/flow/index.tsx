@@ -11,13 +11,20 @@ import { StepNav } from '@/components/step-nav'
 import { FlowBlock } from '@/components/views/flow/flow-block'
 import { FlowEditLink } from '@/components/views/flow/flow-edit-link'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { Translate } from '@/lib/translate'
 import { TaskFlow } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
-function isTaskFlowArray(flowRelation: any): flowRelation is TaskFlow[] {
-  return Array.isArray(flowRelation) && flowRelation.every((flow) => typeof flow.id === 'number')
+function isTaskFlowArray(flowRelation: unknown): flowRelation is TaskFlow[] {
+  return (
+    Array.isArray(flowRelation) &&
+    flowRelation.every(
+      (flow) =>
+        typeof flow === 'object' && flow !== null && 'id' in flow && typeof flow.id === 'number',
+    )
+  )
 }
 
 export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
@@ -28,7 +35,10 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
   const headers = await getHeaders()
   const { req } = initPageResult
   const { user } = await req.payload.auth({ headers })
-  const locale = req.locale || req.payload.config.i18n.fallbackLanguage
+  // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
+  // A query needs the content locale, so narrow it and let Payload default when it is absent.
+  const locale = toContentLocale(req.locale, req.payload.config)
+  const localeCode = locale ?? getDefaultLocaleCode(req.payload.config)
 
   const selectedOrganisationId = getIdFromRelation(user?.selectedOrganisation)
 
@@ -41,7 +51,7 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
     .find({
       collection: 'task-flows',
       depth: 2,
-      locale: locale as any,
+      locale,
       where: {
         and: [
           {
@@ -76,7 +86,7 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
     .find({
       collection: 'activities',
       depth: 2,
-      locale: locale as any,
+      locale,
       where: {
         and: [
           {
@@ -151,12 +161,12 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
             <Translate k={'flowBlock:title'} />
           </h3>
           <LastUpdated date={flowBlock?.updatedAt} />
-          <FlowEditLink id={flowBlock.id} locale={locale} />
+          <FlowEditLink id={flowBlock.id} locale={localeCode} />
         </div>
         {flowBlock.description && (
           <div className={'mt-8'}>
             <div className={'prose prose-lg py-6 pl-4'}>
-              <PayloadLexicalReactRenderer content={flowBlock.description as any} />
+              <PayloadLexicalReactRenderer content={flowBlock.description} />
             </div>
           </div>
         )}
