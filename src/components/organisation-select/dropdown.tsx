@@ -16,6 +16,14 @@ import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { Organisation } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
+// Payload does not re-export the option type of its `Select`, so it is restated here. The same
+// shape lives in src/plugins/deeplTranslate/client/components/modals/language-selectors.tsx.
+type Option<TValue> = {
+  [p: string]: unknown
+  id?: string
+  value: TValue
+}
+
 type Props = {
   orgs?: Organisation[]
   selectedOrg?: Organisation
@@ -86,7 +94,13 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
       })
   }, [getPreference, paramsLocale, selectedOrgLanguage])
 
-  const onChange = async (option: { value: any }) => {
+  const onChange = async (option: Option<unknown> | Option<unknown>[]) => {
+    // The select is single and never clearable, so the array form and the empty value never
+    // reach this handler. Both are guarded because the prop type admits them.
+    if (Array.isArray(option) || !option.value) {
+      return
+    }
+
     const selectedId = toNumber(option.value)
 
     // The server rejects an organisation the user does not belong to. Without this catch the
@@ -100,7 +114,9 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
       })
     } catch (error) {
       logger.error('Failed to switch the organisation', { error })
-      toast.error(t('error:notAllowedToPerformAction' as I18nKeys))
+      // Payload's toast default is 4000 ms. A denial needs longer, because the user must
+      // read it and then pick another organisation.
+      toast.error(t('error:notAllowedToPerformAction'), { duration: 12_000 })
       return
     }
 
@@ -132,7 +148,7 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
       <Select
         isClearable={false}
         isCreatable={false}
-        onChange={onChange as any}
+        onChange={onChange}
         options={options}
         value={selectedOption}
       />
