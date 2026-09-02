@@ -4,21 +4,25 @@ import { renderPasswordResetEmail } from '@/lib/email-renderer'
 import { isProduction } from '@/lib/environment'
 import { I18nCollection } from '@/lib/i18n-collection'
 import { getLocaleCodes } from '@/lib/locale-utils'
-import { anyone } from '@/payload/access/anyone'
-import { superAdminFieldAccess } from '@/payload/access/super-admins-collection-access'
+import {
+  superAdminFieldAccess,
+  superAdminsCollectionAccess,
+} from '@/payload/access/super-admins-collection-access'
 import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
 import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
 import { enforceSelectedOrganisationMembershipHook } from '@/payload/collections/Users/hooks/enforce-selected-organisation-membership-hook'
 import { loginAfterCreateUserAfterChangeHook } from '@/payload/collections/Users/hooks/login-after-create-user-after-change-hook'
 import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
-import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
 export const Users: CollectionConfig = {
   access: {
-    create: anyone,
+    create: superAdminsCollectionAccess,
     delete: adminAndSelfCollectionAccess,
     read: adminAndSelfCollectionAccess,
+    // An auth collection has five operations. An undeclared one falls back to
+    // `Boolean(user)`, which lets any caller clear a maxLoginAttempts lockout.
+    unlock: superAdminsCollectionAccess,
     update: adminAndSelfCollectionAccess,
   },
   admin: {
@@ -113,9 +117,11 @@ export const Users: CollectionConfig = {
     },
     {
       access: {
-        create: organisationAdminFieldAccess,
-        update: organisationAdminFieldAccess,
-        // read: organisationAdminFieldAccess,
+        // Membership is global administration, per access-definitions.md line 4. The
+        // previous rule tested `doc.organisation`, which no user document carries, so it
+        // denied everyone but a super admin by accident.
+        create: superAdminFieldAccess,
+        update: superAdminFieldAccess,
       },
       fields: [
         {
@@ -151,7 +157,8 @@ export const Users: CollectionConfig = {
     {
       access: {
         create: () => false,
-        read: organisationAdminFieldAccess,
+        // The owner must read their own park, or the organisation switcher renders nothing.
+        read: adminAndSelfFieldAccess,
         update: adminAndSelfFieldAccess,
       },
       admin: {

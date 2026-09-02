@@ -88,12 +88,22 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
 
   const onChange = async (option: { value: any }) => {
     const selectedId = toNumber(option.value)
-    await ky.patch(`/api/users/${userId}`, {
-      credentials: 'include',
-      json: {
-        selectedOrganisation: selectedId,
-      },
-    })
+
+    // The server rejects an organisation the user does not belong to. Without this catch the
+    // rejection is unhandled, and the dropdown snaps back with no message.
+    try {
+      await ky.patch(`/api/users/${userId}`, {
+        credentials: 'include',
+        json: {
+          selectedOrganisation: selectedId,
+        },
+      })
+    } catch (error) {
+      logger.error('Failed to switch the organisation', { error })
+      toast.error(t('error:notAllowedToPerformAction' as I18nKeys))
+      return
+    }
+
     // The organisation changed above. A failed locale write must not abort the redirect, because
     // the user then stays on a document that the new organisation cannot read.
     const targetOrg = orgs?.find((org) => org.id === selectedId)

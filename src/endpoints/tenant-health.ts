@@ -80,15 +80,21 @@ export const tenantHealthEndpoint: Endpoint = {
         return Response.json(report, { status: 200 })
       }
 
-      // Document scope: anyone who may read the row may check it. Loading it with the
-      // caller's own `req` applies the normal organisation filter, so a park user can
-      // check their own items and gets a 404 for anyone else's.
-      await req.payload.findByID({
+      // Document scope: anyone who may read the row may check it. The Local API defaults
+      // `overrideAccess` to true, so `req` alone applies no filter. Pass it explicitly, or
+      // a park user reads the health report of any other park's document.
+      const doc = await req.payload.findByID({
         collection: body.collection,
         depth: 0,
+        disableErrors: true,
         id: body.id,
+        overrideAccess: false,
         req,
       })
+
+      if (!doc) {
+        return Response.json({ error: 'Document not found' }, { status: 404 })
+      }
 
       const report = await checker.runForDocument(body.collection, body.id, {
         checkExternalUrls: body.checkExternalUrls,

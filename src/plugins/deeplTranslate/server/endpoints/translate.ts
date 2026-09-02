@@ -8,6 +8,7 @@ import { collectRelationships } from '../operations/collect-relationships'
 import { translateOperation } from '../operations/translate-operation'
 import { type ValidatedTranslateArgs, validateTranslateArgs } from '../schemas/translate-endpoint'
 import { findEntityWithConfig } from '../utilities/find-entity-with-config'
+import { validateTranslateAccess } from '../utilities/validate-translate-access'
 
 /**
  * Transaction-safe translation endpoint
@@ -51,6 +52,12 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     relationshipDepth,
     toLocale,
   } = validatedArgs
+
+  const access = await validateTranslateAccess({ collectionSlug, globalSlug, id, req })
+
+  if (!access.isValid) {
+    throw new APIError(access.message ?? 'Access denied', access.status ?? 403)
+  }
 
   // Start a database transaction
   const transactionID = await req.payload.db.beginTransaction()
@@ -104,6 +111,7 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     const relationshipStats = {
       failed: 0,
       failedDocs: [] as string[],
+      skipped: 0,
       success: 0,
       total: 0,
     }
@@ -138,6 +146,21 @@ export const translateEndpoint: PayloadHandler = async (req) => {
       // Step 3: Translate each collected document within the transaction
       for (const relatedDoc of relatedDocuments) {
         try {
+          // The collector walks every relationship field, so it also reaches users and
+          // organisations. Skip a related document the caller may not translate.
+          const relatedAccess = await validateTranslateAccess({
+            collectionSlug: relatedDoc.collectionSlug,
+            id: relatedDoc.id,
+            req: transactionalReq,
+          })
+
+          // A skip is not a failure. The collector reaches users and organisations on
+          // every activity, so counting these as failures would change the reported stats.
+          if (!relatedAccess.isValid) {
+            relationshipStats.skipped++
+            continue
+          }
+
           const relationshipResult = await translateOperation({
             collectionSlug: relatedDoc.collectionSlug as CollectionSlug,
             emptyOnly: false,
@@ -197,11 +220,18 @@ export const translateEndpoint: PayloadHandler = async (req) => {
     // If we've made it this far, commit the transaction
     await req.payload.db.commitTransaction(transactionID)
 
+    // A skipped relationship must reach the caller. Otherwise a partial translation
+    // reports the same success as a complete one.
+    const skipNotice =
+      relationshipStats.skipped > 0
+        ? `. ${relationshipStats.skipped} related document(s) were skipped, because you may not translate them`
+        : ''
+
     // Return success with statistics
     return Response.json({
       collection: collectionSlug || globalSlug,
       id,
-      message: `Document translated from ${fromLocale} to ${toLocale}`,
+      message: `Document translated from ${fromLocale} to ${toLocale}${skipNotice}`,
       statistics: {
         mainDocument: 'translated',
         relationships: relationshipStats,

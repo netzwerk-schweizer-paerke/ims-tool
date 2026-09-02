@@ -2,6 +2,9 @@ import type { Endpoint } from 'payload'
 
 import { z } from 'zod'
 
+import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
 
 import { type FetchLegacyDocsParams, FetchLegacyDocsSchema } from './schemas'
@@ -68,6 +71,25 @@ export const fetchLegacyDocsTransactional: Endpoint = {
             'User must have an organisation selected to process all activities',
           ),
           { status: 400 },
+        )
+      }
+
+      // This endpoint creates documents in bulk. Authentication alone is not enough,
+      // because access-definitions.md line 15 makes an organisation user read-only.
+      if (
+        !checkUserRoles([ROLE_SUPER_ADMIN], user) &&
+        !checkOrganisationRoles([ROLE_SUPER_ADMIN], user, selectedOrgId)
+      ) {
+        req.payload.logger.warn(
+          { organisationId: selectedOrgId, userId: user?.id },
+          'access_denied: legacy document fetch requires the organisation admin role',
+        )
+        return Response.json(
+          createCloneError(
+            'Access denied',
+            'You need the admin role in this organisation to fetch legacy documents',
+          ),
+          { status: 403 },
         )
       }
 

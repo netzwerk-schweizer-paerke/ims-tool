@@ -13,7 +13,9 @@ export const Organisations: CollectionConfig = {
     create: superAdminsCollectionAccess,
     delete: superAdminsCollectionAccess,
     read: organisationCollectionReadAccess,
-    update: organisationCollectionReadAccess,
+    // The read helper admits every member, so it must not also gate the write.
+    // access-definitions.md line 5 gives organisation management to the global admin.
+    update: superAdminsCollectionAccess,
   },
   admin: {
     group: I18nCollection.collectionGroup.settings,

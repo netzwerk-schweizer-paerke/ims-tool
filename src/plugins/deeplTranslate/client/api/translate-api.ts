@@ -64,7 +64,9 @@ export async function translateDocument(options: TranslateOptions): Promise<Tran
         }
 
         return {
-          error: errorData.message || 'Translation failed',
+          // A Payload APIError serialises as { errors: [{ message }] }, never as a top-level
+          // message. Read both shapes, or an access denial reads as a generic failure.
+          error: errorData.message || errorData.errors?.[0]?.message || 'Translation failed',
           errorType,
           success: false,
         }

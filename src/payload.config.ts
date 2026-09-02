@@ -16,6 +16,7 @@ import { seedDevUser } from '@/config/seed/dev-user'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
 import { customI18nTranslations } from '@/lib/custom-i18n-translations'
+import { isDevelopment } from '@/lib/environment'
 import { migrations } from '@/migrations'
 import { Activities } from '@/payload/collections/Activities'
 import { Documents } from '@/payload/collections/Documents'
@@ -140,7 +141,11 @@ export default buildConfig({
     },
   },
   async onInit(payload) {
-    await seedDevUser(payload)
+    // The seed creates a super admin with a published password. It must never run
+    // against a deployed database.
+    if (isDevelopment) {
+      await seedDevUser(payload)
+    }
   },
   plugins: [
     deepLTranslate({

@@ -1,12 +1,32 @@
 import { CollectionAfterLoginHook } from 'payload'
 
-export const recordSelectedOrganisationAfterLoginHook: CollectionAfterLoginHook = async ({
+import { User } from '@/payload-types'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
+export const recordSelectedOrganisationAfterLoginHook: CollectionAfterLoginHook<User> = async ({
   req,
   user,
 }) => {
   req.payload.logger.info({ userId: user.id }, 'Setting selected organisation for user')
   try {
     let selectedOrgId = user.selectedOrganisation
+
+    // A revoked membership can leave a stored organisation the user no longer belongs
+    // to. Read access denies that value, so reset it instead of showing an empty list.
+    const storedOrgId = getIdFromRelation(selectedOrgId)
+    const belongsToStoredOrg = (user.organisations ?? []).some(
+      (membership) => getIdFromRelation(membership.organisation) === storedOrgId,
+    )
+
+    if (storedOrgId !== null && !belongsToStoredOrg && !checkUserRoles([ROLE_SUPER_ADMIN], user)) {
+      req.payload.logger.warn(
+        { selectedOrganisation: storedOrgId, userId: user.id },
+        'Stored organisation is not assigned to the user, resetting it',
+      )
+      selectedOrgId = null
+    }
 
     if (!selectedOrgId) {
       req.payload.logger.info({

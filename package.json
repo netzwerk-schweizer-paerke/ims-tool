@@ -20,6 +20,7 @@
     "generate:types": "payload generate:types",
     "generate:importMap": "payload generate:importMap",
     "standalone-script": "tsx ./src/scripts/standalone-script.ts",
+    "smoke:access": "node --experimental-strip-types --no-warnings ./src/scripts/smoke-access-control.ts",
     "email:dev": "email dev",
     "email:export": "email export",
     "typecheck": "npx tsc --noEmit",
