@@ -8,22 +8,28 @@ import { getLocaleCodesFromRequest, getLocalizedValue } from '@/lib/locale-utils
  * Recursively check any value for document references
  * Handles both rich text fields and nested structures
  */
-function checkForDocumentReference(value: any, documentId: number): boolean {
+function checkForDocumentReference(
+  value: any,
+  documentId: number,
+  collectionSlug: string,
+): boolean {
   if (!value) return false
 
   // If it's a rich text field
   if (value.root) {
-    return isDocumentReferencedInRichText(value, documentId)
+    return isDocumentReferencedInRichText(value, documentId, collectionSlug)
   }
 
   // If it's an array, check each item
   if (isArray(value)) {
-    return value.some((item) => checkForDocumentReference(item, documentId))
+    return value.some((item) => checkForDocumentReference(item, documentId, collectionSlug))
   }
 
   // If it's an object, check all properties
   if (typeof value === 'object') {
-    return Object.values(value).some((val) => checkForDocumentReference(val, documentId))
+    return Object.values(value).some((val) =>
+      checkForDocumentReference(val, documentId, collectionSlug),
+    )
   }
 
   return false
@@ -64,7 +70,11 @@ function getName(nameField: any, locales: string[]): string {
  * Check if a document ID is referenced in a rich text field
  * Searches for link nodes with document references (Lexical editor format)
  */
-function isDocumentReferencedInRichText(richText: any, documentId: number): boolean {
+function isDocumentReferencedInRichText(
+  richText: any,
+  documentId: number,
+  collectionSlug: string,
+): boolean {
   if (!richText || !richText.root) return false
 
   // Recursively search through the rich text structure
@@ -74,7 +84,7 @@ function isDocumentReferencedInRichText(richText: any, documentId: number): bool
     // Check if this is a link node with a document reference (Lexical format)
     if (
       node.type === 'link' &&
-      node.fields?.doc?.relationTo === 'documents' &&
+      node.fields?.doc?.relationTo === collectionSlug &&
       node.fields?.doc?.value?.id === documentId
     ) {
       return true
@@ -82,11 +92,11 @@ function isDocumentReferencedInRichText(richText: any, documentId: number): bool
 
     // Check if this is a relationship node pointing to our document (older format)
     if (node.type === 'relationship' || node.type === 'upload') {
-      if (node.relationTo === 'documents' && node.value?.id === documentId) {
+      if (node.relationTo === collectionSlug && node.value?.id === documentId) {
         return true
       }
       // Also check if value is directly the ID (some formats store it differently)
-      if (node.relationTo === 'documents' && node.value === documentId) {
+      if (node.relationTo === collectionSlug && node.value === documentId) {
         return true
       }
     }
@@ -115,12 +125,16 @@ function isDocumentReferencedInRichText(richText: any, documentId: number): bool
  * Checks both direct file references and rich text field references
  */
 export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
+  collection,
   doc,
   findMany,
   req,
 }) => {
   // Get configured locales from Payload config
   const locales = getLocaleCodesFromRequest(req)
+  // `documents` and `documents-public` share this hook and have independent id sequences.
+  // A reference matches only when its `relationTo` names the collection being read.
+  const collectionSlug = collection.slug
   // Skip if this is a findMany operation (list view) for performance
   if (findMany || !doc) {
     return doc
@@ -134,29 +148,32 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     }
 
     // Search for references in Activities
-    // First, find activities with direct file references
-    const activitiesWithFiles = await req.payload.find({
-      collection: 'activities',
-      depth: 0,
-      limit: 100,
-      locale: 'all', // Include all locales
-      req,
-      where: {
-        'files.document': {
-          equals: doc.id,
+    // First, find activities with direct file references. The `files.document` relation points
+    // at `documents` only, so a `documents-public` id would match an unrelated row.
+    if (collectionSlug === 'documents') {
+      const activitiesWithFiles = await req.payload.find({
+        collection: 'activities',
+        depth: 0,
+        limit: 100,
+        locale: 'all', // Include all locales
+        req,
+        where: {
+          'files.document': {
+            equals: doc.id,
+          },
         },
-      },
-    })
-
-    for (const activity of activitiesWithFiles.docs) {
-      const activityName = getName(activity.name, locales)
-      usedIn.activities.push({
-        field: 'files',
-        id: activity.id,
-        name: activityName || `Activity ${activity.id}`,
-        path: 'files.document',
-        referenceType: 'file',
       })
+
+      for (const activity of activitiesWithFiles.docs) {
+        const activityName = getName(activity.name, locales)
+        usedIn.activities.push({
+          field: 'files',
+          id: activity.id,
+          name: activityName || `Activity ${activity.id}`,
+          path: 'files.document',
+          referenceType: 'file',
+        })
+      }
     }
 
     // Then search all activities for rich text references
@@ -177,7 +194,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
       // Check description field (handle localized descriptions)
       let foundInDescription = false
       const description = getDescription(activity.description, locales)
-      if (description && isDocumentReferencedInRichText(description, doc.id)) {
+      if (description && isDocumentReferencedInRichText(description, doc.id, collectionSlug)) {
         const activityName = getName(activity.name, locales)
         usedIn.activities.push({
           field: 'description',
@@ -200,7 +217,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         for (const locale of locales) {
           if (
             activity.description[locale] &&
-            isDocumentReferencedInRichText(activity.description[locale], doc.id)
+            isDocumentReferencedInRichText(activity.description[locale], doc.id, collectionSlug)
           ) {
             const activityName = getName(activity.name, locales)
             usedIn.activities.push({
@@ -235,7 +252,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
             const block = blocks[i]
 
             // Check all fields in the block recursively
-            if (checkForDocumentReference(block, doc.id)) {
+            if (checkForDocumentReference(block, doc.id, collectionSlug)) {
               // Try to get more specific location
               let fieldPath = ''
               const blockInfo: any = {
@@ -245,17 +262,17 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
               // Check specific fields based on block type
               if (block.blockType === 'activity-io') {
-                if (block.io && checkForDocumentReference(block.io, doc.id)) {
+                if (block.io && checkForDocumentReference(block.io, doc.id, collectionSlug)) {
                   fieldPath = locale ? `blocks.${locale}[${i}].io` : `blocks[${i}].io`
                   blockInfo.field = 'io'
-                } else if (block.infos && checkForDocumentReference(block.infos, doc.id)) {
+                } else if (block.infos && checkForDocumentReference(block.infos, doc.id, collectionSlug)) {
                   fieldPath = locale ? `blocks.${locale}[${i}].infos` : `blocks[${i}].infos`
                   blockInfo.field = 'infos'
                 }
               } else if (block.blockType === 'activity-task' && block.relations?.tasks) {
                 for (let j = 0; j < block.relations.tasks.length; j++) {
                   const task = block.relations.tasks[j]
-                  if (checkForDocumentReference(task, doc.id)) {
+                  if (checkForDocumentReference(task, doc.id, collectionSlug)) {
                     fieldPath = locale
                       ? `blocks.${locale}[${i}].relations.tasks[${j}]`
                       : `blocks[${i}].relations.tasks[${j}]`
@@ -323,28 +340,30 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     }
 
     // Search for references in TaskFlows
-    const taskFlows = await req.payload.find({
-      collection: 'task-flows',
-      depth: 0,
-      limit: 100,
-      locale: 'all', // Include all locales
-      req,
-      where: {
-        'files.document': {
-          equals: doc.id,
+    if (collectionSlug === 'documents') {
+      const taskFlows = await req.payload.find({
+        collection: 'task-flows',
+        depth: 0,
+        limit: 100,
+        locale: 'all', // Include all locales
+        req,
+        where: {
+          'files.document': {
+            equals: doc.id,
+          },
         },
-      },
-    })
-
-    for (const taskFlow of taskFlows.docs) {
-      const taskFlowName = getName(taskFlow.name, locales)
-      usedIn.taskFlows.push({
-        field: 'files',
-        id: taskFlow.id,
-        name: taskFlowName || `TaskFlow ${taskFlow.id}`,
-        path: 'files.document',
-        referenceType: 'file',
       })
+
+      for (const taskFlow of taskFlows.docs) {
+        const taskFlowName = getName(taskFlow.name, locales)
+        usedIn.taskFlows.push({
+          field: 'files',
+          id: taskFlow.id,
+          name: taskFlowName || `TaskFlow ${taskFlow.id}`,
+          path: 'files.document',
+          referenceType: 'file',
+        })
+      }
     }
 
     // Search TaskFlows for rich text references
@@ -364,7 +383,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
       // Check description field (handle localized descriptions)
       const description = getDescription(taskFlow.description, locales)
-      if (description && isDocumentReferencedInRichText(description, doc.id)) {
+      if (description && isDocumentReferencedInRichText(description, doc.id, collectionSlug)) {
         foundInTaskFlow = true
       }
 
@@ -379,7 +398,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         for (const locale of locales) {
           if (
             taskFlow.description[locale] &&
-            isDocumentReferencedInRichText(taskFlow.description[locale], doc.id)
+            isDocumentReferencedInRichText(taskFlow.description[locale], doc.id, collectionSlug)
           ) {
             foundInTaskFlow = true
             break
@@ -398,7 +417,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           if (!isArray(blocks)) return null
           for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i]
-            if (checkForDocumentReference(block, doc.id)) {
+            if (checkForDocumentReference(block, doc.id, collectionSlug)) {
               return {
                 blockId: block.id,
                 blockIndex: i,
@@ -445,7 +464,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         }
 
         // Add specific field details based on where it was found
-        if (taskFlow.description && checkForDocumentReference(taskFlow.description, doc.id)) {
+        if (taskFlow.description && checkForDocumentReference(taskFlow.description, doc.id, collectionSlug)) {
           referenceDetails.field = 'description'
           referenceDetails.path = taskFlow.description.root
             ? 'description'
@@ -465,28 +484,30 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
     }
 
     // Search for references in TaskLists
-    const taskLists = await req.payload.find({
-      collection: 'task-lists',
-      depth: 0,
-      limit: 100,
-      locale: 'all', // Include all locales
-      req,
-      where: {
-        'files.document': {
-          equals: doc.id,
+    if (collectionSlug === 'documents') {
+      const taskLists = await req.payload.find({
+        collection: 'task-lists',
+        depth: 0,
+        limit: 100,
+        locale: 'all', // Include all locales
+        req,
+        where: {
+          'files.document': {
+            equals: doc.id,
+          },
         },
-      },
-    })
-
-    for (const taskList of taskLists.docs) {
-      const taskListName = getName(taskList.name, locales)
-      usedIn.taskLists.push({
-        field: 'files',
-        id: taskList.id,
-        name: taskListName || `TaskList ${taskList.id}`,
-        path: 'files.document',
-        referenceType: 'file',
       })
+
+      for (const taskList of taskLists.docs) {
+        const taskListName = getName(taskList.name, locales)
+        usedIn.taskLists.push({
+          field: 'files',
+          id: taskList.id,
+          name: taskListName || `TaskList ${taskList.id}`,
+          path: 'files.document',
+          referenceType: 'file',
+        })
+      }
     }
 
     // Search TaskLists for rich text references
@@ -506,7 +527,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
       // Check description field (handle localized descriptions)
       const description = getDescription(taskList.description, locales)
-      if (description && isDocumentReferencedInRichText(description, doc.id)) {
+      if (description && isDocumentReferencedInRichText(description, doc.id, collectionSlug)) {
         foundInTaskList = true
       }
 
@@ -521,7 +542,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         for (const locale of locales) {
           if (
             taskList.description[locale] &&
-            isDocumentReferencedInRichText(taskList.description[locale], doc.id)
+            isDocumentReferencedInRichText(taskList.description[locale], doc.id, collectionSlug)
           ) {
             foundInTaskList = true
             break
@@ -545,7 +566,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
 
             const items = taskList.items[locale] as any[]
             for (let i = 0; i < items.length; i++) {
-              if (checkForDocumentReference(items[i], doc.id)) {
+              if (checkForDocumentReference(items[i], doc.id, collectionSlug)) {
                 foundInTaskList = true
                 itemLocale = locale
                 itemIndex = i
@@ -557,7 +578,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
           }
         } else if (isArray(taskList.items)) {
           for (let i = 0; i < taskList.items.length; i++) {
-            if (checkForDocumentReference(taskList.items[i], doc.id)) {
+            if (checkForDocumentReference(taskList.items[i], doc.id, collectionSlug)) {
               foundInTaskList = true
               itemIndex = i
               itemPath = `items[${i}]`
@@ -576,7 +597,7 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
         }
 
         // Add specific field details
-        if (taskList.description && checkForDocumentReference(taskList.description, doc.id)) {
+        if (taskList.description && checkForDocumentReference(taskList.description, doc.id, collectionSlug)) {
           referenceDetails.field = 'description'
           referenceDetails.path = 'description'
         } else if (taskList.items) {
