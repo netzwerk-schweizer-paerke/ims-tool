@@ -2,27 +2,47 @@ import { CollectionBeforeChangeHook } from 'payload'
 
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
+/**
+ * Files an upload under a per-organisation folder, `<collection-slug>/<org-id>`,
+ * which is the S3 key prefix the storage adapter writes to and the static
+ * handler later reads back from.
+ *
+ * Two properties matter and both are load-bearing (PIMS-88):
+ *
+ * 1. **It only assigns when a file is actually in flight.** After the object is
+ *    in S3, `plugin-cloud-storage`'s `afterChange` hook re-saves the document
+ *    with its own upload metadata, and that save re-enters every `beforeChange`
+ *    hook. A save with no `req.file` must leave `data.prefix` alone — it still
+ *    has to point at wherever the existing object lives, which is not
+ *    necessarily what we would compute today (older documents sit under
+ *    `documents/null`, and organisation membership can change).
+ * 2. **The value is derived, not appended.** Building it from the collection
+ *    slug makes the hook idempotent; appending to `data.prefix` grew a segment
+ *    on every re-entry (`documents/18` → `documents/18/18`) and orphaned the
+ *    document from its own object.
+ *
+ * The slug is the right base because `payload.config.ts` configures each of
+ * these collections with `prefix: <Collection>.slug`.
+ */
 export const assignOrgToUploadBeforeChangeHook: CollectionBeforeChangeHook = async ({
+  collection,
   context,
   data,
   req,
   req: { user },
 }) => {
-  // Debug logging
-  req.payload.logger.info({ targetOrganisationId: context?.targetOrganisationId }, '[Upload Hook] Context')
-  req.payload.logger.info({ targetOrganisationId: req.context?.targetOrganisationId }, '[Upload Hook] req.context')
+  if (!req.file) {
+    return data
+  }
 
-  // Allow override for cloning operations - check both context and req.context
+  // Cloning writes into a different organisation than the one the acting user
+  // currently has selected, and passes that target through the request context.
   const targetOrgId =
     context?.targetOrganisationId ||
     req.context?.targetOrganisationId ||
     getIdFromRelation(user?.selectedOrganisation)
 
-  // Log for debugging during testing
-  if (context?.targetOrganisationId || req.context?.targetOrganisationId) {
-    req.payload.logger.info({ targetOrgId }, '[Upload Hook] Using context override for org')
-  }
+  data.prefix = `${collection.slug}/${targetOrgId}`
 
-  data.prefix = `${data.prefix}/${targetOrgId}`
   return data
 }
