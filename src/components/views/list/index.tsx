@@ -149,6 +149,13 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
           <LastUpdated date={listBlock?.updatedAt} />
           <ListEditLink id={listBlock.id} locale={locale} />
         </div>
+        {listBlock.description && (
+          <div className={'mt-8'}>
+            <div className={'prose prose-lg py-6 pl-4'}>
+              <PayloadLexicalReactRenderer content={listBlock.description as any} />
+            </div>
+          </div>
+        )}
         <div className={'mt-8'}>
           <div className={'grid grid-cols-3'}>
             <div className={'pl-4'}>
@@ -180,13 +187,6 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
             </p>
           )}
         </div>
-        {listBlock.description && (
-          <div className={'mt-8'}>
-            <div className={'prose prose-lg py-6 pl-4'}>
-              <PayloadLexicalReactRenderer content={listBlock.description as any} />
-            </div>
-          </div>
-        )}
       </div>
     </DefaultTemplate>
   )

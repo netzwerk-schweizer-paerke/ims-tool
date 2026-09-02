@@ -153,6 +153,13 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
           <LastUpdated date={flowBlock?.updatedAt} />
           <FlowEditLink id={flowBlock.id} locale={locale} />
         </div>
+        {flowBlock.description && (
+          <div className={'mt-8'}>
+            <div className={'prose prose-lg py-6 pl-4'}>
+              <PayloadLexicalReactRenderer content={flowBlock.description as any} />
+            </div>
+          </div>
+        )}
         <div className={'mt-8'}>
           <div className={'grid grid-cols-[440px_auto_auto_auto]'}>
             <div></div>
@@ -175,13 +182,6 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
             </p>
           )}
         </div>
-        {flowBlock.description && (
-          <div className={'mt-8'}>
-            <div className={'prose prose-lg py-6 pl-4'}>
-              <PayloadLexicalReactRenderer content={flowBlock.description as any} />
-            </div>
-          </div>
-        )}
       </div>
     </DefaultTemplate>
   )
