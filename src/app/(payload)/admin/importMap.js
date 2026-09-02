@@ -11,6 +11,7 @@ import { ActivityTaskField as ActivityTaskField_a0957cc6c6bd29faf81e7216a2bd26dc
 import { BeforeListTableWrapper as BeforeListTableWrapper_5e61813b74874fdb52ca8e195ce6bf48 } from 'src/payload/collections/Activities/components/before-list-table-wrapper.tsx'
 import { DocumentHealthButton as DocumentHealthButton_463c393ebfcc86e6bce9169cbbf4e0ee } from 'src/payload/components/health/document-health-button.tsx'
 import { SimpleCustomButton as SimpleCustomButton_2603b30d3d3224d85d26ea360d78447b } from 'src/plugins/deeplTranslate/client/components/buttons/simple-custom-button'
+import { DocumentUsageField as DocumentUsageField_09177c28db4f3c355b9550577ce6334d } from 'src/payload/components/document-usage/document-usage-field'
 import { ProcessInputOutputField as ProcessInputOutputField_86f6546ccb9b4d404295b8a255596215 } from 'src/components/graph/fields/graph/flows/io/process-input-output-field'
 import { ProcessTaskField as ProcessTaskField_4398cb30c934d5d1617717da8602ea32 } from 'src/components/graph/fields/graph/flows/task/process-task-field'
 import { ProcessTestField as ProcessTestField_228a1d3d551a14020bbe557cc231c339 } from 'src/components/graph/fields/graph/flows/test/process-test-field'
@@ -43,6 +44,7 @@ export const importMap = {
   "src/payload/collections/Activities/components/before-list-table-wrapper.tsx#BeforeListTableWrapper": BeforeListTableWrapper_5e61813b74874fdb52ca8e195ce6bf48,
   "src/payload/components/health/document-health-button.tsx#DocumentHealthButton": DocumentHealthButton_463c393ebfcc86e6bce9169cbbf4e0ee,
   "src/plugins/deeplTranslate/client/components/buttons/simple-custom-button#SimpleCustomButton": SimpleCustomButton_2603b30d3d3224d85d26ea360d78447b,
+  "src/payload/components/document-usage/document-usage-field#DocumentUsageField": DocumentUsageField_09177c28db4f3c355b9550577ce6334d,
   "src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField": ProcessInputOutputField_86f6546ccb9b4d404295b8a255596215,
   "src/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField": ProcessTaskField_4398cb30c934d5d1617717da8602ea32,
   "src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField": ProcessTestField_228a1d3d551a14020bbe557cc231c339,

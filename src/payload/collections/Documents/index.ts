@@ -48,12 +48,11 @@ export const Documents: CollectionConfig = {
       virtual: true,
     },
     adminSettingsField({ sidebar: true }),
-    // Virtual fields to display usage information
+    // Virtual fields to display usage information. `usedIn` renders the total as well, so
+    // `usageCount` stays out of the admin UI. `admin.hidden` keeps it in the API response.
     {
       admin: {
-        description: 'Number of places this document is used',
-        position: 'sidebar',
-        readOnly: true,
+        hidden: true,
       },
       name: 'usageCount',
       type: 'number',
@@ -61,7 +60,9 @@ export const Documents: CollectionConfig = {
     },
     {
       admin: {
-        description: 'Where this document is referenced',
+        components: {
+          Field: 'src/payload/components/document-usage/document-usage-field#DocumentUsageField',
+        },
         position: 'sidebar',
         readOnly: true,
       },

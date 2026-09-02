@@ -26,6 +26,11 @@ export const it = {
     noContent: 'Nessuna attività o processo definito. Creane alcuni prima.',
     title: 'Panorama delle attività',
   },
+  activityOverview: {
+    notAvailableInLocale:
+      'Questa attività non è disponibile nella lingua attualmente selezionata ({{locale}}). Traducila o passa a un’altra lingua.',
+    viewInEditMode: 'Apri questa attività in modalità di modifica',
+  },
   admin: {
     links: {
       activityLandscape: 'Panorama delle attività',
@@ -51,6 +56,8 @@ export const it = {
       activities: 'Attività',
       instructions:
         "Seleziona le attività che desideri clonare e l'organizzazione di destinazione qui sotto.",
+      selectedCount_one: '{{count}} attività selezionata',
+      selectedCount_other: '{{count}} attività selezionate',
       targetOrganisation: 'Seleziona organizzazione di destinazione',
     },
     info: {
@@ -89,6 +96,10 @@ export const it = {
     processing: 'Clonazione attività in corso... Attendere!',
     results: {
       activityComparison: 'Confronto attività:',
+      allFailedCount: 'Tutte le {{total}} attività non sono state clonate correttamente',
+      clonedActivityId: 'ID attività clonata:',
+      clonedCount: '{{succeeded}} attività su {{total}} sono state clonate con successo',
+      clonedCountWithIssues: ', ma {{count}} presentano problemi rilevanti',
       complete: 'Completo',
       completeness: 'Completezza:',
       completenessAnalysis: 'Analisi completezza:',
@@ -109,6 +120,7 @@ export const it = {
     status: {
       allFailed: 'Tutte le attività sono fallite nella clonazione',
       allSuccess: 'Tutte le attività sono state clonate con successo!',
+      cloneFailed: 'Clonazione fallita',
       failedToClone: 'Fallite nella clonazione:',
       partialSuccess: 'Successo parziale: {{succeeded}} riuscite, {{failed}} fallite',
       successfullyCloned: 'Clonate con successo:',
@@ -125,6 +137,7 @@ export const it = {
       completeness: 'Completezza',
       directFileAttachments: 'Allegati file diretti',
       hasDescription: 'Ha descrizione',
+      id: 'ID',
       metric: 'Metrica',
       missingFiles: 'File mancanti',
       name: 'Nome',
@@ -247,23 +260,58 @@ export const it = {
     items: 'elementi',
     partial: '⚠️ Successo parziale',
     processing: 'Clonazione degli elenchi... Attendere prego!',
+    results: {
+      comparison: 'Confronto elenchi:',
+      completeness: 'Completezza:',
+      sourceItem: 'Elenco di origine:',
+      summary: 'Riepilogo:',
+    },
     selected: 'selezionato/i',
     selectTaskLists: 'Seleziona gli elenchi da clonare',
+    status: {
+      allSuccess: 'Tutti gli elenchi clonati con successo!',
+    },
     succeeded: 'riuscito/i',
     success: '✅ Tutti gli elenchi clonati con successo',
     successfulClones: '✅ Cloni riusciti',
     successMessage:
       "Gli elenchi sono stati clonati con successo nell'organizzazione di destinazione.",
     switchToTarget: "Passa all'organizzazione di destinazione",
+    table: {
+      blocksCount: 'Numero di blocchi',
+      clone: 'Clone',
+      directFileAttachments: 'Allegati diretti',
+      itemId: 'ID elenco',
+      itemsCount: 'Numero di elementi',
+      metric: 'Metrica',
+      publicDocuments: 'File di documenti pubblici',
+      richTextDocuments: 'File di documenti rich text',
+      source: 'Origine',
+      totalDocumentUsages: 'Utilizzi totali di file di documenti',
+      uniqueDocuments: 'File di documenti unici',
+    },
     targetOrganisation: 'Organizzazione di destinazione',
     title: 'Clona elenchi',
   },
   cloning: {
     andMoreItems: '... e {{count}} altri',
+    andMoreMissingFiles: '... e {{count}} altri file mancanti',
+    documentLocation: 'Documento: {{document}} • Posizione: {{location}}',
     failed: 'Fallito',
+    httpLabel: {
+      forbidden: 'Vietato',
+      notFound: 'Non trovato',
+      serverError: 'Errore del server',
+      unknown: 'Sconosciuto',
+    },
+    httpStatus: 'HTTP {{status}} ({{label}}): {{message}}',
     loadingMessage: 'Attendere mentre elaboriamo i vostri dati...',
+    missingDocumentFiles: '{{count}} file di documento mancante/i',
     missingFilesCount: 'File mancanti ({{count}}):',
+    missingFilesDetected: '{{count}} file mancante/i rilevato/i',
+    showDetails: 'Mostra dettagli',
     systemErrors: 'Errori di sistema:',
+    viewDetailedErrors: 'Visualizza gli errori dettagliati',
   },
   common: {
     back: 'Indietro',
@@ -355,6 +403,24 @@ export const it = {
     title: 'Controllo dei dati',
     titleDocument: 'Controllo di questo elemento',
   },
+  documentUsage: {
+    activities: 'Gruppi di processi',
+    empty: 'Questo documento non è referenziato in nessun punto.',
+    field: {
+      blocks: 'Blocchi',
+      description: 'Descrizione',
+      files: 'File',
+      infos: 'Informazioni',
+      io: 'Input / Output',
+      items: 'Voci di elenco',
+      relationsTasks: 'Attività collegate',
+    },
+    taskFlows: 'Processi',
+    taskLists: 'Elenchi',
+    title: 'Utilizzato in',
+    total_one: 'Referenziato in 1 punto',
+    total_other: 'Referenziato in {{count}} punti',
+  },
   flowBlock: {
     table: {
       keypoints: 'Punti chiave',
@@ -366,8 +432,64 @@ export const it = {
   general: {
     cancel: 'Annulla',
     close: 'Chiudi',
+    logoAlt: 'Logo NSP',
     selectAll: 'Seleziona tutto',
     switching: 'Cambiando...',
+  },
+  legacyFetcher: {
+    activitiesProcessed: 'Attività elaborate:',
+    activityDetails: 'Dettagli attività',
+    configuration: 'Configurazione',
+    converted: 'Convertiti:',
+    documentsCreated: 'Documenti creati:',
+    dryRun: 'Prova a vuoto (solo analisi, nessuna modifica)',
+    duration: 'Durata:',
+    error: {
+      fetchFailed: 'Non è stato possibile recuperare i documenti storici',
+      generic: 'Si è verificato un errore',
+    },
+    errors: 'Errori:',
+    failed: 'Falliti:',
+    failedConversions: 'Conversioni fallite:',
+    fieldsProcessed: 'Campi elaborati:',
+    inProgress: 'In corso...',
+    links: 'Collegamenti:',
+    linksConverted: 'Collegamenti convertiti:',
+    migrateAll: 'Migra tutto',
+    overallResults: 'Risultato complessivo',
+    proceedWithMigration: 'Procedi con la migrazione',
+    processing: 'Elaborazione...',
+    processingActivity: 'Elaborazione: {{activity}}',
+    processingAll: 'Elaborazione di tutte le attività...',
+    processMore: 'Elabora altre',
+    scanAll: 'Analizza tutto',
+    steps: {
+      convertLinks: 'Convertire i collegamenti esterni in riferimenti interni',
+      createRecords: 'Creare nuovi record di documento nel sistema',
+      downloadDocuments: 'Scaricare i documenti dagli URL esterni',
+      scanFields:
+        'Analizzare tutti i campi di testo formattato alla ricerca di collegamenti a parcs-ims.ch',
+      title: 'Questa operazione:',
+    },
+    table: {
+      location: 'Posizione',
+      originalUrl: 'URL originale',
+      status: 'Stato',
+    },
+    title: 'Recupera i documenti storici',
+    toast: {
+      foundLinks_one:
+        'Trovati {{links}} collegamenti storici in {{count}} attività (prova a vuoto)',
+      foundLinks_other:
+        'Trovati {{links}} collegamenti storici in {{count}} attività (prova a vuoto)',
+      migrated_one:
+        'Migrati con successo {{converted}} collegamenti su {{links}} in {{count}} attività',
+      migrated_other:
+        'Migrati con successo {{converted}} collegamenti su {{links}} in {{count}} attività',
+      noLinks_one: 'Nessun collegamento storico trovato in {{count}} attività',
+      noLinks_other: 'Nessun collegamento storico trovato in {{count}} attività',
+    },
+    totalLinksFound: 'Totale collegamenti trovati:',
   },
   listBlock: {
     table: {

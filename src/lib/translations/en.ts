@@ -26,6 +26,11 @@ export const en = {
     noContent: 'No activities or processes defined yet. Create some first.',
     title: 'Activity Landscape',
   },
+  activityOverview: {
+    notAvailableInLocale:
+      'This activity is not available in the currently selected locale ({{locale}}). Translate it or switch to a different locale.',
+    viewInEditMode: 'View this activity in edit mode',
+  },
   admin: {
     links: {
       activityLandscape: 'Activity Landscape',
@@ -50,6 +55,8 @@ export const en = {
     form: {
       activities: 'Activities',
       instructions: 'Select the activities you wish to clone and the target organisation below.',
+      selectedCount_one: '{{count}} activity selected',
+      selectedCount_other: '{{count}} activities selected',
       targetOrganisation: 'Select target organisation',
     },
     info: {
@@ -88,6 +95,10 @@ export const en = {
     processing: 'Cloning activities... Please wait!',
     results: {
       activityComparison: 'Activity Comparison:',
+      allFailedCount: 'All {{total}} activities failed to clone properly',
+      clonedActivityId: 'Cloned Activity ID:',
+      clonedCount: '{{succeeded}} of {{total}} activities were cloned successfully',
+      clonedCountWithIssues: ', but {{count}} have significant issues',
       complete: 'Complete',
       completeness: 'Completeness:',
       completenessAnalysis: 'Completeness Analysis:',
@@ -108,6 +119,7 @@ export const en = {
     status: {
       allFailed: 'All activities failed to clone',
       allSuccess: 'All activities cloned successfully!',
+      cloneFailed: 'Clone Failed',
       failedToClone: 'Failed to clone:',
       partialSuccess: 'Partial success: {{succeeded}} succeeded, {{failed}} failed',
       successfullyCloned: 'Successfully cloned:',
@@ -124,6 +136,7 @@ export const en = {
       completeness: 'Completeness',
       directFileAttachments: 'Direct File Attachments',
       hasDescription: 'Has Description',
+      id: 'ID',
       metric: 'Metric',
       missingFiles: 'Missing Files',
       name: 'Name',
@@ -148,6 +161,7 @@ export const en = {
     title: 'Cloning an activity',
   },
   cloneTaskFlow: {
+    blocks: 'blocks',
     button: 'Clone Processes',
     clone: 'Clone Processes',
     cloning: 'Cloning...',
@@ -155,6 +169,7 @@ export const en = {
     errorMessage: 'Please check the errors above and try again.',
     failed: 'failed',
     failedClones: '❌ Failed Clones',
+    files: 'files',
     info: {
       blocks: {
         description: 'All process blocks and their connections will be copied.',
@@ -216,6 +231,7 @@ export const en = {
     errorMessage: 'Please check the errors above and try again.',
     failed: 'failed',
     failedClones: '❌ Failed Clones',
+    files: 'files',
     info: {
       files: {
         description:
@@ -239,6 +255,7 @@ export const en = {
       },
       title: 'What will be cloned?',
     },
+    items: 'items',
     partial: '⚠️ Partial Success',
     processing: 'Cloning lists... Please wait!',
     results: {
@@ -275,10 +292,23 @@ export const en = {
   },
   cloning: {
     andMoreItems: '... and {{count}} more',
+    andMoreMissingFiles: '... and {{count}} more missing files',
+    documentLocation: 'Document: {{document}} • Location: {{location}}',
     failed: 'Failed',
+    httpLabel: {
+      forbidden: 'Forbidden',
+      notFound: 'Not Found',
+      serverError: 'Server Error',
+      unknown: 'Unknown',
+    },
+    httpStatus: 'HTTP {{status}} ({{label}}): {{message}}',
     loadingMessage: 'Please wait while we process your data...',
+    missingDocumentFiles: '{{count}} missing document file(s)',
     missingFilesCount: 'Missing Files ({{count}}):',
+    missingFilesDetected: '{{count}} missing file(s) detected',
+    showDetails: 'Show details',
     systemErrors: 'System Errors:',
+    viewDetailedErrors: 'View detailed errors',
   },
   common: {
     back: 'Back',
@@ -368,6 +398,24 @@ export const en = {
     title: 'Data health check',
     titleDocument: 'Check of this item',
   },
+  documentUsage: {
+    activities: 'Activities',
+    empty: 'This document is not referenced anywhere.',
+    field: {
+      blocks: 'Blocks',
+      description: 'Description',
+      files: 'Files',
+      infos: 'Activity info',
+      io: 'Input / Output',
+      items: 'List entries',
+      relationsTasks: 'Linked tasks',
+    },
+    taskFlows: 'Processes',
+    taskLists: 'Lists',
+    title: 'Used in',
+    total_one: 'Referenced in 1 place',
+    total_other: 'Referenced in {{count}} places',
+  },
   flowBlock: {
     table: {
       keypoints: 'Key Points',
@@ -379,8 +427,60 @@ export const en = {
   general: {
     cancel: 'Cancel',
     close: 'Close',
+    logoAlt: 'NSP logo',
     selectAll: 'Select All',
     switching: 'Switching...',
+  },
+  legacyFetcher: {
+    activitiesProcessed: 'Activities Processed:',
+    activityDetails: 'Activity Details',
+    configuration: 'Configuration',
+    converted: 'Converted:',
+    documentsCreated: 'Documents Created:',
+    dryRun: "Dry run (scan only, don't make changes)",
+    duration: 'Duration:',
+    error: {
+      fetchFailed: 'Failed to fetch legacy documents',
+      generic: 'An error occurred',
+    },
+    errors: 'Errors:',
+    failed: 'Failed:',
+    failedConversions: 'Failed Conversions:',
+    fieldsProcessed: 'Fields Processed:',
+    inProgress: 'In progress...',
+    links: 'Links:',
+    linksConverted: 'Links Converted:',
+    migrateAll: 'Migrate All',
+    overallResults: 'Overall Results',
+    proceedWithMigration: 'Proceed with Migration',
+    processing: 'Processing...',
+    processingActivity: 'Processing: {{activity}}',
+    processingAll: 'Processing all activities...',
+    processMore: 'Process More',
+    scanAll: 'Scan All',
+    steps: {
+      convertLinks: 'Convert external links to internal references',
+      createRecords: 'Create new document records in the system',
+      downloadDocuments: 'Download documents from external URLs',
+      scanFields: 'Scan all rich text fields for links to parcs-ims.ch',
+      title: 'This will:',
+    },
+    table: {
+      location: 'Location',
+      originalUrl: 'Original URL',
+      status: 'Status',
+    },
+    title: 'Fetch Legacy Documents',
+    toast: {
+      foundLinks_one: 'Found {{links}} legacy links in {{count}} activity (dry run)',
+      foundLinks_other: 'Found {{links}} legacy links across {{count}} activities (dry run)',
+      migrated_one: 'Successfully migrated {{converted}} of {{links}} links in {{count}} activity',
+      migrated_other:
+        'Successfully migrated {{converted}} of {{links}} links across {{count}} activities',
+      noLinks_one: 'No legacy links found in {{count}} activity',
+      noLinks_other: 'No legacy links found in {{count}} activities',
+    },
+    totalLinksFound: 'Total Links Found:',
   },
   listBlock: {
     table: {

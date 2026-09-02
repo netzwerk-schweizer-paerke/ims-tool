@@ -26,6 +26,11 @@ export const de = {
     noContent: 'Keine Aktivitäten oder Prozesse definiert. Erstellen Sie zuerst einige.',
     title: 'Prozesslandschaft',
   },
+  activityOverview: {
+    notAvailableInLocale:
+      'Diese Aktivität ist in der aktuell gewählten Sprache ({{locale}}) nicht verfügbar. Übersetzen Sie sie oder wechseln Sie zu einer anderen Sprache.',
+    viewInEditMode: 'Diese Aktivität im Bearbeitungsmodus öffnen',
+  },
   admin: {
     links: {
       activityLandscape: 'Prozesslandschaft',
@@ -51,6 +56,8 @@ export const de = {
       activities: 'Aktivitäten',
       instructions:
         'Wählen Sie unten die Aktivitäten aus, die Sie klonen möchten, und die Zielorganisation.',
+      selectedCount_one: '{{count}} Aktivität ausgewählt',
+      selectedCount_other: '{{count}} Aktivitäten ausgewählt',
       targetOrganisation: 'Zielorganisation auswählen',
     },
     info: {
@@ -89,6 +96,10 @@ export const de = {
     processing: 'Aktivitäten werden geklont... Bitte warten!',
     results: {
       activityComparison: 'Aktivitätenvergleich:',
+      allFailedCount: 'Alle {{total}} Aktivitäten konnten nicht korrekt geklont werden',
+      clonedActivityId: 'ID der geklonten Aktivität:',
+      clonedCount: '{{succeeded}} von {{total}} Aktivitäten wurden erfolgreich geklont',
+      clonedCountWithIssues: ', aber {{count}} davon haben erhebliche Probleme',
       complete: 'Abgeschlossen',
       completeness: 'Vollständigkeit:',
       completenessAnalysis: 'Vollständigkeitsanalyse:',
@@ -109,6 +120,7 @@ export const de = {
     status: {
       allFailed: 'Alle Aktivitäten konnten nicht geklont werden',
       allSuccess: 'Alle Aktivitäten erfolgreich geklont!',
+      cloneFailed: 'Klonen fehlgeschlagen',
       failedToClone: 'Klonen fehlgeschlagen:',
       partialSuccess: 'Teilerfolg: {{succeeded}} erfolgreich, {{failed}} fehlgeschlagen',
       successfullyCloned: 'Erfolgreich geklont:',
@@ -125,6 +137,7 @@ export const de = {
       completeness: 'Vollständigkeit',
       directFileAttachments: 'Direkte Dateianhänge',
       hasDescription: 'Hat Beschreibung',
+      id: 'ID',
       metric: 'Metrik',
       missingFiles: 'Fehlende Dateien',
       name: 'Name',
@@ -149,6 +162,7 @@ export const de = {
     title: 'Aktivität klonen',
   },
   cloneTaskFlow: {
+    blocks: 'Blöcke',
     button: 'Prozesse klonen',
     clone: 'Prozesse klonen',
     cloning: 'Klonen...',
@@ -156,6 +170,7 @@ export const de = {
     errorMessage: 'Bitte überprüfen Sie die obigen Fehler und versuchen Sie es erneut.',
     failed: 'fehlgeschlagen',
     failedClones: '❌ Fehlgeschlagene Klone',
+    files: 'Dateien',
     info: {
       blocks: {
         description: 'Alle Prozessblöcke und ihre Verbindungen werden kopiert.',
@@ -217,6 +232,7 @@ export const de = {
     errorMessage: 'Bitte überprüfen Sie die obigen Fehler und versuchen Sie es erneut.',
     failed: 'fehlgeschlagen',
     failedClones: '❌ Fehlgeschlagene Klone',
+    files: 'Dateien',
     info: {
       files: {
         description:
@@ -240,6 +256,7 @@ export const de = {
       },
       title: 'Was wird geklont?',
     },
+    items: 'Elemente',
     partial: '⚠️ Teilweiser Erfolg',
     processing: 'Listen werden geklont... Bitte warten!',
     results: {
@@ -276,10 +293,23 @@ export const de = {
   },
   cloning: {
     andMoreItems: '... und {{count}} weitere',
+    andMoreMissingFiles: '... und {{count}} weitere fehlende Dateien',
+    documentLocation: 'Dokument: {{document}} • Ort: {{location}}',
     failed: 'Fehlgeschlagen',
+    httpLabel: {
+      forbidden: 'Verboten',
+      notFound: 'Nicht gefunden',
+      serverError: 'Serverfehler',
+      unknown: 'Unbekannt',
+    },
+    httpStatus: 'HTTP {{status}} ({{label}}): {{message}}',
     loadingMessage: 'Bitte warten Sie, während wir Ihre Daten verarbeiten...',
+    missingDocumentFiles: '{{count}} fehlende Dokumentdatei(en)',
     missingFilesCount: 'Fehlende Dateien ({{count}}):',
+    missingFilesDetected: '{{count}} fehlende Datei(en) erkannt',
+    showDetails: 'Details anzeigen',
     systemErrors: 'Systemfehler:',
+    viewDetailedErrors: 'Detaillierte Fehler anzeigen',
   },
   common: {
     back: 'Zurück',
@@ -371,6 +401,24 @@ export const de = {
     title: 'Datenprüfung',
     titleDocument: 'Prüfung dieses Eintrags',
   },
+  documentUsage: {
+    activities: 'Prozessgruppen',
+    empty: 'Dieses Dokument wird nirgends referenziert.',
+    field: {
+      blocks: 'Blöcke',
+      description: 'Beschreibung',
+      files: 'Dateien',
+      infos: 'Aktivitätsinfos',
+      io: 'Eingabe / Ausgabe',
+      items: 'Listeneinträge',
+      relationsTasks: 'Verknüpfte Aufgaben',
+    },
+    taskFlows: 'Prozesse',
+    taskLists: 'Listen',
+    title: 'Verwendet in',
+    total_one: 'An 1 Stelle referenziert',
+    total_other: 'An {{count}} Stellen referenziert',
+  },
   flowBlock: {
     table: {
       keypoints: 'Merkpunkte',
@@ -382,8 +430,61 @@ export const de = {
   general: {
     cancel: 'Abbrechen',
     close: 'Schließen',
+    logoAlt: 'NSP-Logo',
     selectAll: 'Alle auswählen',
     switching: 'Wechseln...',
+  },
+  legacyFetcher: {
+    activitiesProcessed: 'Verarbeitete Aktivitäten:',
+    activityDetails: 'Details zur Aktivität',
+    configuration: 'Konfiguration',
+    converted: 'Konvertiert:',
+    documentsCreated: 'Erstellte Dokumente:',
+    dryRun: 'Testlauf (nur prüfen, keine Änderungen)',
+    duration: 'Dauer:',
+    error: {
+      fetchFailed: 'Die Altdokumente konnten nicht geladen werden',
+      generic: 'Ein Fehler ist aufgetreten',
+    },
+    errors: 'Fehler:',
+    failed: 'Fehlgeschlagen:',
+    failedConversions: 'Fehlgeschlagene Konvertierungen:',
+    fieldsProcessed: 'Verarbeitete Felder:',
+    inProgress: 'In Arbeit...',
+    links: 'Links:',
+    linksConverted: 'Konvertierte Links:',
+    migrateAll: 'Alle migrieren',
+    overallResults: 'Gesamtergebnis',
+    proceedWithMigration: 'Mit der Migration fortfahren',
+    processing: 'Verarbeitung...',
+    processingActivity: 'Verarbeitung: {{activity}}',
+    processingAll: 'Alle Aktivitäten werden verarbeitet...',
+    processMore: 'Weitere verarbeiten',
+    scanAll: 'Alle prüfen',
+    steps: {
+      convertLinks: 'Externe Links in interne Referenzen umwandeln',
+      createRecords: 'Neue Dokumentdatensätze im System anlegen',
+      downloadDocuments: 'Dokumente von externen URLs herunterladen',
+      scanFields: 'Alle Rich-Text-Felder auf Links zu parcs-ims.ch prüfen',
+      title: 'Dieser Vorgang:',
+    },
+    table: {
+      location: 'Ort',
+      originalUrl: 'Ursprüngliche URL',
+      status: 'Status',
+    },
+    title: 'Altdokumente abrufen',
+    toast: {
+      foundLinks_one: '{{links}} Alt-Links in {{count}} Aktivität gefunden (Testlauf)',
+      foundLinks_other: '{{links}} Alt-Links in {{count}} Aktivitäten gefunden (Testlauf)',
+      migrated_one:
+        '{{converted}} von {{links}} Links in {{count}} Aktivität erfolgreich migriert',
+      migrated_other:
+        '{{converted}} von {{links}} Links in {{count}} Aktivitäten erfolgreich migriert',
+      noLinks_one: 'Keine Alt-Links in {{count}} Aktivität gefunden',
+      noLinks_other: 'Keine Alt-Links in {{count}} Aktivitäten gefunden',
+    },
+    totalLinksFound: 'Gefundene Links insgesamt:',
   },
   listBlock: {
     table: {

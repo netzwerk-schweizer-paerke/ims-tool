@@ -1,6 +1,7 @@
 import { isArray, isObject } from 'es-toolkit/compat'
 import { CollectionAfterReadHook } from 'payload'
 
+import { DocumentUsage } from '@/lib/document-usage'
 import { getLocaleCodesFromRequest, getLocalizedValue } from '@/lib/locale-utils'
 
 /**
@@ -126,36 +127,10 @@ export const addUsageInfoAfterReadHook: CollectionAfterReadHook = async ({
   }
 
   try {
-    const usedIn = {
-      activities: [] as Array<{
-        blockId?: string // Block ID if in a block
-        blockType?: string // Type of block
-        field?: string // Which field contains the reference
-        id: number
-        locale?: string // Which locale (if applicable)
-        name: string
-        path?: string // Full path to the reference
-        referenceType: string
-      }>,
-      taskFlows: [] as Array<{
-        blockId?: string
-        blockType?: string
-        field?: string
-        id: number
-        locale?: string
-        name: string
-        path?: string
-        referenceType: string
-      }>,
-      taskLists: [] as Array<{
-        field?: string
-        id: number
-        itemIndex?: number // For TaskList items
-        locale?: string
-        name: string
-        path?: string
-        referenceType: string
-      }>,
+    const usedIn: DocumentUsage = {
+      activities: [],
+      taskFlows: [],
+      taskLists: [],
     }
 
     // Search for references in Activities
