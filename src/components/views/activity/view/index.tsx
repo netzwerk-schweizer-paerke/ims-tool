@@ -35,47 +35,23 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   assert(activityid, `Activity ID not set, ${activityid}`)
   assert(activityBlockId, `Flow ID not set, ${activityBlockId}`)
 
-  const activityBlock = await req.payload
-    .find({
-      collection: 'activities',
-      depth: 2,
-      locale: locale as any,
-      where: {
-        and: [
-          {
-            id: { equals: activityid },
-            organisation: {
-              equals: selectedOrganisationId,
-            },
-          },
-        ],
+  const activityWhere = {
+    and: [
+      {
+        id: { equals: activityid },
+        organisation: {
+          equals: selectedOrganisationId,
+        },
       },
-    })
-    .then((res) => {
-      if (res.docs.length === 0) {
-        return null
-      }
-      if (res.docs.length > 1) {
-        logger.warn('admin/views/activity/view/index: More than one activity found')
-      }
-      return res?.docs[0]?.blocks?.find((block) => block.id === (activityBlockId as any))
-    })
+    ],
+  }
 
   const activity = await req.payload
     .find({
       collection: 'activities',
       depth: 2,
       locale: locale as any,
-      where: {
-        and: [
-          {
-            id: { equals: activityid },
-            organisation: {
-              equals: selectedOrganisationId,
-            },
-          },
-        ],
-      },
+      where: activityWhere,
       //   TODO: Implement doc order sorting
     })
     .then((res) => {
@@ -87,6 +63,38 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
       }
       return res?.docs[0]
     })
+
+  const blocks = activity?.blocks ?? []
+
+  // Payload stores a separate block row per locale, and each row has its own id. A language switch
+  // therefore leaves the URL with an id that the current locale does not hold. Resolve the block by
+  // its position in the locale that owns the id.
+  const resolveBlockByPosition = async () => {
+    const blocksPerLocale = await req.payload
+      .find({
+        collection: 'activities',
+        depth: 0,
+        locale: 'all',
+        where: activityWhere,
+      })
+      .then(
+        (res) =>
+          res.docs[0]?.blocks as unknown as Record<string, { id?: null | string }[]> | undefined,
+      )
+
+    for (const localeBlocks of Object.values(blocksPerLocale ?? {})) {
+      const index = localeBlocks.findIndex((block) => block.id === activityBlockId)
+      if (index !== -1) {
+        return blocks[index]
+      }
+    }
+
+    return undefined
+  }
+
+  const activityBlock =
+    blocks.find((block) => block.id === (activityBlockId as any)) ??
+    (activity ? await resolveBlockByPosition() : undefined)
 
   const findTitle = (a: typeof activity, block: typeof activityBlock) => {
     if (block?.graph?.task?.text) {
