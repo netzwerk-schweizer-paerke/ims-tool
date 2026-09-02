@@ -10,6 +10,15 @@ jest.mock('../../../../utilities/check-user-roles')
 jest.mock('../../../../utilities/check-organisation-roles')
 jest.mock('../../../../utilities/get-id-from-relation')
 
+// The real helper takes `unknown`, so the mock narrows the same way it does.
+const idOfRelation = (relation: unknown): null | number => {
+  if (typeof relation === 'number') return relation
+  if (typeof relation === 'object' && relation !== null && 'id' in relation) {
+    return typeof relation.id === 'number' ? relation.id : null
+  }
+  return null
+}
+
 describe('organisationCollectionReadAccess', () => {
   // Test data
   const mockPayload = {
@@ -60,12 +69,7 @@ describe('organisationCollectionReadAccess', () => {
       // Simulate that user has proper roles in both organizations
       return true
     })
-    jest.mocked(getIdFromRelation).mockImplementation((relation) => {
-      if (typeof relation === 'number') return relation
-      if (relation?.id === mockOrganisations.org1.id) return mockOrganisations.org1.id
-      if (relation?.id === mockOrganisations.org2.id) return mockOrganisations.org2.id
-      return null
-    })
+    jest.mocked(getIdFromRelation).mockImplementation(idOfRelation)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
@@ -93,12 +97,7 @@ describe('organisationCollectionReadAccess', () => {
       // Simulate that user only has proper roles in the second organization
       return orgId === mockOrganisations.org2.id
     })
-    jest.mocked(getIdFromRelation).mockImplementation((relation) => {
-      if (typeof relation === 'number') return relation
-      if (relation?.id === mockOrganisations.org1.id) return mockOrganisations.org1.id
-      if (relation?.id === mockOrganisations.org2.id) return mockOrganisations.org2.id
-      return null
-    })
+    jest.mocked(getIdFromRelation).mockImplementation(idOfRelation)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
@@ -139,12 +138,7 @@ describe('organisationCollectionReadAccess', () => {
     // Setup mocks
     jest.mocked(checkUserRoles).mockReturnValue(false)
     jest.mocked(checkOrganisationRoles).mockReturnValue(false) // No orgs accessible
-    jest.mocked(getIdFromRelation).mockImplementation((relation) => {
-      if (typeof relation === 'number') return relation
-      if (relation?.id === mockOrganisations.org1.id) return mockOrganisations.org1.id
-      if (relation?.id === mockOrganisations.org2.id) return mockOrganisations.org2.id
-      return null
-    })
+    jest.mocked(getIdFromRelation).mockImplementation(idOfRelation)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
