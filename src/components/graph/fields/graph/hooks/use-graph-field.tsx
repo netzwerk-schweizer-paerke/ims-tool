@@ -4,6 +4,7 @@ import { JSONFieldClientProps, Validate } from 'payload'
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { useArrows } from '@/components/graph/fields/graph/hooks/use-arrows'
+import { ArrowLayer } from '@/components/graph/fields/graph/lib/arrow-layer'
 import {
   ConnectionDefinition,
   ConnectionStateType,
@@ -53,13 +54,15 @@ export const useGraphField = <TState extends ConnectionStateType>({
     }
   }, [setValue, value, createInitialState])
 
-  const { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType } = useArrows({
+  const { arrows, arrowSetId, ref, toggleConnectionType } = useArrows({
     connections,
     setState: setValue,
     state: value,
   })
 
-  const arrowsContent = useMemo(() => (isLoaded ? renderArrows() : null), [isLoaded, renderArrows])
+  // The layer measures in a layout effect, so the first painted frame already carries the
+  // geometry. The old engine needed an `isLoaded` gate because it measured per arrow.
+  const arrowsContent = useMemo(() => <ArrowLayer arrows={arrows} />, [arrows])
 
   return { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value }
 }

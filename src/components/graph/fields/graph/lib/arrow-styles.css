@@ -1,6 +1,9 @@
 .x-arrows {
   position: absolute;
   inset: 0 0 0 0;
+  /* The layer covers the whole block. Without this it swallows clicks meant for the
+     controls underneath it, including the sidebar on the activities list. */
+  pointer-events: none;
   svg {
     > path {
       stroke: var(--theme-text);

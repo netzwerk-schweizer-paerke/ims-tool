@@ -1,15 +1,13 @@
 'use client'
-import { debounce } from 'es-toolkit'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useId, useMemo, useRef } from 'react'
 
-import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
+import { LayerArrow } from '@/components/graph/fields/graph/lib/arrow-layer'
 import {
   ConnectionDefinition,
   ConnectionPosition,
   ConnectionStateType,
   ConnectionType,
 } from '@/components/graph/fields/graph/lib/connection-types'
-import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 
 type Props = {
   connections: readonly ConnectionDefinition[]
@@ -20,8 +18,6 @@ type Props = {
 export const useArrows = ({ connections, setState, state }: Props) => {
   const ref = useRef<HTMLDivElement>(null)
   const arrowSetId = useId()
-  const updateXarrow = useXarrow()
-  const [isLoaded, setIsLoaded] = useState(false)
 
   const setConnectionType = useCallback(
     (type: ConnectionType, position: ConnectionPosition) => {
@@ -40,9 +36,8 @@ export const useArrows = ({ connections, setState, state }: Props) => {
         ...state,
         connections: nextConnections,
       })
-      updateXarrow()
     },
-    [state, setState, updateXarrow],
+    [state, setState],
   )
 
   // Memoised so the memo()'d node buttons only re-render when the block's own value
@@ -62,72 +57,39 @@ export const useArrows = ({ connections, setState, state }: Props) => {
     [connections, state, setConnectionType],
   )
 
-  useEffect(() => {
-    const reference = ref.current
-    if (!reference) return
-
-    const handleResize = debounce(() => {
-      setIsLoaded(true)
-      updateXarrow()
-    }, 250)
-
-    const resizeObserver = new ResizeObserver(handleResize)
-
-    if (reference) {
-      resizeObserver.observe(reference)
-    }
-
-    // Clean up function
-    return () => {
-      if (reference) {
-        resizeObserver.unobserve(reference)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   // Only the connections drive the arrows. The text lives in the same state object, and
   // `setValue` spreads that object on every keystroke while it keeps this array's identity.
-  // A dependency on the whole state therefore redrew every arrow of the block on each keystroke.
+  // A dependency on the whole state therefore rebuilt every arrow of the block on each keystroke.
   const stateConnections = state?.connections
 
-  const renderArrows = useCallback(() => {
-    if (!stateConnections) return null
-    return stateConnections
-      .flatMap((connection) => {
-        // The JSON schema only checks that position and type are strings, so stored
-        // values that no longer exist in the definitions must be skipped — throwing
-        // here would take down the whole edit view.
-        const definitions = connections.find(
-          (candidate) => candidate.position === connection.position,
-        )?.definitions
-        const arrows = definitions?.[connection.type]
-        if (!arrows) {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn(
-              `[graph] no arrow definition for "${connection.position}/${connection.type}" — skipping`,
-            )
-          }
-          return []
+  const arrows = useMemo<LayerArrow[]>(() => {
+    if (!stateConnections) return []
+    return stateConnections.flatMap((connection) => {
+      // The JSON schema only checks that position and type are strings, so stored
+      // values that no longer exist in the definitions must be skipped — throwing
+      // here would take down the whole edit view.
+      const definitions = connections.find(
+        (candidate) => candidate.position === connection.position,
+      )?.definitions
+      const specs = definitions?.[connection.type]
+      if (!specs) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            `[graph] no arrow definition for "${connection.position}/${connection.type}" — skipping`,
+          )
         }
-        return arrows.map((arrow, arrowIndex) => ({
-          arrow,
-          // Keyed by the endpoints, deliberately NOT by connection.type. Xarrow holds
-          // position state, so a bare index would let React reuse one instance for a
-          // different start/end pair — but including the type would force a remount on
-          // every switch, and a remount costs ~4 render passes and several forced layout
-          // reads before the arrow is visible again. Endpoints give both: stable identity
-          // when the geometry is unchanged, a fresh instance when it genuinely differs.
-          key: `${connection.position}-${arrow.start}-${arrow.end}-${arrowIndex}`,
-        }))
-      })
-      .map(({ arrow, key }) => {
-        const start = `${arrowSetId}-${arrow.start}`
-        const end = `${arrowSetId}-${arrow.end}`
-        const props = { ...arrow, end, start, ...arrowStyle }
-        return <Xarrow key={key} {...props} />
-      })
+        return []
+      }
+      return specs.map((spec, index) => ({
+        ...spec,
+        end: `${arrowSetId}-${spec.end}`,
+        // Keyed by the endpoints rather than by the index, because the list changes
+        // length as connection types change.
+        key: `${connection.position}-${spec.start}-${spec.end}-${index}`,
+        start: `${arrowSetId}-${spec.start}`,
+      }))
+    })
   }, [stateConnections, connections, arrowSetId])
 
-  return { arrowSetId, isLoaded, ref, renderArrows, toggleConnectionType, updateXarrow }
+  return { arrows, arrowSetId, ref, toggleConnectionType }
 }

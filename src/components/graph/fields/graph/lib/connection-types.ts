@@ -1,4 +1,7 @@
-import { xarrowPropsType } from '@/lib/xarrows/src'
+import { ArrowSpec } from '@/components/graph/fields/graph/lib/arrow-geometry'
+
+// Re-exported so a `connection-definitions.ts` needs one type import, not two.
+export type { ArrowSpec } from '@/components/graph/fields/graph/lib/arrow-geometry'
 
 export const connectionPositions = ['bottom', 'left', 'right', 'top'] as const
 
@@ -24,7 +27,7 @@ export const connectionTypes = [
 ] as const
 
 /** The arrows to draw for one anchor position, keyed by the stored connection type. */
-export type ArrowDefinitions = Partial<Record<ConnectionType, Partial<xarrowPropsType>[]>>
+export type ArrowDefinitions = Partial<Record<ConnectionType, ArrowSpec[]>>
 
 /** What one anchor position of a block supports: its arrows and the cycle order of its button. */
 export type ConnectionDefinition = {
