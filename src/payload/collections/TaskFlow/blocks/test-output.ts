@@ -1,6 +1,7 @@
 import { Block } from 'payload'
 
 import { I18nCollection } from '@/lib/i18n-collection'
+import { trimGraphTextFieldHook } from '@/payload/collections/hooks/trim-graph-text-field-hook'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
@@ -28,6 +29,9 @@ export const ProcessTestOutputBlock: Block = {
                         'src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
                   },
+                  hooks: {
+                    beforeChange: [trimGraphTextFieldHook],
+                  },
                   jsonSchema: connectionSchema,
                   name: 'output',
                   type: 'json',
@@ -38,6 +42,9 @@ export const ProcessTestOutputBlock: Block = {
                       Field:
                         'src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
                     },
+                  },
+                  hooks: {
+                    beforeChange: [trimGraphTextFieldHook],
                   },
                   jsonSchema: connectionSchema,
                   localized: true,

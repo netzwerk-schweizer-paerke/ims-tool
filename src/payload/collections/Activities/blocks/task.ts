@@ -2,6 +2,7 @@ import { Block } from 'payload'
 
 import { I18nCollection } from '@/lib/i18n-collection'
 import { tabsMetadata } from '@/payload/collections/Activities/blocks/tabs-metadata'
+import { trimGraphTextFieldHook } from '@/payload/collections/hooks/trim-graph-text-field-hook'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 
 export const ActivityTaskBlock: Block = {
@@ -22,6 +23,9 @@ export const ActivityTaskBlock: Block = {
                   Field:
                     'src/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
                 },
+              },
+              hooks: {
+                beforeChange: [trimGraphTextFieldHook],
               },
               jsonSchema: connectionSchema,
               name: 'task',

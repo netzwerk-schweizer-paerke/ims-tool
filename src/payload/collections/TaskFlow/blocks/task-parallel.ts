@@ -1,6 +1,7 @@
 import { Block } from 'payload'
 
 import { I18nCollection } from '@/lib/i18n-collection'
+import { trimGraphTextFieldHook } from '@/payload/collections/hooks/trim-graph-text-field-hook'
 import { connectionSchema } from '@/payload/collections/json-schemas/connection-schema'
 import { tabsMetadata } from '@/payload/collections/TaskFlow/blocks/tabs-metadata'
 
@@ -27,6 +28,9 @@ export const ProcessTaskParallelBlock: Block = {
                       Field:
                         'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
                     },
+                  },
+                  hooks: {
+                    beforeChange: [trimGraphTextFieldHook],
                   },
                   jsonSchema: connectionSchema,
                   name: 'task',
