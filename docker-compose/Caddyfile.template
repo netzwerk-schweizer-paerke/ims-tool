@@ -6,8 +6,3 @@ myhost.mydomain.com {
 myhost.mydomain.com:9001 {
      reverse_proxy minio:9001
 }
-
-# Make pg_admin UI available
-myhost.mydomain.com:5050 {
-     reverse_proxy pgadmin:5050
-}

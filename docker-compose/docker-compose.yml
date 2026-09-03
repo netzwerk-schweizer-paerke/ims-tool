@@ -8,8 +8,6 @@ services:
       - '443:443/udp'
       - '9001:9001' # minio UI
       - '9001:9001/udp'
-      - '5050:5050' # pgadmin
-      - '5050:5050/udp'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - ./data/caddy:/data

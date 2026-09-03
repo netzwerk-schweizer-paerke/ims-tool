@@ -11,18 +11,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: ims-tool-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@localhost.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - '5050:80'
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-
   # S3-compatible object storage. Credentials are not set here — the bucket and
   # API key are provisioned by scripts/garage-init.sh, which writes them to .env.
   garage:
@@ -65,6 +53,4 @@ volumes:
   garage-data:
     driver: local
   garage-meta:
-    driver: local
-  pgadmin-data:
     driver: local

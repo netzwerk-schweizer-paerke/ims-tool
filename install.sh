@@ -139,9 +139,9 @@ echo ""
 echo "Next steps:"
 if $ENV_MISSING; then
   echo "  1. Fill in the secrets in .env (see above)"
-  echo "  2. yarn services:start   # PostgreSQL, pgAdmin, Mailpit, Garage S3"
+  echo "  2. yarn services:start   # PostgreSQL, Mailpit, Garage S3"
   echo "  3. yarn dev              # http://localhost:3000/admin"
 else
-  echo "  1. yarn services:start   # PostgreSQL, pgAdmin, Mailpit, Garage S3"
+  echo "  1. yarn services:start   # PostgreSQL, Mailpit, Garage S3"
   echo "  2. yarn dev              # http://localhost:3000/admin"
 fi
