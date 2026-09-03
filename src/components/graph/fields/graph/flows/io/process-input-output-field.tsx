@@ -15,7 +15,6 @@ import { ToggleSwitch } from '@/components/graph/fields/graph/lib/toggle-switch'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
-import { Xwrapper } from '@/lib/xarrows/src'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -55,7 +54,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
 
   return (
     <div ref={ref}>
-      <Xwrapper>
+      <>
         <BlockTaskWrapper>
           {value?.enabled && (
             <>
@@ -81,7 +80,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
             />
           </div>
         </BlockTaskWrapper>
-      </Xwrapper>
+      </>
     </div>
   )
 }

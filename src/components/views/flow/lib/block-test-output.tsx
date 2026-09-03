@@ -6,7 +6,6 @@ import { BlockWrapper } from '@/components/views/flow/block-wrapper'
 import { BlockMetadata } from '@/components/views/flow/lib/block-metadata'
 import { TaskFlowArrows } from '@/components/views/flow/task-flow-arrows'
 import { Translate } from '@/lib/translate'
-import { Xwrapper } from '@/lib/xarrows/src'
 import { ProcessTestOutputBlock } from '@/payload-types'
 
 type Props = {
@@ -36,7 +35,7 @@ export const BlockTestOutput: React.FC<Props> = ({ block }) => {
   }
 
   return (
-    <Xwrapper>
+    <>
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           {isOutputEnabled && (
@@ -67,6 +66,6 @@ export const BlockTestOutput: React.FC<Props> = ({ block }) => {
         <TaskFlowArrows taskFlowBlock={block} />
       </div>
       <BlockMetadata block={block} />
-    </Xwrapper>
+    </>
   )
 }

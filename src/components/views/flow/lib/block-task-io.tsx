@@ -5,7 +5,6 @@ import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper
 import { BlockWrapper } from '@/components/views/flow/block-wrapper'
 import { BlockMetadata } from '@/components/views/flow/lib/block-metadata'
 import { TaskFlowArrows } from '@/components/views/flow/task-flow-arrows'
-import { Xwrapper } from '@/lib/xarrows/src'
 import { ProcessTaskIOBlock } from '@/payload-types'
 
 type Props = {
@@ -22,7 +21,7 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
   // already optional-chains both, so render the block empty rather than blanking the view.
 
   return (
-    <Xwrapper>
+    <>
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           {isIoEnabled && (
@@ -43,6 +42,6 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
         <TaskFlowArrows taskFlowBlock={block} />
       </div>
       <BlockMetadata block={block} />
-    </Xwrapper>
+    </>
   )
 }

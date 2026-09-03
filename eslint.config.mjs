@@ -23,8 +23,6 @@ const config = [
       '**/*.spec.ts',
       'jest.config.js',
       'src/tests/**',
-      // Vendored third-party library — not ours to lint.
-      'src/lib/xarrows/**',
       '**/importMap.js',
       'src/payload-types.ts',
       'src/migrations/**',

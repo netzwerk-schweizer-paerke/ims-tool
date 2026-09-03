@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
 import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
 import { Translate } from '@/lib/translate'
-import { Xwrapper } from '@/lib/xarrows/src'
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
 type Props = {
@@ -72,8 +71,7 @@ export const ActivityFlow = ({ activity, locale }: Props) => {
   }, blocksDisplay)
 
   return (
-    <Xwrapper>
-      <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
+    <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
         <div className={'relative flex w-min grow flex-col'}>
           {blocksDisplay.input.length === 0 ? (
             <ActivityBlock activityId={activity.id} type={'empty'} />
@@ -97,7 +95,6 @@ export const ActivityFlow = ({ activity, locale }: Props) => {
           )}
           <ActivityFlowArrows activity={activity} />
         </div>
-      </div>
-    </Xwrapper>
+    </div>
   )
 }

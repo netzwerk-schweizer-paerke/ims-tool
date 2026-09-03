@@ -5,7 +5,6 @@ import { ActivityEditLink } from '@/components/views/activity/overview/activity/
 import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
 import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
 import { Translate } from '@/lib/translate'
-import { Xwrapper } from '@/lib/xarrows/src'
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
 type Props = {
@@ -73,8 +72,7 @@ export const ActivityStrategy = ({ activity, locale }: Props) => {
   }, blocksDisplay)
 
   return (
-    <Xwrapper>
-      <div className={'activity-strategy z-10 flex w-min flex-col'}>
+    <div className={'activity-strategy z-10 flex w-min flex-col'}>
         <div className={'text-center'}>
           <h2 className={'mx-auto max-w-52 hyphens-auto text-xl font-bold'} lang={locale}>
           {activity.name}
@@ -101,7 +99,6 @@ export const ActivityStrategy = ({ activity, locale }: Props) => {
           )}
           <ActivityFlowArrows activity={activity} />
         </div>
-      </div>
-    </Xwrapper>
+    </div>
   )
 }

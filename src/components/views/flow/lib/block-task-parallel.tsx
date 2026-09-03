@@ -4,7 +4,6 @@ import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper
 import { BlockWrapper } from '@/components/views/flow/block-wrapper'
 import { BlockMetadata } from '@/components/views/flow/lib/block-metadata'
 import { TaskFlowArrows } from '@/components/views/flow/task-flow-arrows'
-import { Xwrapper } from '@/lib/xarrows/src'
 import { ProcessTaskParallelBlock } from '@/payload-types'
 
 type Props = {
@@ -19,7 +18,7 @@ export const BlockTaskParallel: React.FC<Props> = ({ block }) => {
   // optional-chains it, so render the block empty rather than blanking the view.
 
   return (
-    <Xwrapper>
+    <>
       <div className={'flow-block relative grid grid-cols-2 border-b border-b-gray-500'}>
         <div>
           <BlockWrapper id={`${block.id}-left`}>
@@ -38,6 +37,6 @@ export const BlockTaskParallel: React.FC<Props> = ({ block }) => {
         <TaskFlowArrows taskFlowBlock={block} />
       </div>
       <BlockMetadata block={block} />
-    </Xwrapper>
+    </>
   )
 }

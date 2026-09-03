@@ -17,7 +17,6 @@ import '@/components/graph/fields/graph/lib/arrow-styles.css'
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
-import { Xwrapper } from '@/lib/xarrows/src'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -61,7 +60,7 @@ export const ActivityIOField: JSONFieldClientComponent = (props) => {
 
   return (
     <div ref={ref}>
-      <Xwrapper>
+      <>
         <BlockTaskWrapper>
           <RootTarget id={arrowSetId}>
             <IOShapeWrapper mode={'edit'}>
@@ -78,7 +77,7 @@ export const ActivityIOField: JSONFieldClientComponent = (props) => {
           <OuterTargets id={arrowSetId} />
           <div className={'x-arrows'}>{arrowsContent}</div>
         </BlockTaskWrapper>
-      </Xwrapper>
+      </>
     </div>
   )
 }

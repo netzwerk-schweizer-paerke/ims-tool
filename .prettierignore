@@ -10,4 +10,3 @@ dist
 build
 importMap.js
 src/payload-types.ts
-src/lib/xarrows

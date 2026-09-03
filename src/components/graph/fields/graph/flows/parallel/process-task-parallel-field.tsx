@@ -12,7 +12,6 @@ import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTarget } from '@/components/graph/fields/graph/lib/root-target'
 import { BlockTaskWrapper } from '@/components/graph/wrappers/block-task-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
-import { Xwrapper } from '@/lib/xarrows/src'
 
 type ComponentState = {
   connections: ConnectionsType
@@ -64,7 +63,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
 
   return (
     <div className={'process-task-parallel-block relative h-full'} ref={ref}>
-      <Xwrapper>
+      <>
         <div className={'grid size-full grid-cols-2'}>
           <BlockTaskWrapper>
             <RootTarget comboTarget={'left'} id={arrowSetId}>
@@ -92,7 +91,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
           </BlockTaskWrapper>
         </div>
         <div className={'x-arrows'}>{arrowsContent}</div>
-      </Xwrapper>
+      </>
     </div>
   )
 }
