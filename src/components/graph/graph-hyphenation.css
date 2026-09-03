@@ -1,0 +1,14 @@
+/* The browser picks its hyphenation dictionary from the nearest `lang` attribute. Payload stamps
+   `<html lang>` with the ADMIN language, so an element without its own `lang` inherits that
+   dictionary instead of the content locale. Both components therefore set `lang` themselves.
+   Measured in Chromium: an English dictionary leaves a German compound word unbroken and
+   overflowing, and a French dictionary breaks it as `Angebotsentwi-cklung`.
+
+   The limit keeps a fragment readable: `Frei-gabe` instead of `Freiga-be`.
+
+   Imported unlayered, and Tailwind sits in the `payload-default` layer
+   (src/app/(payload)/custom.scss), so a call-site utility for `hyphens` cannot override this. */
+.graph-hyphenate {
+  hyphenate-limit-chars: 8 4 3;
+  hyphens: auto;
+}

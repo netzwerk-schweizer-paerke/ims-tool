@@ -1,4 +1,5 @@
 import { ConnectionStateType } from '@/components/graph/fields/graph/lib/connection-types'
+import { GraphLabel } from '@/components/graph/graph-label'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { ActivityBlockViewLink } from '@/components/views/activity/overview/activity/activity-block-view-link'
@@ -32,7 +33,7 @@ export const ActivityBlock = ({ activityId, block, type }: Props) => {
         <BlockWrapper id={block.id}>
           <IOShapeWrapper>
             <ActivityBlockViewLink activityId={activityId} blockId={block.id}>
-              {blockText}
+              <GraphLabel>{blockText}</GraphLabel>
             </ActivityBlockViewLink>
           </IOShapeWrapper>
         </BlockWrapper>
@@ -41,7 +42,7 @@ export const ActivityBlock = ({ activityId, block, type }: Props) => {
         <BlockWrapper id={block.id}>
           <IOShapeWrapper>
             <ActivityBlockViewLink activityId={activityId} blockId={block.id}>
-              {blockText}
+              <GraphLabel>{blockText}</GraphLabel>
             </ActivityBlockViewLink>
           </IOShapeWrapper>
         </BlockWrapper>
@@ -50,7 +51,7 @@ export const ActivityBlock = ({ activityId, block, type }: Props) => {
         <BlockWrapper id={block.id}>
           <TaskShapeWrapper>
             <ActivityBlockViewLink activityId={activityId} blockId={block.id}>
-              {blockText}
+              <GraphLabel>{blockText}</GraphLabel>
             </ActivityBlockViewLink>
           </TaskShapeWrapper>
         </BlockWrapper>

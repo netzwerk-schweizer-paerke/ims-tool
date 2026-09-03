@@ -3,6 +3,7 @@ import { JSONFieldClientComponent } from 'payload'
 import { useCallback } from 'react'
 
 import { activityConnections } from '@/components/graph/fields/graph/activities/connection-definitions'
+import { GraphTextArea } from '@/components/graph/fields/graph/components/graph-text-area'
 import {
   ButtonBottomCenter,
   ButtonCenterRight,
@@ -64,11 +65,9 @@ export const ActivityTaskField: JSONFieldClientComponent = (props) => {
         <BlockTaskWrapper>
           <RootTarget id={arrowSetId}>
             <TaskShapeWrapper mode={'edit'}>
-              <textarea
-                className={
-                  'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
-                }
-                onChange={(e) => handleTextChange(e.target.value)}
+              <GraphTextArea
+                className={'w-full bg-transparent p-0'}
+                onTextChange={handleTextChange}
                 value={localText}
               />
               <ButtonCenterRight onClickFn={handleRightClick} />

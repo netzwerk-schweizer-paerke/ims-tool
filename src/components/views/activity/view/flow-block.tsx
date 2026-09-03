@@ -1,3 +1,4 @@
+import { GraphLabel } from '@/components/graph/graph-label'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { FlowBlockViewLink } from '@/components/views/activity/view/flow-block-view-link'
 import { TaskFlow } from '@/payload-types'
@@ -13,7 +14,9 @@ export const FlowBlock = ({ flow }: Props) => {
   const blockText = flow.name
   return (
     <TaskShapeWrapper>
-      <FlowBlockViewLink flowId={flow.id}>{blockText}</FlowBlockViewLink>
+      <FlowBlockViewLink flowId={flow.id}>
+        <GraphLabel>{blockText}</GraphLabel>
+      </FlowBlockViewLink>
     </TaskShapeWrapper>
   )
 }

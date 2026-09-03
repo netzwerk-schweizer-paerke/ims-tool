@@ -3,6 +3,7 @@ import { useTranslation } from '@payloadcms/ui'
 import { JSONFieldClientComponent } from 'payload'
 import { useCallback } from 'react'
 
+import { GraphTextArea } from '@/components/graph/fields/graph/components/graph-text-area'
 import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
 import { processIoConnections } from '@/components/graph/fields/graph/flows/io/connection-definitions'
 import { useGraphField } from '@/components/graph/fields/graph/hooks/use-graph-field'
@@ -60,11 +61,9 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
             <>
               <RootTarget id={arrowSetId}>
                 <IOShapeWrapper mode={'edit'}>
-                  <textarea
-                    className={
-                      'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
-                    }
-                    onChange={(e) => handleTextChange(e.target.value)}
+                  <GraphTextArea
+                    className={'w-full bg-transparent p-0'}
+                    onTextChange={handleTextChange}
                     value={localText}
                   />
                   <ButtonCenterRight onClickFn={handleRightClick} />

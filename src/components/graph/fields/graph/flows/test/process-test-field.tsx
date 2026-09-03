@@ -3,6 +3,7 @@ import { JSONFieldClientComponent } from 'payload'
 import { memo, useCallback } from 'react'
 
 import { BooleanButton } from '@/components/graph/fields/graph/components/boolean-button'
+import { GraphTextArea } from '@/components/graph/fields/graph/components/graph-text-area'
 import {
   ButtonBottomCenter,
   ButtonCenterRight,
@@ -121,11 +122,9 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
         <BlockTaskWrapper>
           <RootTarget id={arrowSetId}>
             <TestShapeWrapper mode={'edit'}>
-              <textarea
-                className={
-                  'textarea-lg flex h-full w-10/12 resize-none items-center justify-center rounded-2xl bg-gray-700/80 p-4 text-center leading-snug focus:outline-none'
-                }
-                onChange={(e) => handleTextChange(e.target.value)}
+              <GraphTextArea
+                className={'w-10/12 bg-gray-700/80 p-4'}
+                onTextChange={handleTextChange}
                 value={localText}
               />
               <ButtonCenterRight onClickFn={handleRightClick} />

@@ -1,0 +1,15 @@
+/* `align-content` centres the text inside a full-height box, so a click anywhere in the shape
+   still reaches the field. Support: Chrome 123, Edge 123, Firefox 125, Safari 17.4. An engine
+   without it renders the text at the top, which is what this project did before.
+   Measured in Chromium: an overflowing label keeps its full scroll range, so `safe` is not needed.
+
+   Hyphenation lives in `.graph-hyphenate` (src/components/graph/graph-hyphenation.css), which the
+   component adds beside this class.
+
+   This file is imported unlayered, and Tailwind sits in the `payload-default` layer
+   (src/app/(payload)/custom.scss). A call-site utility for height, align-content or overflow
+   therefore cannot override these declarations. */
+.graph-text-area {
+  align-content: center;
+  height: 100%;
+}

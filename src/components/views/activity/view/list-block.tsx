@@ -1,3 +1,4 @@
+import { GraphLabel } from '@/components/graph/graph-label'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { ListBlockViewLink } from '@/components/views/activity/view/list-block-view-link'
 import { TaskList } from '@/payload-types'
@@ -13,7 +14,9 @@ export const ListBlock = ({ list }: Props) => {
   const blockText = list.name
   return (
     <TaskShapeWrapper>
-      <ListBlockViewLink listId={list.id}>{blockText}</ListBlockViewLink>
+      <ListBlockViewLink listId={list.id}>
+        <GraphLabel>{blockText}</GraphLabel>
+      </ListBlockViewLink>
     </TaskShapeWrapper>
   )
 }

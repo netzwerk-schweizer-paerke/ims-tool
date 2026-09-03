@@ -24,8 +24,28 @@
   --theme-text-33: rgb(from var(--theme-text) r g b / 0.33);
 }
 
+// Payload gives each field in a `row` a 5px side margin, and cancels it with -5px on the row.
+// Two adjacent graph fields therefore sit 10px apart, which breaks the arrow stubs that must meet.
+.graph-fields-row {
+  .row__fields {
+    margin-left: 0;
+    margin-right: 0;
+
+    > * {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+}
+
 .prose {
   --tw-prose-links: currentColor;
   --tw-prose-body: currentColor;
   --tw-prose-headings: currentColor;
+
+  // Tailwind Typography gives every `li` a 0.5em vertical margin. Adjacent margins collapse, so
+  // the list reads as separated items. This block is unlayered and wins over the layered rule.
+  li {
+    margin-block: 0;
+  }
 }

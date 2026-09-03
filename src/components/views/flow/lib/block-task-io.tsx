@@ -1,4 +1,5 @@
 'use client'
+import { GraphLabel } from '@/components/graph/graph-label'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { BlockWrapper } from '@/components/views/flow/block-wrapper'
@@ -26,13 +27,17 @@ export const BlockTaskIo: React.FC<Props> = ({ block }) => {
         <div>
           {isIoEnabled && (
             <BlockWrapper id={`${block.id}-left`}>
-              <IOShapeWrapper>{io?.text}</IOShapeWrapper>
+              <IOShapeWrapper>
+                <GraphLabel>{io?.text}</GraphLabel>
+              </IOShapeWrapper>
             </BlockWrapper>
           )}
         </div>
         <div>
           <BlockWrapper id={`${block.id}-right`}>
-            <TaskShapeWrapper>{task?.text}</TaskShapeWrapper>
+            <TaskShapeWrapper>
+              <GraphLabel>{task?.text}</GraphLabel>
+            </TaskShapeWrapper>
           </BlockWrapper>
         </div>
         <TaskFlowArrows taskFlowBlock={block} />

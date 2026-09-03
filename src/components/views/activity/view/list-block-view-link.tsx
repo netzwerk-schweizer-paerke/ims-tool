@@ -8,7 +8,7 @@ type Props = PropsWithChildren & {
 export const ListBlockViewLink = ({ children, listId }: Props) => {
   return (
     <Link
-      className={'link hyphens-auto no-underline hover:underline'}
+      className={'link no-underline hover:underline'}
       href={`/admin/list/${listId}`}>
       {children}
     </Link>

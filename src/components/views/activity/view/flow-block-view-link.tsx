@@ -8,7 +8,7 @@ type Props = PropsWithChildren & {
 export const FlowBlockViewLink = ({ children, flowId }: Props) => {
   return (
     <Link
-      className={'link hyphens-auto no-underline hover:underline'}
+      className={'link no-underline hover:underline'}
       href={`/admin/flow/${flowId}`}>
       {children}
     </Link>

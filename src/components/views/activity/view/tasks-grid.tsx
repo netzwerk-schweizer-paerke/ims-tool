@@ -22,14 +22,14 @@ export const TasksGrid = ({ tasks }: Props) => {
         switch (task.relationTo) {
           case 'task-flows': {
             return (
-              <div className={'w-48'} key={i}>
+              <div key={i}>
                 <FlowBlock flow={task.value} />
               </div>
             )
           }
           case 'task-lists': {
             return (
-              <div className={'w-48'} key={i}>
+              <div key={i}>
                 <ListBlock list={task.value} />
               </div>
             )

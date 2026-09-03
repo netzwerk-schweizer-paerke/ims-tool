@@ -15,12 +15,12 @@ export const TestShapeWrapper = ({ children, mode = 'view' }: Props) => {
   const wrapperClasses =
     mode === 'edit'
       ? 'left-1/2 top-1/2 h-32 w-52 -translate-x-1/2 -translate-y-1/2'
-      : 'left-0 top-0 w-full -translate-y-1/2'
+      : 'left-0 top-0 min-h-32 w-full min-w-52 -translate-y-1/2'
 
   return (
     <div className={`test-shape-wrapper`}>
       <div
-        className={`test-shape-wrapper__inner absolute ${wrapperClasses} bg-base-100/80 z-50 flex items-center justify-center text-center`}>
+        className={`test-shape-wrapper__inner absolute ${wrapperClasses} bg-base-100/80 z-50 flex items-center justify-center px-1 text-center`}>
         {children}
       </div>
       <div className="shape z-0 h-6 w-10">

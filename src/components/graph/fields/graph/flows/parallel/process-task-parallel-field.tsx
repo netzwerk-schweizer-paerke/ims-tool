@@ -2,6 +2,7 @@
 import { JSONFieldClientComponent } from 'payload'
 import { useCallback } from 'react'
 
+import { GraphTextArea } from '@/components/graph/fields/graph/components/graph-text-area'
 import { ButtonCenterRight } from '@/components/graph/fields/graph/components/node-buttons'
 import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
 import { useGraphField } from '@/components/graph/fields/graph/hooks/use-graph-field'
@@ -68,11 +69,9 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
           <BlockTaskWrapper>
             <RootTarget comboTarget={'left'} id={arrowSetId}>
               <TaskShapeWrapper mode={'edit'}>
-                <textarea
-                  className={
-                    'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
-                  }
-                  onChange={(e) => handleTextLeftChange(e.target.value)}
+                <GraphTextArea
+                  className={'w-full bg-transparent p-0'}
+                  onTextChange={handleTextLeftChange}
                   value={localTextLeft}
                 />
               </TaskShapeWrapper>
@@ -81,11 +80,9 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
           <BlockTaskWrapper>
             <RootTarget comboTarget={'right'} id={arrowSetId}>
               <TaskShapeWrapper mode={'edit'}>
-                <textarea
-                  className={
-                    'textarea-lg flex size-full resize-none items-center justify-center rounded-2xl bg-transparent p-0 text-center leading-snug focus:outline-none'
-                  }
-                  onChange={(e) => handleTextRightChange(e.target.value)}
+                <GraphTextArea
+                  className={'w-full bg-transparent p-0'}
+                  onTextChange={handleTextRightChange}
                   value={localTextRight}
                 />
                 <ButtonCenterRight onClickFn={handleRightClick} />
