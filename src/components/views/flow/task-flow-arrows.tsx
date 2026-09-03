@@ -1,8 +1,8 @@
 'use client'
-import { debounce } from 'es-toolkit'
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 
 import '@/components/graph/fields/graph/lib/arrow-styles.css'
+import { ArrowLayer, LayerArrow } from '@/components/graph/fields/graph/lib/arrow-layer'
 import {
   RootTargetLeftName,
   RootTargetName,
@@ -10,7 +10,6 @@ import {
 } from '@/components/graph/fields/graph/lib/root-target'
 import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
 import { assignBlockArrows } from '@/components/views/flow/lib/assign-block-arrows'
-import Xarrow, { useXarrow } from '@/lib/xarrows/src'
 
 // Pre-compiled regex for parallel block ID transformations (avoids 6 replace calls per arrow)
 const parallelBlockRegex = new RegExp(
@@ -29,77 +28,40 @@ type Props = {
 }
 
 export const TaskFlowArrows = ({ taskFlowBlock }: Props) => {
-  const ref = useRef<HTMLDivElement>(null)
-  const updateXarrow = useXarrow()
-  const [isLoaded, setIsLoaded] = useState(false)
+  const arrows = useMemo<LayerArrow[]>(
+    () =>
+      assignBlockArrows(taskFlowBlock).flatMap(
+        ({ arrows, blockType, connection, id, leftId, rightId }) => {
+          // Both halves of a parallel block hold the same stored connections, so the left
+          // half would draw a duplicate of every arrow the right half already draws.
+          if (blockType === 'proc-task-p' && id === leftId) return []
 
-  useEffect(() => {
-    const reference = ref.current
-    if (!reference) return
+          return arrows.map((spec, index) => {
+            let start =
+              id === leftId && connection.position === 'right' && connection.type === 'in'
+                ? `${rightId}-${RootTargetName}`
+                : `${id}-${spec.start}`
+            let end =
+              id === leftId && connection.position === 'right' && connection.type === 'out'
+                ? `${rightId}-${RootTargetName}`
+                : `${id}-${spec.end}`
 
-    const handleResize = debounce(() => {
-      setIsLoaded(true)
-      updateXarrow()
-    }, 100)
-
-    const resizeObserver = new ResizeObserver(handleResize)
-
-    if (reference) {
-      resizeObserver.observe(reference)
-    }
-
-    // Clean up function
-    return () => {
-      if (reference) {
-        resizeObserver.unobserve(reference)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Memoize arrow set calculation - only recalculate when block data changes
-  const arrowSet = useMemo(() => assignBlockArrows(taskFlowBlock), [taskFlowBlock])
-
-  const renderArrows = useCallback(() => {
-    return arrowSet.map(({ arrows, blockType, id, leftId, rightId }, index) => (
-      <Fragment key={id + index}>
-        {arrows.map((arrow, index) => {
-          let startPrefix =
-            id === leftId &&
-            arrow.originalArrow.position === 'right' &&
-            arrow.originalArrow.type === 'in'
-              ? `${rightId}-${RootTargetName}`
-              : `${id}-${arrow.start}`
-          let endPrefix =
-            id === leftId &&
-            arrow.originalArrow.position === 'right' &&
-            arrow.originalArrow.type === 'out'
-              ? `${rightId}-${RootTargetName}`
-              : `${id}-${arrow.end}`
-
-          if (blockType === 'proc-task-p') {
-            if (id === leftId) {
-              return null
+            if (blockType === 'proc-task-p') {
+              // Single regex replacement instead of 6 separate .replace() calls
+              start = start.replace(parallelBlockRegex, parallelBlockReplacer)
+              end = end.replace(parallelBlockRegex, parallelBlockReplacer)
             }
-            // Single regex replacement instead of 6 separate .replace() calls
-            startPrefix = startPrefix.replace(parallelBlockRegex, parallelBlockReplacer)
-            endPrefix = endPrefix.replace(parallelBlockRegex, parallelBlockReplacer)
-          }
-          // arrowStyle is already merged in assignBlockArrows
-          const props = {
-            ...arrow,
-            end: endPrefix,
-            start: startPrefix,
-          }
-          return <Xarrow key={startPrefix + endPrefix + index} {...props} />
-        })}
-      </Fragment>
-    ))
-  }, [arrowSet])
+
+            return { ...spec, end, key: `${start}-${end}-${index}`, start }
+          })
+        },
+      ),
+    [taskFlowBlock],
+  )
 
   return (
-    <div className={'x-arrows absolute inset-0'} ref={ref}>
-      {isLoaded && renderArrows()}
+    <div className={'x-arrows absolute inset-0'}>
+      <ArrowLayer arrows={arrows} />
     </div>
   )
 }

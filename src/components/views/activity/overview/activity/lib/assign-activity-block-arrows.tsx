@@ -1,49 +1,40 @@
 import { activityConnections } from '@/components/graph/fields/graph/activities/connection-definitions'
+import { ArrowSpec } from '@/components/graph/fields/graph/lib/arrow-geometry'
 import {
-  ConnectionDefinition,
-  ConnectionType,
+  ArrowDefinitions,
+  isConnectionPosition,
+  isConnectionType,
 } from '@/components/graph/fields/graph/lib/connection-types'
 import { ActivityTaskCompoundBlock } from '@/components/views/activity/overview/activity/block'
 import { Activity } from '@/payload-types'
 
-export const assignActivityBlockArrows = (activity: Activity) => {
-  const categorizedBlocks = {
-    'activity-io': [],
-    'activity-task': [],
-  }
+export type ActivityBlockArrows = { arrows: ArrowSpec[]; id: string }
+
+const activityBlockTypes = new Set(['activity-io', 'activity-task'])
+
+export const assignActivityBlockArrows = (activity: Activity): ActivityBlockArrows[] => {
+  const arrowSet: ActivityBlockArrows[] = []
 
   for (const block of activity.blocks ?? []) {
-    if (block.blockType in categorizedBlocks) {
-      // @ts-expect-error - categorizedBlocks has no index signature for blockType
-      categorizedBlocks[block.blockType].push(block)
+    if (!activityBlockTypes.has(block.blockType)) continue
+
+    const compoundBlock = block as ActivityTaskCompoundBlock
+    for (const stored of compoundBlock.graph?.task?.connections ?? []) {
+      const { position, type } = stored as { position?: unknown; type?: unknown }
+      // The stored JSON declares both as bare strings, so skip a value no definition knows.
+      if (!isConnectionPosition(position) || !isConnectionType(type)) continue
+
+      // `satisfies` keeps each entry's literal type, so `find` returns a union of the three
+      // concrete records. Widen it, or the union has no common key to index.
+      const definitions: ArrowDefinitions | undefined = activityConnections.find(
+        (c) => c.position === position,
+      )?.definitions
+      const arrows = definitions?.[type]
+      if (!arrows?.length) continue
+
+      arrowSet.push({ arrows, id: compoundBlock.id })
     }
   }
 
-  const arrowSet: {
-    arrows: NonNullable<ConnectionDefinition['definitions'][ConnectionType]>
-    id: string
-  }[] = []
-
-  for (const blocks of Object.values(categorizedBlocks)) {
-    for (const block of blocks) {
-      const compoundBlock = block as ActivityTaskCompoundBlock
-      const arrows = compoundBlock.graph?.task?.connections
-
-      for (const arrow of arrows ?? []) {
-        const definition = activityConnections.find(
-          (c) => c.position === arrow.position,
-        )?.definitions
-        if (!definition) {
-          continue
-        }
-        // @ts-expect-error - definition is keyed by arrow.type without an index signature
-        const displayArrows = definition[arrow.type]?.flat() || []
-        if (displayArrows.length > 0) {
-          arrowSet.push({ arrows: displayArrows, id: compoundBlock.id })
-        }
-      }
-    }
-  }
-
-  return arrowSet.flat()
+  return arrowSet
 }

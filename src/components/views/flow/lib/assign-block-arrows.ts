@@ -2,52 +2,38 @@ import { processIoConnections } from '@/components/graph/fields/graph/flows/io/c
 import { processTaskParallelConnections } from '@/components/graph/fields/graph/flows/parallel/connection-definitions'
 import { processTaskConnections } from '@/components/graph/fields/graph/flows/task/connection-definitions'
 import { processTestConnections } from '@/components/graph/fields/graph/flows/test/connection-definitions'
-import { arrowStyle } from '@/components/graph/fields/graph/lib/arrow-style'
+import { ArrowSpec } from '@/components/graph/fields/graph/lib/arrow-geometry'
+import {
+  ArrowDefinitions,
+  ConnectionDefinition,
+  isConnectionPosition,
+  isConnectionType,
+} from '@/components/graph/fields/graph/lib/connection-types'
 import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
 
-type AccumulatorItem = {
-  arrows: ArrowType[]
+/** One stored connection of one half of a compound block, resolved to its arrows. */
+export type BlockArrows = {
+  arrows: ArrowSpec[]
   blockType: string
+  /** The stored values this entry came from. The parallel block reads them back. */
+  connection: { position: string; type: string }
   id: string
   leftId: string
   rightId: string
 }
 
-type ArrowType = {
-  color: string
-  end: string
-  originalArrow: {
-    position: string
-    type: string
-  }
-  // arrowStyle properties
-  path: 'grid' | 'smooth' | 'straight'
-  start: string
-  strokeWidth: number
-}
-
-type ConnectionDefinition = {
-  definitions: Record<string, unknown[]>
-  options: readonly string[]
-  position: string
-}
-
-type DefinitionsByPosition = Map<string, Record<string, unknown[]>>
-
-type ReturnObject = {
-  arrows: Array<{ position: string; type: string }>
+type BlockHalf = {
+  connections?: null | unknown[]
   definitionsByPosition: DefinitionsByPosition
   id: string
-  leftId: string
-  rightId: string
 }
 
-type ReturnTuple = [ReturnObject | undefined, ReturnObject]
+type DefinitionsByPosition = Map<string, ArrowDefinitions>
 
 // Pre-index connection definitions by position for O(1) lookup instead of O(n) find()
-const createDefinitionIndex = (connections: ConnectionDefinition[]): DefinitionsByPosition => {
-  return new Map(connections.map((c) => [c.position, c.definitions]))
-}
+const createDefinitionIndex = (
+  connections: readonly ConnectionDefinition[],
+): DefinitionsByPosition => new Map(connections.map((c) => [c.position, c.definitions]))
 
 // Module-level cached indexes - created once at import time
 const processIoDefinitionsByPosition = createDefinitionIndex(processIoConnections)
@@ -57,65 +43,61 @@ const processTaskParallelDefinitionsByPosition = createDefinitionIndex(
   processTaskParallelConnections,
 )
 
-export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
-  let blockLeft, blockRight
+const readConnection = (value: unknown) => {
+  if (typeof value !== 'object' || value === null) return null
+  const { position, type } = value as { position?: unknown; type?: unknown }
+  if (!isConnectionPosition(position) || !isConnectionType(type)) return null
+  return { position, type }
+}
 
+export const assignBlockArrows = (block: ProcessTaskCompoundBlock): BlockArrows[] => {
   const leftId = `${block.id}-left`
   const rightId = `${block.id}-right`
+
+  let blockLeft: BlockHalf | undefined
+  let blockRight: BlockHalf | undefined
 
   switch (block.blockType) {
     case 'proc-task-io': {
       if (block.graph?.io?.enabled) {
         blockLeft = {
-          arrows: block.graph?.io?.connections,
+          connections: block.graph?.io?.connections,
           definitionsByPosition: processIoDefinitionsByPosition,
           id: leftId,
-          leftId,
-          rightId,
         }
       }
       blockRight = {
-        arrows: block.graph?.task?.connections,
+        connections: block.graph?.task?.connections,
         definitionsByPosition: processTaskDefinitionsByPosition,
         id: rightId,
-        leftId,
-        rightId,
       }
       break
     }
     case 'proc-task-p': {
       blockLeft = {
-        arrows: block.graph?.task?.connections,
+        connections: block.graph?.task?.connections,
         definitionsByPosition: processTaskParallelDefinitionsByPosition,
         id: leftId,
-        leftId,
-        rightId,
       }
       blockRight = {
-        arrows: block.graph?.task?.connections,
+        connections: block.graph?.task?.connections,
         definitionsByPosition: processTaskParallelDefinitionsByPosition,
         id: rightId,
-        leftId,
-        rightId,
       }
       break
     }
     case 'proc-test': {
       if (block.graph?.output?.enabled) {
         blockLeft = {
-          arrows: block.graph?.output?.connections,
+          connections: block.graph?.output?.connections,
           definitionsByPosition: processIoDefinitionsByPosition,
           id: leftId,
-          leftId,
-          rightId,
         }
       }
       blockRight = {
-        arrows: block.graph?.test?.connections,
+        connections: block.graph?.test?.connections,
         definitionsByPosition: processTestDefinitionsByPosition,
         id: rightId,
-        leftId,
-        rightId,
       }
       break
     }
@@ -131,42 +113,29 @@ export const assignBlockArrows = (block: ProcessTaskCompoundBlock) => {
     }
   }
 
-  if (!blockRight) {
-    throw new Error('Block right should not be undefined')
+  const result: BlockArrows[] = []
+
+  for (const half of [blockLeft, blockRight]) {
+    if (!half) continue
+
+    for (const stored of half.connections ?? []) {
+      const connection = readConnection(stored)
+      if (!connection) continue
+
+      const definitions = half.definitionsByPosition.get(connection.position)
+      const arrows = definitions?.[connection.type]
+      if (!arrows?.length) continue
+
+      result.push({
+        arrows,
+        blockType: block.blockType,
+        connection,
+        id: half.id,
+        leftId,
+        rightId,
+      })
+    }
   }
 
-  const result: ReturnTuple = [blockLeft as ReturnObject | undefined, blockRight as ReturnObject]
-  const blockType = block.blockType
-
-  return result.reduce<AccumulatorItem[]>((acc, block) => {
-    // Skip iteration if the block is undefined
-    if (!block) {
-      return acc
-    }
-
-    const { arrows, definitionsByPosition, id, leftId, rightId } = block
-
-    for (const arrow of arrows ?? []) {
-      // O(1) Map lookup instead of O(n) array.find()
-      const definitions = definitionsByPosition.get(arrow.position)
-      if (!definitions) {
-        continue
-      }
-      // Definitions are already flat arrays, no need for .flat()
-      const arrowDefinitions = definitions[arrow.type]
-      if (!arrowDefinitions || arrowDefinitions.length === 0) {
-        continue
-      }
-
-      // Pre-merge arrowStyle here instead of spreading on every render
-      const displayArrows = arrowDefinitions.map((a) => ({
-        ...(a as Record<string, unknown>),
-        ...arrowStyle,
-        originalArrow: arrow,
-      }))
-
-      acc.push({ arrows: displayArrows as ArrowType[], blockType, id, leftId, rightId })
-    }
-    return acc
-  }, [])
+  return result
 }

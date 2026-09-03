@@ -26,6 +26,16 @@ export const connectionTypes = [
   'pass-by',
 ] as const
 
+/**
+ * The stored JSON declares `position` and `type` as bare strings, so a document can hold a
+ * value no definition knows. Narrow before a lookup, and skip what does not match.
+ */
+export const isConnectionPosition = (value: unknown): value is ConnectionPosition =>
+  typeof value === 'string' && (connectionPositions as readonly string[]).includes(value)
+
+export const isConnectionType = (value: unknown): value is ConnectionType =>
+  typeof value === 'string' && (connectionTypes as readonly string[]).includes(value)
+
 /** The arrows to draw for one anchor position, keyed by the stored connection type. */
 export type ArrowDefinitions = Partial<Record<ConnectionType, ArrowSpec[]>>
 
