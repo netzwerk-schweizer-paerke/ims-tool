@@ -4,7 +4,6 @@ import { headers as getHeaders } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { AdminViewServerProps } from 'payload'
 import React from 'react'
-import { assert } from 'ts-essentials'
 
 import { LastUpdated } from '@/components/last-updated'
 import { StepNav } from '@/components/step-nav'
@@ -13,6 +12,7 @@ import { FlowEditLink } from '@/components/views/flow/flow-edit-link'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
+import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { Translate } from '@/lib/translate'
 import { TaskFlow } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
@@ -34,6 +34,9 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
 }) => {
   const headers = await getHeaders()
   const { req } = initPageResult
+
+  requireAuthenticatedUser({ initPageResult, params, searchParams })
+
   const { user } = await req.payload.auth({ headers })
   // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
   // A query needs the content locale, so narrow it and let Payload default when it is absent.
@@ -44,8 +47,14 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
 
   const flowId = toNumber(params?.segments?.[1])
 
-  assert(selectedOrganisationId, `Selected Organisation ID not set, ${selectedOrganisationId}`)
-  assert(flowId, `Flow ID not set, ${flowId}`)
+  if (!selectedOrganisationId || !flowId) {
+    // The user has no organisation selected, or the URL carries no numeric flow id.
+    // Neither one can resolve a record, so render the admin 404 rather than an error page.
+    logger.warn(
+      `admin/views/flow/index: cannot resolve a flow. organisation=${selectedOrganisationId}, flow=${flowId}`,
+    )
+    notFound()
+  }
 
   const flowBlock = await req.payload
     .find({

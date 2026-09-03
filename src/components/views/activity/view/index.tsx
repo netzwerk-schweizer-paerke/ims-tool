@@ -1,9 +1,9 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { toNumber } from 'es-toolkit/compat'
 import { headers as getHeaders } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { AdminViewServerProps } from 'payload'
 import React from 'react'
-import { assert } from 'ts-essentials'
 
 import { LastUpdated } from '@/components/last-updated'
 import { StepNav } from '@/components/step-nav'
@@ -12,6 +12,7 @@ import { TasksGrid } from '@/components/views/activity/view/tasks-grid'
 import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
+import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 
 import './landscape-bg.css'
 import { Translate } from '@/lib/translate'
@@ -24,6 +25,9 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
 }) => {
   const headers = await getHeaders()
   const { req } = initPageResult
+
+  requireAuthenticatedUser({ initPageResult, params, searchParams })
+
   const { user } = await req.payload.auth({ headers })
   // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
   // A query needs the content locale, so narrow it and let Payload default when it is absent.
@@ -35,9 +39,16 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   const activityid = toNumber(params?.segments?.[1])
   const activityBlockId = params?.segments?.[3]
 
-  assert(selectedOrganisationId, `Selected Organisation ID not set, ${selectedOrganisationId}`)
-  assert(activityid, `Activity ID not set, ${activityid}`)
-  assert(activityBlockId, `Flow ID not set, ${activityBlockId}`)
+  if (!selectedOrganisationId || !activityid || !activityBlockId) {
+    // The user has no organisation selected, or the URL carries no activity id and no block id.
+    // None of them can resolve a record, so render the admin 404 rather than an error page.
+    // The block id is a raw URL segment. Never write it into the log line, because tslog
+    // runs in `pretty` mode and a caller could forge a log entry. The request URL holds it.
+    logger.warn(
+      `admin/views/activity/view: cannot resolve a block. organisation=${selectedOrganisationId}, activity=${activityid}, block=${activityBlockId ? 'present' : 'absent'}`,
+    )
+    notFound()
+  }
 
   const activityWhere = {
     and: [
@@ -142,7 +153,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           {activityBlock ? (
             <>
               <div className={'grid grid-cols-[auto_48px]'}>
-                <div className={'landscape-bg prose prose-lg pb-4 pl-4 pt-2'}>
+                <div className={'landscape-bg prose prose-lg pb-4 pl-4 pr-4 pt-2'}>
                   <h3>
                     <Translate k={'activityBlock:input:title'} />
                   </h3>
@@ -159,15 +170,19 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
               <div className={'grid grid-cols-[auto_48px]'}>
                 <div className={'landscape-bg relative p-4'}>
                   <div className={'prose prose-lg flex flex-col gap-16'}>
+                    {/* `grid-auto-rows: 1fr` gives every row the height of the tallest card, so
+                        all cards match across rows. A flex wrap equalises within one row only. */}
                     <div
-                      className={'flex flex-row flex-wrap items-start justify-items-start gap-4'}>
+                      className={
+                        'grid grid-cols-[repeat(auto-fill,12rem)] gap-4 leading-[normal] [grid-auto-rows:1fr]'
+                      }>
                       <TasksGrid tasks={activityBlock?.relations?.tasks} />
                     </div>
                   </div>
                 </div>
                 <div className={'landscape-bg-arrow-right'}></div>
               </div>
-              <div className={'landscape-bg relative pb-4 pl-4 pt-2'}>
+              <div className={'landscape-bg relative pb-4 pl-4 pr-4 pt-2'}>
                 <div className={'prose prose-lg'}>
                   <h3>
                     <Translate k={'activityBlock:output:title'} />

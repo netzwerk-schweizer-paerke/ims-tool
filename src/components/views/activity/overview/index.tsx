@@ -11,6 +11,7 @@ import { ActivityStrategy } from '@/components/views/activity/overview/activity/
 import { ActivitySupport } from '@/components/views/activity/overview/activity/activity-support'
 import { ActivityTitles } from '@/components/views/activity/overview/activity/activity-titles'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
+import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { Translate } from '@/lib/translate'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
@@ -23,6 +24,9 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
 }) => {
   const headers = await getHeaders()
   const { req } = initPageResult
+
+  requireAuthenticatedUser({ initPageResult, params, searchParams })
+
   const { user } = await req.payload.auth({ headers })
   // `i18n.fallbackLanguage` is the admin language, which is a different axis and includes `en`.
   // A query needs the content locale, so narrow it and let Payload default when it is absent.
@@ -31,24 +35,23 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
 
   const selectedOrganisationId = getIdFromRelation(user?.selectedOrganisation)
 
-  const activities = await req.payload
-    .find({
-      collection: 'activities',
-      depth: 2,
-      locale,
-      sort: 'docOrder',
-      where: {
-        organisation: {
-          equals: selectedOrganisationId,
-        },
-      },
-    })
-    .then((res) => {
-      if (res.docs.length === 0) {
-        return []
-      }
-      return res.docs
-    })
+  // A null id queries `organisation IS NULL` and returns the rows that belong to no
+  // organisation. The user has selected none, so the view has nothing to show.
+  const activities = selectedOrganisationId
+    ? await req.payload
+        .find({
+          collection: 'activities',
+          depth: 2,
+          locale,
+          sort: 'docOrder',
+          where: {
+            organisation: {
+              equals: selectedOrganisationId,
+            },
+          },
+        })
+        .then((res) => res.docs)
+    : []
 
   const strategicActivity =
     activities?.filter((activity) => activity.variant === 'strategyActivity') || []
