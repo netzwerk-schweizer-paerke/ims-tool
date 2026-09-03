@@ -64,7 +64,7 @@ export const useArrows = ({ connections, setState, state }: Props) => {
 
   const arrows = useMemo<LayerArrow[]>(() => {
     if (!stateConnections) return []
-    return stateConnections.flatMap((connection) => {
+    return stateConnections.flatMap((connection, connectionIndex) => {
       // The JSON schema only checks that position and type are strings, so stored
       // values that no longer exist in the definitions must be skipped — throwing
       // here would take down the whole edit view.
@@ -83,9 +83,10 @@ export const useArrows = ({ connections, setState, state }: Props) => {
       return specs.map((spec, index) => ({
         ...spec,
         end: `${arrowSetId}-${spec.end}`,
-        // Keyed by the endpoints rather than by the index, because the list changes
-        // length as connection types change.
-        key: `${connection.position}-${spec.start}-${spec.end}-${index}`,
+        // Keyed by the endpoints rather than by the index alone, because the list changes
+        // length as connection types change. The connection index keeps the key unique,
+        // because nothing stops a block from storing the same position twice.
+        key: `${connectionIndex}-${connection.position}-${spec.start}-${spec.end}-${index}`,
         start: `${arrowSetId}-${spec.start}`,
       }))
     })

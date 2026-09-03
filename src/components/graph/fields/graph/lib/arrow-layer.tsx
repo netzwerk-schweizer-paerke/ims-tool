@@ -61,16 +61,25 @@ export const ArrowLayer = ({ arrows }: Props) => {
       ids.add(arrow.end)
     }
 
-    let frame: null | number = null
+    const observed = new Set<Element>()
+    const observer = new ResizeObserver(() => measure())
+
+    const observe = (element: Element) => {
+      if (observed.has(element)) return
+      observed.add(element)
+      observer.observe(element)
+    }
 
     // The layer is `inset: 0` inside its positioned parent, so its border box is the
-    // coordinate space the SVG user units already use.
+    // coordinate space the SVG user units already use. A target is observed as it is
+    // found, so one that mounts late still gets watched from then on.
     const measure = () => {
       const origin = layer.getBoundingClientRect()
       const next = new Map<string, Rect>()
       for (const id of ids) {
         const element = elementById(id)
         if (!element) continue
+        observe(element)
         const box = element.getBoundingClientRect()
         next.set(id, {
           height: box.height,
@@ -83,27 +92,41 @@ export const ArrowLayer = ({ arrows }: Props) => {
       return next.size === ids.size
     }
 
-    // A target that the same commit renders is already in the document. A target that is
-    // not costs one extra frame rather than an arrow that never draws.
-    if (!measure()) {
-      frame = requestAnimationFrame(() => {
-        frame = null
+    // The parent is the plain block-level box. An outer SVG reports its size less
+    // reliably, so watch both rather than the SVG alone.
+    observe(layer)
+    if (layer.parentElement) observe(layer.parentElement)
+
+    // A target the same commit renders is already in the document. Retry for a bounded
+    // number of frames for one that is not, because an unobserved target has no other
+    // way back — its own resize cannot reach an observer it was never added to.
+    let retryFrame: null | number = null
+    let retriesLeft = 20
+    const retryUntilResolved = () => {
+      retryFrame = null
+      if (measure() || retriesLeft <= 0) return
+      retriesLeft -= 1
+      retryFrame = requestAnimationFrame(retryUntilResolved)
+    }
+    retryUntilResolved()
+
+    // A ResizeObserver reports a size, never a position. A target that moves inside a box
+    // of unchanged size fires nothing, and a viewport change can reflow the layer without
+    // resizing an observed element.
+    let resizeFrame: null | number = null
+    const onWindowResize = () => {
+      if (resizeFrame !== null) return
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = null
         measure()
       })
     }
-
-    const observer = new ResizeObserver(() => measure())
-    // The parent is the plain block-level box. An outer SVG reports its size less
-    // reliably, so watch both rather than the SVG alone.
-    if (layer.parentElement) observer.observe(layer.parentElement)
-    observer.observe(layer)
-    for (const id of ids) {
-      const element = elementById(id)
-      if (element) observer.observe(element)
-    }
+    window.addEventListener('resize', onWindowResize)
 
     return () => {
-      if (frame !== null) cancelAnimationFrame(frame)
+      if (retryFrame !== null) cancelAnimationFrame(retryFrame)
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
+      window.removeEventListener('resize', onWindowResize)
       observer.disconnect()
     }
   }, [arrows])

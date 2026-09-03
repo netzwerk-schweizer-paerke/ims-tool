@@ -31,7 +31,7 @@ export const TaskFlowArrows = ({ taskFlowBlock }: Props) => {
   const arrows = useMemo<LayerArrow[]>(
     () =>
       assignBlockArrows(taskFlowBlock).flatMap(
-        ({ arrows, blockType, connection, id, leftId, rightId }) => {
+        ({ arrows, blockType, connection, id, leftId, rightId }, entryIndex) => {
           // Both halves of a parallel block hold the same stored connections, so the left
           // half would draw a duplicate of every arrow the right half already draws.
           if (blockType === 'proc-task-p' && id === leftId) return []
@@ -52,7 +52,9 @@ export const TaskFlowArrows = ({ taskFlowBlock }: Props) => {
               end = end.replace(parallelBlockRegex, parallelBlockReplacer)
             }
 
-            return { ...spec, end, key: `${start}-${end}-${index}`, start }
+            // The entry index keeps the key unique. Nothing stops a block from storing the
+            // same position and type twice, and both entries then emit the same endpoints.
+            return { ...spec, end, key: `${entryIndex}-${start}-${end}-${index}`, start }
           })
         },
       ),

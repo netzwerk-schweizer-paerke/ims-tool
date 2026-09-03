@@ -7,6 +7,8 @@ const topCenter: Rect = { height: 2, width: 2, x: 100, y: 0 }
 const bottomCenter: Rect = { height: 2, width: 2, x: 100, y: 120 }
 const bottomRight: Rect = { height: 2, width: 2, x: 198, y: 118 }
 const centerRight: Rect = { height: 2, width: 2, x: 198, y: 69 }
+// The top markers sit 4px above the layer, so their coordinates are negative.
+const topRight: Rect = { height: 2, width: 2, x: 198, y: -4 }
 
 describe('anchorPoint', () => {
   it('places each side at the middle of that edge', () => {
@@ -94,6 +96,38 @@ describe('buildArrow', () => {
     expect(buildArrow(spec, centerRight, root)).toEqual({
       d: 'M 198 70 L 178.5 70 L 178.5 70 L 159 70',
       head: { orient: 180, scale: 12, x: 162, y: 76 },
+    })
+  })
+
+  it('points the head the other way when the end anchor is left', () => {
+    // The flows/io `right: out` record. This is the only path through headOrient 0.
+    const spec: ArrowSpec = {
+      end: 'center-right',
+      endAnchor: 'left',
+      start: 'root-target',
+      startAnchor: 'right',
+    }
+
+    expect(buildArrow(spec, root, centerRight)).toEqual({
+      d: 'M 150 70 L 169.5 70 L 169.5 70 L 189 70',
+      head: { orient: 0, scale: 12, x: 186, y: 64 },
+    })
+  })
+
+  it('draws an upward vv arrow into a negative coordinate', () => {
+    // The test block's `right: out-top` second record. The top marker sits above the layer.
+    const spec: ArrowSpec = {
+      end: 'top-right',
+      endAnchor: 'bottom',
+      showHead: false,
+      showTail: false,
+      start: 'center-right',
+      startAnchor: 'top',
+    }
+
+    expect(buildArrow(spec, centerRight, topRight)).toEqual({
+      d: 'M 199 69 L 199 33.5 L 199 33.5 L 199 -2',
+      head: null,
     })
   })
 
