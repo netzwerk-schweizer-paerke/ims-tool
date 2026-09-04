@@ -1,4 +1,4 @@
-import { Endpoint, PayloadRequest } from 'payload'
+import { Endpoint, PayloadRequest, TypedLocale } from 'payload'
 import { z } from 'zod'
 
 import { toContentLocale } from '@/lib/locale-utils'
@@ -9,6 +9,7 @@ import {
   getErrorStatus,
   getValidationDetails,
 } from '@/payload/utilities/cloning/clone-http-error'
+import { getCloneLocales, hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { scanActivityForDocumentIds } from '@/payload/utilities/cloning/document-scanner'
@@ -75,6 +76,10 @@ export const cloneActivityTransactional: Endpoint = {
       return Response.json({ error: 'Unsupported locale' }, { status: 400 })
     }
 
+    // The clone carries every configured locale the source really has, not the request locale
+    // alone. The request locale still labels the report and drives the access check.
+    const cloneLocales = getCloneLocales(req.payload.config)
+
     const transactionID = await req.payload.db.beginTransaction()
 
     if (!transactionID) {
@@ -91,7 +96,10 @@ export const cloneActivityTransactional: Endpoint = {
       })
 
       const allDocumentIds: number[] = []
-      const activityData: Array<{ activity: Activity; id: number; }> = []
+      const activityData: Array<{
+        id: number
+        sourcesByLocale: Map<TypedLocale, Activity>
+      }> = []
 
       // First, fetch all activities and scan for document IDs
       for (const activityId of activityIds) {
@@ -111,24 +119,27 @@ export const cloneActivityTransactional: Endpoint = {
           )
         }
 
-        // Find the source activity
-        const sourceActivity = await req.payload.findByID({
-          collection: 'activities',
-          depth: 2, // Need depth for scanning nested content
-          id: activityId,
-          locale,
-          req,
-        })
+        // Read every locale, so a document that only a French rich text names still reaches
+        // the preload. The fallback would otherwise answer with the German content.
+        const sourcesByLocale = new Map<TypedLocale, Activity>()
 
-        if (!sourceActivity) {
-          throw new Error(`Source activity ${activityId} not found`)
+        for (const cloneLocale of cloneLocales) {
+          const sourceActivity = await req.payload.findByID({
+            collection: 'activities',
+            depth: 2, // Need depth for scanning nested content
+            fallbackLocale: false,
+            id: activityId,
+            locale: cloneLocale,
+            req,
+          })
+
+          sourcesByLocale.set(cloneLocale, sourceActivity)
+
+          // Scan for all document IDs in this locale of the activity
+          allDocumentIds.push(...scanActivityForDocumentIds(sourceActivity))
         }
 
-        activityData.push({ activity: sourceActivity, id: activityId })
-
-        // Scan for all document IDs in this activity
-        const documentIds = scanActivityForDocumentIds(sourceActivity)
-        allDocumentIds.push(...documentIds)
+        activityData.push({ id: activityId, sourcesByLocale })
       }
 
       // Pre-load all unique documents
@@ -155,19 +166,26 @@ export const cloneActivityTransactional: Endpoint = {
       }
 
       // Process each activity within the SAME transaction
-      for (const { activity: sourceActivity, id: activityId } of activityData) {
+      for (const { id: activityId, sourcesByLocale } of activityData) {
         // Start tracking this entity
         tracker.startEntity(activityId)
 
-        // Set source info for current entity
-        tracker.setSourceInfo(sourceActivity.id, sourceActivity.name, 'activities')
+        // The label of the report. It prefers the request locale, because 4 of 104 activities
+        // have no German name and the panel would otherwise show `undefined`.
+        const sourceName =
+          [locale, ...cloneLocales]
+            .map((code) => sourcesByLocale.get(code))
+            .find((source) => source && hasLocaleContent(source))?.name ?? ''
 
-        // Execute the cloning process for this activity
+        tracker.setSourceInfo(activityId, sourceName, 'activities')
+
+        // Execute the cloning process for this activity, one pass per locale
         const clonedActivity = await cloneActivity({
           documentPreloader,
-          locale,
+          locales: cloneLocales,
           req: transactionalReq,
-          sourceActivity,
+          sourceId: activityId,
+          sourcesByLocale,
           targetOrgId: targetOrganisationId,
         })
 
@@ -176,7 +194,7 @@ export const cloneActivityTransactional: Endpoint = {
         req.payload.logger.info({
           clonedId: clonedActivity.id,
           msg: 'Cloned successfully',
-          sourceId: sourceActivity.id,
+          sourceId: activityId,
         })
 
         tracker.endEntity()

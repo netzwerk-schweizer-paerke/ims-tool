@@ -9,6 +9,7 @@ export class CloneStatisticsTracker {
   private documentCloneMaps: Map<number, Map<number, number>> = new Map()
   private documentClonePromises: Map<number, Map<number, Promise<number>>> = new Map()
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
+  private taskClonePromises: Map<number, Map<string, Promise<number>>> = new Map()
 
   private constructor() {
     this.reset()
@@ -320,6 +321,7 @@ export class CloneStatisticsTracker {
     this.entitiesStats = new Map()
     this.documentCloneMaps = new Map()
     this.documentClonePromises = new Map()
+    this.taskClonePromises = new Map()
     this.currentEntityId = null
   }
 
@@ -351,6 +353,37 @@ export class CloneStatisticsTracker {
     })
 
     inFlight.set(sourceId, promise)
+
+    return promise
+  }
+
+  /**
+   * Copies a nested task once per entity, however many locales name it.
+   *
+   * Two locales of one activity often reference the same task flow. Both must point at one
+   * clone, and the report must count that task once.
+   */
+  async resolveClonedTaskId(
+    collection: 'task-flows' | 'task-lists',
+    sourceId: number,
+    cloneTask: () => Promise<number>,
+  ): Promise<number> {
+    const inFlight = this.getCurrentTaskClonePromises()
+    const key = `${collection}:${sourceId}`
+    const existing = inFlight.get(key)
+
+    if (existing) {
+      return existing
+    }
+
+    this.addSourceRelatedItem()
+
+    const promise = cloneTask().then((clonedId) => {
+      this.addClonedRelatedItem()
+      return clonedId
+    })
+
+    inFlight.set(key, promise)
 
     return promise
   }
@@ -419,6 +452,7 @@ export class CloneStatisticsTracker {
       })
       this.documentCloneMaps.set(entityId, new Map())
       this.documentClonePromises.set(entityId, new Map())
+      this.taskClonePromises.set(entityId, new Map())
     }
   }
 
@@ -441,5 +475,12 @@ export class CloneStatisticsTracker {
       throw new Error('No current entity set. Call startEntity() first.')
     }
     return this.entitiesStats.get(this.currentEntityId)!
+  }
+
+  private getCurrentTaskClonePromises(): Map<string, Promise<number>> {
+    if (this.currentEntityId === null) {
+      throw new Error('No current entity set. Call startEntity() first.')
+    }
+    return this.taskClonePromises.get(this.currentEntityId)!
   }
 }

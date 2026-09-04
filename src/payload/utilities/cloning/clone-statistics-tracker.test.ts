@@ -169,6 +169,52 @@ describe('CloneStatisticsTracker completeness', () => {
     expect(result.entities[0].cloned.documentFilesCount).toBe(1)
   })
 
+  // Two locales of one activity often name the same task flow in their own block arrays.
+  test('clones a nested task once when two locale passes reference it', async () => {
+    const tracker = trackerFor('tx-nested-tasks')
+
+    let attempts = 0
+    const cloneTask = async () => {
+      attempts++
+      return 700
+    }
+
+    tracker.startEntity(1)
+    await tracker.resolveClonedTaskId('task-flows', 55, cloneTask)
+    tracker.endEntity()
+
+    tracker.startEntity(1)
+    const secondPass = await tracker.resolveClonedTaskId('task-flows', 55, cloneTask)
+    tracker.setCloneInfo(2, 'Clone', 'activities')
+    tracker.endEntity()
+
+    const result = tracker.finalize()
+
+    expect(attempts).toBe(1)
+    expect(secondPass).toBe(700)
+    expect(result.entities[0].source.relatedEntitiesCount).toBe(1)
+    expect(result.entities[0].cloned.relatedEntitiesCount).toBe(1)
+  })
+
+  // A task flow and a task list are separate tables, so both can carry the same id.
+  test('keeps a task flow and a task list of the same id apart', async () => {
+    const tracker = trackerFor('tx-task-collections')
+    tracker.startEntity(1)
+
+    const flow = await tracker.resolveClonedTaskId('task-flows', 55, async () => 701)
+    const list = await tracker.resolveClonedTaskId('task-lists', 55, async () => 702)
+
+    tracker.setCloneInfo(2, 'Clone', 'activities')
+    tracker.endEntity()
+
+    const result = tracker.finalize()
+
+    expect(flow).toBe(701)
+    expect(list).toBe(702)
+    expect(result.entities[0].source.relatedEntitiesCount).toBe(2)
+    expect(result.entities[0].cloned.relatedEntitiesCount).toBe(2)
+  })
+
   test('drops the instance of a finished transaction', () => {
     const tracker = trackerFor('tx-dispose')
     tracker.startEntity(1)

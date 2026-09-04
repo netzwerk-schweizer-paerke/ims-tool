@@ -3,144 +3,104 @@ import { PayloadRequest, TypedLocale } from 'payload'
 
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
-import { Activity, ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
+import { Activity, TaskFlow, TaskList } from '@/payload-types'
 import { isActivityIOBlock, isActivityTaskBlock } from '@/payload/assertions'
-import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
-import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 
 import { createTaskFlow, createTaskList } from './clone-task-flow-or-list'
 
-type CloneActivityBlocksParams = {
-  clonedActivity: Activity
+type RemapActivityTaskRelationsParams = {
+  blocks: Activity['blocks']
   documentPreloader?: DocumentPreloader
-  locale: TypedLocale
+  /** The locales each nested task carries. It is the activity's own locale list. */
+  locales: TypedLocale[]
   req: PayloadRequest
   targetOrgId: number
 }
 
+type TaskRelation =
+  | { relationTo: 'task-flows'; value: number | TaskFlow }
+  | { relationTo: 'task-lists'; value: number | TaskList }
+
 /**
- * Processes and clones all task blocks (task flows and task lists) within an activity
- * Updates the cloned activity with new task references
- * Tracks statistics for cloned blocks
+ * Clones the task flows and task lists one locale's blocks reference, and returns those blocks
+ * with each relation pointed at its clone.
+ *
+ * The caller writes the result, so one locale costs one write. The tracker clones a task once
+ * per activity, because two locales of one activity often reference the same task.
  */
-export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Promise<void> {
-  const { clonedActivity, documentPreloader, locale, req, targetOrgId } = params
+export async function remapActivityTaskRelations(
+  params: RemapActivityTaskRelationsParams,
+): Promise<Activity['blocks']> {
+  const { blocks, documentPreloader, locales, req, targetOrgId } = params
+
+  if (!blocks) {
+    return blocks
+  }
 
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
+  const remapped: NonNullable<Activity['blocks']> = []
 
-  // A nested task carries every locale it has, even though the activity itself is still cloned
-  // in one. Passing `[locale]` would cancel the batch for a task named in French only.
-  const cloneLocales = getCloneLocales(req.payload.config)
-
-  if (!clonedActivity.blocks) {
-    return
-  }
-
-  const updatedBlocks: (ActivityIOBlock | ActivityTaskBlock)[] = []
-
-  // Blocks on activity level
-  for (const block of clonedActivity.blocks) {
-    const newRelations: (
-      | { relationTo: 'task-flows'; value: number | TaskFlow }
-      | { relationTo: 'task-lists'; value: number | TaskList }
-    )[] = []
-
-    tracker.addSourceBlock()
-
+  for (const block of blocks) {
     if (
-      (isActivityTaskBlock(block) || isActivityIOBlock(block)) &&
-      isArray(block.relations?.tasks)
+      !(isActivityTaskBlock(block) || isActivityIOBlock(block)) ||
+      !isArray(block.relations?.tasks)
     ) {
-      // Polymorphic relationship on blocks
-      for (const task of block.relations.tasks) {
-        const { relationTo, value } = task
+      remapped.push(block)
+      continue
+    }
 
-        tracker.addSourceRelatedItem()
+    const newRelations: TaskRelation[] = []
 
-        req.payload.logger.debug({ msg: 'before createHandler', relationTo })
+    for (const task of block.relations.tasks) {
+      const { relationTo, value } = task
 
-        if (relationTo === 'task-flows' && isNumber(value)) {
-          req.payload.logger.debug({ msg: 'before createTaskFlow', value })
-          const newTaskFlow = await createTaskFlow(
+      // The endpoint reads the source at depth 2 to scan it, so `value` holds the whole task
+      // rather than its id.
+      const sourceTaskId = readRelationId(value)
+
+      if (sourceTaskId === undefined) {
+        continue
+      }
+
+      if (relationTo === 'task-flows') {
+        const clonedId = await tracker.resolveClonedTaskId('task-flows', sourceTaskId, async () => {
+          const clone = await createTaskFlow(
             req,
-            value,
+            sourceTaskId,
             targetOrgId,
-            cloneLocales,
+            locales,
             documentPreloader,
           )
-
-          if (newTaskFlow) {
-            newRelations.push({ relationTo, value: newTaskFlow.id })
-          }
-
-          req.payload.logger.debug({
-            msg: 'after createTaskFlow',
-            newTaskFlow: newTaskFlow?.id,
-          })
-        }
-
-        if (relationTo === 'task-lists' && isNumber(value)) {
-          req.payload.logger.debug({ msg: 'before createTaskList', value })
-          const newTaskList = await createTaskList(
+          return clone.id
+        })
+        newRelations.push({ relationTo, value: clonedId })
+      } else if (relationTo === 'task-lists') {
+        const clonedId = await tracker.resolveClonedTaskId('task-lists', sourceTaskId, async () => {
+          const clone = await createTaskList(
             req,
-            value,
+            sourceTaskId,
             targetOrgId,
-            cloneLocales,
+            locales,
             documentPreloader,
           )
-
-          if (newTaskList) {
-            newRelations.push({ relationTo, value: newTaskList.id })
-          }
-
-          req.payload.logger.debug({
-            msg: 'after createTaskList',
-            newTaskList: newTaskList?.id,
-          })
-        }
-
-        tracker.addClonedRelatedItem()
+          return clone.id
+        })
+        newRelations.push({ relationTo, value: clonedId })
       }
     }
 
-    if (newRelations.length > 0) {
-      updatedBlocks.push({
-        blockType: block.blockType,
-        id: block.id,
-        relations: { tasks: newRelations },
-      })
-    }
-
-    tracker.addClonedBlock()
+    remapped.push({ ...block, relations: { tasks: newRelations } })
   }
 
-  req.payload.logger.debug({ msg: 'updating cloned activity', updatedBlocks })
+  return remapped
+}
 
-  if (updatedBlocks.length > 0) {
-    // Create the full blocks array by merging updated blocks with unchanged blocks
-    const finalBlocks = clonedActivity.blocks.map((block) => {
-      // Find if this block has updates (task relations)
-      const updatedBlock = updatedBlocks.find((ub) => ub.id === block.id)
-      if (updatedBlock) {
-        // Merge the updated relations with the original block data
-        return {
-          ...block,
-          relations: updatedBlock.relations,
-        }
-      }
-      // Return the original block unchanged
-      return block
-    })
-
-    await req.payload.update({
-      collection: 'activities',
-      data: {
-        blocks: finalBlocks,
-      },
-      id: clonedActivity.id,
-      locale,
-      req: mergeReqContextTargetOrgId(req, targetOrgId),
-    })
+/** Reads the task id from a relation, which holds either a raw id or the populated task. */
+const readRelationId = (value: number | TaskFlow | TaskList): number | undefined => {
+  if (isNumber(value)) {
+    return value
   }
+
+  return isNumber(value?.id) ? value.id : undefined
 }
