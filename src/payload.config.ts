@@ -12,6 +12,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { deepLTranslate } from 'src/plugins/deeplTranslate'
 
+import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { seedDevUser } from '@/config/seed/dev-user'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
@@ -70,7 +71,7 @@ export default buildConfig({
     },
     // Payload defaults to 'MMMM do yyyy, h:mm a', which renders an English ordinal and a 12-hour
     // clock in every admin language. Swiss usage is day-first with a 24-hour clock.
-    dateFormat: 'dd.MM.yyyy HH:mm',
+    dateFormat: ADMIN_DATE_FORMAT,
     importMap: {
       baseDir: path.resolve(dirname),
     },

@@ -365,6 +365,7 @@ export const en = {
       externalUrlNotFound: 'External link answers with HTTP {{status}}: {{url}}',
       externalUrlUnreachable: 'External link unreachable ({{reason}}): {{url}}',
       malformedRichTextNoChildren: 'Rich text field: "root" has no "children" array.',
+      malformedRichTextNotObject: 'Rich text field: the stored value is not an object.',
       malformedRichTextRoot: 'Rich text field: "root" is not an object.',
       missingRequiredField:
         'Required field "{{field}}" is empty in the default locale ({{locale}}). Cloning fails validation.',
@@ -497,6 +498,7 @@ export const en = {
     deleted: 'The share link is deleted.',
     deleteLink: 'Delete the share link',
     error: 'The action failed. Please try again.',
+    isShared: 'This page has a share link.',
     noAccount: 'The recipient needs no user account.',
     publicNotice: 'Shared read-only view',
     scopeLandscape:

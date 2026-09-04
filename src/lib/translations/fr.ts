@@ -367,6 +367,8 @@ export const fr = {
       externalUrlUnreachable: 'Lien externe injoignable ({{reason}}) : {{url}}',
       malformedRichTextNoChildren:
         'Champ de texte enrichi : « root » ne contient pas de tableau « children ».',
+      malformedRichTextNotObject:
+        'Champ de texte enrichi : la valeur enregistrée n’est pas un objet.',
       malformedRichTextRoot: 'Champ de texte enrichi : « root » n’est pas un objet.',
       missingRequiredField:
         'Le champ obligatoire « {{field}} » est vide dans la langue par défaut ({{locale}}). Le clonage échoue à la validation.',
@@ -503,6 +505,7 @@ export const fr = {
     deleted: 'Le lien de partage est supprimé.',
     deleteLink: 'Supprimer le lien de partage',
     error: "L'action a échoué. Veuillez réessayer.",
+    isShared: 'Cette page a un lien de partage.',
     noAccount: "Le destinataire n'a pas besoin de compte utilisateur.",
     publicNotice: 'Vue partagée en lecture seule',
     scopeLandscape:

@@ -1,11 +1,11 @@
 'use client'
 
-import { Button, Drawer, useDrawerSlug, useModal } from '@payloadcms/ui'
+import { Button, Drawer, useDrawerSlug, useModal, useTranslation } from '@payloadcms/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { buildShareUrl, ShareTarget } from '@/lib/share-link-target'
 import { Translate } from '@/lib/translate'
-import { I18nKeys } from '@/lib/use-translation-custom-types'
+import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
 const MESSAGE_MS = 3000
 
@@ -52,6 +52,7 @@ const warn = (message: string) => {
 export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) => {
   const drawerSlug = useDrawerSlug('share-link')
   const { closeModal, openModal } = useModal()
+  const { t } = useTranslation<I18nObject, I18nKeys>()
 
   const [link, setLink] = useState<null | ShareLinkRef>(existingLink)
   const [url, setUrl] = useState<null | string>(null)
@@ -177,7 +178,19 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
         url={editHref}>
         <Translate k={'common:edit'} />
       </Button>
-      <Button buttonStyle={'secondary'} margin={false} onClick={handleOpen} size={'small'}>
+      <Button
+        buttonStyle={'secondary'}
+        margin={false}
+        onClick={handleOpen}
+        size={'small'}
+        tooltip={link ? t('shareLink:isShared') : undefined}>
+        {link && (
+          <span
+            aria-hidden={true}
+            className={'mr-2 inline-block h-2 w-2 rounded-full align-middle'}
+            style={{ background: 'var(--theme-success-500, #22c55e)' }}
+          />
+        )}
         <Translate k={'shareLink:share'} />
       </Button>
       <Drawer slug={drawerSlug} title={''}>

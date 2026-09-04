@@ -366,6 +366,7 @@ export const de = {
       externalUrlNotFound: 'Externer Link antwortet mit HTTP {{status}}: {{url}}',
       externalUrlUnreachable: 'Externer Link nicht erreichbar ({{reason}}): {{url}}',
       malformedRichTextNoChildren: 'Rich-Text-Feld: "root" enthält kein "children"-Array.',
+      malformedRichTextNotObject: 'Rich-Text-Feld: Der gespeicherte Wert ist kein Objekt.',
       malformedRichTextRoot: 'Rich-Text-Feld: "root" ist kein Objekt.',
       missingRequiredField:
         'Pflichtfeld "{{field}}" ist in der Standardsprache ({{locale}}) leer. Das Klonen scheitert an der Validierung.',
@@ -501,6 +502,7 @@ export const de = {
     deleted: 'Der Freigabelink ist gelöscht.',
     deleteLink: 'Freigabelink löschen',
     error: 'Die Aktion ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    isShared: 'Diese Seite ist freigegeben.',
     noAccount: 'Der Empfänger braucht kein Benutzerkonto.',
     publicNotice: 'Geteilte, schreibgeschützte Ansicht',
     scopeLandscape:

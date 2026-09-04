@@ -4,6 +4,8 @@ import { useConfig, useTranslation } from '@payloadcms/ui'
 import { formatDate } from '@payloadcms/ui/shared'
 import { formatDistanceToNow } from 'date-fns'
 
+import { ADMIN_DATE_FORMAT } from '@/config/date-format'
+
 /**
  * The single source for every date string in the admin. Read `.claude/rules/project/pitfalls/
  * server-component-tolocale-ignores-admin-language.md` before you format a date another way.
@@ -25,7 +27,11 @@ export const useFormattedDate = () => {
   /** The exact time, in the admin language, using `admin.dateFormat`. */
   const absolute = (date: string): null | string => {
     if (!parse(date)) return null
-    return ready ? formatDate({ date, i18n, pattern: config.admin.dateFormat }) : loading
+    // A client with no session gets no admin config, so date-fns would receive no pattern
+    // and throw. A public share page is exactly that case.
+    const pattern = config?.admin?.dateFormat ?? ADMIN_DATE_FORMAT
+
+    return ready ? formatDate({ date, i18n, pattern }) : loading
   }
 
   /** The exact time plus the viewer's IANA zone, for a title attribute. */

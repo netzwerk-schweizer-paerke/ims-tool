@@ -369,6 +369,8 @@ export const it = {
       externalUrlUnreachable: 'Link esterno non raggiungibile ({{reason}}): {{url}}',
       malformedRichTextNoChildren:
         'Campo di testo formattato: «root» non contiene un array «children».',
+      malformedRichTextNotObject:
+        'Campo di testo formattato: il valore memorizzato non è un oggetto.',
       malformedRichTextRoot: 'Campo di testo formattato: «root» non è un oggetto.',
       missingRequiredField:
         'Il campo obbligatorio «{{field}}» è vuoto nella lingua predefinita ({{locale}}). La clonazione fallisce la validazione.',
@@ -506,6 +508,7 @@ export const it = {
     deleted: 'Il link di condivisione è eliminato.',
     deleteLink: 'Elimina il link di condivisione',
     error: "L'azione non è riuscita. Riprova.",
+    isShared: 'Questa pagina ha un link di condivisione.',
     noAccount: 'Il destinatario non ha bisogno di un account.',
     publicNotice: 'Vista condivisa di sola lettura',
     scopeLandscape:
