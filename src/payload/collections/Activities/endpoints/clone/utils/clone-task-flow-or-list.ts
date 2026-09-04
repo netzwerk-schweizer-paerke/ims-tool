@@ -121,7 +121,7 @@ export const cloneTaskFlowOrList = async ({
 
   if (!created) {
     throw new CloneHttpError(
-      `Source ${collectionName} ${sourceId} carries no content in any locale`,
+      `Source ${collectionName} ${sourceId} carries no content in ${locales.join(', ')}`,
       400,
     )
   }

@@ -1,7 +1,7 @@
 import { Endpoint, PayloadRequest } from 'payload'
 import { z } from 'zod'
 
-import { toContentLocale } from '@/lib/locale-utils'
+import { getLocalizedValue, toContentLocale } from '@/lib/locale-utils'
 import { createTaskFlow } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
 import { CloneHttpError, getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
@@ -117,18 +117,22 @@ export const cloneTaskFlowTransactional: Endpoint = {
           )
         }
 
-        // The name for the report only. It reads the request locale, with the fallback on, so
-        // an untranslated record still gets a readable label.
+        // The name for the report only. `locale: 'all'` returns every locale, because a record
+        // named in French alone has no German name and the report would show `undefined`.
         const sourceTaskFlow = await req.payload.findByID({
           collection: 'task-flows',
           depth: 0,
           id: taskFlowId,
-          locale,
+          locale: 'all',
           req: transactionalReq,
         })
 
         // Set source info for current entity
-        tracker.setSourceInfo(sourceTaskFlow.id, sourceTaskFlow.name, 'task-flows')
+        tracker.setSourceInfo(
+          sourceTaskFlow.id,
+          getLocalizedValue(sourceTaskFlow.name, cloneLocales, locale),
+          'task-flows',
+        )
 
         // Execute the cloning process for this task flow, one pass per locale
         const clonedTaskFlow = await createTaskFlow(

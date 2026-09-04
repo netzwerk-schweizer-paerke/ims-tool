@@ -5,6 +5,7 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 
 import { Activity, ActivityIOBlock, ActivityTaskBlock, TaskFlow, TaskList } from '@/payload-types'
 import { isActivityIOBlock, isActivityTaskBlock } from '@/payload/assertions'
+import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 
@@ -27,6 +28,10 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
   const { clonedActivity, documentPreloader, locale, req, targetOrgId } = params
 
   const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
+
+  // A nested task carries every locale it has, even though the activity itself is still cloned
+  // in one. Passing `[locale]` would cancel the batch for a task named in French only.
+  const cloneLocales = getCloneLocales(req.payload.config)
 
   if (!clonedActivity.blocks) {
     return
@@ -57,12 +62,11 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
 
         if (relationTo === 'task-flows' && isNumber(value)) {
           req.payload.logger.debug({ msg: 'before createTaskFlow', value })
-          // The activity itself is still cloned in one locale, so its nested tasks follow it.
           const newTaskFlow = await createTaskFlow(
             req,
             value,
             targetOrgId,
-            [locale],
+            cloneLocales,
             documentPreloader,
           )
 
@@ -82,7 +86,7 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
             req,
             value,
             targetOrgId,
-            [locale],
+            cloneLocales,
             documentPreloader,
           )
 
