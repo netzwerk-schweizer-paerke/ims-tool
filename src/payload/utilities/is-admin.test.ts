@@ -1,10 +1,13 @@
-import { checkUserRoles } from '../check-user-roles'
-import { ROLE_SUPER_ADMIN } from '../constants'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { mockUsers } from '@/tests/mocks/test-utils'
+
+import { checkUserRoles } from './check-user-roles'
+import { ROLE_SUPER_ADMIN } from './constants'
 
 describe('checkUserRoles with ROLE_SUPER_ADMIN', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should return true when user has super admin role', () => {

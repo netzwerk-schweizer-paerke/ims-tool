@@ -27,9 +27,9 @@
     "check": "yarn typecheck && yarn lint && yarn test",
     "up": "yarn upgrade-interactive",
     "self-update": "yarn set version latest && yarn",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage"
   },
   "engines": {
     "node": ">=24"
@@ -73,11 +73,12 @@
     "@tailwindcss/typography": "^0.5.20",
     "@types/eslint-plugin-jsx-a11y": "^6.10.1",
     "@types/he": "^1.2.3",
-    "@types/jest": "^30.0.0",
     "@types/node": "^24.13.3",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
+    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/eslint-plugin": "^1.6.27",
     "autoprefixer": "^10.5.4",
     "dotenv": "^17.4.2",
     "eslint": "^10.9.1",
@@ -86,16 +87,14 @@
     "eslint-plugin-perfectionist": "^5.11.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-unicorn": "^71.1.0",
-    "jest": "^30.5.1",
-    "jest-environment-node": "30.5.1",
     "postcss": "^8.5.26",
     "postcss-nested": "^6.2.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^3.4.19",
-    "ts-jest": "^29.4.12",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.69.0"
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11"
   },
   "packageManager": "yarn@4.18.0"
 }

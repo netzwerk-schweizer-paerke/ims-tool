@@ -1,18 +1,22 @@
-import { checkUserRoles } from '../check-user-roles'
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '../constants'
-import type { User } from '@/payload-types'
-import { mockUsers } from '@/tests/mocks/test-utils'
-import { logger } from '@/lib/logger'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-jest.mock('@/lib/logger', () => ({
+import type { User } from '@/payload-types'
+
+import { logger } from '@/lib/logger'
+import { mockUsers } from '@/tests/mocks/test-utils'
+
+import { checkUserRoles } from './check-user-roles'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from './constants'
+
+vi.mock('@/lib/logger', () => ({
   logger: {
-    debug: jest.fn(),
+    debug: vi.fn(),
   },
 }))
 
 describe('checkUserRoles', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should return true when user has at least one of the required roles', () => {

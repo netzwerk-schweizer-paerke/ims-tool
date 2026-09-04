@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest'
+
 import { anchorPoint, ArrowSpec, buildArrow, Rect } from './arrow-geometry'
 
 // A block shape and the two outer markers a real definition connects it to. The marker is

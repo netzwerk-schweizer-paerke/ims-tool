@@ -1,9 +1,12 @@
-import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { createMockRequest, mockUsers } from '@/tests/mocks/test-utils'
+
+import { authenticatedCollectionAccess } from './authenticated-collection-access'
 
 describe('authenticatedCollectionAccess', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should grant access when a user is authenticated', () => {

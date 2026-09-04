@@ -1,104 +1,105 @@
 import type { Organisation, User } from '@/payload-types'
+
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
 export const mockOrganisations: Record<string, Organisation> = {
   org1: {
+    createdAt: '',
     id: 1,
     name: 'Test Organisation 1',
     organisationLanguage: 'en',
     updatedAt: '',
-    createdAt: '',
   },
   org2: {
+    createdAt: '',
     id: 2,
     name: 'Test Organisation 2',
     organisationLanguage: 'en',
     updatedAt: '',
-    createdAt: '',
   },
   org3: {
+    createdAt: '',
     id: 3,
     name: 'Test Organisation 3',
     organisationLanguage: 'en',
     updatedAt: '',
-    createdAt: '',
   },
 }
 
 export const createMockUser = (options: {
-  id?: number
   email?: string
+  id?: number
   roles?: (typeof ROLE_SUPER_ADMIN | typeof ROLE_USER)[]
-  selectedOrganisation?: Organisation | null
+  selectedOrganisation?: null | Organisation
 }): User => {
   const {
-    id = 1,
     email = 'user@example.com',
+    id = 1,
     roles = [ROLE_USER],
     selectedOrganisation = null,
   } = options
 
   return {
-    id,
+    // Payload 3.87 adds a literal `collection` discriminator to auth user types.
+    collection: 'users',
+    createdAt: '',
     email,
+    id,
     roles,
     selectedOrganisation,
     updatedAt: '',
-    createdAt: '',
-    // Payload 3.87 adds a literal `collection` discriminator to auth user types.
-    collection: 'users',
   }
 }
 
 export const mockUsers = {
   admin: createMockUser({
-    id: 1,
     email: 'admin@example.com',
+    id: 1,
     roles: [ROLE_SUPER_ADMIN],
   }),
 
-  regularUser: createMockUser({
-    id: 2,
-    email: 'user@example.com',
-    roles: [ROLE_USER],
+  adminWithOrg1: createMockUser({
+    email: 'adminwithorg1@example.com',
+    id: 7,
+    roles: [ROLE_SUPER_ADMIN],
+    selectedOrganisation: mockOrganisations.org1,
+  }),
+
+  noRolesUser: createMockUser({
+    email: 'noroles@example.com',
+    id: 4,
+    roles: [],
   }),
 
   otherRoleUser: createMockUser({
-    id: 3,
     email: 'other@example.com',
+    id: 3,
     // @ts-expect-error Test role that does not exist
     roles: ['other-role'],
   }),
 
-  noRolesUser: createMockUser({
-    id: 4,
-    email: 'noroles@example.com',
-    roles: [],
+  regularUser: createMockUser({
+    email: 'user@example.com',
+    id: 2,
+    roles: [ROLE_USER],
   }),
 
   userWithOrg1: createMockUser({
-    id: 5,
     email: 'userwithorg1@example.com',
+    id: 5,
     roles: [ROLE_USER],
     selectedOrganisation: mockOrganisations.org1,
   }),
 
   userWithOrg2: createMockUser({
-    id: 6,
     email: 'userwithorg2@example.com',
+    id: 6,
     roles: [ROLE_USER],
     selectedOrganisation: mockOrganisations.org2,
   }),
-
-  adminWithOrg1: createMockUser({
-    id: 7,
-    email: 'adminwithorg1@example.com',
-    roles: [ROLE_SUPER_ADMIN],
-    selectedOrganisation: mockOrganisations.org1,
-  }),
 }
 
-export const createMockData = (organisationId: number | null = null) => {
+export const createMockData = (organisationId: null | number = null) => {
   if (!organisationId) return {}
 
   const matchingOrg = Object.values(mockOrganisations).find((org) => org.id === organisationId)

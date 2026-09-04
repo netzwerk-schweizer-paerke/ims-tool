@@ -1,26 +1,30 @@
-import { organisationAdminFieldAccess } from '@/payload/collections/Users/access/organisation-admin-field-access'
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { isNumber } from 'es-toolkit/predicate'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { createMockRequest, mockOrganisations, mockUsers } from '@/tests/mocks/test-utils'
 
+import { organisationAdminFieldAccess } from './organisation-admin-field-access'
+
 // Mock the necessary dependencies
-jest.mock('@/payload/utilities/check-user-roles', () => ({
-  checkUserRoles: jest.fn(),
+vi.mock('@/payload/utilities/check-user-roles', () => ({
+  checkUserRoles: vi.fn(),
 }))
 
-jest.mock('@/payload/utilities/check-organisation-roles', () => ({
-  checkOrganisationRoles: jest.fn(),
+vi.mock('@/payload/utilities/check-organisation-roles', () => ({
+  checkOrganisationRoles: vi.fn(),
 }))
 
 // Mock the es-toolkit module
-jest.mock('es-toolkit/predicate', () => ({
-  isNumber: jest.fn((val) => typeof val === 'number'),
+vi.mock('es-toolkit/predicate', () => ({
+  isNumber: vi.fn((val: unknown) => typeof val === 'number'),
 }))
 
 describe('organisationAdmins', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should grant access to super admins', () => {
@@ -29,11 +33,11 @@ describe('organisationAdmins', () => {
     const mockDoc = {}
 
     // Set up the mock to return true for super admin check
-    ;(checkUserRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
     const result = organisationAdminFieldAccess({
-      req: mockReq,
       doc: mockDoc,
+      req: mockReq,
     } as any)
 
     expect(result).toBe(true)
@@ -49,12 +53,12 @@ describe('organisationAdmins', () => {
     }
 
     // Set up the mocks to return appropriate values
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(checkOrganisationRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkOrganisationRoles).mockReturnValue(true)
 
     const result = organisationAdminFieldAccess({
-      req: mockReq,
       doc: mockDoc,
+      req: mockReq,
     } as any)
 
     expect(result).toBe(true)
@@ -74,12 +78,12 @@ describe('organisationAdmins', () => {
     }
 
     // Set up the mocks to return appropriate values
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(checkOrganisationRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkOrganisationRoles).mockReturnValue(false)
 
     const result = organisationAdminFieldAccess({
-      req: mockReq,
       doc: mockDoc,
+      req: mockReq,
     } as any)
 
     expect(result).toBe(false)
@@ -97,11 +101,11 @@ describe('organisationAdmins', () => {
     const mockDoc = {}
 
     // Set up the mocks to return appropriate values
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     const result = organisationAdminFieldAccess({
-      req: mockReq,
       doc: mockDoc,
+      req: mockReq,
     } as any)
 
     expect(result).toBe(false)
@@ -117,16 +121,15 @@ describe('organisationAdmins', () => {
     }
 
     // Set up the mocks to return appropriate values
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     // Mock isNumber to return false for this test
-    const { isNumber } = require('es-toolkit/predicate')
-    ;(isNumber as jest.Mock).mockReturnValue(false)
+    vi.mocked(isNumber).mockReturnValue(false)
 
     expect(() =>
       organisationAdminFieldAccess({
-        req: mockReq,
         doc: mockDoc,
+        req: mockReq,
       } as any),
     ).toThrow('organisationAdmins: The organisation ID must be a number')
 

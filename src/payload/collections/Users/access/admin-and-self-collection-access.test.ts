@@ -1,19 +1,22 @@
-import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { createMockRequest, mockUsers } from '@/tests/mocks/test-utils'
 
-jest.mock('@/payload/utilities/get-id-from-relation', () => ({
-  getIdFromRelation: jest.fn(),
+import { adminAndSelfCollectionAccess } from './admin-and-self-collection-access'
+
+vi.mock('@/payload/utilities/get-id-from-relation', () => ({
+  getIdFromRelation: vi.fn(),
 }))
 
-jest.mock('@/payload/utilities/check-user-roles', () => ({
-  checkUserRoles: jest.fn(),
+vi.mock('@/payload/utilities/check-user-roles', () => ({
+  checkUserRoles: vi.fn(),
 }))
 
 describe('collectionAccessAdminAndSelf', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should deny access when no user is provided', async () => {
@@ -26,7 +29,7 @@ describe('collectionAccessAdminAndSelf', () => {
     const mockUser = mockUsers.admin
     const mockReq = createMockRequest(mockUser)
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
     const result = await adminAndSelfCollectionAccess({ req: mockReq } as any)
 
@@ -39,7 +42,7 @@ describe('collectionAccessAdminAndSelf', () => {
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     const result = await adminAndSelfCollectionAccess({ req: mockReq } as any)
 

@@ -1,22 +1,25 @@
-import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { createMockRequest, mockUsers } from '@/tests/mocks/test-utils'
 
-jest.mock('@/payload/utilities/check-user-roles', () => ({
-  checkUserRoles: jest.fn(),
+import { adminAndSelfFieldAccess } from './admin-and-self-field-access'
+
+vi.mock('@/payload/utilities/check-user-roles', () => ({
+  checkUserRoles: vi.fn(),
 }))
 
 describe('adminAndSelfFieldAccess', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should deny access when no user is provided', async () => {
     const result = await adminAndSelfFieldAccess({
-      req: { user: null },
-      doc: {},
       data: {},
+      doc: {},
+      req: { user: null },
     } as any)
 
     expect(result).toBe(false)
@@ -26,12 +29,12 @@ describe('adminAndSelfFieldAccess', () => {
     const mockUser = mockUsers.admin
     const mockReq = createMockRequest(mockUser)
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
     const result = await adminAndSelfFieldAccess({
-      req: mockReq,
-      doc: { id: 456 },
       data: {},
+      doc: { id: 456 },
+      req: mockReq,
     } as any)
 
     expect(result).toBe(true)
@@ -43,12 +46,12 @@ describe('adminAndSelfFieldAccess', () => {
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     const result = await adminAndSelfFieldAccess({
-      req: mockReq,
-      doc: { id: 123 },
       data: { name: 'Updated Name' },
+      doc: { id: 123 },
+      req: mockReq,
     } as any)
 
     expect(result).toBe(true)
@@ -60,12 +63,12 @@ describe('adminAndSelfFieldAccess', () => {
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     const result = await adminAndSelfFieldAccess({
-      req: mockReq,
-      doc: { id: 456 },
       data: { name: 'Another User' },
+      doc: { id: 456 },
+      req: mockReq,
     } as any)
 
     expect(result).toBe(false)
@@ -77,12 +80,12 @@ describe('adminAndSelfFieldAccess', () => {
     mockUser.id = 123
     const mockReq = createMockRequest(mockUser)
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     const result = await adminAndSelfFieldAccess({
-      req: mockReq,
-      doc: null,
       data: { name: 'Test' },
+      doc: null,
+      req: mockReq,
     } as any)
 
     expect(result).toBe(false)

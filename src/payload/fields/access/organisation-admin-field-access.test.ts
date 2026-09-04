@@ -1,20 +1,23 @@
-import { organisationAdminFieldAccess } from '@/payload/fields/access/organisation-admin-field-access'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { createMockRequest, mockOrganisations, mockUsers } from '@/tests/mocks/test-utils'
 
-jest.mock('@/payload/utilities/get-id-from-relation', () => ({
-  getIdFromRelation: jest.fn(),
+import { organisationAdminFieldAccess } from './organisation-admin-field-access'
+
+vi.mock('@/payload/utilities/get-id-from-relation', () => ({
+  getIdFromRelation: vi.fn(),
 }))
 
-jest.mock('@/payload/utilities/check-user-roles', () => ({
-  checkUserRoles: jest.fn(),
+vi.mock('@/payload/utilities/check-user-roles', () => ({
+  checkUserRoles: vi.fn(),
 }))
 
 describe('organisationAdminFieldAccess', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should grant access when user is a super admin', () => {
@@ -22,9 +25,9 @@ describe('organisationAdminFieldAccess', () => {
     const mockReq = createMockRequest(mockUser)
     const mockDoc = { organisation: mockOrganisations.org1 }
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
-    const result = organisationAdminFieldAccess({ req: mockReq, doc: mockDoc } as any)
+    const result = organisationAdminFieldAccess({ doc: mockDoc, req: mockReq } as any)
 
     expect(result).toBe(true)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUser)
@@ -44,13 +47,13 @@ describe('organisationAdminFieldAccess', () => {
     const mockReq = createMockRequest(mockUser)
     const mockDoc = { organisation: mockOrganisations.org1 }
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(getIdFromRelation as jest.Mock).mockImplementation((relation) => {
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(getIdFromRelation).mockImplementation((relation) => {
       if (relation === mockOrganisations.org1) return mockOrganisations.org1.id
       return null
     })
 
-    const result = organisationAdminFieldAccess({ req: mockReq, doc: mockDoc } as any)
+    const result = organisationAdminFieldAccess({ doc: mockDoc, req: mockReq } as any)
 
     expect(result).toBe(true)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUser)
@@ -70,9 +73,9 @@ describe('organisationAdminFieldAccess', () => {
     const mockReq = createMockRequest(mockUser)
     const mockDoc = {}
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
-    const result = organisationAdminFieldAccess({ req: mockReq, doc: mockDoc } as any)
+    const result = organisationAdminFieldAccess({ doc: mockDoc, req: mockReq } as any)
 
     expect(result).toBe(false)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUser)
@@ -92,13 +95,13 @@ describe('organisationAdminFieldAccess', () => {
     const mockReq = createMockRequest(mockUser)
     const mockDoc = { organisation: mockOrganisations.org1 }
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(getIdFromRelation as jest.Mock).mockImplementation((relation) => {
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(getIdFromRelation).mockImplementation((relation) => {
       if (relation === mockOrganisations.org1) return mockOrganisations.org1.id
       return null
     })
 
-    const result = organisationAdminFieldAccess({ req: mockReq, doc: mockDoc } as any)
+    const result = organisationAdminFieldAccess({ doc: mockDoc, req: mockReq } as any)
 
     expect(result).toBe(false)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUser)
@@ -117,14 +120,14 @@ describe('organisationAdminFieldAccess', () => {
     const mockReq = createMockRequest(mockUser)
     const mockDoc = { organisation: mockOrganisations.org2 }
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(getIdFromRelation as jest.Mock).mockImplementation((relation) => {
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(getIdFromRelation).mockImplementation((relation) => {
       if (relation === mockOrganisations.org1) return mockOrganisations.org1.id
       if (relation === mockOrganisations.org2) return mockOrganisations.org2.id
       return null
     })
 
-    const result = organisationAdminFieldAccess({ req: mockReq, doc: mockDoc } as any)
+    const result = organisationAdminFieldAccess({ doc: mockDoc, req: mockReq } as any)
 
     expect(result).toBe(false)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUser)
@@ -138,10 +141,10 @@ describe('organisationAdminFieldAccess', () => {
     const mockReq = createMockRequest(mockUser)
     const mockDoc = { organisation: mockOrganisations.org1 }
 
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(null)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(getIdFromRelation).mockReturnValue(null)
 
-    const result = organisationAdminFieldAccess({ req: mockReq, doc: mockDoc } as any)
+    const result = organisationAdminFieldAccess({ doc: mockDoc, req: mockReq } as any)
 
     expect(result).toBe(false)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUser)

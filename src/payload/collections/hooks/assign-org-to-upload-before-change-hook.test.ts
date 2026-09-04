@@ -1,8 +1,11 @@
-import { assignOrgToUploadBeforeChangeHook } from '@/payload/collections/hooks/assign-org-to-upload-before-change-hook'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
-jest.mock('@/payload/utilities/get-id-from-relation', () => ({
-  getIdFromRelation: jest.fn(),
+import { assignOrgToUploadBeforeChangeHook } from './assign-org-to-upload-before-change-hook'
+
+vi.mock('@/payload/utilities/get-id-from-relation', () => ({
+  getIdFromRelation: vi.fn(),
 }))
 
 const SELECTED_ORG = 18
@@ -29,8 +32,8 @@ const uploading = (data: Record<string, unknown> = {}): HookArgs => ({
 
 describe('assignOrgToUploadBeforeChangeHook', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(SELECTED_ORG)
+    vi.clearAllMocks()
+    vi.mocked(getIdFromRelation).mockReturnValue(SELECTED_ORG)
   })
 
   test('files a new upload under the acting user’s organisation', async () => {

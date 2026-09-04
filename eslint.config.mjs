@@ -1,10 +1,16 @@
 import nextPlugin from '@next/eslint-plugin-next'
+import vitest from '@vitest/eslint-plugin'
 import checkFile from 'eslint-plugin-check-file'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 import perfectionist from 'eslint-plugin-perfectionist'
 import reactHooks from 'eslint-plugin-react-hooks'
 import unicorn from 'eslint-plugin-unicorn'
 import tseslint from 'typescript-eslint'
+
+// Mirrors globe-website/backend. `src/tests/**` holds the shared mock fixtures, so it takes
+// the same relaxed rules as a test file.
+const vitestFiles = ['**/__tests__/**/*', '**/*.test.*', '**/*.spec.*']
+const testFiles = ['**/tests/**', ...vitestFiles]
 
 const config = [
   {
@@ -16,13 +22,9 @@ const config = [
       '.yarn/**',
       'dist/**',
       'node_modules/**',
-      // jest coverage output
+      // vitest coverage output
       'coverage/**',
-      // This project uses jest, not vitest (globe-website's equivalents are
-      // vitest.config.ts / vitest.setup.ts / src/__tests__).
-      '**/*.spec.ts',
-      'jest.config.js',
-      'src/tests/**',
+      'vitest.config.ts',
       '**/importMap.js',
       'src/payload-types.ts',
       'src/migrations/**',
@@ -131,6 +133,24 @@ const config = [
       'jsx-a11y/click-events-have-key-events': 'off',
       'jsx-a11y/html-has-lang': 'off',
       'jsx-a11y/no-static-element-interactions': 'off',
+    },
+  },
+  {
+    files: testFiles,
+    plugins: { vitest },
+    rules: {
+      // A test stubs a Payload access argument, so `as any` is the shape of that boundary.
+      '@typescript-eslint/no-explicit-any': 'off',
+      // A stray .only silently skips the rest of the suite while CI stays green.
+      'vitest/no-focused-tests': ['error', { fixable: false }],
+      'vitest/no-import-node-test': 'error',
+      'vitest/prefer-comparison-matcher': 'error',
+      'vitest/prefer-equality-matcher': 'error',
+      'vitest/prefer-to-be': 'error',
+      'vitest/prefer-to-contain': 'error',
+      'vitest/prefer-to-have-length': 'error',
+      'vitest/valid-expect': 'error',
+      'vitest/valid-expect-in-promise': 'error',
     },
   },
   {

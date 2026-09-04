@@ -1,24 +1,28 @@
-import { checkOrganisationRoles } from '../check-organisation-roles'
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '../constants'
-import { getIdFromRelation } from '../get-id-from-relation'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+import type { User } from '@/payload-types'
+
 import { logger } from '@/lib/logger'
 import { mockOrganisations, mockUsers } from '@/tests/mocks/test-utils'
-import { User } from '@/payload-types'
+
+import { checkOrganisationRoles } from './check-organisation-roles'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from './constants'
+import { getIdFromRelation } from './get-id-from-relation'
 
 // Mock the dependencies
-jest.mock('@/lib/logger', () => ({
+vi.mock('@/lib/logger', () => ({
   logger: {
-    debug: jest.fn(),
+    debug: vi.fn(),
   },
 }))
 
-jest.mock('../get-id-from-relation', () => ({
-  getIdFromRelation: jest.fn(),
+vi.mock('./get-id-from-relation', () => ({
+  getIdFromRelation: vi.fn(),
 }))
 
 describe('checkOrganisationRoles', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should return true when user has required role in the target organization', () => {
@@ -32,7 +36,7 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(1)
+    vi.mocked(getIdFromRelation).mockReturnValue(1)
 
     const result = checkOrganisationRoles([ROLE_SUPER_ADMIN], user, 1)
 
@@ -52,7 +56,7 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(1)
+    vi.mocked(getIdFromRelation).mockReturnValue(1)
 
     const result = checkOrganisationRoles([ROLE_SUPER_ADMIN], user, 1)
 
@@ -72,7 +76,7 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(1)
+    vi.mocked(getIdFromRelation).mockReturnValue(1)
 
     const result = checkOrganisationRoles([ROLE_SUPER_ADMIN], user, 1)
 
@@ -91,7 +95,7 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(1)
+    vi.mocked(getIdFromRelation).mockReturnValue(1)
 
     const result = checkOrganisationRoles([ROLE_SUPER_ADMIN], user, 2)
 
@@ -129,7 +133,7 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(1)
+    vi.mocked(getIdFromRelation).mockReturnValue(1)
 
     const result = checkOrganisationRoles([], user, 1)
 
@@ -148,11 +152,11 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockImplementation((org) => {
+    vi.mocked(getIdFromRelation).mockImplementation((org) => {
       if (typeof org === 'object' && org !== null && 'id' in org) {
-        return org.id
+        return org.id as number
       }
-      return org
+      return org as number
     })
 
     const result = checkOrganisationRoles([ROLE_SUPER_ADMIN], user, 1)
@@ -173,7 +177,7 @@ describe('checkOrganisationRoles', () => {
       ],
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(1)
+    vi.mocked(getIdFromRelation).mockReturnValue(1)
 
     const result = checkOrganisationRoles([ROLE_SUPER_ADMIN, ROLE_USER], user, 1)
 

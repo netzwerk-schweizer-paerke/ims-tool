@@ -1,14 +1,15 @@
 import type { AdminViewServerProps } from 'payload'
 
 import { redirect } from 'next/navigation'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 
-jest.mock('next/navigation', () => ({
-  redirect: jest.fn(),
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn(),
 }))
 
-const redirectMock = redirect as jest.MockedFunction<typeof redirect>
+const redirectMock = vi.mocked(redirect)
 
 type Args = Pick<AdminViewServerProps, 'initPageResult' | 'params' | 'searchParams'>
 

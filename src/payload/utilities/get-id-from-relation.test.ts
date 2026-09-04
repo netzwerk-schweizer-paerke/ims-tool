@@ -1,4 +1,6 @@
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { describe, expect, test } from 'vitest'
+
+import { getIdFromRelation } from './get-id-from-relation'
 
 describe('getIdFromRelation', () => {
   test('returns a bare id, which is how a depth 0 read returns a relationship', () => {
@@ -29,10 +31,10 @@ describe('getIdFromRelation', () => {
   // `isNumber` from es-toolkit/compat accepts both, so the old helper passed them through
   // to a `where` clause as an organisation id.
   test.each([
-    ['NaN', Number.NaN],
-    ['Infinity', Number.POSITIVE_INFINITY],
+    ['NaN', NaN],
+    ['Infinity', Infinity],
     ['a fraction', 1.5],
-    ['a document with NaN as its id', { id: Number.NaN }],
+    ['a document with NaN as its id', { id: NaN }],
   ])('returns null for %s', (_label, input) => {
     expect(getIdFromRelation(input)).toBeNull()
   })

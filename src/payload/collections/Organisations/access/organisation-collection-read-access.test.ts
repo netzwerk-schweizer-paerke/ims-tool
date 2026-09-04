@@ -1,14 +1,17 @@
-import { organisationCollectionReadAccess } from '../organisation-collection-read-access'
-import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { mockOrganisations, mockUsers } from '@/tests/mocks/test-utils'
 
+import { organisationCollectionReadAccess } from './organisation-collection-read-access'
+
 // Mock dependencies
-jest.mock('../../../../utilities/check-user-roles')
-jest.mock('../../../../utilities/check-organisation-roles')
-jest.mock('../../../../utilities/get-id-from-relation')
+vi.mock('@/payload/utilities/check-user-roles')
+vi.mock('@/payload/utilities/check-organisation-roles')
+vi.mock('@/payload/utilities/get-id-from-relation')
 
 // The real helper takes `unknown`, so the mock narrows the same way it does.
 const idOfRelation = (relation: unknown): null | number => {
@@ -22,7 +25,7 @@ const idOfRelation = (relation: unknown): null | number => {
 describe('organisationCollectionReadAccess', () => {
   // Test data
   const mockPayload = {
-    logger: { debug: jest.fn() },
+    logger: { debug: vi.fn() },
   }
 
   // Create test users with custom organisation setup
@@ -35,22 +38,22 @@ describe('organisationCollectionReadAccess', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     // Reset all mocks
-    jest.mocked(checkUserRoles).mockReset()
-    jest.mocked(checkOrganisationRoles).mockReset()
-    jest.mocked(getIdFromRelation).mockReset()
+    vi.mocked(checkUserRoles).mockReset()
+    vi.mocked(checkOrganisationRoles).mockReset()
+    vi.mocked(getIdFromRelation).mockReset()
   })
 
   test('should grant full access when user is a super admin', () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(true)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
       req: {
-        user: mockUsers.admin,
         payload: mockPayload,
+        user: mockUsers.admin,
       },
     } as any)
 
@@ -64,18 +67,16 @@ describe('organisationCollectionReadAccess', () => {
 
   test('should return filtered access for user with organization roles', () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
-    jest.mocked(checkOrganisationRoles).mockImplementation((roles, user, orgId) => {
-      // Simulate that user has proper roles in both organizations
-      return true
-    })
-    jest.mocked(getIdFromRelation).mockImplementation(idOfRelation)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    // Simulate that the user has proper roles in both organizations
+    vi.mocked(checkOrganisationRoles).mockReturnValue(true)
+    vi.mocked(getIdFromRelation).mockImplementation(idOfRelation)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
       req: {
-        user: userWithMultipleOrgs,
         payload: mockPayload,
+        user: userWithMultipleOrgs,
       },
     } as any)
 
@@ -92,18 +93,18 @@ describe('organisationCollectionReadAccess', () => {
 
   test('should filter organizations based on user roles', () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
-    jest.mocked(checkOrganisationRoles).mockImplementation((roles, user, orgId) => {
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkOrganisationRoles).mockImplementation((roles, user, orgId) => {
       // Simulate that user only has proper roles in the second organization
       return orgId === mockOrganisations.org2.id
     })
-    jest.mocked(getIdFromRelation).mockImplementation(idOfRelation)
+    vi.mocked(getIdFromRelation).mockImplementation(idOfRelation)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
       req: {
-        user: userWithMultipleOrgs,
         payload: mockPayload,
+        user: userWithMultipleOrgs,
       },
     } as any)
 
@@ -118,13 +119,13 @@ describe('organisationCollectionReadAccess', () => {
 
   test('should return false when user has no accessible organizations', () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
       req: {
-        user: mockUsers.noRolesUser,
         payload: mockPayload,
+        user: mockUsers.noRolesUser,
       },
     } as any)
 
@@ -136,15 +137,15 @@ describe('organisationCollectionReadAccess', () => {
 
   test('should return false when user has organizations but none are accessible', () => {
     // Setup mocks
-    jest.mocked(checkUserRoles).mockReturnValue(false)
-    jest.mocked(checkOrganisationRoles).mockReturnValue(false) // No orgs accessible
-    jest.mocked(getIdFromRelation).mockImplementation(idOfRelation)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkOrganisationRoles).mockReturnValue(false) // No orgs accessible
+    vi.mocked(getIdFromRelation).mockImplementation(idOfRelation)
 
     // Call function with test data
     const result = organisationCollectionReadAccess({
       req: {
-        user: userWithMultipleOrgs,
         payload: mockPayload,
+        user: userWithMultipleOrgs,
       },
     } as any)
 

@@ -1,37 +1,40 @@
-import { currentOrganisationCollectionReadAccess } from '../current-organisation-collection-read-access'
-import { checkOrganisationRoles } from '../../../utilities/check-organisation-roles'
-import { checkUserRoles } from '../../../utilities/check-user-roles'
-import { getIdFromRelation } from '../../../utilities/get-id-from-relation'
-import { ROLE_SUPER_ADMIN, ROLE_USER } from '../../../utilities/constants'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+
+import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+
+import { currentOrganisationCollectionReadAccess } from './current-organisation-collection-read-access'
 
 // Mock dependencies
-jest.mock('../../../utilities/check-organisation-roles')
-jest.mock('../../../utilities/check-user-roles')
-jest.mock('../../../utilities/get-id-from-relation')
+vi.mock('@/payload/utilities/check-organisation-roles')
+vi.mock('@/payload/utilities/check-user-roles')
+vi.mock('@/payload/utilities/get-id-from-relation')
 
 describe('currentOrganisationCollectionReadAccess', () => {
   // Test data
   const mockOrgId = 123
   const mockSuperAdmin = {
-    id: 1,
     email: 'admin@example.com',
+    id: 1,
     roles: [ROLE_SUPER_ADMIN],
     selectedOrganisation: null,
   }
   const mockRegularUser = {
-    id: 2,
     email: 'user@example.com',
+    id: 2,
     selectedOrganisation: { id: mockOrgId },
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should grant access when user is a super admin with no selected organisation', () => {
     // Setup mocks
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(null)
-    ;(checkUserRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(getIdFromRelation).mockReturnValue(null)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
     // Call function with test data
     const result = currentOrganisationCollectionReadAccess({
@@ -46,9 +49,9 @@ describe('currentOrganisationCollectionReadAccess', () => {
 
   test('should filter by selected organisation for a member of that organisation', () => {
     // Setup mocks
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(mockOrgId)
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(checkOrganisationRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkOrganisationRoles).mockReturnValue(true)
 
     // Call function with test data
     const result = currentOrganisationCollectionReadAccess({
@@ -71,9 +74,9 @@ describe('currentOrganisationCollectionReadAccess', () => {
 
   test('should deny when the selected organisation is not one the user belongs to', () => {
     // Setup mocks
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(mockOrgId)
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
-    ;(checkOrganisationRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+    vi.mocked(checkOrganisationRoles).mockReturnValue(false)
 
     // Call function with test data
     const result = currentOrganisationCollectionReadAccess({
@@ -91,8 +94,8 @@ describe('currentOrganisationCollectionReadAccess', () => {
       selectedOrganisation: { id: mockOrgId },
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(mockOrgId)
-    ;(checkUserRoles as jest.Mock).mockReturnValue(true)
+    vi.mocked(getIdFromRelation).mockReturnValue(mockOrgId)
+    vi.mocked(checkUserRoles).mockReturnValue(true)
 
     // Call function with test data
     const result = currentOrganisationCollectionReadAccess({
@@ -117,8 +120,8 @@ describe('currentOrganisationCollectionReadAccess', () => {
       selectedOrganisation: null,
     }
 
-    ;(getIdFromRelation as jest.Mock).mockReturnValue(null)
-    ;(checkUserRoles as jest.Mock).mockReturnValue(false)
+    vi.mocked(getIdFromRelation).mockReturnValue(null)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
 
     // Call function with test data
     const result = currentOrganisationCollectionReadAccess({

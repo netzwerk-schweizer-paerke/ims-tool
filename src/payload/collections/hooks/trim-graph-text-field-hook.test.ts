@@ -1,4 +1,6 @@
-import { trimGraphTextFieldHook } from '@/payload/collections/hooks/trim-graph-text-field-hook'
+import { describe, expect, test } from 'vitest'
+
+import { trimGraphTextFieldHook } from './trim-graph-text-field-hook'
 
 // The hook reads only `value`; the real FieldHook argument object is far larger.
 const invoke = (value: unknown) =>
