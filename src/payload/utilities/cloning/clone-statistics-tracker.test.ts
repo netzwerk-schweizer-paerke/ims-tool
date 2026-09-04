@@ -141,6 +141,48 @@ describe('CloneStatisticsTracker completeness', () => {
     expect(tracker.finalize().entities[0].errors.missingDocumentFiles).toHaveLength(1)
   })
 
+  // A clone writes one locale pass per configured locale, and every pass starts the same entity.
+  test('copies a document once across two passes over the same entity', async () => {
+    const tracker = trackerFor('tx-locale-passes')
+
+    let attempts = 0
+    const cloneDocument = async () => {
+      attempts++
+      return 910
+    }
+
+    tracker.startEntity(1)
+    await tracker.resolveClonedDocumentId(243, cloneDocument)
+    tracker.endEntity()
+
+    tracker.startEntity(1)
+    const secondPass = await tracker.resolveClonedDocumentId(243, cloneDocument)
+    tracker.setCloneInfo(2, 'Clone', 'task-flows')
+    tracker.endEntity()
+
+    const result = tracker.finalize()
+
+    expect(attempts).toBe(1)
+    expect(secondPass).toBe(910)
+    expect(result.entities).toHaveLength(1)
+    expect(result.entities[0].source.documentFilesCount).toBe(1)
+    expect(result.entities[0].cloned.documentFilesCount).toBe(1)
+  })
+
+  test('drops the instance of a finished transaction', () => {
+    const tracker = trackerFor('tx-dispose')
+    tracker.startEntity(1)
+    tracker.addSourceDocument()
+
+    CloneStatisticsTracker.disposeInstance('tx-dispose')
+
+    const fresh = trackerFor('tx-dispose')
+    fresh.startEntity(1)
+
+    expect(fresh).not.toBe(tracker)
+    expect(fresh.getStatistics(1).source.documentFilesCount).toBe(0)
+  })
+
   test('sums both entities into the aggregate', () => {
     const tracker = trackerFor('tx-two-entities')
 

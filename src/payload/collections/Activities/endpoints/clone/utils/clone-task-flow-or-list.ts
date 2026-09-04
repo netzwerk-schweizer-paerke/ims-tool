@@ -4,7 +4,9 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 
 import { TaskFlow, TaskList } from '@/payload-types'
 import { cloneRelatedDocumentFiles } from '@/payload/collections/Activities/endpoints/clone/utils/clone-related-document-files'
-import { getValidationDetails } from '@/payload/utilities/cloning/clone-http-error'
+import { CloneHttpError, getValidationDetails } from '@/payload/utilities/cloning/clone-http-error'
+import { hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
+import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 
@@ -14,70 +16,122 @@ import { stripTaskList } from '../../../../../utilities/cloning/strip-task-list'
 interface CreateTaskOptions {
   collectionName: TaskType
   documentPreloader?: DocumentPreloader
-  locale: TypedLocale
+  /** Every locale the clone carries, default first. `getCloneLocales` builds the list. */
+  locales: TypedLocale[]
   req: PayloadRequest
+  sourceId: number
   targetOrgId: number
-  task: Task
 }
 type Task = TaskFlow | TaskList
 
 type TaskType = 'task-flows' | 'task-lists'
 
 /**
- * Generic function to create task flows or task lists
- * Reduces duplication between createTaskFlow and createTaskList
+ * Copies one task flow or task list, with a read and a write for each locale it carries.
+ *
+ * The first locale that holds content creates the record. Every later one updates it in place,
+ * so a translation survives the clone instead of becoming a second copy of the German text.
  */
 export const cloneTaskFlowOrList = async ({
   collectionName,
   documentPreloader,
-  locale,
+  locales,
   req,
+  sourceId,
   targetOrgId,
-  task,
 }: CreateTaskOptions) => {
+  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
+  let created: Task | undefined
+
   req.payload.logger.debug({
+    locales,
     msg: `Creating ${collectionName}`,
-    sourceTaskId: task.id,
+    sourceTaskId: sourceId,
   })
 
-  const strippedTask =
-    collectionName === 'task-flows'
-      ? await stripTaskFlow(task as TaskFlow, req, targetOrgId, locale, documentPreloader)
-      : await stripTaskList(task as TaskList, req, targetOrgId, locale, documentPreloader)
-
-  try {
-    const createdTask = await req.payload.create({
+  for (const locale of locales) {
+    // `false` is the only value that turns the fallback off. `null` turns it on.
+    // See .claude/rules/project/pitfalls/fallback-locale-null-enables-the-fallback.md
+    const source = (await req.payload.findByID({
       collection: collectionName,
-      data: strippedTask,
-      locale,
-      req: mergeReqContextTargetOrgId(req, targetOrgId),
-    })
-
-    req.payload.logger.debug({
-      createdTaskId: createdTask.id,
-      msg: `${collectionName} created successfully`,
-    })
-
-    await cloneRelatedDocumentFiles({
-      collectionName: collectionName,
-      documentPreloader,
+      depth: 0,
+      fallbackLocale: false,
+      id: sourceId,
       locale,
       req,
-      sourceEntity: task,
-      targetEntityId: createdTask.id,
-      targetOrgId,
-    })
+    })) as Task
 
-    return createdTask
-  } catch (error) {
-    req.payload.logger.error({
-      details: getValidationDetails(error),
-      error: getErrorMessage(error),
-      msg: `Error creating ${collectionName}`,
-      sourceTaskId: task.id,
-    })
-    throw error
+    if (!hasLocaleContent(source)) {
+      continue
+    }
+
+    const isTaskFlow = collectionName === 'task-flows'
+
+    const stripped = isTaskFlow
+      ? await stripTaskFlow(source as TaskFlow, req, targetOrgId, locale, documentPreloader)
+      : await stripTaskList(source as TaskList, req, targetOrgId, locale, documentPreloader)
+
+    try {
+      if (!created) {
+        const rows = isTaskFlow ? (source as TaskFlow).blocks : (source as TaskList).items
+        countRows(tracker, rows?.length ?? 0)
+
+        created = await req.payload.create({
+          collection: collectionName,
+          data: stripped,
+          locale,
+          req: mergeReqContextTargetOrgId(req, targetOrgId),
+        })
+
+        await cloneRelatedDocumentFiles({
+          collectionName,
+          documentPreloader,
+          locale,
+          req,
+          sourceEntity: source,
+          targetEntityId: created.id,
+          targetOrgId,
+        })
+
+        continue
+      }
+
+      // `files` rows are shared by every locale, and a write replaces the whole array. Keeping
+      // the field here would drop the rows the creating locale made.
+      const { files: _files, ...localeData } = stripped
+
+      created = await req.payload.update({
+        collection: collectionName,
+        data: localeData,
+        id: created.id,
+        locale,
+        req: mergeReqContextTargetOrgId(req, targetOrgId),
+      })
+    } catch (error) {
+      req.payload.logger.error({
+        details: getValidationDetails(error),
+        error: getErrorMessage(error),
+        locale,
+        msg: `Error creating ${collectionName}`,
+        sourceTaskId: sourceId,
+      })
+      throw error
+    }
   }
+
+  if (!created) {
+    throw new CloneHttpError(
+      `Source ${collectionName} ${sourceId} carries no content in any locale`,
+      400,
+    )
+  }
+
+  req.payload.logger.debug({
+    createdTaskId: created.id,
+    msg: `${collectionName} created successfully`,
+  })
+
+  return created
 }
 
 /**
@@ -85,18 +139,18 @@ export const cloneTaskFlowOrList = async ({
  */
 export const createTaskFlow = async (
   req: PayloadRequest,
-  task: TaskFlow,
+  sourceId: number,
   organisationId: number,
-  locale: TypedLocale,
+  locales: TypedLocale[],
   documentPreloader?: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
     collectionName: 'task-flows',
     documentPreloader,
-    locale,
+    locales,
     req,
+    sourceId,
     targetOrgId: organisationId,
-    task,
   })
 }
 
@@ -105,17 +159,28 @@ export const createTaskFlow = async (
  */
 export const createTaskList = async (
   req: PayloadRequest,
-  task: TaskList,
+  sourceId: number,
   organisationId: number,
-  locale: TypedLocale,
+  locales: TypedLocale[],
   documentPreloader?: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
     collectionName: 'task-lists',
     documentPreloader,
-    locale,
+    locales,
     req,
+    sourceId,
     targetOrgId: organisationId,
-    task,
   })
+}
+
+/**
+ * Counts the rows of the creating locale only. A count per locale pass would report three times
+ * the rows the record shows, which is the misleading figure the result panel used to carry.
+ */
+const countRows = (tracker: CloneStatisticsTracker, rowCount: number): void => {
+  for (let index = 0; index < rowCount; index++) {
+    tracker.addSourceBlock()
+    tracker.addClonedBlock()
+  }
 }

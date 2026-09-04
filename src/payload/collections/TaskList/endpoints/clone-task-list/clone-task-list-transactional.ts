@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { toContentLocale } from '@/lib/locale-utils'
 import { createTaskList } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
 import { CloneHttpError, getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
+import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
@@ -68,6 +69,10 @@ export const cloneTaskListTransactional: Endpoint = {
       return Response.json({ error: 'Unsupported locale' }, { status: 400 })
     }
 
+    // The clone carries every configured locale the source really has, not the request locale
+    // alone. The request locale still labels the report and drives the access check.
+    const cloneLocales = getCloneLocales(req.payload.config)
+
     const transactionID = await req.payload.db.beginTransaction()
 
     if (!transactionID) {
@@ -111,7 +116,8 @@ export const cloneTaskListTransactional: Endpoint = {
           )
         }
 
-        // Find the source task list
+        // The name for the report only. It reads the request locale, with the fallback on, so
+        // an untranslated record still gets a readable label.
         const sourceTaskList = await req.payload.findByID({
           collection: 'task-lists',
           depth: 0,
@@ -123,16 +129,12 @@ export const cloneTaskListTransactional: Endpoint = {
         // Set source info for current entity
         tracker.setSourceInfo(sourceTaskList.id, sourceTaskList.name, 'task-lists')
 
-        if (!sourceTaskList) {
-          throw new Error(`Source task list ${taskListId} not found`)
-        }
-
-        // Execute the cloning process for this task list
+        // Execute the cloning process for this task list, one pass per locale
         const clonedTaskList = await createTaskList(
           transactionalReq,
-          sourceTaskList,
+          taskListId,
           targetOrganisationId,
-          locale,
+          cloneLocales,
         )
 
         tracker.setCloneInfo(clonedTaskList.id, clonedTaskList.name, 'task-lists')
@@ -182,6 +184,9 @@ export const cloneTaskListTransactional: Endpoint = {
         { error: `Failed to clone task lists: ${getErrorMessage(error)}` },
         { status },
       )
+    } finally {
+      // The tracker lives in a static map keyed by transaction id. Only this call frees it.
+      CloneStatisticsTracker.disposeInstance(transactionID)
     }
   },
   method: 'post',

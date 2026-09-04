@@ -14,8 +14,18 @@ export class CloneStatisticsTracker {
     this.reset()
   }
 
-  static clearAllInstances(): void {
-    this.instances.clear()
+  /**
+   * Drops the tracker of one finished transaction.
+   *
+   * An instance holds the statistics, the clone map and the promise map of every entity in the
+   * request. Without this call the static map keeps all of them for the life of the process.
+   */
+  static disposeInstance(transactionId: PayloadRequest['transactionID']): void {
+    if (transactionId === undefined) {
+      return
+    }
+
+    this.instances.delete(transactionId.toString())
   }
 
   // Payload declares `transactionID` as optional, so every call site can pass undefined.
@@ -369,6 +379,12 @@ export class CloneStatisticsTracker {
     }
   }
 
+  /**
+   * Makes one entity current. A second call for the same entity keeps the maps it already has.
+   *
+   * The locale passes of one clone call this once per locale. They must share the document
+   * maps, so that a document three locales link is copied once and counted once.
+   */
   startEntity(entityId: number): void {
     this.currentEntityId = entityId
     if (!this.entitiesStats.has(entityId)) {

@@ -223,6 +223,9 @@ export const cloneActivityTransactional: Endpoint = {
         },
         { status },
       )
+    } finally {
+      // The tracker lives in a static map keyed by transaction id. Only this call frees it.
+      CloneStatisticsTracker.disposeInstance(transactionID)
     }
   },
   method: 'post',

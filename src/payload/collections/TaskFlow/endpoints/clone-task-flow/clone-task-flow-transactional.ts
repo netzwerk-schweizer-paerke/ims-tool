@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { toContentLocale } from '@/lib/locale-utils'
 import { createTaskFlow } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
 import { CloneHttpError, getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
+import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
@@ -68,6 +69,10 @@ export const cloneTaskFlowTransactional: Endpoint = {
       return Response.json({ error: 'Unsupported locale' }, { status: 400 })
     }
 
+    // The clone carries every configured locale the source really has, not the request locale
+    // alone. The request locale still labels the report and drives the access check.
+    const cloneLocales = getCloneLocales(req.payload.config)
+
     const transactionID = await req.payload.db.beginTransaction()
 
     if (!transactionID) {
@@ -112,7 +117,8 @@ export const cloneTaskFlowTransactional: Endpoint = {
           )
         }
 
-        // Find the source task flow
+        // The name for the report only. It reads the request locale, with the fallback on, so
+        // an untranslated record still gets a readable label.
         const sourceTaskFlow = await req.payload.findByID({
           collection: 'task-flows',
           depth: 0,
@@ -124,16 +130,12 @@ export const cloneTaskFlowTransactional: Endpoint = {
         // Set source info for current entity
         tracker.setSourceInfo(sourceTaskFlow.id, sourceTaskFlow.name, 'task-flows')
 
-        if (!sourceTaskFlow) {
-          throw new Error(`Source task flow ${taskFlowId} not found`)
-        }
-
-        // Execute the cloning process for this task flow
+        // Execute the cloning process for this task flow, one pass per locale
         const clonedTaskFlow = await createTaskFlow(
           transactionalReq,
-          sourceTaskFlow,
+          taskFlowId,
           targetOrganisationId,
-          locale,
+          cloneLocales,
         )
 
         tracker.setCloneInfo(clonedTaskFlow.id, clonedTaskFlow.name, 'task-flows')
@@ -183,6 +185,9 @@ export const cloneTaskFlowTransactional: Endpoint = {
         { error: `Failed to clone task flows: ${getErrorMessage(error)}` },
         { status },
       )
+    } finally {
+      // The tracker lives in a static map keyed by transaction id. Only this call frees it.
+      CloneStatisticsTracker.disposeInstance(transactionID)
     }
   },
   method: 'post',

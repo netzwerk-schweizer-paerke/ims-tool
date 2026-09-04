@@ -3,10 +3,13 @@ import { PayloadRequest, TypedLocale } from 'payload'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
 import { TaskFlow } from '@/payload-types'
-import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 import { stripRowIds } from '@/payload/utilities/cloning/strip-row-ids'
 
+/**
+ * Runs once per locale, so it counts nothing. `cloneTaskFlowOrList` counts the block rows on the
+ * creating pass alone, or the figure grows with the number of locales.
+ */
 export const stripTaskFlow = async (
   obj: TaskFlow,
   req: PayloadRequest,
@@ -15,7 +18,6 @@ export const stripTaskFlow = async (
   documentPreloader?: DocumentPreloader,
 ) => {
   const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   const locationPrefix = obj.name ? `Task Flow "${obj.name}"` : 'Task Flow'
 
   if (strippedEntity.description) {
@@ -34,8 +36,6 @@ export const stripTaskFlow = async (
     strippedEntity.blocks = await Promise.all(
       strippedEntity.blocks.map(async (block) => {
         const { id, ...strippedBlock } = block
-
-        tracker.addSourceBlock()
 
         if (strippedBlock.keypoints?.keypoints) {
           const result = await processRichTextField(
@@ -69,8 +69,6 @@ export const stripTaskFlow = async (
           )
           strippedBlock.responsibility.responsibility = result.content
         }
-
-        tracker.addClonedBlock()
 
         return strippedBlock
       }),

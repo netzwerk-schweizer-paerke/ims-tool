@@ -56,20 +56,13 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
         req.payload.logger.debug({ msg: 'before createHandler', relationTo })
 
         if (relationTo === 'task-flows' && isNumber(value)) {
-          const taskFlow = await req.payload.findByID({
-            collection: 'task-flows',
-            depth: 0,
-            id: value,
-            locale,
-            req,
-          })
-
-          req.payload.logger.debug({ msg: 'before createTaskFlow', value: taskFlow.id })
+          req.payload.logger.debug({ msg: 'before createTaskFlow', value })
+          // The activity itself is still cloned in one locale, so its nested tasks follow it.
           const newTaskFlow = await createTaskFlow(
             req,
-            taskFlow,
+            value,
             targetOrgId,
-            locale,
+            [locale],
             documentPreloader,
           )
 
@@ -84,20 +77,12 @@ export async function cloneActivityBlocks(params: CloneActivityBlocksParams): Pr
         }
 
         if (relationTo === 'task-lists' && isNumber(value)) {
-          const taskList = await req.payload.findByID({
-            collection: 'task-lists',
-            depth: 0,
-            id: value,
-            locale,
-            req,
-          })
-
-          req.payload.logger.debug({ msg: 'before createTaskList', value: taskList.id })
+          req.payload.logger.debug({ msg: 'before createTaskList', value })
           const newTaskList = await createTaskList(
             req,
-            taskList,
+            value,
             targetOrgId,
-            locale,
+            [locale],
             documentPreloader,
           )
 

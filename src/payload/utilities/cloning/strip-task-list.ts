@@ -3,10 +3,13 @@ import { PayloadRequest, TypedLocale } from 'payload'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
 import { TaskList } from '@/payload-types'
-import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { processRichTextField } from '@/payload/utilities/cloning/process-rich-text'
 import { stripRowIds } from '@/payload/utilities/cloning/strip-row-ids'
 
+/**
+ * Runs once per locale, so it counts nothing. `cloneTaskFlowOrList` counts the item rows on the
+ * creating pass alone, or the figure grows with the number of locales.
+ */
 export const stripTaskList = async (
   obj: TaskList,
   req: PayloadRequest,
@@ -15,7 +18,6 @@ export const stripTaskList = async (
   documentPreloader?: DocumentPreloader,
 ) => {
   const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   const locationPrefix = obj.name ? `Task List "${obj.name}"` : 'Task List'
 
   if (strippedEntity.description) {
@@ -34,8 +36,6 @@ export const stripTaskList = async (
     strippedEntity.items = await Promise.all(
       strippedEntity.items.map(async (item) => {
         const { id, ...strippedItem } = item
-
-        tracker.addSourceBlock()
 
         if (strippedItem.responsibility) {
           const result = await processRichTextField(
@@ -67,8 +67,6 @@ export const stripTaskList = async (
           )
           strippedItem.topic = result.content
         }
-
-        tracker.addClonedBlock()
 
         return strippedItem
       }),
