@@ -237,7 +237,8 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
             style={{ background: 'var(--theme-success-500, #22c55e)' }}
           />
         )}
-        <Translate k={'shareLink:share'} />
+        {/* Two static keys, because the i18n parser cannot extract a computed one. */}
+        {link ? <Translate k={'shareLink:shared'} /> : <Translate k={'shareLink:share'} />}
       </Button>
       <Drawer slug={drawerSlug} title={''}>
         <div className={'flex max-w-2xl flex-col gap-4'}>
