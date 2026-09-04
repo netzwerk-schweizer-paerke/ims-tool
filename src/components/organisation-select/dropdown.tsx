@@ -24,7 +24,8 @@ type Option<TValue> = {
 }
 
 const ORG_LANGUAGE_MISMATCH_TOAST = 'org-language-mismatch'
-// The matching rule lives in src/app/(payload)/custom.scss.
+// The matching rules live in src/app/(payload)/custom.scss.
+const ORG_LANGUAGE_MISMATCH_ITEM = 'org-language-toast'
 const ORG_LANGUAGE_MISMATCH_ACTION = 'org-language-toast__action'
 
 type Props = {
@@ -115,9 +116,13 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
           label: t('admin:selectOrganisations:reset'),
           onClick: () => void resetLanguagePreference(selectedOrg),
         },
-        // Sonner draws its action button as a plain rectangle. The class carries Payload's own
-        // pill look, and it stops the German label from breaking after one character.
-        classNames: { actionButton: ORG_LANGUAGE_MISMATCH_ACTION },
+        // Payload renders every toast unstyled, so sonner draws no button at all. The first class
+        // carries Payload's pill look. The second moves the button below the message, because a
+        // German sentence beside it leaves the text about 130px wide.
+        classNames: {
+          actionButton: ORG_LANGUAGE_MISMATCH_ACTION,
+          toast: ORG_LANGUAGE_MISMATCH_ITEM,
+        },
         // The notice stays until the user acts on it or dismisses it.
         duration: Infinity,
         id: ORG_LANGUAGE_MISMATCH_TOAST,

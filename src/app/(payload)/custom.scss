@@ -24,16 +24,48 @@
   --theme-text-33: rgb(from var(--theme-text) r g b / 0.33);
 }
 
-// Sonner styles its action button through `[data-sonner-toast][data-styled='true'] [data-button]`.
-// The extra class raises the specificity, so these values win whatever the stylesheet order is.
-[data-sonner-toast][data-styled='true'] [data-button].org-language-toast__action {
+// `.payload-toast-item` is a flex row of the message and the action button, and sonner fixes the
+// toast at 356px. The German sentence then gets about 130px and breaks mid-word. The wrap puts the
+// button on its own line below the message, which takes the full width.
+[data-sonner-toast].payload-toast-item.org-language-toast {
+  flex-wrap: wrap;
+  row-gap: 8px;
+
+  .toast-content {
+    width: 100%;
+  }
+
+  // Payload reserves 20px beside the title for a close button it places on the right. Sonner
+  // draws that button at the top-left corner instead, so the reserved space stays empty.
+  .toast-title {
+    margin-right: 0;
+  }
+
+  [data-button] {
+    margin-left: auto;
+  }
+}
+
+// Payload passes sonner `unstyled: true`, so every toast carries `data-styled="false"` and sonner
+// draws no button. This rule supplies the whole look. The button stays a flex item, so it needs
+// `flex-shrink: 0` to keep its label on one line.
+[data-sonner-toast] [data-button].org-language-toast__action {
+  align-items: center;
   background: var(--theme-elevation-150);
+  border: 1px solid var(--theme-elevation-250);
   border-radius: var(--style-radius-s);
   color: var(--theme-text);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
   font-size: 13px;
   height: 24px;
   padding: 0 8px;
   white-space: nowrap;
+
+  &:hover {
+    background: var(--theme-elevation-250);
+  }
 }
 
 // Payload gives each field in a `row` a 5px side margin, and cancels it with -5px on the row.
