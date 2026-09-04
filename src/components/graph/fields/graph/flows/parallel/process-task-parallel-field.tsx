@@ -39,7 +39,7 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, readOnly, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processTaskParallelConnections,
       createInitialState,
@@ -71,6 +71,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
                 <GraphTextArea
                   className={'w-full bg-transparent p-0'}
                   onTextChange={handleTextLeftChange}
+                  readOnly={readOnly}
                   value={localTextLeft}
                 />
               </TaskShapeWrapper>
@@ -82,9 +83,10 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
                 <GraphTextArea
                   className={'w-full bg-transparent p-0'}
                   onTextChange={handleTextRightChange}
+                  readOnly={readOnly}
                   value={localTextRight}
                 />
-                <ButtonCenterRight onClickFn={handleRightClick} />
+                <ButtonCenterRight disabled={readOnly} onClickFn={handleRightClick} />
               </TaskShapeWrapper>
             </RootTarget>
             <OuterTargets id={arrowSetId} />

@@ -34,7 +34,7 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, readOnly, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processIoConnections,
       createInitialState,
@@ -62,9 +62,10 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
                 <GraphTextArea
                   className={'w-full bg-transparent p-0'}
                   onTextChange={handleTextChange}
+                  readOnly={readOnly}
                   value={localText}
                 />
-                <ButtonCenterRight onClickFn={handleRightClick} />
+                <ButtonCenterRight disabled={readOnly} onClickFn={handleRightClick} />
               </IOShapeWrapper>
             </RootTarget>
             <OuterTargets id={arrowSetId} />
@@ -75,6 +76,7 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
           <ToggleSwitch
             ariaLabel={t('common:enableBlock')}
             checked={value?.enabled}
+            disabled={readOnly}
             onChange={handleToggleEnabled}
           />
         </div>

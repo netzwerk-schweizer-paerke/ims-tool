@@ -29,6 +29,7 @@ export const useGraphField = <TState extends ConnectionStateType>({
   const {
     field: { required },
     path,
+    readOnly,
     validate,
   } = props
 
@@ -45,14 +46,35 @@ export const useGraphField = <TState extends ConnectionStateType>({
     [validate, required],
   )
 
-  const { setValue, value } = useField<TState>({ path, validate: memoizedValidate })
+  const {
+    disabled,
+    setValue: setFieldValue,
+    value,
+  } = useField<TState>({ path, validate: memoizedValidate })
+
+  // Payload resolves the field's update access into these two flags. Its own JSON field combines
+  // them the same way, at @payloadcms/ui/dist/fields/JSON/index.js:95.
+  const isReadOnly = Boolean(readOnly) || disabled
 
   useEffect(() => {
     if (!value) {
-      // `true` keeps the form clean — applying a default is not a user edit
-      setValue(createInitialState(), true)
+      // `true` keeps the form clean — applying a default is not a user edit. It stays ungated,
+      // because a block with no value renders nothing until its default lands.
+      setFieldValue(createInitialState(), true)
     }
-  }, [setValue, value, createInitialState])
+  }, [setFieldValue, value, createInitialState])
+
+  // Every user edit reaches form state through here, so this one guard covers the label text, the
+  // arrow toggles and the boolean buttons. The disabled controls carry the visible affordance.
+  const setValue = useCallback(
+    (next: unknown, disableModifyingForm?: boolean) => {
+      if (isReadOnly) {
+        return
+      }
+      setFieldValue(next, disableModifyingForm)
+    },
+    [isReadOnly, setFieldValue],
+  )
 
   const { arrows, arrowSetId, toggleConnectionType } = useArrows({
     connections,
@@ -64,7 +86,7 @@ export const useGraphField = <TState extends ConnectionStateType>({
   // geometry. The old engine needed an `isLoaded` gate because it measured per arrow.
   const arrowsContent = useMemo(() => <ArrowLayer arrows={arrows} />, [arrows])
 
-  return { arrowsContent, arrowSetId, setValue, toggleConnectionType, value }
+  return { arrowsContent, arrowSetId, readOnly: isReadOnly, setValue, toggleConnectionType, value }
 }
 
 export default useGraphField

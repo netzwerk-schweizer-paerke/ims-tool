@@ -3,49 +3,50 @@ import { memo } from 'react'
 import { NodeButton } from '@/components/graph/fields/graph/components/node-button'
 
 type Props = {
+  disabled?: boolean
   onClickFn: () => void
 }
 
 // Define the component
-const ButtonCenterRightComponent = ({ onClickFn }: Props) => {
+const ButtonCenterRightComponent = ({ disabled, onClickFn }: Props) => {
   return (
     <div
       className={'absolute right-0 top-1/2 z-10 size-6 -translate-y-1/2 translate-x-1/2'}
       id={'inner-center-right'}>
-      <NodeButton onClick={onClickFn}></NodeButton>
+      <NodeButton disabled={disabled} onClick={onClickFn}></NodeButton>
     </div>
   )
 }
 
 // Define the component
-const ButtonBottomCenterComponent = ({ onClickFn }: Props) => {
+const ButtonBottomCenterComponent = ({ disabled, onClickFn }: Props) => {
   return (
     <div
       className={'absolute bottom-0 right-1/2 z-10 size-6 translate-x-1/2 translate-y-1/2'}
       id={'inner-bottom-center'}>
-      <NodeButton onClick={onClickFn}></NodeButton>
+      <NodeButton disabled={disabled} onClick={onClickFn}></NodeButton>
     </div>
   )
 }
 
 // Define the component
-const ButtonCenterLeftComponent = ({ onClickFn }: Props) => {
+const ButtonCenterLeftComponent = ({ disabled, onClickFn }: Props) => {
   return (
     <div
       className={'absolute left-0 top-1/2 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}
       id={'inner-center-left'}>
-      <NodeButton onClick={onClickFn}></NodeButton>
+      <NodeButton disabled={disabled} onClick={onClickFn}></NodeButton>
     </div>
   )
 }
 
 // Define the component
-const ButtonTopCenterComponent = ({ onClickFn }: Props) => {
+const ButtonTopCenterComponent = ({ disabled, onClickFn }: Props) => {
   return (
     <div
       className={'absolute left-1/2 top-0 z-10 size-6 -translate-x-1/2 -translate-y-1/2'}
       id={'inner-top-center'}>
-      <NodeButton onClick={onClickFn}></NodeButton>
+      <NodeButton disabled={disabled} onClick={onClickFn}></NodeButton>
     </div>
   )
 }

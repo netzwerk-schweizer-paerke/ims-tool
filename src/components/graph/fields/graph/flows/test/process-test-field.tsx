@@ -76,7 +76,7 @@ const DisplayBoolean = memo(({ booleanOutput }: { booleanOutput: BooleanOutput }
 DisplayBoolean.displayName = 'DisplayBoolean'
 
 export const ProcessTestField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, readOnly, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processTestConnections,
       createInitialState,
@@ -123,23 +123,24 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
             <GraphTextArea
               className={'w-10/12 bg-gray-700/80 p-4'}
               onTextChange={handleTextChange}
+              readOnly={readOnly}
               value={localText}
             />
-            <ButtonCenterRight onClickFn={handleRightClick} />
-            <ButtonBottomCenter onClickFn={handleBottomClick} />
-            <ButtonTopCenter onClickFn={handleTopClick} />
+            <ButtonCenterRight disabled={readOnly} onClickFn={handleRightClick} />
+            <ButtonBottomCenter disabled={readOnly} onClickFn={handleBottomClick} />
+            <ButtonTopCenter disabled={readOnly} onClickFn={handleTopClick} />
             <div className={'absolute -bottom-1/3 left-1/2 z-10 -translate-x-1/2'}>
-              <BooleanButton onClick={handleBottomBooleanClick}>
+              <BooleanButton disabled={readOnly} onClick={handleBottomBooleanClick}>
                 <DisplayBoolean booleanOutput={value?.bottomBoolean ?? BooleanOutput.None} />
               </BooleanButton>
             </div>
             <div className={'absolute -right-2 bottom-4 z-10'}>
-              <BooleanButton onClick={handleRightBooleanClick}>
+              <BooleanButton disabled={readOnly} onClick={handleRightBooleanClick}>
                 <DisplayBoolean booleanOutput={value?.rightBoolean ?? BooleanOutput.None} />
               </BooleanButton>
             </div>
             <div className={'absolute -left-2 bottom-4 z-10'}>
-              <BooleanButton onClick={handleLeftBooleanClick}>
+              <BooleanButton disabled={readOnly} onClick={handleLeftBooleanClick}>
                 <DisplayBoolean booleanOutput={value?.leftBoolean ?? BooleanOutput.None} />
               </BooleanButton>
             </div>
