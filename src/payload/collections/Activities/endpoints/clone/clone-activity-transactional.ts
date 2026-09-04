@@ -80,27 +80,22 @@ export const cloneActivityTransactional: Endpoint = {
     // alone. The request locale still labels the report and drives the access check.
     const cloneLocales = getCloneLocales(req.payload.config)
 
-    const transactionID = await req.payload.db.beginTransaction()
+    // PHASE 1: Read the sources and download the documents. This must stay OUTSIDE the
+    // transaction. A download of several seconds would otherwise hold the connection in the
+    // `idle in transaction` state, with its locks and its pool slot.
+    req.payload.logger.info({
+      activityIds,
+      msg: 'Phase 1: Pre-loading documents for all activities',
+    })
 
-    if (!transactionID) {
-      return Response.json({ error: 'Failed to start database transaction' }, { status: 500 })
-    }
-
-    const tracker = CloneStatisticsTracker.getInstance(transactionID)
+    const allDocumentIds: number[] = []
+    const activityData: Array<{
+      id: number
+      sourcesByLocale: Map<TypedLocale, Activity>
+    }> = []
+    let documentPreloader: Awaited<ReturnType<typeof preloadDocuments>>
 
     try {
-      // PHASE 1: Pre-load all documents (OUTSIDE transaction to prevent timeouts)
-      req.payload.logger.info({
-        activityIds,
-        msg: 'Phase 1: Pre-loading documents for all activities',
-      })
-
-      const allDocumentIds: number[] = []
-      const activityData: Array<{
-        id: number
-        sourcesByLocale: Map<TypedLocale, Activity>
-      }> = []
-
       // First, fetch all activities and scan for document IDs
       for (const activityId of activityIds) {
         // Validate access for this specific activity
@@ -144,7 +139,7 @@ export const cloneActivityTransactional: Endpoint = {
 
       // Pre-load all unique documents
       const uniqueDocumentIds = Array.from(new Set(allDocumentIds))
-      const documentPreloader = await preloadDocuments(req, uniqueDocumentIds)
+      documentPreloader = await preloadDocuments(req, uniqueDocumentIds)
 
       req.payload.logger.info({
         documentCount: uniqueDocumentIds.length,
@@ -152,7 +147,33 @@ export const cloneActivityTransactional: Endpoint = {
         msg: 'Phase 1 completed - documents pre-loaded',
         preloadedCount: documentPreloader.preloadedDocuments.size,
       })
+    } catch (error) {
+      // No transaction is open yet, so there is nothing to roll back.
+      const status = getErrorStatus(error)
 
+      req.payload.logger.error({
+        activityIds,
+        error: getErrorMessage(error),
+        msg: 'Failed to read the sources before the clone',
+        stack: error instanceof Error ? error.stack : undefined,
+        status,
+      })
+
+      return Response.json(
+        { error: `Failed to clone activities: ${getErrorMessage(error)}` },
+        { status },
+      )
+    }
+
+    const transactionID = await req.payload.db.beginTransaction()
+
+    if (!transactionID) {
+      return Response.json({ error: 'Failed to start database transaction' }, { status: 500 })
+    }
+
+    const tracker = CloneStatisticsTracker.getInstance(transactionID)
+
+    try {
       // PHASE 2: Clone activities using pre-loaded documents (INSIDE transaction)
       req.payload.logger.info({
         msg: 'Phase 2: Cloning activities with pre-loaded documents',
