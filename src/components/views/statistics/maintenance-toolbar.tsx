@@ -26,10 +26,17 @@ export const MaintenanceToolbar = ({ locale, parks }: Props) => {
 
   return (
     <div className={'flex flex-wrap items-center gap-2'}>
-      <DrawerToggler className={TOGGLE} disabled={parks.length === 0} slug={PARK_HEALTH_DRAWER}>
+      <DrawerToggler
+        className={TOGGLE}
+        disabled={parks.length === 0}
+        slug={PARK_HEALTH_DRAWER}
+        title={t('statistics:maintenance:healthHint')}>
         {t('statistics:maintenance:health')}
       </DrawerToggler>
-      <DrawerToggler className={TOGGLE} slug={ORPHAN_DRAWER}>
+      <DrawerToggler
+        className={TOGGLE}
+        slug={ORPHAN_DRAWER}
+        title={t('statistics:maintenance:orphanReportHint')}>
         {t('statistics:maintenance:orphanReport')}
       </DrawerToggler>
       <ParkHealthDrawer parks={parks} />

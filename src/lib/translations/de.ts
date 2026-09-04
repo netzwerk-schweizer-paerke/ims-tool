@@ -632,10 +632,14 @@ export const de = {
       confirmWord: 'LÖSCHEN',
       deleted_one: '1 Objekt wurde gelöscht.',
       deleted_other: '{{count}} Objekte wurden gelöscht.',
+      disarmed:
+        'Das Löschen ist abgeschaltet. Der Bericht über verwaiste Dateien ist falsch. Deshalb ist kein genannter Schlüssel sicher. Eine Entwicklerin oder ein Entwickler schaltet die Aktion nach der Reparatur wieder ein.',
       failed_one: '1 Objekt konnte nicht gelöscht werden.',
       failed_other: '{{count}} Objekte konnten nicht gelöscht werden.',
       nothingToDelete:
         'Führen Sie zuerst den Bericht aus. Er hat nichts zum Löschen gefunden.',
+      refusedScanFailed:
+        'Der Server hat das Löschen abgelehnt. Die Suche hat Dateireferenzen gesammelt und keine davon im Bucket gefunden. Der Bericht ist deshalb falsch.',
       refusedWholeBucket:
         'Der Bericht nennt jedes Objekt im Bucket. Das bedeutet, dass die Referenzsuche fehlgeschlagen ist, und nicht, dass jede Datei unbenutzt ist. Das Löschen bleibt gesperrt, bis der Bericht korrekt ist.',
       running: 'Wird gelöscht...',

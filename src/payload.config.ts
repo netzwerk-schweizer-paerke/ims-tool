@@ -16,7 +16,6 @@ import { seedDevUser } from '@/config/seed/dev-user'
 import { adminStatsEndpoint } from '@/endpoints/admin-stats'
 import { parkSearchEndpoint } from '@/endpoints/park-search'
 import { processPdfEndpoint } from '@/endpoints/process-pdf'
-import { s3OrphanDeleteEndpoint } from '@/endpoints/s3-orphan-delete'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
 import { customI18nTranslations } from '@/lib/custom-i18n-translations'
@@ -120,7 +119,9 @@ export default buildConfig({
   }),
   endpoints: [
     s3OrphanDetectionEndpoint,
-    s3OrphanDeleteEndpoint,
+    // `s3OrphanDeleteEndpoint` stays unregistered while the orphan scan is broken. Restore this
+    // line and `ORPHAN_DELETE_ENABLED` together, after the scan is repaired and re-measured. See
+    // `.claude/rules/project/pitfalls/s3-orphan-detector-flags-every-object.md`.
     tenantHealthEndpoint,
     processPdfEndpoint,
     parkSearchEndpoint,

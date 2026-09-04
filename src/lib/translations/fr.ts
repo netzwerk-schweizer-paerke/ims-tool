@@ -633,10 +633,14 @@ export const fr = {
       confirmWord: 'SUPPRIMER',
       deleted_one: '1 objet a été supprimé.',
       deleted_other: '{{count}} objets ont été supprimés.',
+      disarmed:
+        'La suppression est désactivée. Le rapport sur les fichiers orphelins est faux. Aucune clé nommée n’est donc sûre. Un développeur réactive l’action après la réparation.',
       failed_one: '1 objet n’a pas pu être supprimé.',
       failed_other: '{{count}} objets n’ont pas pu être supprimés.',
       nothingToDelete:
         'Exécutez d’abord le rapport. Il n’a rien trouvé à supprimer.',
+      refusedScanFailed:
+        'Le serveur a refusé la suppression. L’analyse a collecté des références de fichiers et n’en a trouvé aucune dans le bucket. Le rapport est donc faux.',
       refusedWholeBucket:
         'Le rapport nomme chaque objet du bucket. Cela signifie que l’analyse des références a échoué, et non que chaque fichier est inutilisé. La suppression reste désactivée tant que le rapport n’est pas correct.',
       running: 'Suppression en cours...',

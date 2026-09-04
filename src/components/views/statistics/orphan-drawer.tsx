@@ -6,7 +6,7 @@ import { useState } from 'react'
 import type { OrphanDeletionResult, OrphanReport } from '@/lib/s3-orphan-detector'
 
 import { formatBytes, formatCount } from '@/lib/admin-stats/format'
-import { coversWholeBucket } from '@/lib/s3-orphan-safety'
+import { coversWholeBucket, ORPHAN_DELETE_ENABLED } from '@/lib/s3-orphan-safety'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
 export const ORPHAN_DRAWER = 'statistics-s3-orphans'
@@ -24,6 +24,12 @@ export const OrphanDrawer = ({ locale }: Props) => {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
+  // The server refuses a request the client could not rule out, and answers 409 with the
+  // result body. Name the reason, because `HTTP 409` tells the operator nothing.
+  const refusalMessages: Record<string, string> = {
+    'covers-whole-bucket': t('statistics:orphanDelete:refusedWholeBucket'),
+    'reference-scan-failed': t('statistics:orphanDelete:refusedScanFailed'),
+  }
   const confirmWord = t('statistics:orphanDelete:confirmWord')
   const deleteLabel = t('statistics:orphanDelete:button')
   const runningLabel = t('statistics:orphanDelete:running')
@@ -31,7 +37,11 @@ export const OrphanDrawer = ({ locale }: Props) => {
   // A report that flags every object has failed to build the reference set. The endpoint
   // refuses such a request as well; this keeps the button from offering it at all.
   const wholeBucket = coversWholeBucket(orphanKeys.length, report?.summary.totalS3Objects ?? 0)
-  const armed = confirmation.trim() === confirmWord && orphanKeys.length > 0 && !wholeBucket
+  const armed =
+    ORPHAN_DELETE_ENABLED &&
+    confirmation.trim() === confirmWord &&
+    orphanKeys.length > 0 &&
+    !wholeBucket
 
   const runReport = async () => {
     setBusy(true)
@@ -65,7 +75,7 @@ export const OrphanDrawer = ({ locale }: Props) => {
       setReport(null)
       setConfirmation('')
     } catch (error_) {
-      setError(await describeError(error_))
+      setError(await describeError(error_, refusalMessages))
     }
 
     setBusy(false)
@@ -126,7 +136,11 @@ export const OrphanDrawer = ({ locale }: Props) => {
         ) : null}
 
         <div className={'flex flex-col gap-3 border-t pt-4 [border-color:var(--theme-border-color)]'}>
-          {wholeBucket ? (
+          <h3 className={'m-0 text-sm font-semibold [color:var(--theme-text)]'}>
+            {t('statistics:orphanDelete:title')}
+          </h3>
+
+          {ORPHAN_DELETE_ENABLED && wholeBucket ? (
             <p
               className={
                 'm-0 rounded-md border p-3 text-sm [border-color:var(--theme-error-250)] [color:var(--theme-error-600)]'
@@ -135,7 +149,16 @@ export const OrphanDrawer = ({ locale }: Props) => {
             </p>
           ) : null}
 
-          {orphanKeys.length > 0 && !wholeBucket ? (
+          {ORPHAN_DELETE_ENABLED ? null : (
+            <p
+              className={
+                'm-0 rounded-md border p-3 text-sm [border-color:var(--theme-error-250)] [color:var(--theme-error-600)]'
+              }>
+              {t('statistics:orphanDelete:disarmed')}
+            </p>
+          )}
+
+          {ORPHAN_DELETE_ENABLED && orphanKeys.length > 0 && !wholeBucket ? (
             <>
               <p className={'m-0 text-sm'}>
                 {t('statistics:orphanDelete:summary', {
@@ -178,12 +201,19 @@ export const OrphanDrawer = ({ locale }: Props) => {
   )
 }
 
-const describeError = async (caught: unknown): Promise<string> => {
+const describeError = async (
+  caught: unknown,
+  refusalMessages: Record<string, string> = {},
+): Promise<string> => {
   const httpError = caught as { name?: string; response?: Response }
 
   if (httpError?.name === 'HTTPError' && httpError.response) {
     try {
-      const body = (await httpError.response.clone().json()) as { error?: string }
+      const body = (await httpError.response.clone().json()) as {
+        error?: string
+        refusedReason?: string
+      }
+      if (body?.refusedReason) return refusalMessages[body.refusedReason] ?? body.refusedReason
       if (body?.error) return body.error
     } catch {
       // Not JSON — fall through to the status-only message.

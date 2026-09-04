@@ -636,9 +636,13 @@ export const it = {
       confirmWord: 'ELIMINA',
       deleted_one: '1 oggetto è stato eliminato.',
       deleted_other: '{{count}} oggetti sono stati eliminati.',
+      disarmed:
+        'L’eliminazione è disattivata. Il rapporto sui file orfani è errato. Nessuna chiave indicata è quindi sicura. Uno sviluppatore riattiva l’azione dopo la riparazione.',
       failed_one: '1 oggetto non è stato eliminato.',
       failed_other: '{{count}} oggetti non sono stati eliminati.',
       nothingToDelete: 'Eseguire prima il rapporto. Non ha trovato nulla da eliminare.',
+      refusedScanFailed:
+        'Il server ha rifiutato l’eliminazione. La scansione ha raccolto riferimenti a file e non ne ha trovato nessuno nel bucket. Il rapporto è quindi errato.',
       refusedWholeBucket:
         'Il rapporto nomina ogni oggetto del bucket. Questo significa che la scansione dei riferimenti è fallita, non che ogni file è inutilizzato. L’eliminazione resta disattivata finché il rapporto non è corretto.',
       running: 'Eliminazione in corso...',

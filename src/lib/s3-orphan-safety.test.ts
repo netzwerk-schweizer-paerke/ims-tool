@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { coversWholeBucket } from '@/lib/s3-orphan-safety'
+import { coversWholeBucket, referenceScanFailed } from '@/lib/s3-orphan-safety'
 
 describe('coversWholeBucket', () => {
   it('refuses a request that names every object', () => {
@@ -18,5 +18,25 @@ describe('coversWholeBucket', () => {
 
   it('allows an empty bucket, because nothing is at risk', () => {
     expect(coversWholeBucket(0, 0)).toBe(false)
+  })
+})
+
+describe('referenceScanFailed', () => {
+  it('refuses when the scan collected references and matched none', () => {
+    expect(referenceScanFailed(0, 942)).toBe(true)
+  })
+
+  it('refuses regardless of how few keys the caller asked for', () => {
+    // The chunked caller: 5 keys at a time defeats a request-size test, never this one.
+    expect(referenceScanFailed(0, 1)).toBe(true)
+  })
+
+  it('allows a scan that matched at least one reference', () => {
+    expect(referenceScanFailed(1, 942)).toBe(false)
+    expect(referenceScanFailed(942, 942)).toBe(false)
+  })
+
+  it('allows an installation that holds no references at all', () => {
+    expect(referenceScanFailed(0, 0)).toBe(false)
   })
 })

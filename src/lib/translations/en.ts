@@ -624,9 +624,13 @@ export const en = {
       confirmWord: 'DELETE',
       deleted_one: '1 object is deleted.',
       deleted_other: '{{count}} objects are deleted.',
+      disarmed:
+        'The deletion is turned off. The orphan report is wrong, so no key it names is safe to delete. A developer turns the action back on after the scan is repaired.',
       failed_one: '1 object could not be deleted.',
       failed_other: '{{count}} objects could not be deleted.',
       nothingToDelete: 'Run the orphan report first. It found nothing to delete.',
+      refusedScanFailed:
+        'The server refused the deletion. The scan collected file references and matched none of them against the bucket, so the report is wrong.',
       refusedWholeBucket:
         'The report names every object in the bucket. That means the reference scan failed, not that every file is unused. The deletion stays disabled until the report is correct.',
       running: 'Deleting...',

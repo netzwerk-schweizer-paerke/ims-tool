@@ -16,7 +16,7 @@ import { CollectionSlug, PayloadRequest } from 'payload'
 import type { Document, DocumentsPublic, Media } from '../payload-types'
 
 import { getS3Client } from './s3-client'
-import { coversWholeBucket } from './s3-orphan-safety'
+import { coversWholeBucket, referenceScanFailed } from './s3-orphan-safety'
 
 interface OrphanDeletionFailure {
   key: string
@@ -28,7 +28,7 @@ interface OrphanDeletionResult {
   failed: OrphanDeletionFailure[]
   freedBytes: number
   /** Set when the request was refused whole. Nothing is deleted in that case. */
-  refusedReason: 'covers-whole-bucket' | null
+  refusedReason: 'covers-whole-bucket' | 'reference-scan-failed' | null
   requested: number
   skipped: OrphanDeletionSkip[]
 }
@@ -119,8 +119,23 @@ class S3OrphanDetector {
       deletable.push(key)
     }
 
-    // A sweep that names every object has failed to build the reference set, not found that
-    // every file is unused. Deleting on that answer empties the bucket.
+    // The primary guard. A scan that collected references and matched none of them built the
+    // keys wrongly. The request size does not enter this test, so a chunked caller cannot walk
+    // past it one batch at a time.
+    const matchedReferences = s3Objects.filter((object) => payloadReferences.has(object.key)).length
+
+    if (referenceScanFailed(matchedReferences, payloadReferences.size)) {
+      return {
+        deleted: [],
+        failed: [],
+        freedBytes: 0,
+        refusedReason: 'reference-scan-failed',
+        requested: requested.length,
+        skipped,
+      }
+    }
+
+    // A single sweep that names every object is the same failure seen from the request side.
     if (coversWholeBucket(deletable.length, s3Objects.length)) {
       return {
         deleted: [],
@@ -135,22 +150,30 @@ class S3OrphanDetector {
     const deleted: string[] = []
     const failed: OrphanDeletionFailure[] = []
 
-    // `DeleteObjects` accepts at most 1000 keys per request.
+    // `DeleteObjects` accepts at most 1000 keys per request. A throw on a later batch must not
+    // discard the record of an earlier one, because a deletion is irreversible. Each batch
+    // therefore reports its own outcome, and the loop continues.
     for (let start = 0; start < deletable.length; start += 1000) {
       const batch = deletable.slice(start, start + 1000)
-      const response = await this.s3Client.send(
-        new DeleteObjectsCommand({
-          Bucket: this.bucket,
-          Delete: { Objects: batch.map((Key) => ({ Key })), Quiet: false },
-        }),
-      )
 
-      for (const entry of response.Deleted ?? []) {
-        if (entry.Key) deleted.push(entry.Key)
-      }
+      try {
+        const response = await this.s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucket,
+            Delete: { Objects: batch.map((Key) => ({ Key })), Quiet: false },
+          }),
+        )
 
-      for (const entry of response.Errors ?? []) {
-        if (entry.Key) failed.push({ key: entry.Key, message: entry.Message ?? 'Unknown error' })
+        for (const entry of response.Deleted ?? []) {
+          if (entry.Key) deleted.push(entry.Key)
+        }
+
+        for (const entry of response.Errors ?? []) {
+          if (entry.Key) failed.push({ key: entry.Key, message: entry.Message ?? 'Unknown error' })
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        for (const key of batch) failed.push({ key, message })
       }
     }
 
