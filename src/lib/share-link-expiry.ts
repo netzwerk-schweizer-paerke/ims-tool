@@ -1,25 +1,20 @@
 import { addMonths } from 'date-fns'
 
-/** The longest expiry a caller may choose. A link with no month count never expires. */
-export const MAX_EXPIRY_MONTHS = 12
+/** Every month count the share dialog offers, shortest first. A link with no count never expires. */
+export const EXPIRY_MONTH_OPTIONS: readonly number[] = [1, 2, 3, 4, 6, 12]
 
-/** Every month count the share dialog offers, shortest first. */
-export const EXPIRY_MONTH_OPTIONS: readonly number[] = Array.from(
-  { length: MAX_EXPIRY_MONTHS },
-  (_, index) => index + 1,
-)
+/** The longest expiry a caller may choose. */
+export const MAX_EXPIRY_MONTHS = Math.max(...EXPIRY_MONTH_OPTIONS)
 
 /**
  * True when the value is a month count a caller may choose.
  *
- * The client sends the month count and the server computes the instant. A browser with a wrong
- * clock therefore cannot mint a link that outlives the policy.
+ * The check reads the offered list, so the dialog and the server guard cannot disagree. The client
+ * sends the month count and the server computes the instant. A browser with a wrong clock
+ * therefore cannot mint a link that outlives the policy.
  */
 export const isExpiryMonths = (value: unknown): value is number =>
-  typeof value === 'number' &&
-  Number.isSafeInteger(value) &&
-  value >= 1 &&
-  value <= MAX_EXPIRY_MONTHS
+  typeof value === 'number' && EXPIRY_MONTH_OPTIONS.includes(value)
 
 /** The instant a link created at `now` stops working. */
 export const expiryFromMonths = (months: number, now: Date): Date => addMonths(now, months)

@@ -11,16 +11,24 @@ import {
 const NOW = new Date('2026-09-04T10:00:00.000Z')
 
 describe('EXPIRY_MONTH_OPTIONS', () => {
-  it('offers every month from 1 to the maximum', () => {
-    expect(EXPIRY_MONTH_OPTIONS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    expect(EXPIRY_MONTH_OPTIONS).toHaveLength(MAX_EXPIRY_MONTHS)
+  it('offers the month counts the dialog shows', () => {
+    expect(EXPIRY_MONTH_OPTIONS).toEqual([1, 2, 3, 4, 6, 12])
+  })
+
+  it('takes the maximum from the longest option', () => {
+    expect(MAX_EXPIRY_MONTHS).toBe(12)
   })
 })
 
 describe('isExpiryMonths', () => {
-  it('accepts both ends of the range', () => {
-    expect(isExpiryMonths(1)).toBe(true)
-    expect(isExpiryMonths(MAX_EXPIRY_MONTHS)).toBe(true)
+  it.each([...EXPIRY_MONTH_OPTIONS])('accepts the offered count %i', (months) => {
+    expect(isExpiryMonths(months)).toBe(true)
+  })
+
+  it('rejects a whole month count the dialog does not offer', () => {
+    expect(isExpiryMonths(5)).toBe(false)
+    expect(isExpiryMonths(7)).toBe(false)
+    expect(isExpiryMonths(11)).toBe(false)
   })
 
   it('rejects a value outside the range', () => {

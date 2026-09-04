@@ -3,11 +3,7 @@ import type { CollectionBeforeChangeHook, PayloadRequest } from 'payload'
 import { randomBytes } from 'node:crypto'
 import { APIError } from 'payload'
 
-import {
-  expiryFromMonths,
-  isExpiryMonths,
-  MAX_EXPIRY_MONTHS,
-} from '@/lib/share-link-expiry'
+import { EXPIRY_MONTH_OPTIONS, expiryFromMonths, isExpiryMonths } from '@/lib/share-link-expiry'
 import { ShareTarget, shareTargetFromLink, StoredShareLink } from '@/lib/share-link-target'
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
@@ -111,7 +107,10 @@ const resolveExpiryMonths = (value: unknown): null | number => {
   }
 
   if (!isExpiryMonths(value)) {
-    throw new APIError(`A share link expires after 1 to ${MAX_EXPIRY_MONTHS} months.`, 400)
+    throw new APIError(
+      `A share link expires after one of ${EXPIRY_MONTH_OPTIONS.join(', ')} months.`,
+      400,
+    )
   }
 
   return value
