@@ -113,7 +113,7 @@ describe('currentOrganisationCollectionReadAccess', () => {
     })
   })
 
-  test('should handle users with no selectedOrganisation and not super admin', () => {
+  test('denies a user with no selectedOrganisation who is not a super admin', () => {
     // Setup mocks
     const regularUserNoOrg = {
       ...mockRegularUser,
@@ -131,11 +131,20 @@ describe('currentOrganisationCollectionReadAccess', () => {
     // Assertions
     expect(getIdFromRelation).toHaveBeenCalledWith(null)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], regularUserNoOrg)
-    // Should filter by null organisation since no org is selected and user is not admin
-    expect(result).toEqual({
-      organisation: {
-        equals: null,
-      },
-    })
+    // No park is in view, so nothing is readable. A filter on a null organisation would hand
+    // every unowned row to a user who nulls their own selection.
+    expect(result).toBe(false)
+    expect(checkOrganisationRoles).not.toHaveBeenCalled()
+  })
+
+  test('denies an anonymous caller', () => {
+    vi.mocked(getIdFromRelation).mockReturnValue(null)
+    vi.mocked(checkUserRoles).mockReturnValue(false)
+
+    const result = currentOrganisationCollectionReadAccess({
+      req: { user: undefined },
+    } as any)
+
+    expect(result).toBe(false)
   })
 })

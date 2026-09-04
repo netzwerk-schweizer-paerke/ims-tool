@@ -47,8 +47,9 @@ const targetRecordId = (target: ShareTarget): null | number => {
 /**
  * The organisation that owns the shared page, or null when the caller may not see it.
  *
- * The read runs with `overrideAccess: false` on purpose. Without it any authenticated user could
- * mint a public link to another park's page, because the link itself needs no session to open.
+ * The first read keeps `overrideAccess: false`, so no caller can mint a public link past their own
+ * read access. The second read exists because the field's read rule strips `organisation` for a
+ * member; see pitfalls/organisation-field-is-stripped-from-an-access-checked-read.
  */
 const resolveTargetOrganisation = async (
   target: ShareTarget,
@@ -60,20 +61,20 @@ const resolveTargetOrganisation = async (
     return null
   }
 
+  // Every branch proves membership, because a user can write `selectedOrganisation` on themselves.
+  const isMemberOf = (organisationId: number): boolean =>
+    checkUserRoles([ROLE_SUPER_ADMIN], user) ||
+    checkOrganisationRoles([ROLE_SUPER_ADMIN, ROLE_USER], user, organisationId)
+
   if (target.targetType === 'activityLandscape') {
-    // The landscape is the whole park, so it carries no record. Fall back to the selected park,
-    // and prove membership, because a user can write `selectedOrganisation` on themselves.
+    // The landscape is the whole park, so it carries no record. Fall back to the selected park.
     const organisationId = getIdFromRelation(user.selectedOrganisation)
 
     if (organisationId === null) {
       return null
     }
 
-    const member =
-      checkUserRoles([ROLE_SUPER_ADMIN], user) ||
-      checkOrganisationRoles([ROLE_SUPER_ADMIN, ROLE_USER], user, organisationId)
-
-    return member ? organisationId : null
+    return isMemberOf(organisationId) ? organisationId : null
   }
 
   const id = targetRecordId(target)
@@ -82,9 +83,14 @@ const resolveTargetOrganisation = async (
     return null
   }
 
-  const found = await req.payload.find({
-    collection: TARGET_COLLECTIONS[target.targetType],
+  const collection = TARGET_COLLECTIONS[target.targetType]
+
+  // `disableErrors` turns a denied read into an empty page, so the caller gets this hook's own
+  // 403 message rather than Payload's generic one.
+  const readable = await req.payload.find({
+    collection,
     depth: 0,
+    disableErrors: true,
     limit: 1,
     overrideAccess: false,
     req,
@@ -92,7 +98,29 @@ const resolveTargetOrganisation = async (
     where: { id: { equals: id } },
   })
 
-  return found.docs.length === 0 ? null : getIdFromRelation(found.docs[0]?.organisation)
+  if (readable.docs.length === 0) {
+    return null
+  }
+
+  // The caller's own read passed, so this override reads one row they already proved they may
+  // see. The membership check below bounds the override on its own.
+  const row = await req.payload.findByID({
+    collection,
+    depth: 0,
+    disableErrors: true,
+    id,
+    overrideAccess: true,
+    req,
+    select: { organisation: true },
+  })
+
+  const organisationId = getIdFromRelation(row?.organisation)
+
+  if (organisationId === null) {
+    return null
+  }
+
+  return isMemberOf(organisationId) ? organisationId : null
 }
 
 /**

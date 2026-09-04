@@ -38,10 +38,10 @@ export type OtherErrors = {
 /**
  * `processRichTextField` preserves the shape of the value it receives, so the result carries the
  * caller's own field type back. Every `strip-*` assignment is then checked against that field.
+ * A missing document reaches the report through `CloneStatisticsTracker`, never through this value.
  */
 export type RichTextProcessingResult<TContent = unknown> = {
   content: TContent
-  errors: MissingDocumentFileError[]
 }
 
 type SharedStats = {

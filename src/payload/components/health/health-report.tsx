@@ -11,7 +11,7 @@ import {
 } from '@/lib/tenant-health-checker'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
-export type Translator = (key: never, vars?: Record<string, unknown>) => string
+export type Translator = (key: I18nKeys, vars?: Record<string, unknown>) => string
 
 const SEVERITY_ORDER: TenantHealthSeverity[] = ['blocking', 'degrading']
 
@@ -33,7 +33,6 @@ interface HealthReportProps {
  */
 export const HealthReport = ({ onJump, report, showOrganisation = false }: HealthReportProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
-  const translate = t as Translator
 
   const failedPreconditions = Object.entries(report.preconditions).filter(([, value]) => !value.ok)
   // Public documents are shared installation-wide, so their problems are not this park's
@@ -45,20 +44,20 @@ export const HealthReport = ({ onJump, report, showOrganisation = false }: Healt
       {showOrganisation && (
         <p className="text-[var(--theme-text-light)]">
           <strong>{report.organisation.name}</strong> —{' '}
-          {translate('dataHealth:counts' as never, report.counts)}
+          {t('dataHealth:counts', report.counts)}
         </p>
       )}
 
       {failedPreconditions.length > 0 && (
         <section className="rounded-lg border border-amber-300 bg-amber-50 p-4">
           <h2 className="font-semibold text-amber-900">
-            {t('dataHealth:preconditionFailed' as never)}
+            {t('dataHealth:preconditionFailed')}
           </h2>
-          <p className="mb-2 text-sm text-amber-800">{t('dataHealth:preconditionHint' as never)}</p>
+          <p className="mb-2 text-sm text-amber-800">{t('dataHealth:preconditionHint')}</p>
           <ul className="list-disc space-y-1 pl-5">
             {failedPreconditions.map(([key, value]) => (
               <li className="text-sm text-amber-900" key={key}>
-                {preconditionMessage(translate, value)}
+                {preconditionMessage(t, value)}
                 {value.error && (
                   <div className="break-all font-mono text-xs opacity-70">{value.error}</div>
                 )}
@@ -70,11 +69,7 @@ export const HealthReport = ({ onJump, report, showOrganisation = false }: Healt
 
       {report.findings.length === 0 && failedPreconditions.length === 0 && (
         <p className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-700">
-          {t(
-            showOrganisation
-              ? ('dataHealth:healthy' as never)
-              : ('dataHealth:healthyDocument' as never),
-          )}
+          {t(showOrganisation ? 'dataHealth:healthy' : 'dataHealth:healthyDocument')}
         </p>
       )}
 
@@ -88,17 +83,13 @@ export const HealthReport = ({ onJump, report, showOrganisation = false }: Healt
           <FindingGroup
             findings={findings}
             hint={t(
-              severity === 'blocking'
-                ? ('dataHealth:blockingHint' as never)
-                : ('dataHealth:degradingHint' as never),
+              severity === 'blocking' ? 'dataHealth:blockingHint' : 'dataHealth:degradingHint',
             )}
             key={severity}
             onJump={onJump}
             severity={severity}
             title={`${t(
-              severity === 'blocking'
-                ? ('dataHealth:blocking' as never)
-                : ('dataHealth:degrading' as never),
+              severity === 'blocking' ? 'dataHealth:blocking' : 'dataHealth:degrading',
             )} (${findings.length})`}
           />
         )
@@ -107,10 +98,10 @@ export const HealthReport = ({ onJump, report, showOrganisation = false }: Healt
       {sharedFindings.length > 0 && (
         <FindingGroup
           findings={sharedFindings}
-          hint={t('dataHealth:sharedHint' as never)}
+          hint={t('dataHealth:sharedHint')}
           onJump={onJump}
           severity="degrading"
-          title={`${t('dataHealth:shared' as never)} (${sharedFindings.length})`}
+          title={`${t('dataHealth:shared')} (${sharedFindings.length})`}
         />
       )}
     </>
@@ -194,7 +185,6 @@ interface FindingGroupProps {
 
 const FindingGroup = ({ findings, hint, onJump, severity, title }: FindingGroupProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
-  const translate = t as Translator
 
   const tone =
     severity === 'blocking'
@@ -209,22 +199,20 @@ const FindingGroup = ({ findings, hint, onJump, severity, title }: FindingGroupP
         <ul className="space-y-3">
           {findings.map((finding, index) => (
             <li key={`${finding.code}-${finding.source.id}-${index}`}>
-              <div className="text-sm font-medium">{locationLabel(translate, finding)}</div>
-              <div className="text-sm">{findingMessage(translate, finding)}</div>
+              <div className="text-sm font-medium">{locationLabel(t, finding)}</div>
+              <div className="text-sm">{findingMessage(t, finding)}</div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 <EntityLink
                   anchor={finding.location?.anchor}
                   label={t(
-                    finding.location?.anchor
-                      ? ('dataHealth:jumpToBlock' as never)
-                      : ('dataHealth:openSource' as never),
+                    finding.location?.anchor ? 'dataHealth:jumpToBlock' : 'dataHealth:openSource',
                   )}
                   onJump={onJump}
                   target={finding.source}
                 />
                 {finding.related && (
                   <EntityLink
-                    label={t('dataHealth:openRelated' as never)}
+                    label={t('dataHealth:openRelated')}
                     target={finding.related}
                   />
                 )}
@@ -266,13 +254,13 @@ const locationLabel = (t: Translator, finding: TenantHealthFinding): string => {
 const rowLabel = (t: Translator, container: string | undefined, number: number): string => {
   switch (container) {
     case 'files': {
-      return t('dataHealth:fileNumber' as never, { number })
+      return t('dataHealth:fileNumber', { number })
     }
     case 'items': {
-      return t('dataHealth:itemNumber' as never, { number })
+      return t('dataHealth:itemNumber', { number })
     }
     default: {
-      return t('dataHealth:blockNumber' as never, { number })
+      return t('dataHealth:blockNumber', { number })
     }
   }
 }
@@ -281,31 +269,31 @@ const rowLabel = (t: Translator, container: string | undefined, number: number):
 const fieldLabel = (t: Translator, field: string): string => {
   switch (field) {
     case 'description': {
-      return t('dataHealth:field:description' as never)
+      return t('dataHealth:field:description')
     }
     case 'document': {
-      return t('dataHealth:field:document' as never)
+      return t('dataHealth:field:document')
     }
     case 'files': {
-      return t('dataHealth:field:files' as never)
+      return t('dataHealth:field:files')
     }
     case 'infos': {
-      return t('dataHealth:field:infos' as never)
+      return t('dataHealth:field:infos')
     }
     case 'io': {
-      return t('dataHealth:field:io' as never)
+      return t('dataHealth:field:io')
     }
     case 'keypoints': {
-      return t('dataHealth:field:keypoints' as never)
+      return t('dataHealth:field:keypoints')
     }
     case 'relations': {
-      return t('dataHealth:field:relations' as never)
+      return t('dataHealth:field:relations')
     }
     case 'responsibility': {
-      return t('dataHealth:field:responsibility' as never)
+      return t('dataHealth:field:responsibility')
     }
     case 'tools': {
-      return t('dataHealth:field:tools' as never)
+      return t('dataHealth:field:tools')
     }
     default: {
       return field
@@ -322,49 +310,49 @@ export const findingMessage = (t: Translator, finding: TenantHealthFinding): str
 
   switch (finding.code) {
     case 'crossOrgReference': {
-      return t('dataHealth:finding:crossOrgReference' as never, params)
+      return t('dataHealth:finding:crossOrgReference', params)
     }
     case 'crossOrgReferenceFollowed': {
-      return t('dataHealth:finding:crossOrgReferenceFollowed' as never, params)
+      return t('dataHealth:finding:crossOrgReferenceFollowed', params)
     }
     case 'danglingReference': {
-      return t('dataHealth:finding:danglingReference' as never, params)
+      return t('dataHealth:finding:danglingReference', params)
     }
     case 'danglingReferenceFollowed': {
-      return t('dataHealth:finding:danglingReferenceFollowed' as never, params)
+      return t('dataHealth:finding:danglingReferenceFollowed', params)
     }
     case 'documentIncomplete': {
-      return t('dataHealth:finding:documentIncomplete' as never, params)
+      return t('dataHealth:finding:documentIncomplete', params)
     }
     case 'externalUrlMalformed': {
-      return t('dataHealth:finding:externalUrlMalformed' as never, params)
+      return t('dataHealth:finding:externalUrlMalformed', params)
     }
     case 'externalUrlNotFound': {
-      return t('dataHealth:finding:externalUrlNotFound' as never, params)
+      return t('dataHealth:finding:externalUrlNotFound', params)
     }
     case 'externalUrlUnreachable': {
-      return t('dataHealth:finding:externalUrlUnreachable' as never, params)
+      return t('dataHealth:finding:externalUrlUnreachable', params)
     }
     case 'malformedRichTextNoChildren': {
-      return t('dataHealth:finding:malformedRichTextNoChildren' as never, params)
+      return t('dataHealth:finding:malformedRichTextNoChildren', params)
     }
     case 'malformedRichTextNotObject': {
-      return t('dataHealth:finding:malformedRichTextNotObject' as never, params)
+      return t('dataHealth:finding:malformedRichTextNotObject', params)
     }
     case 'malformedRichTextRoot': {
-      return t('dataHealth:finding:malformedRichTextRoot' as never, params)
+      return t('dataHealth:finding:malformedRichTextRoot', params)
     }
     case 'missingRequiredField': {
-      return t('dataHealth:finding:missingRequiredField' as never, params)
+      return t('dataHealth:finding:missingRequiredField', params)
     }
     case 'prefixOrganisationMismatch': {
-      return t('dataHealth:finding:prefixOrganisationMismatch' as never, params)
+      return t('dataHealth:finding:prefixOrganisationMismatch', params)
     }
     case 's3ObjectMissing': {
-      return t('dataHealth:finding:s3ObjectMissing' as never, params)
+      return t('dataHealth:finding:s3ObjectMissing', params)
     }
     case 's3ObjectUnreadable': {
-      return t('dataHealth:finding:s3ObjectUnreadable' as never, params)
+      return t('dataHealth:finding:s3ObjectUnreadable', params)
     }
   }
 }
@@ -375,10 +363,10 @@ export const preconditionMessage = (
 ): string => {
   switch (result.code) {
     case 's3BucketMissing': {
-      return t('dataHealth:precondition:s3BucketMissing' as never)
+      return t('dataHealth:precondition:s3BucketMissing')
     }
     case 's3Unreachable': {
-      return t('dataHealth:precondition:s3Unreachable' as never)
+      return t('dataHealth:precondition:s3Unreachable')
     }
     default: {
       return ''

@@ -1,6 +1,7 @@
 import { isArray } from 'es-toolkit/compat'
 import { PayloadRequest, TypedLocale } from 'payload'
 
+import type { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
 import { Activity } from '@/payload-types'
@@ -14,6 +15,7 @@ export const stripActivity = async (
   organisationId: number,
   locale: TypedLocale,
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ) => {
   if (!obj) {
     throw new Error('stripActivity requires an object')
@@ -32,12 +34,20 @@ export const stripActivity = async (
       'activities',
       locale,
       documentPreloader,
+      tracker,
     )
     stripped.description = result.content
   }
 
   if (obj.blocks && isArray(obj.blocks)) {
-    stripped.blocks = await stripBlocks(obj.blocks, req, organisationId, locale, documentPreloader)
+    stripped.blocks = await stripBlocks(
+      obj.blocks,
+      req,
+      organisationId,
+      locale,
+      documentPreloader,
+      tracker,
+    )
   }
 
   // `files` rows keep their own primary key, which would be re-inserted verbatim.

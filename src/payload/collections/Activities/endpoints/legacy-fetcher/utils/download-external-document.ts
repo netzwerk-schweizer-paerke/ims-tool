@@ -2,6 +2,7 @@ import type { File as PayloadFile, PayloadRequest } from 'payload'
 
 import path from 'node:path'
 
+import { withoutDocumentUsage } from '@/lib/document-usage'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 import type { FetchLegacyDocsTracker } from './statistics-tracker'
@@ -23,6 +24,15 @@ interface ValidationResult {
   error?: string
   valid: boolean
 }
+
+/**
+ * A legacy host that accepts the connection and never answers holds the request for undici's
+ * 300-second idle timeout otherwise. The abort covers the headers and the body alike.
+ */
+export const DOWNLOAD_TIMEOUT_MS = 30_000
+
+/** The whole body sits on the heap before the create, so the migration refuses a larger file. */
+export const MAX_DOWNLOAD_BYTES = 50 * 1024 * 1024
 
 /**
  * Download a document from an external URL and create it in Payload CMS
@@ -54,6 +64,7 @@ export async function downloadExternalDocument(
 
   // The create commits on its own connection, because the request carries no transaction id.
   // A failure here leaves nothing to roll back, so it is recorded and skipped as well.
+  // The opt-out keeps the Documents afterRead hook from scanning the usage of the new row.
   try {
     const document = await req.payload.create({
       collection: 'documents',
@@ -63,7 +74,7 @@ export async function downloadExternalDocument(
         organisation: getIdFromRelation(organisationId),
       },
       file: download.file,
-      req,
+      req: withoutDocumentUsage(req),
     })
 
     return document.id as number
@@ -97,6 +108,32 @@ export function extractDocumentNameFromUrl(url: string): string {
 }
 
 /**
+ * Fetches the body behind a validated url, bounded in time and in size. Every failure throws.
+ */
+async function downloadWithLimits(url: string): Promise<Buffer> {
+  const controller = new AbortController()
+  const timer = setTimeout(
+    () => controller.abort(new Error(`Download timed out after ${DOWNLOAD_TIMEOUT_MS} ms`)),
+    DOWNLOAD_TIMEOUT_MS,
+  )
+
+  try {
+    // `validateLegacyUrl` checks the scheme, the domain allowlist, the port and the private
+    // ranges of this url alone. A followed redirect would reach any host past all four checks,
+    // so a 3xx stays unfollowed and fails the `ok` test below.
+    const response = await fetch(url, { redirect: 'manual', signal: controller.signal })
+
+    if (!response.ok) {
+      throw new Error(`Failed to download: ${response.status} ${response.statusText}`)
+    }
+
+    return await readBodyWithCap(response, MAX_DOWNLOAD_BYTES)
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
  * Downloads the file behind a legacy url. Every failure throws, and no Payload call runs here.
  */
 async function fetchLegacyFile(url: string): Promise<LegacyFile> {
@@ -116,15 +153,7 @@ async function fetchLegacyFile(url: string): Promise<LegacyFile> {
   const mimeType = getMimeType(ext)
 
   // Download the file (now safely validated)
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(`Failed to download: ${response.status} ${response.statusText}`)
-  }
-
-  // Get file data
-  const arrayBuffer = await response.arrayBuffer()
-  const buffer = Buffer.from(arrayBuffer)
+  const buffer = await downloadWithLimits(url)
 
   // Generate a unique filename to avoid conflicts
   const timestamp = Date.now()
@@ -165,6 +194,41 @@ function getMimeType(ext: string): string {
   }
 
   return mimeTypes[ext] || 'application/octet-stream'
+}
+
+/**
+ * Reads the body chunk by chunk, so an oversized file is refused before it fills the heap.
+ * A declared length above the cap is refused before the first byte.
+ */
+async function readBodyWithCap(response: Response, maxBytes: number): Promise<Buffer> {
+  const declaredLength = Number(response.headers.get('content-length'))
+
+  if (declaredLength > maxBytes) {
+    throw new Error(`Download exceeds ${maxBytes} bytes: ${declaredLength} bytes declared`)
+  }
+
+  if (!response.body) {
+    return Buffer.from(await response.arrayBuffer())
+  }
+
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let received = 0
+  let chunk = await reader.read()
+
+  while (!chunk.done) {
+    received += chunk.value.byteLength
+
+    if (received > maxBytes) {
+      await reader.cancel()
+      throw new Error(`Download exceeds ${maxBytes} bytes`)
+    }
+
+    chunks.push(chunk.value)
+    chunk = await reader.read()
+  }
+
+  return Buffer.concat(chunks)
 }
 
 /**

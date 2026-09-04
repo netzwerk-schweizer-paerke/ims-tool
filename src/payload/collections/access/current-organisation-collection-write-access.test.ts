@@ -37,20 +37,22 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     vi.mocked(checkOrganisationRoles).mockReturnValue(false)
     mockPayload.findByID.mockResolvedValue(mockOrganisations.org1)
 
+    const req = {
+      payload: mockPayload,
+      user: mockUsers.admin,
+    }
+
     // Call function with test data
-    const result = await currentOrganisationCollectionWriteAccess({
-      req: {
-        payload: mockPayload,
-        user: mockUsers.admin,
-      },
-    } as any)
+    const result = await currentOrganisationCollectionWriteAccess({ req } as any)
 
     // Assertions
     expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.admin.selectedOrganisation)
     expect(checkUserRoles).toHaveBeenCalledWith([ROLE_SUPER_ADMIN], mockUsers.admin)
+    // The read joins the caller's request, so it runs inside any open transaction.
     expect(mockPayload.findByID).toHaveBeenCalledWith({
       collection: 'organisations',
       id: mockOrgId,
+      req,
     })
     expect(result).toEqual({
       organisation: {
@@ -85,19 +87,20 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     vi.mocked(checkOrganisationRoles).mockReturnValue(false)
     mockPayload.findByID.mockResolvedValue(null) // Org not found
 
+    const req = {
+      payload: mockPayload,
+      user: mockUsers.userWithOrg1,
+    }
+
     // Call function with test data
-    const result = await currentOrganisationCollectionWriteAccess({
-      req: {
-        payload: mockPayload,
-        user: mockUsers.userWithOrg1,
-      },
-    } as any)
+    const result = await currentOrganisationCollectionWriteAccess({ req } as any)
 
     // Assertions
     expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.userWithOrg1.selectedOrganisation)
     expect(mockPayload.findByID).toHaveBeenCalledWith({
       collection: 'organisations',
       id: mockOrgId,
+      req,
     })
     expect(result).toBe(false)
   })
@@ -109,19 +112,20 @@ describe('currentOrganisationCollectionWriteAccess', () => {
     vi.mocked(checkOrganisationRoles).mockReturnValue(true) // User has super admin role in org
     mockPayload.findByID.mockResolvedValue(mockOrganisations.org1)
 
+    const req = {
+      payload: mockPayload,
+      user: mockUsers.userWithOrg1,
+    }
+
     // Call function with test data
-    const result = await currentOrganisationCollectionWriteAccess({
-      req: {
-        payload: mockPayload,
-        user: mockUsers.userWithOrg1,
-      },
-    } as any)
+    const result = await currentOrganisationCollectionWriteAccess({ req } as any)
 
     // Assertions
     expect(getIdFromRelation).toHaveBeenCalledWith(mockUsers.userWithOrg1.selectedOrganisation)
     expect(mockPayload.findByID).toHaveBeenCalledWith({
       collection: 'organisations',
       id: mockOrgId,
+      req,
     })
     expect(checkOrganisationRoles).toHaveBeenCalledWith(
       [ROLE_SUPER_ADMIN],

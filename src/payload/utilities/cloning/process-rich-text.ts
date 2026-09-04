@@ -2,10 +2,7 @@ import { PayloadRequest, TypedLocale } from 'payload'
 
 import { isRecord, isUnknownArray } from '@/payload/assertions'
 import { normalizeRichText } from '@/payload/utilities/cloning/normalize-rich-text'
-import {
-  MissingDocumentFileError,
-  RichTextProcessingResult,
-} from '@/payload/utilities/cloning/types'
+import { RichTextProcessingResult } from '@/payload/utilities/cloning/types'
 
 import { CloneStatisticsTracker } from './clone-statistics-tracker'
 import {
@@ -17,6 +14,7 @@ import { getErrorMessage } from './error-utils'
 
 // The three assertions below rebuild the node tree and keep its shape, which the compiler cannot
 // prove. They are the only place this file asserts, and they keep the caller's field type intact.
+// A missing document is reported on the tracker alone. The result carries no error list.
 export async function processRichTextField<TContent>(
   richText: TContent,
   req: PayloadRequest,
@@ -24,16 +22,10 @@ export async function processRichTextField<TContent>(
   collectionName: string,
   locale: TypedLocale,
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ): Promise<RichTextProcessingResult<TContent>> {
-  const documentIds: number[] = []
-  const publicDocumentIds: number[] = []
-  const errors: MissingDocumentFileError[] = []
-
   if (!richText || typeof richText !== 'object') {
-    return {
-      content: richText,
-      errors,
-    }
+    return { content: richText }
   }
 
   // Normalize the rich text to ensure consistent handling
@@ -44,71 +36,40 @@ export async function processRichTextField<TContent>(
   if (isRecord(normalizedRichText) && normalizedRichText.root) {
     const processedRoot = await processNode(
       normalizedRichText.root,
-      req,
-      targetOrgId,
-      documentIds,
-      publicDocumentIds,
-      errors,
       collectionName,
-      locale,
       documentPreloader,
+      tracker,
     )
 
-    return {
-      content: { ...normalizedRichText, root: processedRoot } as TContent,
-      errors: errors.length > 0 ? errors : [],
-    }
+    return { content: { ...normalizedRichText, root: processedRoot } as TContent }
   }
 
   // Handle Slate rich text (array of nodes)
   if (isUnknownArray(normalizedRichText)) {
     const processedNodes = await Promise.all(
       normalizedRichText.map((node) =>
-        processNode(
-          node,
-          req,
-          targetOrgId,
-          documentIds,
-          publicDocumentIds,
-          errors,
-          collectionName,
-          locale,
-          documentPreloader,
-        ),
+        processNode(node, collectionName, documentPreloader, tracker),
       ),
     )
 
-    return {
-      content: processedNodes.filter((node) => node !== null) as TContent,
-      errors: errors.length > 0 ? errors : [],
-    }
+    return { content: processedNodes.filter((node) => node !== null) as TContent }
   }
 
   // Return original content if it's not recognizable rich text
-  return {
-    content: normalizedRichText as TContent,
-    errors: [],
-  }
+  return { content: normalizedRichText as TContent }
 }
 
 async function processNode(
   node: unknown,
-  req: PayloadRequest,
-  targetOrgId: number,
-  documentIds: number[],
-  publicDocumentIds: number[],
-  errors: MissingDocumentFileError[],
   collectionName: string,
-  locale: TypedLocale,
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ): Promise<unknown> {
   if (!isRecord(node)) {
     return node
   }
 
   const processedNode: Record<string, unknown> = { ...node }
-
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
 
   // Remove IDs
   delete processedNode.id
@@ -127,8 +88,6 @@ async function processNode(
       // Every id that reaches the clone is a Postgres serial. `document-scanner` applies the
       // same guard, so a non-numeric id is never preloaded either.
       if (typeof docId === 'number') {
-        documentIds.push(docId)
-
         try {
           // Phase 1 copied the document before the transaction opened. The tracker counts the
           // source and the clone once per entity, however many links reach it.
@@ -165,19 +124,7 @@ async function processNode(
   const children = processedNode.children
   if (isUnknownArray(children)) {
     const processedChildren = await Promise.all(
-      children.map((child) =>
-        processNode(
-          child,
-          req,
-          targetOrgId,
-          documentIds,
-          publicDocumentIds,
-          errors,
-          collectionName,
-          locale,
-          documentPreloader,
-        ),
-      ),
+      children.map((child) => processNode(child, collectionName, documentPreloader, tracker)),
     )
     processedNode.children = processedChildren.filter((child) => child !== null)
   }

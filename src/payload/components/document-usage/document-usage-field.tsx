@@ -6,7 +6,7 @@ import React from 'react'
 import { DocumentUsage, DocumentUsageReference } from '@/lib/document-usage'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
-type Translator = (key: never, vars?: Record<string, unknown>) => string
+type Translator = (key: I18nKeys, vars?: Record<string, unknown>) => string
 
 /**
  * The three groups `addUsageInfoAfterReadHook` fills, paired with the collection each one
@@ -22,10 +22,12 @@ const GROUPS = [
  * Replaces the raw JSON editor on the virtual `usedIn` field with a total and a list of
  * links. Every entry opens in a new tab, because the reference lives in another document
  * and a same-tab navigation would drop unsaved edits on this one.
+ *
+ * A bare count follows the list when the caller's read access hid rows, which is the case for
+ * every shared document. It says that other parks use the document, and nothing more.
  */
 export const DocumentUsageField: JSONFieldClientComponent = ({ path }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
-  const translate = t as Translator
   // The create view has no document, and the hook's catch path returns one without the key.
   const { value } = useField<DocumentUsage | undefined>({ path })
 
@@ -35,31 +37,32 @@ export const DocumentUsageField: JSONFieldClientComponent = ({ path }) => {
   })).filter((group) => group.entries.length > 0)
 
   const total = groups.reduce((sum, group) => sum + group.entries.length, 0)
+  const hidden = value?.hiddenReferenceCount
 
   return (
     <div className="field-type">
-      <FieldLabel label={translate('documentUsage:title' as never)} path={path} />
+      <FieldLabel label={t('documentUsage:title')} path={path} />
 
       {total === 0 ? (
         <p className="m-0 text-sm text-[var(--theme-elevation-500)]">
-          {translate('documentUsage:empty' as never)}
+          {t('documentUsage:empty')}
         </p>
       ) : (
         <>
           <p className="m-0 mb-3 text-sm text-[var(--theme-elevation-500)]">
-            {translate('documentUsage:total' as never, { count: total })}
+            {t('documentUsage:total', { count: total })}
           </p>
 
           <div className="flex flex-col gap-4">
             {groups.map((group) => (
               <section key={group.key}>
                 <h4 className="m-0 text-xs font-semibold uppercase tracking-wide text-[var(--theme-elevation-500)]">
-                  {translate(group.titleKey as never)} ({group.entries.length})
+                  {t(group.titleKey)} ({group.entries.length})
                 </h4>
 
                 <ul className="m-0 mt-1 flex list-none flex-col gap-2 p-0">
                   {group.entries.map((entry, index) => {
-                    const reference = referenceLabel(translate, entry)
+                    const reference = referenceLabel(t, entry)
 
                     return (
                       <li key={`${group.key}-${entry.id}-${index}`}>
@@ -84,6 +87,12 @@ export const DocumentUsageField: JSONFieldClientComponent = ({ path }) => {
           </div>
         </>
       )}
+
+      {typeof hidden === 'number' && hidden > 0 && (
+        <p className="m-0 mt-3 text-sm text-[var(--theme-elevation-500)]">
+          {t('documentUsage:hiddenReferences', { count: hidden })}
+        </p>
+      )}
     </div>
   )
 }
@@ -92,25 +101,25 @@ export const DocumentUsageField: JSONFieldClientComponent = ({ path }) => {
 const fieldLabel = (t: Translator, field: string | undefined): string | undefined => {
   switch (field) {
     case 'blocks': {
-      return t('documentUsage:field:blocks' as never)
+      return t('documentUsage:field:blocks')
     }
     case 'description': {
-      return t('documentUsage:field:description' as never)
+      return t('documentUsage:field:description')
     }
     case 'files': {
-      return t('documentUsage:field:files' as never)
+      return t('documentUsage:field:files')
     }
     case 'infos': {
-      return t('documentUsage:field:infos' as never)
+      return t('documentUsage:field:infos')
     }
     case 'io': {
-      return t('documentUsage:field:io' as never)
+      return t('documentUsage:field:io')
     }
     case 'items': {
-      return t('documentUsage:field:items' as never)
+      return t('documentUsage:field:items')
     }
     case 'relations.tasks': {
-      return t('documentUsage:field:relationsTasks' as never)
+      return t('documentUsage:field:relationsTasks')
     }
     default: {
       return field

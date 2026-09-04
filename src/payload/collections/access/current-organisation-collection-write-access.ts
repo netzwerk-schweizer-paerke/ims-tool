@@ -15,18 +15,19 @@ import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
  * @param {object} params - The access control parameters
  * @returns {boolean|object} - Returns true if access is granted, or a query filter to restrict access
  */
-export const currentOrganisationCollectionWriteAccess: Access = async ({
-  req: { payload, user },
-}) => {
+export const currentOrganisationCollectionWriteAccess: Access = async ({ req }) => {
+  const { payload, user } = req
   const userLastLoggedInOrgId = getIdFromRelation(user?.selectedOrganisation)
 
   if (!userLastLoggedInOrgId || !user || typeof userLastLoggedInOrgId !== 'number') {
     return false
   }
 
+  // `req` joins the read to the caller's transaction, or it takes a second pool connection.
   const selectedOrganisation = await payload.findByID({
     collection: 'organisations',
     id: userLastLoggedInOrgId,
+    req,
   })
 
   const hasSelectedOrganisation = !!selectedOrganisation

@@ -1,5 +1,7 @@
 import { PayloadRequest } from 'payload'
 
+import { withoutDocumentUsage } from '@/lib/document-usage'
+
 import { getErrorMessage } from './error-utils'
 
 /**
@@ -17,7 +19,13 @@ export const deleteCreatedDocuments = async (
     try {
       // The acting user has the source organisation selected, and the write-access rule would
       // filter the copy out. The endpoint already verified the admin role on the target.
-      await req.payload.delete({ collection: 'documents', id, overrideAccess: true, req })
+      // A delete runs the Documents afterRead hook on the row, so the request opts out of it.
+      await req.payload.delete({
+        collection: 'documents',
+        id,
+        overrideAccess: true,
+        req: withoutDocumentUsage(req),
+      })
     } catch (error) {
       req.payload.logger.error({
         documentId: id,

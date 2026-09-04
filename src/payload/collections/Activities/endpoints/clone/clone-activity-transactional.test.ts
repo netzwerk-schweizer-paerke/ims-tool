@@ -193,7 +193,7 @@ describe('cloneActivityTransactional', () => {
       collection: 'documents',
       id: CLONED_DOCUMENT_ID,
       overrideAccess: true,
-      req,
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
     expect(mocks.commitTransaction).not.toHaveBeenCalled()
   })
@@ -214,7 +214,7 @@ describe('cloneActivityTransactional', () => {
       collection: 'documents',
       id: CLONED_DOCUMENT_ID,
       overrideAccess: true,
-      req,
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
     expect(cloneActivity).not.toHaveBeenCalled()
   })

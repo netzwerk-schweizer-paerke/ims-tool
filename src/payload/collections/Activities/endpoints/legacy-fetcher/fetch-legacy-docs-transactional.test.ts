@@ -81,7 +81,7 @@ const makeReq = (
 const fetchAnswering = () =>
   vi.fn().mockImplementation(async (url: string) =>
     url === LIVE_URL
-      ? { arrayBuffer: async () => new ArrayBuffer(4), ok: true }
+      ? new Response(new Uint8Array(4), { status: 200 })
       : { ok: false, status: 404, statusText: 'Not Found' },
   )
 
@@ -147,7 +147,7 @@ describe('fetchLegacyDocsTransactional', () => {
       collection: 'documents',
       id: CREATED_DOCUMENT_ID,
       overrideAccess: true,
-      req,
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
     expect(mocks.commitTransaction).not.toHaveBeenCalled()
   })
@@ -168,7 +168,7 @@ describe('fetchLegacyDocsTransactional', () => {
       collection: 'documents',
       id: CREATED_DOCUMENT_ID,
       overrideAccess: true,
-      req,
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
     expect(mocks.update).not.toHaveBeenCalled()
   })

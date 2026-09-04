@@ -19,6 +19,8 @@ type CloneActivityDocumentsParams = {
   sourceEntity: Activity | TaskFlow | TaskList
   targetEntityId: number
   targetOrgId: number
+  /** The statistics of the entity the endpoint started. Each attachment counts on it. */
+  tracker: CloneStatisticsTracker
 }
 
 /**
@@ -38,9 +40,8 @@ export async function cloneRelatedDocumentFiles(
     sourceEntity,
     targetEntityId,
     targetOrgId,
+    tracker,
   } = params
-
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
 
   if (!sourceEntity.files || !isArray(sourceEntity.files)) {
     return

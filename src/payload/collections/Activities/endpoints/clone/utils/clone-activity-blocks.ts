@@ -6,8 +6,7 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 import { Activity, TaskFlow, TaskList } from '@/payload-types'
 import { isActivityIOBlock, isActivityTaskBlock } from '@/payload/assertions'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
-
-import { createTaskFlow, createTaskList } from './clone-task-flow-or-list'
+import { createTaskFlow, createTaskList } from '@/payload/utilities/cloning/clone-task-flow-or-list'
 
 type RemapActivityTaskRelationsParams = {
   blocks: Activity['blocks']
@@ -16,6 +15,8 @@ type RemapActivityTaskRelationsParams = {
   locales: TypedLocale[]
   req: PayloadRequest
   targetOrgId: number
+  /** The statistics of the activity the endpoint started. A nested task counts on it. */
+  tracker: CloneStatisticsTracker
 }
 
 type TaskRelation =
@@ -32,13 +33,12 @@ type TaskRelation =
 export async function remapActivityTaskRelations(
   params: RemapActivityTaskRelationsParams,
 ): Promise<Activity['blocks']> {
-  const { blocks, documentPreloader, locales, req, targetOrgId } = params
+  const { blocks, documentPreloader, locales, req, targetOrgId, tracker } = params
 
   if (!blocks) {
     return blocks
   }
 
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   const remapped: NonNullable<Activity['blocks']> = []
 
   for (const block of blocks) {
@@ -71,6 +71,7 @@ export async function remapActivityTaskRelations(
             targetOrgId,
             locales,
             documentPreloader,
+            tracker,
           )
           return clone.id
         })
@@ -83,6 +84,7 @@ export async function remapActivityTaskRelations(
             targetOrgId,
             locales,
             documentPreloader,
+            tracker,
           )
           return clone.id
         })

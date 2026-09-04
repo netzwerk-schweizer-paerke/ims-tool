@@ -1,16 +1,16 @@
 import { PayloadRequest, TypedLocale } from 'payload'
 
+import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
+
 import { Activity } from '@/payload-types'
 import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
 import { hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
+import { cloneRelatedDocumentFiles } from '@/payload/utilities/cloning/clone-related-document-files'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
+import { stripActivity } from '@/payload/utilities/cloning/strip-activity'
 
-import type { DocumentPreloader } from '../../../../../utilities/cloning/document-preloader'
-
-import { stripActivity } from '../../../../../utilities/cloning/strip-activity'
 import { remapActivityTaskRelations } from './clone-activity-blocks'
-import { cloneRelatedDocumentFiles } from './clone-related-document-files'
 
 type ExecuteActivityCloneParams = {
   /** The copies phase 1 made, keyed by source document id. The endpoint builds it. */
@@ -22,6 +22,8 @@ type ExecuteActivityCloneParams = {
   /** The source read once per locale, with the fallback off. The endpoint reads them. */
   sourcesByLocale: Map<TypedLocale, Activity>
   targetOrgId: number
+  /** The statistics of this activity. The endpoint started the entity before the call. */
+  tracker: CloneStatisticsTracker
 }
 
 /**
@@ -31,9 +33,9 @@ type ExecuteActivityCloneParams = {
  * translation survives the clone. Each locale keeps its own blocks, which may name other tasks.
  */
 export async function cloneActivity(params: ExecuteActivityCloneParams): Promise<Activity> {
-  const { documentPreloader, locales, req, sourceId, sourcesByLocale, targetOrgId } = params
+  const { documentPreloader, locales, req, sourceId, sourcesByLocale, targetOrgId, tracker } =
+    params
 
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   let created: Activity | undefined
 
   for (const locale of locales) {
@@ -43,7 +45,14 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
       continue
     }
 
-    const stripped = await stripActivity(source, req, targetOrgId, locale, documentPreloader)
+    const stripped = await stripActivity(
+      source,
+      req,
+      targetOrgId,
+      locale,
+      documentPreloader,
+      tracker,
+    )
 
     stripped.blocks = await remapActivityTaskRelations({
       blocks: stripped.blocks,
@@ -51,6 +60,7 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
       locales,
       req,
       targetOrgId,
+      tracker,
     })
 
     if (!created) {
@@ -75,6 +85,7 @@ export async function cloneActivity(params: ExecuteActivityCloneParams): Promise
         sourceEntity: source,
         targetEntityId: created.id,
         targetOrgId,
+        tracker,
       })
 
       req.payload.logger.debug({

@@ -1,5 +1,6 @@
 import { PayloadRequest, TypedLocale } from 'payload'
 
+import type { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
 import { ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
@@ -11,6 +12,7 @@ export const stripBlocks = async (
   organisationId: number,
   locale: TypedLocale,
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ) => {
   const strippedBlocks = await Promise.all(
     blocks.map(async (block) => {
@@ -24,6 +26,7 @@ export const stripBlocks = async (
             'activities',
             locale,
             documentPreloader,
+            tracker,
           )
           strippedBlock.io = {
             ...strippedBlock.io,
@@ -39,6 +42,7 @@ export const stripBlocks = async (
             'activities',
             locale,
             documentPreloader,
+            tracker,
           )
           strippedBlock.io = {
             ...strippedBlock.io,
@@ -54,6 +58,7 @@ export const stripBlocks = async (
             'activities',
             locale,
             documentPreloader,
+            tracker,
           )
           strippedBlock.infos = {
             ...strippedBlock.infos,
@@ -69,6 +74,7 @@ export const stripBlocks = async (
             'activities',
             locale,
             documentPreloader,
+            tracker,
           )
           strippedBlock.infos = {
             ...strippedBlock.infos,

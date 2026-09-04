@@ -14,15 +14,17 @@ beforeEach(() => {
 })
 
 describe('deleteCreatedDocuments', () => {
-  test('deletes each document with the access rule overridden', async () => {
+  // The delete runs the Documents afterRead hook, so the request carries its opt-out.
+  test('deletes each document with the access rule overridden and the usage scan off', async () => {
     const deleteMock = vi.fn().mockResolvedValue({})
     const req = makeReq(deleteMock)
+    const quietReq = { ...req, context: { skipDocumentUsage: true } }
 
     await deleteCreatedDocuments(req, [900, 901])
 
     expect(deleteMock.mock.calls.map(([options]) => options)).toEqual([
-      { collection: 'documents', id: 900, overrideAccess: true, req },
-      { collection: 'documents', id: 901, overrideAccess: true, req },
+      { collection: 'documents', id: 900, overrideAccess: true, req: quietReq },
+      { collection: 'documents', id: 901, overrideAccess: true, req: quietReq },
     ])
   })
 

@@ -37,7 +37,7 @@ export const TenantHealthButton = ({ user }: Props) => {
       <DrawerToggler
         className={`${baseClass}__open btn btn--size-medium btn--style-secondary`}
         slug={drawerSlug}>
-        <Translate k={'dataHealth:button' as never} />
+        <Translate k="dataHealth:button" />
       </DrawerToggler>
       <TenantHealthOverlay organisationId={selectedOrgId} />
     </div>

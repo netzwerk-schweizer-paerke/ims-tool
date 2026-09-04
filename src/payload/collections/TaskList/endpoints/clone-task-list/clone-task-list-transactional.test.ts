@@ -10,15 +10,16 @@ vi.mock('@/payload/utilities/cloning/validate-access', () => ({
 vi.mock('@/payload/utilities/cloning/document-preloader', () => ({
   preloadDocuments: vi.fn(),
 }))
-vi.mock('@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list', () => ({
+vi.mock('@/payload/utilities/cloning/clone-task-flow-or-list', () => ({
   createTaskList: vi.fn(),
 }))
 
 import type { TaskList } from '@/payload-types'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
-import { createTaskList } from '@/payload/collections/Activities/endpoints/clone/utils/clone-task-flow-or-list'
 import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
+import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import { createTaskList } from '@/payload/utilities/cloning/clone-task-flow-or-list'
 import { preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 
@@ -138,6 +139,7 @@ describe('cloneTaskListTransactional', () => {
       TARGET_ORG_ID,
       ['de', 'fr'],
       expect.objectContaining({ clonedDocumentIds: new Map([[FILE_DOCUMENT_ID, CLONED_DOCUMENT_ID]]) }),
+      expect.any(CloneStatisticsTracker),
     )
     await expect(response.json()).resolves.toMatchObject({
       results: { entities: [{ cloned: { id: 77 }, source: { name: 'Quelle' } }] },
@@ -163,7 +165,7 @@ describe('cloneTaskListTransactional', () => {
       collection: 'documents',
       id: CLONED_DOCUMENT_ID,
       overrideAccess: true,
-      req,
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
     expect(mocks.commitTransaction).not.toHaveBeenCalled()
   })
@@ -184,7 +186,7 @@ describe('cloneTaskListTransactional', () => {
       collection: 'documents',
       id: CLONED_DOCUMENT_ID,
       overrideAccess: true,
-      req,
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
     expect(createTaskList).not.toHaveBeenCalled()
   })

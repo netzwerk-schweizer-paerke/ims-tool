@@ -1,5 +1,6 @@
 import { PayloadRequest, TypedLocale } from 'payload'
 
+import type { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
 import { TaskList } from '@/payload-types'
@@ -16,6 +17,7 @@ export const stripTaskList = async (
   organisationId: number,
   locale: TypedLocale,
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ) => {
   const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const locationPrefix = obj.name ? `Task List "${obj.name}"` : 'Task List'
@@ -28,6 +30,7 @@ export const stripTaskList = async (
       locationPrefix,
       locale,
       documentPreloader,
+      tracker,
     )
     strippedEntity.description = result.content
   }
@@ -45,6 +48,7 @@ export const stripTaskList = async (
             locationPrefix,
             locale,
             documentPreloader,
+            tracker,
           )
           strippedItem.responsibility = result.content
         }
@@ -56,6 +60,7 @@ export const stripTaskList = async (
             locationPrefix,
             locale,
             documentPreloader,
+            tracker,
           )
           strippedItem.tools = result.content
         }
@@ -67,6 +72,7 @@ export const stripTaskList = async (
             locationPrefix,
             locale,
             documentPreloader,
+            tracker,
           )
           strippedItem.topic = result.content
         }

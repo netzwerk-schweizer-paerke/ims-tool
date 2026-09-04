@@ -15,8 +15,9 @@ const ENTITY_ID = 1
 
 const logger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() }
 
-const makeReq = (transactionID: string, findByID: Mock, update: Mock): PayloadRequest =>
-  ({ payload: { findByID, logger, update }, transactionID }) as unknown as PayloadRequest
+/** No transaction id. The helper takes its tracker as a parameter and reads none from a map. */
+const makeReq = (findByID: Mock, update: Mock): PayloadRequest =>
+  ({ payload: { findByID, logger, update } }) as unknown as PayloadRequest
 
 const sourceEntity = {
   files: [{ document: { id: PLAN_ID, name: 'Plan' } }, { document: NORM_ID }],
@@ -41,7 +42,17 @@ const normFailure = {
   fileName: 'norm.docx',
 }
 
-const run = (req: PayloadRequest, documentPreloader: DocumentPreloader) =>
+const startedTracker = () => {
+  const tracker = new CloneStatisticsTracker()
+  tracker.startEntity(ENTITY_ID)
+  return tracker
+}
+
+const run = (
+  req: PayloadRequest,
+  documentPreloader: DocumentPreloader,
+  tracker = startedTracker(),
+) =>
   cloneRelatedDocumentFiles({
     collectionName: 'activities',
     documentPreloader,
@@ -50,21 +61,15 @@ const run = (req: PayloadRequest, documentPreloader: DocumentPreloader) =>
     sourceEntity,
     targetEntityId: 2,
     targetOrgId: 11,
+    tracker,
   })
-
-/** Instances live in a static map keyed by transaction id, so every test needs its own key. */
-const startedTracker = (transactionID: string) => {
-  const tracker = CloneStatisticsTracker.getInstance(transactionID)
-  tracker.startEntity(ENTITY_ID)
-  return tracker
-}
 
 describe('cloneRelatedDocumentFiles', () => {
   test('writes the copied rows to the entity when phase 1 copied every document', async () => {
     const update = vi.fn().mockResolvedValue({})
-    const tracker = startedTracker('tx-files-ok')
+    const tracker = startedTracker()
 
-    await run(makeReq('tx-files-ok', vi.fn(), update), preloaderWith({ [NORM_ID]: 901, [PLAN_ID]: 900 }))
+    await run(makeReq(vi.fn(), update), preloaderWith({ [NORM_ID]: 901, [PLAN_ID]: 900 }), tracker)
 
     expect(update.mock.calls[0][0]).toMatchObject({
       collection: 'activities',
@@ -78,10 +83,10 @@ describe('cloneRelatedDocumentFiles', () => {
   // operation, so the transaction is intact and the clone completes.
   test('skips a document phase 1 could not copy, and completes with the missing-file row', async () => {
     const update = vi.fn().mockResolvedValue({})
-    const tracker = startedTracker('tx-files-partial')
+    const tracker = startedTracker()
 
     await expect(
-      run(makeReq('tx-files-partial', vi.fn(), update), preloaderWith({ [PLAN_ID]: 900 }, [normFailure])),
+      run(makeReq(vi.fn(), update), preloaderWith({ [PLAN_ID]: 900 }, [normFailure]), tracker),
     ).resolves.toBeUndefined()
 
     expect(update.mock.calls[0][0]).toMatchObject({ data: { files: [{ document: 900 }] } })
@@ -102,10 +107,9 @@ describe('cloneRelatedDocumentFiles', () => {
   // transaction back when that read fails, and every later write commits on its own.
   test('runs no Payload read for the failed document', async () => {
     const findByID = vi.fn()
-    startedTracker('tx-files-no-read')
 
     await run(
-      makeReq('tx-files-no-read', findByID, vi.fn().mockResolvedValue({})),
+      makeReq(findByID, vi.fn().mockResolvedValue({})),
       preloaderWith({ [PLAN_ID]: 900 }, [normFailure]),
     )
 
@@ -113,11 +117,12 @@ describe('cloneRelatedDocumentFiles', () => {
   })
 
   test('names the populated document when phase 1 recorded no name', async () => {
-    const tracker = startedTracker('tx-files-populated-name')
+    const tracker = startedTracker()
 
     await run(
-      makeReq('tx-files-populated-name', vi.fn(), vi.fn().mockResolvedValue({})),
+      makeReq(vi.fn(), vi.fn().mockResolvedValue({})),
       preloaderWith({ [NORM_ID]: 901 }, [{ documentId: PLAN_ID, error: 'NotFound' }]),
+      tracker,
     )
 
     expect(tracker.getStatistics(ENTITY_ID).errors.missingDocumentFiles).toEqual([
@@ -135,10 +140,9 @@ describe('cloneRelatedDocumentFiles', () => {
   // source organisation on the clone, which the public share loader reads across the tenant.
   test('writes an empty array when every document failed, so no source id survives', async () => {
     const update = vi.fn().mockResolvedValue({})
-    startedTracker('tx-files-all-failed')
 
     await run(
-      makeReq('tx-files-all-failed', vi.fn(), update),
+      makeReq(vi.fn(), update),
       preloaderWith({}, [normFailure, { documentId: PLAN_ID, error: 'NoSuchKey' }]),
     )
 
@@ -150,11 +154,10 @@ describe('cloneRelatedDocumentFiles', () => {
   // back when it fails, so the run must end here instead of continuing on a dead transaction.
   test('rejects when the update inside the transaction fails', async () => {
     const failure = new Error('duplicate key value violates unique constraint')
-    startedTracker('tx-files-update-fails')
 
     await expect(
       run(
-        makeReq('tx-files-update-fails', vi.fn(), vi.fn().mockRejectedValue(failure)),
+        makeReq(vi.fn(), vi.fn().mockRejectedValue(failure)),
         preloaderWith({ [NORM_ID]: 901, [PLAN_ID]: 900 }),
       ),
     ).rejects.toBe(failure)

@@ -31,6 +31,7 @@ export const enforceSelectedOrganisationMembershipHook: CollectionBeforeChangeHo
   // The collection's own update rule already rejects an unauthenticated request.
   const callerMayChooseFreely = !req.user || checkUserRoles([ROLE_SUPER_ADMIN], req.user)
 
+  // A write of `null` passes. It selects no park, and the read rule then answers nothing.
   if (next !== null && next !== previous && !callerMayChooseFreely) {
     // Read the memberships from the stored document, never from the request. `data` would
     // let a caller assert their own membership if the field rule that strips it ever changes.

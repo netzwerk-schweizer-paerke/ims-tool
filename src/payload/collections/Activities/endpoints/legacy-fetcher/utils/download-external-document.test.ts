@@ -2,7 +2,11 @@ import type { PayloadRequest } from 'payload'
 
 import { afterEach, describe, expect, type Mock, test, vi } from 'vitest'
 
-import { downloadExternalDocument } from './download-external-document'
+import {
+  DOWNLOAD_TIMEOUT_MS,
+  downloadExternalDocument,
+  MAX_DOWNLOAD_BYTES,
+} from './download-external-document'
 import { FetchLegacyDocsTracker } from './statistics-tracker'
 
 const LEGACY_URL = 'https://parcs-ims.ch/files/plan.pdf'
@@ -15,10 +19,34 @@ const makeReq = (create: Mock): PayloadRequest =>
 
 const fetchAnswering = (response: Partial<Response>) => vi.fn().mockResolvedValue(response)
 
-const fileResponse = (): Partial<Response> => ({
-  arrayBuffer: async () => new ArrayBuffer(4),
-  ok: true,
-})
+/** A host that accepts the connection and never answers. The promise settles on abort alone. */
+const fetchHanging = () =>
+  vi.fn(
+    (_url: string, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(init.signal?.reason))
+      }),
+  )
+
+const fileResponse = (): Response => new Response(new Uint8Array(4), { status: 200 })
+
+/** One megabyte, enqueued again and again until the body crosses the cap by one chunk. */
+const oversizedBody = (): ReadableStream<Uint8Array> => {
+  const megabyte = new Uint8Array(1024 * 1024)
+  let sent = 0
+
+  return new ReadableStream({
+    pull(controller) {
+      if (sent > MAX_DOWNLOAD_BYTES) {
+        controller.close()
+        return
+      }
+
+      controller.enqueue(megabyte)
+      sent += megabyte.byteLength
+    },
+  })
+}
 
 const download = (
   req: PayloadRequest,
@@ -27,6 +55,7 @@ const download = (
 ) => downloadExternalDocument(url, ORGANISATION_ID, req, tracker)
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.clearAllMocks()
 })
@@ -42,8 +71,13 @@ describe('downloadExternalDocument', () => {
     expect(create.mock.calls[0][0]).toMatchObject({
       collection: 'documents',
       data: { name: 'plan.pdf', organisation: ORGANISATION_ID },
-      file: { mimetype: 'application/pdf', name: expect.stringMatching(/^legacy_\d+_plan\.pdf$/) },
-      req,
+      file: {
+        mimetype: 'application/pdf',
+        name: expect.stringMatching(/^legacy_\d+_plan\.pdf$/),
+        size: 4,
+      },
+      // The create runs the Documents afterRead hook, so the request carries its opt-out.
+      req: { ...req, context: { skipDocumentUsage: true } },
     })
   })
 
@@ -98,5 +132,69 @@ describe('downloadExternalDocument', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(create).not.toHaveBeenCalled()
     expect(tracker.getStatistics().errors[0].error).toContain('Domain not in allowed list')
+  })
+
+  // A host that accepts the connection and never answers would otherwise hold the request for
+  // undici's 300-second idle timeout, once per link of the migration.
+  test('gives up on a host that never answers when the timeout fires', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    const fetchMock = fetchHanging()
+    vi.stubGlobal('fetch', fetchMock)
+    const create = vi.fn()
+    const tracker = new FetchLegacyDocsTracker()
+
+    const pending = download(makeReq(create), tracker)
+    await vi.advanceTimersByTimeAsync(DOWNLOAD_TIMEOUT_MS)
+
+    await expect(pending).resolves.toBeNull()
+    expect(fetchMock.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal)
+    expect(create).not.toHaveBeenCalled()
+    expect(tracker.getStatistics().errors).toMatchObject([
+      { error: `Download timed out after ${DOWNLOAD_TIMEOUT_MS} ms`, url: LEGACY_URL },
+    ])
+  })
+
+  test('clears the timer once the download completes', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    vi.stubGlobal('fetch', fetchAnswering(fileResponse()))
+
+    await expect(download(makeReq(vi.fn().mockResolvedValue({ id: 77 })))).resolves.toBe(77)
+
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  test('refuses a body that crosses the size cap, before the create', async () => {
+    vi.stubGlobal('fetch', fetchAnswering(new Response(oversizedBody(), { status: 200 })))
+    const create = vi.fn()
+    const tracker = new FetchLegacyDocsTracker()
+
+    await expect(download(makeReq(create), tracker)).resolves.toBeNull()
+
+    expect(create).not.toHaveBeenCalled()
+    expect(tracker.getStatistics().errors).toMatchObject([
+      { error: `Download exceeds ${MAX_DOWNLOAD_BYTES} bytes`, url: LEGACY_URL },
+    ])
+  })
+
+  test('refuses a declared length above the cap, before the first byte', async () => {
+    const declared = MAX_DOWNLOAD_BYTES + 1
+    vi.stubGlobal(
+      'fetch',
+      fetchAnswering(
+        new Response(new Uint8Array(4), {
+          headers: { 'content-length': String(declared) },
+          status: 200,
+        }),
+      ),
+    )
+    const create = vi.fn()
+    const tracker = new FetchLegacyDocsTracker()
+
+    await expect(download(makeReq(create), tracker)).resolves.toBeNull()
+
+    expect(create).not.toHaveBeenCalled()
+    expect(tracker.getStatistics().errors[0].error).toBe(
+      `Download exceeds ${MAX_DOWNLOAD_BYTES} bytes: ${declared} bytes declared`,
+    )
   })
 })

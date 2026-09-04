@@ -23,7 +23,7 @@ export const TenantHealthOverlay = ({ organisationId }: Props) => {
     // No `Header` prop: Payload renders its own header — title plus the close X in the
     // top right — but only when Header is `undefined`. Passing `Header={null}` suppresses
     // it, which is why a hand-rolled close button ends up floating in the content.
-    <Drawer slug={drawerSlug} title={t('dataHealth:title' as never)}>
+    <Drawer slug={drawerSlug} title={t('dataHealth:title')}>
       <div className={'flex w-full max-w-4xl flex-col gap-6'}>
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -42,9 +42,9 @@ export const TenantHealthOverlay = ({ organisationId }: Props) => {
             type="checkbox"
           />
           <span>
-            {t('dataHealth:checkExternalUrls' as never)}
+            {t('dataHealth:checkExternalUrls')}
             <span className="block text-[var(--theme-text-light)]">
-              {t('dataHealth:checkExternalUrlsHint' as never)}
+              {t('dataHealth:checkExternalUrlsHint')}
             </span>
           </span>
         </label>
@@ -58,10 +58,10 @@ export const TenantHealthOverlay = ({ organisationId }: Props) => {
             {running ? (
               <span className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--theme-elevation-0)] border-t-transparent" />
-                {t('dataHealth:checking' as never)}
+                {t('dataHealth:checking')}
               </span>
             ) : (
-              t('dataHealth:run' as never)
+              t('dataHealth:run')
             )}
           </Button>
         </div>

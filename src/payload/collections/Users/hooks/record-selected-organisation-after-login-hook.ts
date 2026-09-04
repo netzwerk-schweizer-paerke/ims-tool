@@ -29,14 +29,17 @@ export const recordSelectedOrganisationAfterLoginHook: CollectionAfterLoginHook<
     }
 
     if (!selectedOrgId) {
-      req.payload.logger.info({
-        msg: `No selected organisation found for user ${user.id}, setting a default`,
-      })
+      req.payload.logger.info(
+        { userId: user.id },
+        'No selected organisation found for the user, setting a default',
+      )
       selectedOrgId = user.organisations?.[0]?.organisation
     }
 
     if (!selectedOrgId) {
-      req.payload.logger.warn({ msg: `No organisations found for user ${user.id}`, user })
+      // Never log the user record here. An afterLogin hook runs before the field-level afterRead,
+      // so the record still carries `hash`, `salt` and `resetPasswordToken`.
+      req.payload.logger.warn({ userId: user.id }, 'No organisations found for the user')
       return user
     }
 

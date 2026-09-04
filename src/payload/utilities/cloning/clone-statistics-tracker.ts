@@ -1,7 +1,7 @@
 import { CollectionSlug, PayloadRequest } from 'payload'
 
 import { calculatePercentComplete } from './calculate-percent-complete'
-import { GenericCloneStatistics, MissingDocumentFileError, OtherErrors } from './types'
+import { GenericCloneStatistics, OtherErrors } from './types'
 
 export class CloneStatisticsTracker {
   private static instances: Map<string, CloneStatisticsTracker> = new Map()
@@ -11,7 +11,11 @@ export class CloneStatisticsTracker {
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
   private taskClonePromises: Map<number, Map<string, Promise<number>>> = new Map()
 
-  private constructor() {
+  /**
+   * The endpoint keys one instance per transaction through `getInstance`. Every helper below it
+   * receives that instance as a parameter, so a test constructs one directly and primes no map.
+   */
+  constructor() {
     this.reset()
   }
 
@@ -283,38 +287,6 @@ export class CloneStatisticsTracker {
       throw new Error(`No statistics found for entity ${targetEntityId}`)
     }
     return stats
-  }
-
-  processRichTextResults(
-    result: {
-      documentIds: number[]
-      // A caller carries an extra `location` that MissingDocumentFileError does not declare.
-      errors: (MissingDocumentFileError & { location?: string })[]
-      publicDocumentIds: number[]
-    },
-    location?: string,
-  ): void {
-    if (result.documentIds) {
-      for (const _documentId of result.documentIds) {
-        this.addSourceDocument()
-      }
-    }
-    if (result.publicDocumentIds) {
-      for (const _publicDocumentId of result.publicDocumentIds) {
-        this.addClonedPublicDocument()
-      }
-    }
-    if (result.errors) {
-      for (const error of result.errors) {
-        // A named local carries the extra key through. An object literal would trip the
-        // excess property check on `addMissingFileError`.
-        const entry: MissingDocumentFileError & { location?: string } = {
-          ...error,
-          location: error.location || location,
-        }
-        this.addMissingFileError(entry)
-      }
-    }
   }
 
   reset(): void {

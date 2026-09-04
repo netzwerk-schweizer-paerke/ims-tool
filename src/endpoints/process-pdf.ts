@@ -105,6 +105,7 @@ export const processPdfEndpoint: Endpoint = {
       depth: 0,
       id: organisationId,
       overrideAccess: true,
+      req,
     })
 
     const origin = req.headers?.get('origin') ?? ''

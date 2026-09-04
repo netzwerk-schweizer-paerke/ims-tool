@@ -3,15 +3,14 @@ import { PayloadRequest, TypedLocale } from 'payload'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
 import { TaskFlow, TaskList } from '@/payload-types'
-import { cloneRelatedDocumentFiles } from '@/payload/collections/Activities/endpoints/clone/utils/clone-related-document-files'
 import { CloneHttpError, getValidationDetails } from '@/payload/utilities/cloning/clone-http-error'
 import { hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
+import { cloneRelatedDocumentFiles } from '@/payload/utilities/cloning/clone-related-document-files'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
-
-import { stripTaskFlow } from '../../../../../utilities/cloning/strip-task-flow'
-import { stripTaskList } from '../../../../../utilities/cloning/strip-task-list'
+import { stripTaskFlow } from '@/payload/utilities/cloning/strip-task-flow'
+import { stripTaskList } from '@/payload/utilities/cloning/strip-task-list'
 
 interface CreateTaskOptions {
   collectionName: TaskType
@@ -22,6 +21,8 @@ interface CreateTaskOptions {
   req: PayloadRequest
   sourceId: number
   targetOrgId: number
+  /** The statistics of the entity the endpoint started. Every counter below lands on it. */
+  tracker: CloneStatisticsTracker
 }
 type Task = TaskFlow | TaskList
 
@@ -40,8 +41,8 @@ export const cloneTaskFlowOrList = async ({
   req,
   sourceId,
   targetOrgId,
+  tracker,
 }: CreateTaskOptions) => {
-  const tracker = CloneStatisticsTracker.getInstance(req.transactionID)
   let created: Task | undefined
 
   req.payload.logger.debug({
@@ -69,8 +70,22 @@ export const cloneTaskFlowOrList = async ({
     const isTaskFlow = collectionName === 'task-flows'
 
     const stripped = isTaskFlow
-      ? await stripTaskFlow(source as TaskFlow, req, targetOrgId, locale, documentPreloader)
-      : await stripTaskList(source as TaskList, req, targetOrgId, locale, documentPreloader)
+      ? await stripTaskFlow(
+          source as TaskFlow,
+          req,
+          targetOrgId,
+          locale,
+          documentPreloader,
+          tracker,
+        )
+      : await stripTaskList(
+          source as TaskList,
+          req,
+          targetOrgId,
+          locale,
+          documentPreloader,
+          tracker,
+        )
 
     try {
       if (!created) {
@@ -92,6 +107,7 @@ export const cloneTaskFlowOrList = async ({
           sourceEntity: source,
           targetEntityId: created.id,
           targetOrgId,
+          tracker,
         })
 
         continue
@@ -144,6 +160,7 @@ export const createTaskFlow = async (
   organisationId: number,
   locales: TypedLocale[],
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ) => {
   return cloneTaskFlowOrList({
     collectionName: 'task-flows',
@@ -152,6 +169,7 @@ export const createTaskFlow = async (
     req,
     sourceId,
     targetOrgId: organisationId,
+    tracker,
   })
 }
 
@@ -164,6 +182,7 @@ export const createTaskList = async (
   organisationId: number,
   locales: TypedLocale[],
   documentPreloader: DocumentPreloader,
+  tracker: CloneStatisticsTracker,
 ) => {
   return cloneTaskFlowOrList({
     collectionName: 'task-lists',
@@ -172,6 +191,7 @@ export const createTaskList = async (
     req,
     sourceId,
     targetOrgId: organisationId,
+    tracker,
   })
 }
 

@@ -42,10 +42,15 @@ export async function validateCloneAccess(
     return { isValid: true }
   }
 
+  // This read skips access control on purpose, and the two role checks below are the bound. The
+  // caller's own read filter would strip `organisation` for a member who is not an admin of the
+  // source park. See pitfalls/organisation-field-is-stripped-from-an-access-checked-read.
   const sourceDoc = await req.payload.findByID({
     collection: collectionSlug,
     depth: 0,
     id: sourceId,
+    overrideAccess: true,
+    req,
   })
 
   if (!sourceDoc) {

@@ -1,5 +1,7 @@
 import { PayloadRequest } from 'payload'
 
+import { withoutDocumentUsage } from '@/lib/document-usage'
+
 import { getErrorMessage } from './error-utils'
 import { readDocumentFile } from './read-document-file'
 
@@ -95,11 +97,15 @@ export async function preloadDocuments(
 
   const uniqueDocumentIds = Array.from(new Set(documentIds))
 
+  // The read and the create of a document row each run the usage scans of the Documents
+  // afterRead hook otherwise. Phase 1 handles the rows for its own purpose and opts out.
+  const quietReq = withoutDocumentUsage(req)
+
   for (let i = 0; i < uniqueDocumentIds.length; i += BATCH_SIZE) {
     const batch = uniqueDocumentIds.slice(i, i + BATCH_SIZE)
 
     await Promise.all(
-      batch.map((documentId) => copySingleDocument(req, documentId, targetOrgId, preloader)),
+      batch.map((documentId) => copySingleDocument(quietReq, documentId, targetOrgId, preloader)),
     )
   }
 

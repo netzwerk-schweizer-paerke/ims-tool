@@ -91,7 +91,25 @@ describe('preloadDocuments', () => {
         name: expect.stringMatching(/^\d+-plan\.pdf$/),
         size: 4,
       },
-      req: { context: { targetOrganisationId: TARGET_ORG_ID } },
+      req: { context: { skipDocumentUsage: true, targetOrganisationId: TARGET_ORG_ID } },
+    })
+  })
+
+  // The read and the create each run the Documents afterRead hook, whose three scans cost more
+  // than the copy itself. Phase 1 opts out of them on both.
+  test('reads and creates each document with the usage scan off', async () => {
+    const findByID = findByIDAnswering(bothDocuments)
+    const create = createAnswering()
+
+    await preloadDocuments(makeReq(findByID, create), [PLAN_ID], TARGET_ORG_ID)
+
+    expect(findByID.mock.calls[0][0]).toMatchObject({
+      collection: 'documents',
+      id: PLAN_ID,
+      req: { context: { skipDocumentUsage: true } },
+    })
+    expect(create.mock.calls[0][0]).toMatchObject({
+      req: { context: { skipDocumentUsage: true } },
     })
   })
 
