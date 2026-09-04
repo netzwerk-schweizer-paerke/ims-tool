@@ -556,6 +556,8 @@ export const fr = {
     error: "L'action a échoué. Veuillez réessayer.",
     /** The public page behind a link that no longer works. */
     expired: 'Ce lien a expiré. Veuillez demander un nouveau lien.',
+    /** The marker on a dead row of the link list. */
+    expiredBadge: 'Expiré',
     expiresOn: "Valable jusqu'au",
     expiry: 'Durée de validité',
     expiryMonths_one: '{{count}} mois',
@@ -563,6 +565,7 @@ export const fr = {
     expiryUnlimited: 'Illimitée',
     isShared: 'Cette page est partagée.',
     noAccount: "Le destinataire n'a pas besoin de compte utilisateur.",
+    noLinks: "Cette page n'est pas encore partagée.",
     publicNotice: 'Vue partagée en lecture seule',
     scopeLandscape:
       'Toute personne qui a le lien ouvre tout le paysage des processus. Cela comprend chaque processus et chaque liste.',

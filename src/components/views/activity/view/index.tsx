@@ -13,7 +13,7 @@ import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
-import { findOwnShareLink } from '@/payload/utilities/find-own-share-link'
+import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { loadActivityBlock } from '@/payload/utilities/share/load-activity-block'
 
@@ -70,14 +70,14 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
     blockId: activityBlockId,
     targetType: 'activityBlock',
   }
-  const existingShareLink = user
-    ? await findOwnShareLink({
+  const existingShareLinks = user
+    ? await findOwnShareLinks({
         organisationId: selectedOrganisationId,
         payload: req.payload,
         target: shareTarget,
         userId: user.id,
       })
-    : null
+    : []
 
   return (
     <DefaultTemplate
@@ -109,7 +109,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           toolbar={
             <ViewToolbar
               editHref={`/admin/collections/activities/${activityid}?locale=${localeCode}`}
-              existingLink={existingShareLink}
+              existingLinks={existingShareLinks}
               locale={localeCode}
               target={shareTarget}
             />

@@ -559,6 +559,8 @@ export const it = {
     error: "L'azione non è riuscita. Riprova.",
     /** The public page behind a link that no longer works. */
     expired: 'Questo link è scaduto. Richiedi un nuovo link.',
+    /** The marker on a dead row of the link list. */
+    expiredBadge: 'Scaduto',
     expiresOn: 'Valido fino al',
     expiry: 'Durata di validità',
     expiryMonths_one: '{{count}} mese',
@@ -566,6 +568,7 @@ export const it = {
     expiryUnlimited: 'Illimitata',
     isShared: 'Questa pagina è condivisa.',
     noAccount: 'Il destinatario non ha bisogno di un account.',
+    noLinks: 'Questa pagina non è ancora condivisa.',
     publicNotice: 'Vista condivisa di sola lettura',
     scopeLandscape:
       'Chi ha il link apre tutto il panorama dei processi. Sono inclusi ogni processo e ogni elenco.',

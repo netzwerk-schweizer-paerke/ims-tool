@@ -547,6 +547,8 @@ export const en = {
     error: 'The action failed. Please try again.',
     /** The public page behind a link that no longer works. */
     expired: 'This link has expired. Please ask for a new link.',
+    /** The marker on a dead row of the link list. */
+    expiredBadge: 'Expired',
     expiresOn: 'Valid until',
     expiry: 'Validity',
     expiryMonths_one: '{{count}} month',
@@ -554,6 +556,7 @@ export const en = {
     expiryUnlimited: 'Unlimited',
     isShared: 'This page is shared.',
     noAccount: 'The recipient needs no user account.',
+    noLinks: 'This page is not shared yet.',
     publicNotice: 'Shared read-only view',
     scopeLandscape:
       'Anyone with the link opens the whole process landscape. That includes every process and every list inside it.',

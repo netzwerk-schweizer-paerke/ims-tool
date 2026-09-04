@@ -12,7 +12,7 @@ import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
 import { Translate } from '@/lib/translate'
-import { findOwnShareLink } from '@/payload/utilities/find-own-share-link'
+import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { loadLandscape } from '@/payload/utilities/share/load-landscape'
 
@@ -45,15 +45,15 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
     : { standardActivities: [], strategicActivities: [], supportActivities: [] }
 
   const shareTarget: ShareTarget = { targetType: 'activityLandscape' }
-  const existingShareLink =
+  const existingShareLinks =
     user && selectedOrganisationId
-      ? await findOwnShareLink({
+      ? await findOwnShareLinks({
           organisationId: selectedOrganisationId,
           payload: req.payload,
           target: shareTarget,
           userId: user.id,
         })
-      : null
+      : []
 
   return (
     <DefaultTemplate
@@ -85,7 +85,7 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
             selectedOrganisationId ? (
               <ViewToolbar
                 editHref={'/admin/collections/activities'}
-                existingLink={existingShareLink}
+                existingLinks={existingShareLinks}
                 locale={localeCode}
                 target={shareTarget}
               />

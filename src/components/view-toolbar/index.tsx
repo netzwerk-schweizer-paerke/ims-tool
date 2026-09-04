@@ -23,6 +23,8 @@ const MESSAGE_KEYS: Record<Message, I18nKeys> = {
 }
 
 export type ShareLinkRef = {
+  /** Resolved on the server, so no clock runs during the render. */
+  expired: boolean
   expiresAt: null | string
   id: number
   token: string
@@ -30,13 +32,13 @@ export type ShareLinkRef = {
 
 type Props = {
   editHref: string
-  /** The live link this user already created for this page, resolved on the server. */
-  existingLink: null | ShareLinkRef
+  /** Every link this user made for this page, newest first, resolved on the server. */
+  existingLinks: ShareLinkRef[]
   locale: string
   target: ShareTarget
 }
 
-const isShareLinkRef = (value: unknown): value is ShareLinkRef =>
+const isShareLinkRef = (value: unknown): value is { id: number; token: string } =>
   typeof value === 'object' &&
   value !== null &&
   'id' in value &&
@@ -57,19 +59,24 @@ const warn = (message: string) => {
 
 /**
  * The edit and share actions of a read-only view. It sits on the row of the last-updated line,
- * on the outer right. The share action opens a dialog that states the scope and shows the URL.
+ * on the outer right.
+ *
+ * The share action opens a dialog that lists every link this user made for the page. Each link
+ * carries its own expiry and its own delete action, so one recipient loses access alone.
  */
-export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) => {
+export const ViewToolbar = ({ editHref, existingLinks, locale, target }: Props) => {
   const drawerSlug = useDrawerSlug('share-link')
   const { closeModal, openModal } = useModal()
   const { t } = useTranslation<I18nObject, I18nKeys>()
 
-  const [link, setLink] = useState<null | ShareLinkRef>(existingLink)
-  const [url, setUrl] = useState<null | string>(null)
+  const [links, setLinks] = useState<ShareLinkRef[]>(existingLinks)
+  const [origin, setOrigin] = useState<null | string>(null)
   const [months, setMonths] = useState<string>(UNLIMITED)
   const [message, setMessage] = useState<Message | null>(null)
   const [busy, setBusy] = useState(false)
   const timeout = useRef<null | ReturnType<typeof setTimeout>>(null)
+
+  const hasLiveLink = links.some((link) => !link.expired)
 
   useEffect(
     () => () => {
@@ -125,17 +132,15 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
     [locale, target],
   )
 
-  /**
-   * The dialog shows the link the page already has. A page with none shows the duration choice,
-   * because the server computes the expiry from the chosen month count at create time.
-   */
+  /** `window` is read in the handler, never in the render, so the server and the client agree. */
   const handleOpen = useCallback(() => {
     openModal(drawerSlug)
     setMessage(null)
-    setUrl(
-      link ? buildShareUrl({ locale, origin: window.location.origin, token: link.token }) : null,
-    )
-  }, [drawerSlug, link, locale, openModal])
+    setOrigin(window.location.origin)
+  }, [drawerSlug, openModal])
+
+  const urlOf = (token: string) =>
+    origin ? buildShareUrl({ locale, origin, token }) : ''
 
   const handleCreate = useCallback(async () => {
     if (busy) {
@@ -169,10 +174,15 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
         throw new Error('the create returned no token')
       }
 
-      const created: ShareLinkRef = { ...doc, expiresAt: expiryOf(doc) }
+      // A link the server just minted always outlives this moment.
+      const created: ShareLinkRef = {
+        expired: false,
+        expiresAt: expiryOf(doc),
+        id: doc.id,
+        token: doc.token,
+      }
 
-      setLink(created)
-      setUrl(buildShareUrl({ locale, origin: window.location.origin, token: created.token }))
+      setLinks((previous) => [created, ...previous])
     } catch (error) {
       warn(error instanceof Error ? error.message : 'the create failed')
       showMessage('error')
@@ -181,47 +191,52 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
     }
   }, [busy, locale, months, showMessage, target])
 
-  const handleCopy = useCallback(async () => {
-    if (!url) {
-      return
-    }
-
-    try {
-      await navigator.clipboard.writeText(url)
-      showMessage('copied')
-    } catch (error) {
-      warn(error instanceof Error ? error.message : 'the copy failed')
-      showMessage('error')
-    }
-  }, [showMessage, url])
-
-  const handleDelete = useCallback(async () => {
-    if (busy || !link) {
-      return
-    }
-    setBusy(true)
-
-    try {
-      const response = await fetch(`/api/share-links/${link.id}`, {
-        credentials: 'include',
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error(`the delete answered ${response.status}`)
+  const handleCopy = useCallback(
+    async (token: string) => {
+      if (!origin) {
+        return
       }
 
-      setLink(null)
-      setUrl(null)
-      showMessage('deleted')
-      closeModal(drawerSlug)
-    } catch (error) {
-      warn(error instanceof Error ? error.message : 'the delete failed')
-      showMessage('error')
-    } finally {
-      setBusy(false)
-    }
-  }, [busy, closeModal, drawerSlug, link, showMessage])
+      try {
+        await navigator.clipboard.writeText(buildShareUrl({ locale, origin, token }))
+        showMessage('copied')
+      } catch (error) {
+        warn(error instanceof Error ? error.message : 'the copy failed')
+        showMessage('error')
+      }
+    },
+    [locale, origin, showMessage],
+  )
+
+  const handleDelete = useCallback(
+    async (id: number) => {
+      if (busy) {
+        return
+      }
+      setBusy(true)
+
+      try {
+        const response = await fetch(`/api/share-links/${id}`, {
+          credentials: 'include',
+          method: 'DELETE',
+        })
+
+        if (!response.ok) {
+          throw new Error(`the delete answered ${response.status}`)
+        }
+
+        // The dialog stays open, because the list may still hold other links.
+        setLinks((previous) => previous.filter((link) => link.id !== id))
+        showMessage('deleted')
+      } catch (error) {
+        warn(error instanceof Error ? error.message : 'the delete failed')
+        showMessage('error')
+      } finally {
+        setBusy(false)
+      }
+    },
+    [busy, showMessage],
+  )
 
   return (
     <div className={'flex flex-row items-center gap-2'}>
@@ -249,8 +264,8 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
         margin={false}
         onClick={handleOpen}
         size={'small'}
-        tooltip={link ? t('shareLink:isShared') : undefined}>
-        {link && (
+        tooltip={hasLiveLink ? t('shareLink:isShared') : undefined}>
+        {hasLiveLink && (
           <span
             aria-hidden={true}
             className={'mr-2 inline-block h-2 w-2 rounded-full align-middle'}
@@ -258,7 +273,7 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
           />
         )}
         {/* Two static keys, because the i18n parser cannot extract a computed one. */}
-        {link ? <Translate k={'shareLink:shared'} /> : <Translate k={'shareLink:share'} />}
+        {hasLiveLink ? <Translate k={'shareLink:shared'} /> : <Translate k={'shareLink:share'} />}
       </Button>
       <Drawer slug={drawerSlug} title={''}>
         <div className={'flex max-w-2xl flex-col gap-4'}>
@@ -280,87 +295,98 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
           <p>
             <Translate k={'shareLink:whoCanDelete'} />
           </p>
-          {link ? (
-            <>
-              <label className={'flex flex-col gap-1'}>
-                <span className={'text-sm'}>
-                  <Translate k={'shareLink:urlLabel'} />
-                </span>
-                <input
-                  className={'w-full rounded border p-2 font-mono text-sm'}
-                  onFocus={(event) => event.currentTarget.select()}
-                  readOnly
-                  value={url ?? ''}
-                />
-              </label>
-              <p className={'text-sm'}>
-                {link.expiresAt ? (
-                  <>
-                    <Translate k={'shareLink:expiresOn'} />
-                    {': '}
-                    <DateTime date={link.expiresAt} />
-                  </>
-                ) : (
-                  <>
-                    <Translate k={'shareLink:expiry'} />
-                    {': '}
-                    <Translate k={'shareLink:expiryUnlimited'} />
-                  </>
-                )}
-              </p>
-            </>
+
+          {links.length === 0 ? (
+            <p className={'text-sm opacity-70'}>
+              <Translate k={'shareLink:noLinks'} />
+            </p>
           ) : (
-            <label className={'flex flex-col gap-1'}>
-              <span className={'text-sm'}>
-                <Translate k={'shareLink:expiry'} />
-              </span>
-              <select
-                className={'w-full rounded border p-2 text-sm'}
-                onChange={(event) => setMonths(event.currentTarget.value)}
-                value={months}>
-                <option value={UNLIMITED}>{t('shareLink:expiryUnlimited')}</option>
-                {EXPIRY_MONTH_OPTIONS.map((count) => (
-                  <option key={count} value={String(count)}>
-                    {t('shareLink:expiryMonths', { count })}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <ul className={'flex list-none flex-col gap-3 p-0'}>
+              {links.map((link) => (
+                <li
+                  className={
+                    'flex flex-col gap-2 border-b pb-3 last:border-b-0 [border-color:var(--theme-elevation-150)]'
+                  }
+                  key={link.id}>
+                  <input
+                    className={'w-full rounded border p-2 font-mono text-sm'}
+                    onFocus={(event) => event.currentTarget.select()}
+                    readOnly
+                    value={urlOf(link.token)}
+                  />
+                  <div className={'flex flex-row flex-wrap items-center justify-between gap-2'}>
+                    <span className={'text-sm opacity-70'}>
+                      {link.expired ? (
+                        <Translate k={'shareLink:expiredBadge'} />
+                      ) : link.expiresAt ? (
+                        <>
+                          <Translate k={'shareLink:expiresOn'} />
+                          {': '}
+                          <DateTime date={link.expiresAt} />
+                        </>
+                      ) : (
+                        <>
+                          <Translate k={'shareLink:expiry'} />
+                          {': '}
+                          <Translate k={'shareLink:expiryUnlimited'} />
+                        </>
+                      )}
+                    </span>
+                    <div className={'flex flex-row items-center gap-2'}>
+                      <Button
+                        buttonStyle={'secondary'}
+                        disabled={link.expired || !origin}
+                        margin={false}
+                        onClick={() => handleCopy(link.token)}
+                        size={'small'}>
+                        <Translate k={'shareLink:copy'} />
+                      </Button>
+                      <Button
+                        buttonStyle={'error'}
+                        disabled={busy}
+                        margin={false}
+                        onClick={() => handleDelete(link.id)}
+                        size={'small'}>
+                        <Translate k={'shareLink:deleteLink'} />
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
+
+          <label className={'flex flex-col gap-1'}>
+            <span className={'text-sm'}>
+              <Translate k={'shareLink:expiry'} />
+            </span>
+            <select
+              className={'w-full rounded border p-2 text-sm'}
+              onChange={(event) => setMonths(event.currentTarget.value)}
+              value={months}>
+              <option value={UNLIMITED}>{t('shareLink:expiryUnlimited')}</option>
+              {EXPIRY_MONTH_OPTIONS.map((count) => (
+                <option key={count} value={String(count)}>
+                  {t('shareLink:expiryMonths', { count })}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <div aria-live={'polite'} className={'min-h-6 text-sm'} role={'status'}>
             {busy && !message && <Translate k={'shareLink:working'} />}
             {message && <Translate k={MESSAGE_KEYS[message]} />}
           </div>
+
           <div className={'flex flex-row items-center gap-2'}>
-            {link ? (
-              <>
-                <Button
-                  buttonStyle={'primary'}
-                  disabled={!url}
-                  margin={false}
-                  onClick={handleCopy}
-                  size={'small'}>
-                  <Translate k={'shareLink:copy'} />
-                </Button>
-                <Button
-                  buttonStyle={'error'}
-                  disabled={busy}
-                  margin={false}
-                  onClick={handleDelete}
-                  size={'small'}>
-                  <Translate k={'shareLink:deleteLink'} />
-                </Button>
-              </>
-            ) : (
-              <Button
-                buttonStyle={'primary'}
-                disabled={busy}
-                margin={false}
-                onClick={handleCreate}
-                size={'small'}>
-                <Translate k={'shareLink:createLink'} />
-              </Button>
-            )}
+            <Button
+              buttonStyle={'primary'}
+              disabled={busy}
+              margin={false}
+              onClick={handleCreate}
+              size={'small'}>
+              <Translate k={'shareLink:createLink'} />
+            </Button>
             <Button
               buttonStyle={'secondary'}
               margin={false}

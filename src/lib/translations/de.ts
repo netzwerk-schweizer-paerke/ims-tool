@@ -554,6 +554,8 @@ export const de = {
     error: 'Die Aktion ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
     /** The public page behind a link that no longer works. */
     expired: 'Dieser Link ist abgelaufen. Bitte fordern Sie einen neuen Link an.',
+    /** The marker on a dead row of the link list. */
+    expiredBadge: 'Abgelaufen',
     expiresOn: 'Gültig bis',
     expiry: 'Gültigkeitsdauer',
     expiryMonths_one: '{{count}} Monat',
@@ -561,6 +563,7 @@ export const de = {
     expiryUnlimited: 'Unbegrenzt',
     isShared: 'Diese Seite ist geteilt.',
     noAccount: 'Der Empfänger braucht kein Benutzerkonto.',
+    noLinks: 'Diese Seite ist noch nicht geteilt.',
     publicNotice: 'Geteilte, schreibgeschützte Ansicht',
     scopeLandscape:
       'Wer den Link hat, öffnet die ganze Prozesslandschaft. Das schliesst jeden Prozess und jede Liste darin ein.',
