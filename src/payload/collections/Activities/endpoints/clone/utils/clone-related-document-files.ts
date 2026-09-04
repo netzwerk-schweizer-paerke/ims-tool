@@ -81,18 +81,19 @@ export async function cloneRelatedDocumentFiles(
           clonedDoc = await cloneDocumentFile(req, documentId, targetOrgId)
         }
 
-        if (clonedDoc) {
-          tracker.setDocumentCloneMapping(documentId, clonedDoc.id)
-          tracker.addClonedDocument()
-
-          clonedFiles.push({ document: clonedDoc.id })
-          req.payload.logger.debug({
-            clonedId: clonedDoc.id,
-            msg: 'Document cloned and cached for direct attachment',
-            sourceId: documentId,
-          })
-        }
+        tracker.setDocumentCloneMapping(documentId, clonedDoc.id)
+        req.payload.logger.debug({
+          clonedId: clonedDoc.id,
+          msg: 'Document cloned and cached for direct attachment',
+          sourceId: documentId,
+        })
       }
+
+      // A row this entity attaches twice counts once against the source and once against the
+      // clone. Both branches must record it, or the clone loses the second attachment and the
+      // completeness figure reports a file that did reach the target as missing.
+      tracker.addClonedDocument()
+      clonedFiles.push({ document: clonedDoc.id })
     } catch (error) {
       req.payload.logger.warn({
         documentId,
