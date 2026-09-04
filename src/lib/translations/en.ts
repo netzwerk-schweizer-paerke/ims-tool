@@ -69,7 +69,7 @@ export const en = {
       },
       language: {
         description:
-          'Only content in your current language (e.g., German if viewing in DE) will be copied.',
+          'Every language the record has is copied. A language the source does not have stays empty.',
         title: 'Language',
       },
       missingFiles: {
@@ -182,7 +182,8 @@ export const en = {
         title: 'Files & Documents',
       },
       language: {
-        description: 'Only content in your current language will be copied.',
+        description:
+          'Every language the process has is copied. A language the source does not have stays empty.',
         title: 'Language',
       },
       safety: {
@@ -247,7 +248,7 @@ export const en = {
       },
       language: {
         description:
-          'Only content in your current language will be copied to the target organisation.',
+          'Every language the list has is copied. A language the source does not have stays empty.',
         title: 'Language',
       },
       safety: {

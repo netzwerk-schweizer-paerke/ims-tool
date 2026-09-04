@@ -70,7 +70,7 @@ export const it = {
       },
       language: {
         description:
-          'Solo il contenuto nella tua lingua attuale (ad es. italiano in visualizzazione IT) verrà copiato.',
+          'Ogni lingua presente nel record viene copiata. Una lingua senza contenuto resta vuota.',
         title: 'Lingua',
       },
       missingFiles: {
@@ -183,7 +183,8 @@ export const it = {
         title: 'File e documenti',
       },
       language: {
-        description: 'Solo il contenuto nella tua lingua attuale verrà copiato.',
+        description:
+          'Ogni lingua presente nel processo viene copiata. Una lingua senza contenuto resta vuota.',
         title: 'Lingua',
       },
       safety: {
@@ -249,7 +250,7 @@ export const it = {
       },
       language: {
         description:
-          "Solo il contenuto nella tua lingua attuale verrà copiato nell'organizzazione di destinazione.",
+          'Ogni lingua presente nella lista viene copiata. Una lingua senza contenuto resta vuota.',
         title: 'Lingua',
       },
       safety: {

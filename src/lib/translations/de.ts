@@ -70,7 +70,7 @@ export const de = {
       },
       language: {
         description:
-          'Nur Inhalte in Ihrer aktuellen Sprache (z.B. Deutsch bei DE-Ansicht) werden kopiert.',
+          'Jede Sprache, die der Datensatz hat, wird kopiert. Eine Sprache ohne Inhalt bleibt leer.',
         title: 'Sprache',
       },
       missingFiles: {
@@ -183,7 +183,8 @@ export const de = {
         title: 'Dateien & Dokumente',
       },
       language: {
-        description: 'Nur Inhalte in Ihrer aktuellen Sprache werden kopiert.',
+        description:
+          'Jede Sprache, die der Prozess hat, wird kopiert. Eine Sprache ohne Inhalt bleibt leer.',
         title: 'Sprache',
       },
       safety: {
@@ -248,7 +249,7 @@ export const de = {
       },
       language: {
         description:
-          'Nur Inhalte in Ihrer aktuellen Sprache werden in die Zielorganisation kopiert.',
+          'Jede Sprache, die die Liste hat, wird kopiert. Eine Sprache ohne Inhalt bleibt leer.',
         title: 'Sprache',
       },
       safety: {

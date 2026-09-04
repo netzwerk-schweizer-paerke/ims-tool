@@ -70,7 +70,7 @@ export const fr = {
       },
       language: {
         description:
-          'Seul le contenu dans votre langue actuelle (par ex. français en affichage FR) sera copié.',
+          'Chaque langue que l’enregistrement possède est copiée. Une langue sans contenu reste vide.',
         title: 'Langue',
       },
       missingFiles: {
@@ -183,7 +183,8 @@ export const fr = {
         title: 'Fichiers et documents',
       },
       language: {
-        description: 'Seul le contenu dans votre langue actuelle sera copié.',
+        description:
+          'Chaque langue que le processus possède est copiée. Une langue sans contenu reste vide.',
         title: 'Langue',
       },
       safety: {
@@ -248,7 +249,7 @@ export const fr = {
       },
       language: {
         description:
-          "Seul le contenu dans votre langue actuelle sera copié vers l'organisation cible.",
+          'Chaque langue que la liste possède est copiée. Une langue sans contenu reste vide.',
         title: 'Langue',
       },
       safety: {
