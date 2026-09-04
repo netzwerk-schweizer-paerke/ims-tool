@@ -19,6 +19,7 @@
 import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Payload } from 'payload'
 
+import { collectRichTextValues } from '@/lib/collect-rich-text-values'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /**
@@ -88,6 +89,7 @@ export type TenantHealthFindingCode =
   | 'externalUrlNotFound'
   | 'externalUrlUnreachable'
   | 'malformedRichTextNoChildren'
+  | 'malformedRichTextNotObject'
   | 'malformedRichTextRoot'
   | 'missingRequiredField'
   | 'prefixOrganisationMismatch'
@@ -346,6 +348,10 @@ export class TenantHealthChecker {
           source,
         })
       }
+
+      // `walkForReferences` returns early on a non-object node, so a richText column that
+      // holds a plain string is invisible to it. This reads the field config instead.
+      findings.push(...this.checkRichTextShape(entity, source))
     }
 
     findings.push(...(await this.checkReferences(referenced, organisationId)))
@@ -751,6 +757,37 @@ export class TenantHealthChecker {
     }
 
     return findings
+  }
+
+  /**
+   * Reports a richText field whose stored value is not an object.
+   *
+   * The cloning pipeline and the DeepL plugin both read `value.root`. A plain string
+   * there comes from an import or from a direct database write.
+   */
+  private checkRichTextShape(
+    entity: LoadedEntity,
+    source: TenantHealthEntityRef,
+  ): TenantHealthFinding[] {
+    // `__collection` is a plain string, so it cannot index the typed collection map.
+    const collection = Object.values(this.payload.collections).find(
+      (entry) => entry.config.slug === entity.__collection,
+    )
+
+    if (!collection) {
+      return []
+    }
+
+    return collectRichTextValues(collection.config.fields, entity)
+      .filter((found) => typeof found.value !== 'object')
+      .map((found) => ({
+        code: 'malformedRichTextNotObject' as const,
+        locale: found.locale,
+        params: {},
+        path: found.path,
+        severity: 'blocking' as const,
+        source,
+      }))
   }
 
   private async checkS3(): Promise<TenantHealthPreconditionResult> {

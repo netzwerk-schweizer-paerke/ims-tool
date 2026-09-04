@@ -348,6 +348,9 @@ export const findingMessage = (t: Translator, finding: TenantHealthFinding): str
     case 'malformedRichTextNoChildren': {
       return t('dataHealth:finding:malformedRichTextNoChildren' as never, params)
     }
+    case 'malformedRichTextNotObject': {
+      return t('dataHealth:finding:malformedRichTextNotObject' as never, params)
+    }
     case 'malformedRichTextRoot': {
       return t('dataHealth:finding:malformedRichTextRoot' as never, params)
     }
