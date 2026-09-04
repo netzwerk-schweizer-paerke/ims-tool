@@ -139,9 +139,9 @@ export interface TenantHealthPreconditionResult {
 
 export interface TenantHealthPreconditions {
   /**
-   * The clone pipeline downloads every file over HTTP using PAYLOAD_API_KEY. If the key is
-   * invalid every document check fails identically, which would render as "every park is
-   * broken" — so this is reported separately and suppresses the S3 probes.
+   * The key the server uses for its own HTTP calls. The clone pipeline no longer needs it,
+   * because `read-document-file.ts` reads the bucket directly. The `s3` precondition is the
+   * one a clone depends on.
    */
   apiKey: TenantHealthPreconditionResult
   s3: TenantHealthPreconditionResult
