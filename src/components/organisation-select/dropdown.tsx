@@ -4,14 +4,13 @@ import { Select, toast, useConfig, usePreferences, useTranslation } from '@paylo
 import { toNumber } from 'es-toolkit/compat'
 import ky from 'ky'
 import { useSearchParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { logger } from '@/lib/logger'
 import {
   consumeOrganisationSwitchNotice,
   navigateAfterOrganisationSwitch,
 } from '@/lib/organisation-switch-target'
-import { Translate } from '@/lib/translate'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { Organisation } from '@/payload-types'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
@@ -23,6 +22,10 @@ type Option<TValue> = {
   id?: string
   value: TValue
 }
+
+const ORG_LANGUAGE_MISMATCH_TOAST = 'org-language-mismatch'
+// The matching rule lives in src/app/(payload)/custom.scss.
+const ORG_LANGUAGE_MISMATCH_ACTION = 'org-language-toast__action'
 
 type Props = {
   orgs?: Organisation[]
@@ -56,24 +59,30 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
     }, 0)
   }, [t])
 
-  const applyLanguagePreference = async (org?: Organisation) => {
-    const language = languageOf(org)
-    if (!language) return
-    await setPreference('locale', language)
+  const applyLanguagePreference = useCallback(
+    async (org?: Organisation) => {
+      const language = org?.organisationLanguage ?? defaultLocale
+      if (!language) return
+      await setPreference('locale', language)
 
-    // Remove the locale parameter from the URL if it exists
-    if (paramsLocale) {
-      const url = new URL(window.location.href)
-      url.searchParams.delete('locale')
-      window.history.replaceState({}, '', url)
-    }
-  }
+      // Remove the locale parameter from the URL if it exists
+      if (paramsLocale) {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('locale')
+        window.history.replaceState({}, '', url)
+      }
+    },
+    [defaultLocale, paramsLocale, setPreference],
+  )
 
   // A language reset keeps the current page. Only an organisation switch redirects.
-  const resetLanguagePreference = async (org?: Organisation) => {
-    await applyLanguagePreference(org)
-    window.location.reload()
-  }
+  const resetLanguagePreference = useCallback(
+    async (org?: Organisation) => {
+      await applyLanguagePreference(org)
+      window.location.reload()
+    },
+    [applyLanguagePreference],
+  )
 
   useEffect(() => {
     getPreference<string>('locale')
@@ -93,6 +102,30 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
         console.error('Error fetching locale preference:', error)
       })
   }, [getPreference, paramsLocale, selectedOrgLanguage])
+
+  // A toast call inside a mount effect is dropped, because Payload mounts its toast container
+  // above this component. A zero delay defers the call until every mount effect has run.
+  // The id keeps a re-render from stacking a second copy of the same notice.
+  useEffect(() => {
+    if (!orgLangMismatch) return
+
+    const timer = setTimeout(() => {
+      toast(t('admin:selectOrganisations:orgLanguageMismatch'), {
+        action: {
+          label: t('admin:selectOrganisations:reset'),
+          onClick: () => void resetLanguagePreference(selectedOrg),
+        },
+        // Sonner draws its action button as a plain rectangle. The class carries Payload's own
+        // pill look, and it stops the German label from breaking after one character.
+        classNames: { actionButton: ORG_LANGUAGE_MISMATCH_ACTION },
+        // The notice stays until the user acts on it or dismisses it.
+        duration: Infinity,
+        id: ORG_LANGUAGE_MISMATCH_TOAST,
+      })
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [orgLangMismatch, resetLanguagePreference, selectedOrg, t])
 
   const onChange = async (option: Option<unknown> | Option<unknown>[]) => {
     // The select is single and never clearable, so the array form and the empty value never
@@ -144,27 +177,12 @@ export const UserOrganisationSelect: React.FC<Props> = ({ orgs, selectedOrg, use
   const selectedOption = options.find((option) => option.value === `${currentOrgId}`)
 
   return (
-    <>
-      <Select
-        isClearable={false}
-        isCreatable={false}
-        onChange={onChange}
-        options={options}
-        value={selectedOption}
-      />
-      {orgLangMismatch && (
-        <div className={'mt-4 rounded-lg border px-2'}>
-          <p className="mt-2">
-            <Translate k={'admin:selectOrganisations:orgLanguageMismatch'} />
-          </p>
-          <button
-            className={'btn btn--style-pill btn--size-small my-2'}
-            onClick={() => resetLanguagePreference(selectedOrg)}
-            type={'button'}>
-            <Translate k={'admin:selectOrganisations:reset'} />
-          </button>
-        </div>
-      )}
-    </>
+    <Select
+      isClearable={false}
+      isCreatable={false}
+      onChange={onChange}
+      options={options}
+      value={selectedOption}
+    />
   )
 }

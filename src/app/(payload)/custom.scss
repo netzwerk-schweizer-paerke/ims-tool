@@ -24,6 +24,18 @@
   --theme-text-33: rgb(from var(--theme-text) r g b / 0.33);
 }
 
+// Sonner styles its action button through `[data-sonner-toast][data-styled='true'] [data-button]`.
+// The extra class raises the specificity, so these values win whatever the stylesheet order is.
+[data-sonner-toast][data-styled='true'] [data-button].org-language-toast__action {
+  background: var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  color: var(--theme-text);
+  font-size: 13px;
+  height: 24px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
 // Payload gives each field in a `row` a 5px side margin, and cancels it with -5px on the row.
 // Two adjacent graph fields therefore sit 10px apart, which breaks the arrow stubs that must meet.
 .graph-fields-row {

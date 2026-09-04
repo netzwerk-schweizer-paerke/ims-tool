@@ -76,7 +76,8 @@ export const OrganisationSelect = async () => {
       {/* Not a <label>: UserOrganisationSelect wraps Payload's own <Select> and exposes no
           id to point htmlFor at, so a <label> here would associate with nothing. Proper fix
           is to thread an id through the dropdown and restore the label element. */}
-      <div className="field-label">
+      {/* The colour matches `.nav-group__label`, so this label reads as a nav heading. */}
+      <div className="field-label mb-[2.5px] text-[color:var(--theme-elevation-400)]">
         <Translate k={'admin:selectOrganisations:title'} />
       </div>
       <div className="field-type__wrap">
