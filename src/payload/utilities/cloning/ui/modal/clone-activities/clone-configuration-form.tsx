@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { HealthReport } from '@/payload/components/health/health-report'
+import { cloneEntityKeys } from '@/payload/utilities/cloning/ui/clone-entity-copy'
 import {
   FormCheckbox,
   FormLabel,
@@ -67,6 +68,9 @@ export const CloneConfigurationForm = ({
   targetOrganisations,
 }: CloneConfigurationFormProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
+  // The three collections share this form, so the strings that name the record type come from
+  // the collection that opened it.
+  const copy = cloneEntityKeys[collectionSlug]
   const [formState, setFormState] = useState<Record<string, boolean>>({})
   const [selectedOption, setSelectedOption] = useState<
     undefined | { label: string; value: number }
@@ -154,7 +158,7 @@ export const CloneConfigurationForm = ({
       {/* Left Column - Configuration */}
       <div className="space-y-6">
         <div>
-          <p className="mt-2 text-lg">{t('cloneActivity:form:instructions')}</p>
+          <p className="mt-2 text-lg">{t(copy.instructions)}</p>
         </div>
 
         {preflight.report && (
@@ -170,7 +174,7 @@ export const CloneConfigurationForm = ({
         )}
 
         <div>
-          <FormLabel>{t('cloneActivity:form:activities')}</FormLabel>
+          <FormLabel>{t(copy.entities)}</FormLabel>
           <FormSection>
             <SelectAllCheckbox
               checked={selectAll}
@@ -190,7 +194,7 @@ export const CloneConfigurationForm = ({
           </FormSection>
           {Object.values(formState).some(Boolean) && (
             <p className="mt-1 text-[var(--theme-text-light)]">
-              {t('cloneActivity:form:selectedCount', {
+              {t(copy.selectedCount, {
                 count: Object.values(formState).filter(Boolean).length,
               })}
             </p>
@@ -223,7 +227,7 @@ export const CloneConfigurationForm = ({
                 {t('cloneActivity:cloning')}
               </span>
             ) : (
-              t('cloneActivity:clone')
+              t(copy.cloneLabel)
             )}
           </Button>
           <Button

@@ -4,6 +4,7 @@ import React from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
+import { cloneEntityKeysFor } from '@/payload/utilities/cloning/ui/clone-entity-copy'
 
 import { CloneResultsTable } from './clone-results-table'
 
@@ -13,6 +14,8 @@ interface CloneStatusPartialProps {
 
 export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
+  // Every entity of one run shares a collection, so the first one names the record type.
+  const copy = cloneEntityKeysFor(results.entities[0]?.source.collection)
 
   // Separate successful and problematic entities
   const successfulEntities = results.entities.filter(
@@ -29,7 +32,7 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
         <AlertTriangle className="h-6 w-6 text-[var(--theme-warning)]" />
         <div>
           <p className="text-lg font-semibold text-[var(--theme-warning-dark)]">
-            {t('cloneActivity:status:partialSuccess', {
+            {t(copy.partialSuccess, {
               failed: problematicEntities.length,
               succeeded: successfulEntities.length,
             })}
@@ -43,7 +46,7 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
           <div className="mb-4 flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-[var(--theme-success)]" />
             <p className="text-lg font-semibold text-[var(--theme-success-dark)]">
-              {t('cloneActivity:status:successfullyCloned')}
+              {t(copy.successfullyCloned)}
             </p>
           </div>
 
@@ -74,7 +77,7 @@ export const CloneStatusPartial: React.FC<CloneStatusPartialProps> = ({ results 
           <div className="mb-4 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-[var(--theme-warning)]" />
             <p className="text-lg font-semibold text-[var(--theme-warning-dark)]">
-              {t('cloneActivity:status:withIssues')}
+              {t(copy.withIssues)}
             </p>
           </div>
 

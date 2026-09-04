@@ -173,6 +173,13 @@ export const it = {
     failed: 'fallito/i',
     failedClones: '❌ Cloni falliti',
     files: 'file',
+    form: {
+      entities: 'Processi',
+      instructions:
+        'Seleziona i processi che desideri clonare e l’organizzazione di destinazione qui sotto.',
+      selectedCount_one: '{{count}} processo selezionato',
+      selectedCount_other: '{{count}} processi selezionati',
+    },
     info: {
       blocks: {
         description: 'Tutti i blocchi di processo e le loro connessioni verranno copiati.',
@@ -196,6 +203,9 @@ export const it = {
     partial: '⚠️ Successo parziale',
     processing: 'Clonazione dei processi... Attendere prego!',
     results: {
+      allFailedCount: 'Tutti i {{total}} processi non sono stati clonati correttamente',
+      clonedCount: '{{succeeded}} processi su {{total}} sono stati clonati con successo',
+      clonedItemId: 'ID processo clonato:',
       comparison: 'Confronto processi:',
       completeness: 'Completezza:',
       sourceItem: 'Processo di origine:',
@@ -204,7 +214,15 @@ export const it = {
     selected: 'selezionato/i',
     selectTaskFlows: 'Seleziona i processi da clonare',
     status: {
+      allFailed: 'Tutti i processi sono falliti nella clonazione',
       allSuccess: 'Tutti i processi clonati con successo!',
+      failedToClone: 'Falliti nella clonazione:',
+      partialSuccess: 'Successo parziale: {{succeeded}} riusciti, {{failed}} falliti',
+      successfullyCloned: 'Clonati con successo:',
+      withIssues: 'Clonati con problemi',
+      withWarnings: 'Processi clonati con avvisi',
+      withWarningsDescription:
+        'Alcuni processi sono stati clonati con successo ma con file mancanti o dati parziali.',
     },
     succeeded: 'riuscito/i',
     success: '✅ Tutti i processi clonati con successo',
@@ -223,6 +241,7 @@ export const it = {
       richTextDocuments: 'File di documenti rich text',
       source: 'Origine',
       totalDocumentUsages: 'Utilizzi totali di file di documenti',
+      totalItems: 'Totale processi:',
       uniqueDocuments: 'File di documenti unici',
     },
     targetOrganisation: 'Organizzazione di destinazione',
@@ -237,6 +256,13 @@ export const it = {
     failed: 'fallito/i',
     failedClones: '❌ Cloni falliti',
     files: 'file',
+    form: {
+      entities: 'Elenchi',
+      instructions:
+        'Seleziona gli elenchi che desideri clonare e l’organizzazione di destinazione qui sotto.',
+      selectedCount_one: '{{count}} elenco selezionato',
+      selectedCount_other: '{{count}} elenchi selezionati',
+    },
     info: {
       files: {
         description:
@@ -264,6 +290,9 @@ export const it = {
     partial: '⚠️ Successo parziale',
     processing: 'Clonazione degli elenchi... Attendere prego!',
     results: {
+      allFailedCount: 'Tutti i {{total}} elenchi non sono stati clonati correttamente',
+      clonedCount: '{{succeeded}} elenchi su {{total}} sono stati clonati con successo',
+      clonedItemId: 'ID elenco clonato:',
       comparison: 'Confronto elenchi:',
       completeness: 'Completezza:',
       sourceItem: 'Elenco di origine:',
@@ -272,7 +301,15 @@ export const it = {
     selected: 'selezionato/i',
     selectTaskLists: 'Seleziona gli elenchi da clonare',
     status: {
+      allFailed: 'Tutti gli elenchi sono falliti nella clonazione',
       allSuccess: 'Tutti gli elenchi clonati con successo!',
+      failedToClone: 'Falliti nella clonazione:',
+      partialSuccess: 'Successo parziale: {{succeeded}} riusciti, {{failed}} falliti',
+      successfullyCloned: 'Clonati con successo:',
+      withIssues: 'Clonati con problemi',
+      withWarnings: 'Elenchi clonati con avvisi',
+      withWarningsDescription:
+        'Alcuni elenchi sono stati clonati con successo ma con file mancanti o dati parziali.',
     },
     succeeded: 'riuscito/i',
     success: '✅ Tutti gli elenchi clonati con successo',
@@ -291,6 +328,7 @@ export const it = {
       richTextDocuments: 'File di documenti rich text',
       source: 'Origine',
       totalDocumentUsages: 'Utilizzi totali di file di documenti',
+      totalItems: 'Totale elenchi:',
       uniqueDocuments: 'File di documenti unici',
     },
     targetOrganisation: 'Organizzazione di destinazione',
@@ -416,6 +454,8 @@ export const it = {
       items: 'Voci di elenco',
       relationsTasks: 'Attività collegate',
     },
+    hiddenReferences_one: '1 riferimento in un altro parco',
+    hiddenReferences_other: '{{count}} riferimenti in altri parchi',
     taskFlows: 'Processi',
     taskLists: 'Elenchi',
     title: 'Utilizzato in',

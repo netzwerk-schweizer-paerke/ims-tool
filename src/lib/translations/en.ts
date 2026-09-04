@@ -172,6 +172,12 @@ export const en = {
     failed: 'failed',
     failedClones: '❌ Failed Clones',
     files: 'files',
+    form: {
+      entities: 'Processes',
+      instructions: 'Select the processes you wish to clone and the target organisation below.',
+      selectedCount_one: '{{count}} process selected',
+      selectedCount_other: '{{count}} processes selected',
+    },
     info: {
       blocks: {
         description: 'All process blocks and their connections will be copied.',
@@ -195,6 +201,9 @@ export const en = {
     partial: '⚠️ Partial Success',
     processing: 'Cloning processes... Please wait!',
     results: {
+      allFailedCount: 'All {{total}} processes failed to clone properly',
+      clonedCount: '{{succeeded}} of {{total}} processes were cloned successfully',
+      clonedItemId: 'Cloned Process ID:',
       comparison: 'Process Comparison:',
       completeness: 'Completeness:',
       sourceItem: 'Source Process:',
@@ -203,7 +212,15 @@ export const en = {
     selected: 'selected',
     selectTaskFlows: 'Select Processes to Clone',
     status: {
+      allFailed: 'All processes failed to clone',
       allSuccess: 'All processes cloned successfully!',
+      failedToClone: 'Failed to clone:',
+      partialSuccess: 'Partial success: {{succeeded}} succeeded, {{failed}} failed',
+      successfullyCloned: 'Successfully cloned:',
+      withIssues: 'Cloned with Issues',
+      withWarnings: 'Processes cloned with warnings',
+      withWarningsDescription:
+        'Some processes were cloned successfully but with missing files or partial data.',
     },
     succeeded: 'succeeded',
     success: '✅ All Processes Cloned Successfully',
@@ -221,6 +238,7 @@ export const en = {
       richTextDocuments: 'Rich Text Document files',
       source: 'Source',
       totalDocumentUsages: 'Total Document file Usages',
+      totalItems: 'Total Processes:',
       uniqueDocuments: 'Unique Document files',
     },
     targetOrganisation: 'Target Organisation',
@@ -235,6 +253,12 @@ export const en = {
     failed: 'failed',
     failedClones: '❌ Failed Clones',
     files: 'files',
+    form: {
+      entities: 'Lists',
+      instructions: 'Select the lists you wish to clone and the target organisation below.',
+      selectedCount_one: '{{count}} list selected',
+      selectedCount_other: '{{count}} lists selected',
+    },
     info: {
       files: {
         description:
@@ -262,6 +286,9 @@ export const en = {
     partial: '⚠️ Partial Success',
     processing: 'Cloning lists... Please wait!',
     results: {
+      allFailedCount: 'All {{total}} lists failed to clone properly',
+      clonedCount: '{{succeeded}} of {{total}} lists were cloned successfully',
+      clonedItemId: 'Cloned List ID:',
       comparison: 'List Comparison:',
       completeness: 'Completeness:',
       sourceItem: 'Source List:',
@@ -270,7 +297,15 @@ export const en = {
     selected: 'selected',
     selectTaskLists: 'Select Lists to Clone',
     status: {
+      allFailed: 'All lists failed to clone',
       allSuccess: 'All lists cloned successfully!',
+      failedToClone: 'Failed to clone:',
+      partialSuccess: 'Partial success: {{succeeded}} succeeded, {{failed}} failed',
+      successfullyCloned: 'Successfully cloned:',
+      withIssues: 'Cloned with Issues',
+      withWarnings: 'Lists cloned with warnings',
+      withWarningsDescription:
+        'Some lists were cloned successfully but with missing files or partial data.',
     },
     succeeded: 'succeeded',
     success: '✅ All Lists Cloned Successfully',
@@ -288,6 +323,7 @@ export const en = {
       richTextDocuments: 'Rich Text Document files',
       source: 'Source',
       totalDocumentUsages: 'Total Document file Usages',
+      totalItems: 'Total Lists:',
       uniqueDocuments: 'Unique Document files',
     },
     targetOrganisation: 'Target Organisation',
@@ -410,6 +446,8 @@ export const en = {
       items: 'List entries',
       relationsTasks: 'Linked tasks',
     },
+    hiddenReferences_one: '1 reference in another park',
+    hiddenReferences_other: '{{count}} references in other parks',
     taskFlows: 'Processes',
     taskLists: 'Lists',
     title: 'Used in',

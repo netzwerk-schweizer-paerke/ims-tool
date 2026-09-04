@@ -4,6 +4,7 @@ import React from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
+import { cloneEntityKeysFor } from '@/payload/utilities/cloning/ui/clone-entity-copy'
 
 import { CloneResultsTable } from './clone-results-table'
 
@@ -13,6 +14,8 @@ interface CloneStatusSuccessProps {
 
 export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results }) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
+  // Every entity of one run shares a collection, so the first one names the record type.
+  const copy = cloneEntityKeysFor(results.entities[0]?.source.collection)
 
   // Check if any entities have warnings (incomplete clones)
   const hasWarnings = results.entities.some((entity) => entity.percentComplete < 100)
@@ -31,10 +34,10 @@ export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results 
           <AlertTriangle className="h-6 w-6 text-[var(--theme-warning)]" />
           <div>
             <p className="mb-2 text-lg font-semibold text-[var(--theme-warning-dark)]">
-              {t('cloneActivity:status:withWarnings')}
+              {t(copy.withWarnings)}
             </p>
             <p className="text-[var(--theme-warning)]">
-              {t('cloneActivity:status:withWarningsDescription')}
+              {t(copy.withWarningsDescription)}
             </p>
           </div>
         </div>
@@ -42,7 +45,7 @@ export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results 
         <div className="flex items-center gap-3 rounded-lg border border-[var(--theme-success)] bg-[var(--theme-success-50)] p-4">
           <CheckCircle className="h-6 w-6 text-[var(--theme-success)]" />
           <p className="text-lg font-semibold text-[var(--theme-success-dark)]">
-            {t('cloneActivity:status:allSuccess')}
+            {t(copy.allSuccess)}
           </p>
         </div>
       )}
@@ -56,7 +59,7 @@ export const CloneStatusSuccess: React.FC<CloneStatusSuccessProps> = ({ results 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-[var(--theme-text-light)]">
-                {t('cloneActivity:table:totalActivities')}
+                {t(copy.totalItems)}
               </span>
               <span className="ml-2">{results.entities.length}</span>
             </div>

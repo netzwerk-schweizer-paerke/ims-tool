@@ -173,6 +173,13 @@ export const de = {
     failed: 'fehlgeschlagen',
     failedClones: '❌ Fehlgeschlagene Klone',
     files: 'Dateien',
+    form: {
+      entities: 'Prozesse',
+      instructions:
+        'Wählen Sie unten die Prozesse aus, die Sie klonen möchten, und die Zielorganisation.',
+      selectedCount_one: '{{count}} Prozess ausgewählt',
+      selectedCount_other: '{{count}} Prozesse ausgewählt',
+    },
     info: {
       blocks: {
         description: 'Alle Prozessblöcke und ihre Verbindungen werden kopiert.',
@@ -196,6 +203,9 @@ export const de = {
     partial: '⚠️ Teilweiser Erfolg',
     processing: 'Prozesse werden geklont... Bitte warten!',
     results: {
+      allFailedCount: 'Alle {{total}} Prozesse konnten nicht korrekt geklont werden',
+      clonedCount: '{{succeeded}} von {{total}} Prozessen wurden erfolgreich geklont',
+      clonedItemId: 'ID des geklonten Prozesses:',
       comparison: 'Prozessvergleich:',
       completeness: 'Vollständigkeit:',
       sourceItem: 'Quellprozess:',
@@ -204,7 +214,15 @@ export const de = {
     selected: 'ausgewählt',
     selectTaskFlows: 'Prozesse zum Klonen auswählen',
     status: {
+      allFailed: 'Alle Prozesse konnten nicht geklont werden',
       allSuccess: 'Alle Prozesse erfolgreich geklont!',
+      failedToClone: 'Klonen fehlgeschlagen:',
+      partialSuccess: 'Teilerfolg: {{succeeded}} erfolgreich, {{failed}} fehlgeschlagen',
+      successfullyCloned: 'Erfolgreich geklont:',
+      withIssues: 'Mit Problemen geklont',
+      withWarnings: 'Prozesse mit Warnungen geklont',
+      withWarningsDescription:
+        'Einige Prozesse wurden erfolgreich geklont, aber mit fehlenden Dateien oder unvollständigen Daten.',
     },
     succeeded: 'erfolgreich',
     success: '✅ Alle Prozesse erfolgreich geklont',
@@ -222,6 +240,7 @@ export const de = {
       richTextDocuments: 'Rich-Text-Dokumentdateien',
       source: 'Quelle',
       totalDocumentUsages: 'Gesamte Dokumentdatei-Verwendungen',
+      totalItems: 'Gesamte Prozesse:',
       uniqueDocuments: 'Eindeutige Dokumentdateien',
     },
     targetOrganisation: 'Zielorganisation',
@@ -236,6 +255,13 @@ export const de = {
     failed: 'fehlgeschlagen',
     failedClones: '❌ Fehlgeschlagene Klone',
     files: 'Dateien',
+    form: {
+      entities: 'Listen',
+      instructions:
+        'Wählen Sie unten die Listen aus, die Sie klonen möchten, und die Zielorganisation.',
+      selectedCount_one: '{{count}} Liste ausgewählt',
+      selectedCount_other: '{{count}} Listen ausgewählt',
+    },
     info: {
       files: {
         description:
@@ -263,6 +289,9 @@ export const de = {
     partial: '⚠️ Teilweiser Erfolg',
     processing: 'Listen werden geklont... Bitte warten!',
     results: {
+      allFailedCount: 'Alle {{total}} Listen konnten nicht korrekt geklont werden',
+      clonedCount: '{{succeeded}} von {{total}} Listen wurden erfolgreich geklont',
+      clonedItemId: 'ID der geklonten Liste:',
       comparison: 'Listenvergleich:',
       completeness: 'Vollständigkeit:',
       sourceItem: 'Quellliste:',
@@ -271,7 +300,15 @@ export const de = {
     selected: 'ausgewählt',
     selectTaskLists: 'Listen zum Klonen auswählen',
     status: {
+      allFailed: 'Alle Listen konnten nicht geklont werden',
       allSuccess: 'Alle Listen erfolgreich geklont!',
+      failedToClone: 'Klonen fehlgeschlagen:',
+      partialSuccess: 'Teilerfolg: {{succeeded}} erfolgreich, {{failed}} fehlgeschlagen',
+      successfullyCloned: 'Erfolgreich geklont:',
+      withIssues: 'Mit Problemen geklont',
+      withWarnings: 'Listen mit Warnungen geklont',
+      withWarningsDescription:
+        'Einige Listen wurden erfolgreich geklont, aber mit fehlenden Dateien oder unvollständigen Daten.',
     },
     succeeded: 'erfolgreich',
     success: '✅ Alle Listen erfolgreich geklont',
@@ -289,6 +326,7 @@ export const de = {
       richTextDocuments: 'Rich-Text-Dokumentdateien',
       source: 'Quelle',
       totalDocumentUsages: 'Gesamte Dokumentdatei-Verwendungen',
+      totalItems: 'Gesamte Listen:',
       uniqueDocuments: 'Eindeutige Dokumentdateien',
     },
     targetOrganisation: 'Zielorganisation',
@@ -413,6 +451,8 @@ export const de = {
       items: 'Listeneinträge',
       relationsTasks: 'Verknüpfte Aufgaben',
     },
+    hiddenReferences_one: '1 Referenz in einem anderen Park',
+    hiddenReferences_other: '{{count}} Referenzen in anderen Parks',
     taskFlows: 'Prozesse',
     taskLists: 'Listen',
     title: 'Verwendet in',
