@@ -39,7 +39,7 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processTaskParallelConnections,
       createInitialState,
@@ -62,7 +62,7 @@ export const ProcessTaskParallelField: JSONFieldClientComponent = (props) => {
   const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
 
   return (
-    <div className={'process-task-parallel-block relative h-full'} ref={ref}>
+    <div className={'process-task-parallel-block relative h-full'}>
       <>
         <div className={'grid size-full grid-cols-2'}>
           <BlockTaskWrapper>

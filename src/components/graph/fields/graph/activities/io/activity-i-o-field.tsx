@@ -42,7 +42,7 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ActivityIOField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: activityConnections,
       createInitialState,
@@ -59,25 +59,23 @@ export const ActivityIOField: JSONFieldClientComponent = (props) => {
   const handleTopClick = useCallback(() => toggleConnectionType('top'), [toggleConnectionType])
 
   return (
-    <div ref={ref}>
-      <>
-        <BlockTaskWrapper>
-          <RootTarget id={arrowSetId}>
-            <IOShapeWrapper mode={'edit'}>
-              <GraphTextArea
-                className={'w-full bg-transparent p-0'}
-                onTextChange={handleTextChange}
-                value={localText}
-              />
-              <ButtonCenterRight onClickFn={handleRightClick} />
-              <ButtonBottomCenter onClickFn={handleBottomClick} />
-              <ButtonTopCenter onClickFn={handleTopClick} />
-            </IOShapeWrapper>
-          </RootTarget>
-          <OuterTargets id={arrowSetId} />
-          <div className={'x-arrows'}>{arrowsContent}</div>
-        </BlockTaskWrapper>
-      </>
+    <div>
+      <BlockTaskWrapper>
+        <RootTarget id={arrowSetId}>
+          <IOShapeWrapper mode={'edit'}>
+            <GraphTextArea
+              className={'w-full bg-transparent p-0'}
+              onTextChange={handleTextChange}
+              value={localText}
+            />
+            <ButtonCenterRight onClickFn={handleRightClick} />
+            <ButtonBottomCenter onClickFn={handleBottomClick} />
+            <ButtonTopCenter onClickFn={handleTopClick} />
+          </IOShapeWrapper>
+        </RootTarget>
+        <OuterTargets id={arrowSetId} />
+        <div className={'x-arrows'}>{arrowsContent}</div>
+      </BlockTaskWrapper>
     </div>
   )
 }

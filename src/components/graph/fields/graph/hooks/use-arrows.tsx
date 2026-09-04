@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useId, useMemo, useRef } from 'react'
+import { useCallback, useId, useMemo } from 'react'
 
 import { LayerArrow } from '@/components/graph/fields/graph/lib/arrow-layer'
 import {
@@ -16,7 +16,6 @@ type Props = {
 }
 
 export const useArrows = ({ connections, setState, state }: Props) => {
-  const ref = useRef<HTMLDivElement>(null)
   const arrowSetId = useId()
 
   const setConnectionType = useCallback(
@@ -92,5 +91,5 @@ export const useArrows = ({ connections, setState, state }: Props) => {
     })
   }, [stateConnections, connections, arrowSetId])
 
-  return { arrows, arrowSetId, ref, toggleConnectionType }
+  return { arrows, arrowSetId, toggleConnectionType }
 }

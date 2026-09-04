@@ -41,7 +41,7 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessTaskField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processTaskConnections,
       createInitialState,
@@ -58,25 +58,23 @@ export const ProcessTaskField: JSONFieldClientComponent = (props) => {
   const handleTopClick = useCallback(() => toggleConnectionType('top'), [toggleConnectionType])
 
   return (
-    <div className={'process-task-parallel-block relative h-full'} ref={ref}>
-      <>
-        <BlockTaskWrapper>
-          <RootTarget id={arrowSetId}>
-            <TaskShapeWrapper mode={'edit'}>
-              <GraphTextArea
-                className={'w-full bg-transparent p-0'}
-                onTextChange={handleTextChange}
-                value={localText}
-              />
-              <ButtonCenterRight onClickFn={handleRightClick} />
-              <ButtonBottomCenter onClickFn={handleBottomClick} />
-              <ButtonTopCenter onClickFn={handleTopClick} />
-            </TaskShapeWrapper>
-          </RootTarget>
-          <OuterTargets id={arrowSetId} />
-          <div className={'x-arrows'}>{arrowsContent}</div>
-        </BlockTaskWrapper>
-      </>
+    <div className={'process-task-parallel-block relative h-full'}>
+      <BlockTaskWrapper>
+        <RootTarget id={arrowSetId}>
+          <TaskShapeWrapper mode={'edit'}>
+            <GraphTextArea
+              className={'w-full bg-transparent p-0'}
+              onTextChange={handleTextChange}
+              value={localText}
+            />
+            <ButtonCenterRight onClickFn={handleRightClick} />
+            <ButtonBottomCenter onClickFn={handleBottomClick} />
+            <ButtonTopCenter onClickFn={handleTopClick} />
+          </TaskShapeWrapper>
+        </RootTarget>
+        <OuterTargets id={arrowSetId} />
+        <div className={'x-arrows'}>{arrowsContent}</div>
+      </BlockTaskWrapper>
     </div>
   )
 }

@@ -34,7 +34,7 @@ const createInitialState = (): ComponentState => ({
 })
 
 export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processIoConnections,
       createInitialState,
@@ -53,34 +53,32 @@ export const ProcessInputOutputField: JSONFieldClientComponent = (props) => {
   const handleRightClick = useCallback(() => toggleConnectionType('right'), [toggleConnectionType])
 
   return (
-    <div ref={ref}>
-      <>
-        <BlockTaskWrapper>
-          {value?.enabled && (
-            <>
-              <RootTarget id={arrowSetId}>
-                <IOShapeWrapper mode={'edit'}>
-                  <GraphTextArea
-                    className={'w-full bg-transparent p-0'}
-                    onTextChange={handleTextChange}
-                    value={localText}
-                  />
-                  <ButtonCenterRight onClickFn={handleRightClick} />
-                </IOShapeWrapper>
-              </RootTarget>
-              <OuterTargets id={arrowSetId} />
-              <div className={'x-arrows'}>{arrowsContent}</div>
-            </>
-          )}
-          <div className="absolute -top-2 w-full text-center">
-            <ToggleSwitch
-              ariaLabel={t('common:enableBlock')}
-              checked={value?.enabled}
-              onChange={handleToggleEnabled}
-            />
-          </div>
-        </BlockTaskWrapper>
-      </>
+    <div>
+      <BlockTaskWrapper>
+        {value?.enabled && (
+          <>
+            <RootTarget id={arrowSetId}>
+              <IOShapeWrapper mode={'edit'}>
+                <GraphTextArea
+                  className={'w-full bg-transparent p-0'}
+                  onTextChange={handleTextChange}
+                  value={localText}
+                />
+                <ButtonCenterRight onClickFn={handleRightClick} />
+              </IOShapeWrapper>
+            </RootTarget>
+            <OuterTargets id={arrowSetId} />
+            <div className={'x-arrows'}>{arrowsContent}</div>
+          </>
+        )}
+        <div className="absolute -top-2 w-full text-center">
+          <ToggleSwitch
+            ariaLabel={t('common:enableBlock')}
+            checked={value?.enabled}
+            onChange={handleToggleEnabled}
+          />
+        </div>
+      </BlockTaskWrapper>
     </div>
   )
 }

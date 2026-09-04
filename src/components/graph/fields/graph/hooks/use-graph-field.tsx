@@ -54,7 +54,7 @@ export const useGraphField = <TState extends ConnectionStateType>({
     }
   }, [setValue, value, createInitialState])
 
-  const { arrows, arrowSetId, ref, toggleConnectionType } = useArrows({
+  const { arrows, arrowSetId, toggleConnectionType } = useArrows({
     connections,
     setState: setValue,
     state: value,
@@ -64,7 +64,7 @@ export const useGraphField = <TState extends ConnectionStateType>({
   // geometry. The old engine needed an `isLoaded` gate because it measured per arrow.
   const arrowsContent = useMemo(() => <ArrowLayer arrows={arrows} />, [arrows])
 
-  return { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value }
+  return { arrowsContent, arrowSetId, setValue, toggleConnectionType, value }
 }
 
 export default useGraphField

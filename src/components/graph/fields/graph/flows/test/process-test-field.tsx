@@ -76,7 +76,7 @@ const DisplayBoolean = memo(({ booleanOutput }: { booleanOutput: BooleanOutput }
 DisplayBoolean.displayName = 'DisplayBoolean'
 
 export const ProcessTestField: JSONFieldClientComponent = (props) => {
-  const { arrowsContent, arrowSetId, ref, setValue, toggleConnectionType, value } =
+  const { arrowsContent, arrowSetId, setValue, toggleConnectionType, value } =
     useGraphField<ComponentState>({
       connections: processTestConnections,
       createInitialState,
@@ -116,40 +116,38 @@ export const ProcessTestField: JSONFieldClientComponent = (props) => {
   const handleLeftBooleanClick = useCallback(() => toggleBoolean('leftBoolean'), [toggleBoolean])
 
   return (
-    <div className={'process-task-test-block relative h-full'} ref={ref}>
-      <>
-        <BlockTaskWrapper>
-          <RootTarget id={arrowSetId}>
-            <TestShapeWrapper mode={'edit'}>
-              <GraphTextArea
-                className={'w-10/12 bg-gray-700/80 p-4'}
-                onTextChange={handleTextChange}
-                value={localText}
-              />
-              <ButtonCenterRight onClickFn={handleRightClick} />
-              <ButtonBottomCenter onClickFn={handleBottomClick} />
-              <ButtonTopCenter onClickFn={handleTopClick} />
-              <div className={'absolute -bottom-1/3 left-1/2 z-10 -translate-x-1/2'}>
-                <BooleanButton onClick={handleBottomBooleanClick}>
-                  <DisplayBoolean booleanOutput={value?.bottomBoolean ?? BooleanOutput.None} />
-                </BooleanButton>
-              </div>
-              <div className={'absolute -right-2 bottom-4 z-10'}>
-                <BooleanButton onClick={handleRightBooleanClick}>
-                  <DisplayBoolean booleanOutput={value?.rightBoolean ?? BooleanOutput.None} />
-                </BooleanButton>
-              </div>
-              <div className={'absolute -left-2 bottom-4 z-10'}>
-                <BooleanButton onClick={handleLeftBooleanClick}>
-                  <DisplayBoolean booleanOutput={value?.leftBoolean ?? BooleanOutput.None} />
-                </BooleanButton>
-              </div>
-            </TestShapeWrapper>
-          </RootTarget>
-          <OuterTargets id={arrowSetId} />
-          <div className={'x-arrows'}>{arrowsContent}</div>
-        </BlockTaskWrapper>
-      </>
+    <div className={'process-task-test-block relative h-full'}>
+      <BlockTaskWrapper>
+        <RootTarget id={arrowSetId}>
+          <TestShapeWrapper mode={'edit'}>
+            <GraphTextArea
+              className={'w-10/12 bg-gray-700/80 p-4'}
+              onTextChange={handleTextChange}
+              value={localText}
+            />
+            <ButtonCenterRight onClickFn={handleRightClick} />
+            <ButtonBottomCenter onClickFn={handleBottomClick} />
+            <ButtonTopCenter onClickFn={handleTopClick} />
+            <div className={'absolute -bottom-1/3 left-1/2 z-10 -translate-x-1/2'}>
+              <BooleanButton onClick={handleBottomBooleanClick}>
+                <DisplayBoolean booleanOutput={value?.bottomBoolean ?? BooleanOutput.None} />
+              </BooleanButton>
+            </div>
+            <div className={'absolute -right-2 bottom-4 z-10'}>
+              <BooleanButton onClick={handleRightBooleanClick}>
+                <DisplayBoolean booleanOutput={value?.rightBoolean ?? BooleanOutput.None} />
+              </BooleanButton>
+            </div>
+            <div className={'absolute -left-2 bottom-4 z-10'}>
+              <BooleanButton onClick={handleLeftBooleanClick}>
+                <DisplayBoolean booleanOutput={value?.leftBoolean ?? BooleanOutput.None} />
+              </BooleanButton>
+            </div>
+          </TestShapeWrapper>
+        </RootTarget>
+        <OuterTargets id={arrowSetId} />
+        <div className={'x-arrows'}>{arrowsContent}</div>
+      </BlockTaskWrapper>
     </div>
   )
 }
