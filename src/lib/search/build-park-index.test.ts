@@ -200,4 +200,50 @@ describe('buildParkIndex', () => {
       title: 'charta.pdf',
     })
   })
+
+  test('removes the epoch prefix an upload puts before the filename', () => {
+    const hits = buildParkIndex({
+      ...empty,
+      documents: [
+        {
+          description: null,
+          filename: '1758561330630-1756312477131-101_V_Finanzplanung-1.xlsx',
+          id: 5,
+          name: null,
+        },
+      ],
+    })
+
+    expect(hits[0].title).toBe('101_V_Finanzplanung-1.xlsx')
+    expect(hits[0].text).toBe('101_V_Finanzplanung-1.xlsx')
+  })
+
+  test('keeps a filename that only starts with digits', () => {
+    const hits = buildParkIndex({
+      ...empty,
+      documents: [{ description: null, filename: '101_V_Finanzplanung-1.xlsx', id: 5, name: null }],
+    })
+
+    expect(hits[0].title).toBe('101_V_Finanzplanung-1.xlsx')
+  })
+
+  test('names the record that uses a document as its context', () => {
+    const hits = buildParkIndex({
+      ...empty,
+      documentParents: new Map([[5, 'Führung']]),
+      documents: [{ description: null, filename: 'charta.pdf', id: 5, name: null }],
+    })
+
+    expect(hits[0].context).toBe('Führung')
+  })
+
+  test('leaves the context empty for a document no record uses', () => {
+    const hits = buildParkIndex({
+      ...empty,
+      documentParents: new Map([[9, 'Führung']]),
+      documents: [{ description: null, filename: 'charta.pdf', id: 5, name: null }],
+    })
+
+    expect(hits[0].context).toBe('')
+  })
 })

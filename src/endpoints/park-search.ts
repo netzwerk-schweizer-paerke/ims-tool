@@ -2,6 +2,7 @@ import { Endpoint } from 'payload'
 
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { buildParkIndex } from '@/lib/search/build-park-index'
+import { collectDocumentParents } from '@/lib/search/collect-document-parents'
 import { ParkSearchIndex } from '@/lib/search/types'
 import { getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
@@ -33,6 +34,12 @@ export const parkSearchEndpoint: Endpoint = {
       const index: ParkSearchIndex = {
         hits: buildParkIndex({
           activities: activities.docs,
+          // A document row carries a file name alone, so the walk names the record that uses it.
+          documentParents: collectDocumentParents({
+            activities: activities.docs,
+            taskFlows: taskFlows.docs,
+            taskLists: taskLists.docs,
+          }),
           documents: documents.docs,
           taskFlows: taskFlows.docs,
           taskLists: taskLists.docs,

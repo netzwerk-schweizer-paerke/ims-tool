@@ -17,6 +17,16 @@ export type ParkSearchIndex = {
 
 export type ParkSearchKind = ParkSearchTarget['kind']
 
+/** One row of the result list. Several hits that open one page share a row. */
+export type ParkSearchMatch = {
+  /** The records that hold the words and open this page. It rises above 1 for a task list only. */
+  count: number
+  /** The best-scoring hit of the group. It names the row. */
+  hit: ParkSearchHit
+  /** The body text around the first word that neither the title nor the context holds. */
+  snippet: string
+}
+
 /**
  * Where a hit sends the reader. It carries the route parts, never a finished URL, because the
  * base path differs between the admin view and a public share page. See

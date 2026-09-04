@@ -182,7 +182,7 @@ export const LandscapeSearch = ({ links, locale }: Props) => {
 
       if (event.key === 'Enter' && rows[active]) {
         event.preventDefault()
-        router.push(hrefOf(rows[active].target, links))
+        router.push(hrefOf(rows[active].hit.target, links))
         setOpen(false)
       }
     },
@@ -245,27 +245,32 @@ export const LandscapeSearch = ({ links, locale }: Props) => {
               {t('landscapeSearch:noResults', { query })}
             </p>
           )}
-          {rows.map((hit, index) => (
+          {rows.map((match, index) => (
             <Link
               aria-selected={index === active}
               className={`block border-b px-3 py-2 text-sm no-underline last:border-b-0 ${
                 index === active ? '[background-color:var(--theme-elevation-100)]' : ''
               }`}
-              href={hrefOf(hit.target, links)}
+              href={hrefOf(match.hit.target, links)}
               id={`${LIST_ID}-${index}`}
-              key={`${hit.target.kind}-${index}`}
+              key={`${match.hit.target.kind}-${index}`}
               onClick={() => setOpen(false)}
               onMouseEnter={() => setActive(index)}
               role={'option'}
               style={{ borderColor: 'var(--theme-border-color)' }}>
               {/* A list item takes its title from a rich text field, which runs long. */}
               <span className={'block truncate font-medium'}>
-                {hit.title || <Translate k={'activityLandscape:blockHasNoName'} />}
+                {match.hit.title || <Translate k={'activityLandscape:blockHasNoName'} />}
               </span>
               <span className={'block truncate text-xs opacity-60'}>
-                {t(KIND_KEYS[hit.target.kind])}
-                {hit.context && ` · ${hit.context}`}
+                {t(KIND_KEYS[match.hit.target.kind])}
+                {match.hit.context && ` · ${match.hit.context}`}
+                {match.count > 1 && ` · ${t('landscapeSearch:matchCount', { count: match.count })}`}
               </span>
+              {/* The row matched in the body, so the title alone cannot say why. */}
+              {match.snippet && (
+                <span className={'block truncate text-xs opacity-50'}>{match.snippet}</span>
+              )}
             </Link>
           ))}
           {ready && results.length > 0 && (

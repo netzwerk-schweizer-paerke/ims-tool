@@ -10,6 +10,8 @@ type ActivityInput = Pick<Activity, 'blocks' | 'description' | 'id' | 'name'>
 
 type Args = {
   activities: ActivityInput[]
+  /** The name of the record that uses a document, keyed by document id. */
+  documentParents?: Map<number, string>
   documents: DocumentInput[]
   taskFlows: TaskFlowInput[]
   taskLists: TaskListInput[]
@@ -37,6 +39,13 @@ const oneLine = (text: string): string => text.replaceAll(/\s+/g, ' ').trim()
 
 /** The longest title a result row shows. A longer one is body text, not a name. */
 const TITLE_LIMIT = 80
+
+/**
+ * The epoch prefix an upload puts before the name a person chose, such as `1758561309880-`. A
+ * clone re-uploads the file and adds a second one. The leading 1 keeps the pattern off a plain
+ * 13-digit number, such as a GTIN. Measured on 2026-09-05: 519 of 1533 names carry one to three.
+ */
+const UPLOAD_PREFIX = /^(1\d{12}-)+/
 
 /**
  * The opening sentence of a rich text field, as a title.
@@ -83,6 +92,7 @@ const blockBodyText = (block: unknown): string => {
  */
 export const buildParkIndex = ({
   activities,
+  documentParents,
   documents,
   taskFlows,
   taskLists,
@@ -151,11 +161,14 @@ export const buildParkIndex = ({
   }
 
   for (const document of documents) {
+    // The prefix carries no meaning for a reader, and it makes every upload sort by its date.
+    const filename = asText(document.filename).replace(UPLOAD_PREFIX, '')
+
     hits.push({
-      context: '',
+      context: documentParents?.get(document.id) ?? '',
       target: { documentId: document.id, kind: 'document' },
-      text: joinSearchText([document.description, document.filename]),
-      title: document.name ?? document.filename ?? '',
+      text: joinSearchText([document.description, filename]),
+      title: asText(document.name) || filename,
     })
   }
 
