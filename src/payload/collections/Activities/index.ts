@@ -24,13 +24,13 @@ export const Activities: CollectionConfig = {
     components: {
       beforeListTable: [
         {
-          path: 'src/payload/collections/Activities/components/before-list-table-wrapper.tsx#BeforeListTableWrapper',
+          path: '@/payload/collections/Activities/components/before-list-table-wrapper#BeforeListTableWrapper',
         },
       ],
       edit: {
         beforeDocumentControls: [
           {
-            path: 'src/payload/components/health/document-health-button.tsx#DocumentHealthButton',
+            path: '@/payload/components/health/document-health-button#DocumentHealthButton',
           },
         ],
       },

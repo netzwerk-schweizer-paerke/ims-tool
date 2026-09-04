@@ -21,7 +21,7 @@ export const ActivityIOBlock: Block = {
               admin: {
                 components: {
                   Field:
-                    'src/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
+                    '@/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField',
                 },
               },
               hooks: {

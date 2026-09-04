@@ -22,13 +22,13 @@ export const TaskLists: CollectionConfig = {
     components: {
       beforeListTable: [
         {
-          path: 'src/payload/collections/TaskList/components/clone-task-lists-button#CloneTaskListsButton',
+          path: '@/payload/collections/TaskList/components/clone-task-lists-button#CloneTaskListsButton',
         },
       ],
       edit: {
         beforeDocumentControls: [
           {
-            path: 'src/payload/components/health/document-health-button.tsx#DocumentHealthButton',
+            path: '@/payload/components/health/document-health-button#DocumentHealthButton',
           },
         ],
       },

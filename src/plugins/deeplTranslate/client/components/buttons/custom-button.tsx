@@ -5,6 +5,6 @@ export const CustomButton = (type: 'publish' | 'save'): CustomPublishButton => {
     clientProps: {
       type,
     },
-    path: 'src/plugins/deeplTranslate/client/components/buttons/simple-custom-button#SimpleCustomButton',
+    path: '@/plugins/deeplTranslate/client/components/buttons/simple-custom-button#SimpleCustomButton',
   }
 }

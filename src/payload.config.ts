@@ -10,10 +10,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
-import { deepLTranslate } from 'src/plugins/deeplTranslate'
 
 import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { seedDevUser } from '@/config/seed/dev-user'
+import { processPdfEndpoint } from '@/endpoints/process-pdf'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
 import { customI18nTranslations } from '@/lib/custom-i18n-translations'
@@ -28,6 +28,7 @@ import { ShareLinks } from '@/payload/collections/ShareLinks'
 import { TaskFlows } from '@/payload/collections/TaskFlow'
 import { TaskLists } from '@/payload/collections/TaskList'
 import { Users } from '@/payload/collections/Users'
+import { deepLTranslate } from '@/plugins/deeplTranslate'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -43,28 +44,28 @@ export default buildConfig({
         }),
     components: {
       beforeNavLinks: [
-        'src/components/activity-landscape-link#ActivityLandscapeLink',
-        'src/components/organisation-select#OrganisationSelect',
+        '@/components/activity-landscape-link#ActivityLandscapeLink',
+        '@/components/organisation-select#OrganisationSelect',
       ],
       graphics: {
-        Icon: 'src/components/icon#Icon',
-        Logo: 'src/components/logo#Logo',
+        Icon: '@/components/icon#Icon',
+        Logo: '@/components/logo#Logo',
       },
       views: {
         ActivitiesView: {
-          Component: 'src/components/views/activity/overview#ActivitiesView',
+          Component: '@/components/views/activity/overview#ActivitiesView',
           path: '/activities',
         },
         ActivityBlockView: {
-          Component: 'src/components/views/activity/view#ActivityBlockView',
+          Component: '@/components/views/activity/view#ActivityBlockView',
           path: '/activity/:id/block/:id',
         },
         FlowBlockView: {
-          Component: 'src/components/views/flow#FlowBlockView',
+          Component: '@/components/views/flow#FlowBlockView',
           path: '/flow/:id',
         },
         ListBlockView: {
-          Component: 'src/components/views/list#ListBlockView',
+          Component: '@/components/views/list#ListBlockView',
           path: '/list/:id',
         },
       },
@@ -113,7 +114,7 @@ export default buildConfig({
       transactionLog: true,
     },
   }),
-  endpoints: [s3OrphanDetectionEndpoint, tenantHealthEndpoint],
+  endpoints: [s3OrphanDetectionEndpoint, tenantHealthEndpoint, processPdfEndpoint],
   globals: [],
   i18n: {
     fallbackLanguage: 'de',

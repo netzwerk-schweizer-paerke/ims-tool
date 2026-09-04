@@ -25,13 +25,13 @@ export const TaskFlows: CollectionConfig = {
     components: {
       beforeListTable: [
         {
-          path: 'src/payload/collections/TaskFlow/components/clone-task-flows-button#CloneTaskFlowsButton',
+          path: '@/payload/collections/TaskFlow/components/clone-task-flows-button#CloneTaskFlowsButton',
         },
       ],
       edit: {
         beforeDocumentControls: [
           {
-            path: 'src/payload/components/health/document-health-button.tsx#DocumentHealthButton',
+            path: '@/payload/components/health/document-health-button#DocumentHealthButton',
           },
         ],
       },

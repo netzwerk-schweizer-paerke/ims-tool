@@ -55,7 +55,7 @@ export const Documents: CollectionConfig = {
     {
       admin: {
         components: {
-          Field: 'src/payload/components/document-usage/document-usage-field#DocumentUsageField',
+          Field: '@/payload/components/document-usage/document-usage-field#DocumentUsageField',
         },
         position: 'sidebar',
         readOnly: true,

@@ -26,7 +26,7 @@ export const ProcessTestOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
+                        '@/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
                   },
                   hooks: {
@@ -40,7 +40,7 @@ export const ProcessTestOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
+                        '@/components/graph/fields/graph/flows/test/process-test-field#ProcessTestField',
                     },
                   },
                   hooks: {

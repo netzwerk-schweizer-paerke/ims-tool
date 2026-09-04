@@ -21,7 +21,7 @@ export const ActivityTaskBlock: Block = {
               admin: {
                 components: {
                   Field:
-                    'src/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
+                    '@/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField',
                 },
               },
               hooks: {

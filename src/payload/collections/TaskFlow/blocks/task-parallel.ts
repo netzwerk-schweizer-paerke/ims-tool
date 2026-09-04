@@ -26,7 +26,7 @@ export const ProcessTaskParallelBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
+                        '@/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField',
                     },
                   },
                   hooks: {

@@ -26,7 +26,7 @@ export const ProcessTaskInputOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
+                        '@/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField',
                     },
                   },
                   hooks: {
@@ -40,7 +40,7 @@ export const ProcessTaskInputOutputBlock: Block = {
                   admin: {
                     components: {
                       Field:
-                        'src/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField',
+                        '@/components/graph/fields/graph/flows/task/process-task-field#ProcessTaskField',
                     },
                   },
                   hooks: {
