@@ -1,8 +1,7 @@
 'use client'
-import Link from 'next/link'
-
 import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
 import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
+import { ActivityUntranslated } from '@/components/views/activity/overview/activity/activity-untranslated'
 import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
 import { ViewLinks } from '@/components/views/view-links'
 import { Translate } from '@/lib/translate'
@@ -16,23 +15,7 @@ type Props = {
 
 export const ActivityStrategy = ({ activity, links, locale }: Props) => {
   if (!activity.name) {
-    return (
-      <div>
-        <p>
-          <Translate
-            k={'activityOverview:notAvailableInLocale'}
-            vars={{ locale: locale.toUpperCase() }}
-          />
-        </p>
-        {links.showEdit && (
-          <Link
-            className={'link-hover link'}
-            href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
-            <Translate k={'activityOverview:viewInEditMode'} />
-          </Link>
-        )}
-      </div>
-    )
+    return <ActivityUntranslated activityId={activity.id} links={links} locale={locale} />
   }
 
   if (!activity.blocks || activity.blocks.length === 0) {

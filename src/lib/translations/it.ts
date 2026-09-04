@@ -29,6 +29,8 @@ export const it = {
   activityOverview: {
     notAvailableInLocale:
       'Questa attività non è disponibile nella lingua attualmente selezionata ({{locale}}). Traducila o passa a un’altra lingua.',
+    /** The column heading when the activity carries no name in the current content locale. */
+    untitled: 'Senza titolo',
     viewInEditMode: 'Apri questa attività in modalità di modifica',
   },
   admin: {
@@ -388,10 +390,6 @@ export const it = {
     openRelated: 'Elemento referenziato',
     openSource: 'Apri',
     precondition: {
-      apiKeyInvalid:
-        'PAYLOAD_API_KEY non autentica — /api/users/me non restituisce alcun utente. Ogni download di file durante la clonazione fallisce e ogni attività viene copiata senza i suoi allegati. Le chiavi sono cifrate con PAYLOAD_SECRET; un secret modificato le invalida.',
-      apiKeyMissing: 'PAYLOAD_API_KEY non è impostato.',
-      apiKeyUnreachable: 'Non è stato possibile contattare il server per verificare la chiave.',
       s3BucketMissing: 'S3_BUCKET non è impostato.',
       s3Unreachable: 'S3 non è raggiungibile o è configurato male. I controlli dei file sono stati saltati.',
     },
@@ -500,6 +498,15 @@ export const it = {
       tools: 'Strumenti',
     },
     title: 'Lista',
+  },
+  pdf: {
+    download: 'PDF',
+    downloadAll: 'Questa pagina e tutto ciò che segue',
+    downloadPage: 'Questa pagina',
+    filenameAll: 'completo',
+    onlineVersion: "Scansiona per aprire la versione attuale nell'IMS",
+    printed: 'Stampato',
+    updated: 'Aggiornato',
   },
   shareLink: {
     close: 'Chiudi',

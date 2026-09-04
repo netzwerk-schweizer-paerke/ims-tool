@@ -17,7 +17,9 @@ export const ActivityEditLink = ({ id, links, locale }: Props) => {
 
   return (
     <Link
-      className={'link-hover link'}
+      className={
+        'text-sm underline underline-offset-4 opacity-70 transition-opacity hover:opacity-100'
+      }
       href={`/admin/collections/activities/${id}?locale=${locale}`}>
       <Translate k={'common:edit'} />
     </Link>

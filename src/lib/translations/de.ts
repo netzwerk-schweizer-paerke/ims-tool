@@ -29,6 +29,8 @@ export const de = {
   activityOverview: {
     notAvailableInLocale:
       'Diese Aktivität ist in der aktuell gewählten Sprache ({{locale}}) nicht verfügbar. Übersetzen Sie sie oder wechseln Sie zu einer anderen Sprache.',
+    /** The column heading when the activity carries no name in the current content locale. */
+    untitled: 'Ohne Titel',
     viewInEditMode: 'Diese Aktivität im Bearbeitungsmodus öffnen',
   },
   admin: {
@@ -384,10 +386,6 @@ export const de = {
     openRelated: 'Betroffener Verweis',
     openSource: 'Öffnen',
     precondition: {
-      apiKeyInvalid:
-        'PAYLOAD_API_KEY authentifiziert nicht — /api/users/me liefert keinen Benutzer. Jeder Datei-Download beim Klonen scheitert, und jede Aktivität wird ohne ihre Anhänge kopiert. Schlüssel sind mit PAYLOAD_SECRET verschlüsselt; ein geändertes Secret macht sie ungültig.',
-      apiKeyMissing: 'PAYLOAD_API_KEY ist nicht gesetzt.',
-      apiKeyUnreachable: 'Der Server war für die Schlüsselprüfung nicht erreichbar.',
       s3BucketMissing: 'S3_BUCKET ist nicht gesetzt.',
       s3Unreachable:
         'S3 ist nicht erreichbar oder falsch konfiguriert. Dateiprüfungen wurden übersprungen.',
@@ -494,6 +492,16 @@ export const de = {
       tools: 'Werkzeuge',
     },
     title: 'Aufgaben',
+  },
+  pdf: {
+    download: 'PDF',
+    downloadAll: 'Diese Seite und alles darunter',
+    downloadPage: 'Diese Seite',
+    /** One word for the download name of a deep export. */
+    filenameAll: 'komplett',
+    onlineVersion: 'Scannen, um die aktuelle Fassung im IMS zu öffnen',
+    printed: 'Gedruckt',
+    updated: 'Stand',
   },
   shareLink: {
     close: 'Schliessen',
