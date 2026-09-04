@@ -6,12 +6,12 @@
  *
  * Dry run by default. Pass --apply to delete.
  *
- *   yarn tsx src/scripts/delete-clone-test-rows.ts --org 6 --since 2026-09-04
- *   yarn tsx src/scripts/delete-clone-test-rows.ts --org 6 --since 2026-09-04 --apply
+ *   yarn clone:cleanup --org 6 --since 2026-09-04
+ *   yarn clone:cleanup --org 6 --since 2026-09-04 --apply
  */
 /* eslint-disable unicorn/no-process-exit -- CLI entry point: the exit code is the result. */
 import dotenv from 'dotenv'
-import { CollectionSlug, getPayload } from 'payload'
+import { type CollectionSlug, getPayload } from 'payload'
 
 dotenv.config()
 

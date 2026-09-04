@@ -19,8 +19,8 @@
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "generate:types": "payload generate:types",
     "generate:importMap": "payload generate:importMap",
-    "standalone-script": "tsx ./src/scripts/standalone-script.ts",
     "smoke:access": "node --experimental-strip-types --no-warnings ./src/scripts/smoke-access-control.ts",
+    "clone:cleanup": "tsx ./src/scripts/delete-clone-test-rows.ts",
     "email:dev": "email dev",
     "email:export": "email export",
     "typecheck": "npx tsc --noEmit",
@@ -91,6 +91,7 @@
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^3.4.19",
+    "tsx": "4.22.4",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.11"

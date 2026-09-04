@@ -10653,6 +10653,7 @@ __metadata:
     sharp: "npm:^0.34.5"
     tailwindcss: "npm:^3.4.19"
     tslog: "npm:^5.1.0"
+    tsx: "npm:4.22.4"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:^8.69.0"
     vitest: "npm:^4.1.11"

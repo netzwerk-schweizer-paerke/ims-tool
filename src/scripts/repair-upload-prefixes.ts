@@ -17,9 +17,9 @@
  *   yarn tsx src/scripts/repair-upload-prefixes.ts --apply
  */
 /* eslint-disable unicorn/no-process-exit -- CLI entry point: the exit code is the result. */
-import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
+import { ListObjectsV2Command, type S3Client } from '@aws-sdk/client-s3'
 import dotenv from 'dotenv'
-import { CollectionSlug, getPayload } from 'payload'
+import { type CollectionSlug, getPayload } from 'payload'
 
 import { getS3Client } from '@/lib/s3-client'
 
