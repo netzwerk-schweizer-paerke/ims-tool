@@ -7,9 +7,28 @@
   // package named `src`, and the components then read as unreachable.
   "dynamicallyLoaded": ["src/app/(payload)/admin/importMap.js"],
 
-  // postcss-nested is declared only to force yarn to hoist it for Turbopack. No file imports it.
+  // This key covers both directions, so it holds two groups.
+  //
+  // Declared on purpose, and imported by no source file:
+  // postcss-nested forces yarn to hoist it for Turbopack.
   // See .claude/rules/project/pitfalls/turbopack-needs-hoisted-postcss-plugins.md
-  "ignoreDependencies": ["postcss-nested"],
+  // next names babel-plugin-react-compiler as a string when `reactCompiler` is on, so the only
+  // importer lives inside node_modules. next.config.mjs sets no such key today.
+  // @types/nodemailer types `payload/dist/email/types.d.ts` and the nodemailer adapter. The runtime
+  // package ships none. See .claude/rules/project/pitfalls/removing-nodemailer-drops-its-types.md
+  //
+  // Imported by source, and deliberately not declared. Payload and its adapters install all four,
+  // so a declaration here would pin a second copy of a package payload already owns. json-schema is
+  // a type-only import that resolves through a transitive @types/json-schema.
+  "ignoreDependencies": [
+    "postcss-nested",
+    "babel-plugin-react-compiler",
+    "@types/nodemailer",
+    "@payloadcms/translations",
+    "bson-objectid",
+    "drizzle-orm",
+    "json-schema"
+  ],
 
   // The two admin stylesheets reach tailwindcss through PostCSS, not through a module resolver.
   "ignoreUnresolvedImports": ["tailwindcss"],
