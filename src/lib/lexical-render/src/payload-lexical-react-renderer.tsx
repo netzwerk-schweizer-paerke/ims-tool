@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
 
+import { RichTextLink } from '@/lib/lexical-render/src/rich-text-link'
 import { Document, DocumentsPublic, TaskFlow, TaskList } from '@/payload-types'
 
 export type AbstractElementNode<Type extends string> = AbstractNode<Type> & {
@@ -203,6 +204,20 @@ const isRenderableNode = (value: unknown): value is Node =>
 const childrenOf = (node: React.ReactNode): React.ReactNode =>
   React.isValidElement<{ children?: React.ReactNode }>(node) ? node.props.children : undefined
 
+// Every link that leaves this system gets the external icon. The label decides nothing: the
+// same document appears on one page with a file-name label and with a readable label.
+// The renderer hands each node its children already rendered, so `children` is a ReactNode
+// here rather than the `TextNode[]` that `LinkNode` declares.
+const renderExternalLink = (element: Omit<LinkNode, 'children'> & { children: React.ReactNode }) => (
+  <RichTextLink
+    href={element.fields.url}
+    newTab={element.fields.newTab}
+    style={getElementStyle<'link'>(element)}
+    variant={'external'}>
+    {linkTextReplacer(element.children)}
+  </RichTextLink>
+)
+
 const linkTextReplacer = (text: React.ReactNode): React.ReactNode => {
   // Every step is optional: a link node with no children (or whose child is not the
   // doubly-wrapped element this expects) leaves an intermediate undefined. The fallback
@@ -279,13 +294,14 @@ export const defaultElementRenderers: ElementRenderers = {
             )
           }
           return (
-            <Link
+            <RichTextLink
               href={url}
+              newTab={element.fields.newTab}
               style={getElementStyle<'link'>(element)}
-              target={element.fields.newTab ? '_blank' : '_self'}
-              title={filename || ''}>
+              title={filename || ''}
+              variant={'document'}>
               {linkTextReplacer(element.children)}
-            </Link>
+            </RichTextLink>
           )
         }
         case 'task-flows': {
@@ -313,26 +329,12 @@ export const defaultElementRenderers: ElementRenderers = {
           )
         }
         default: {
-          return (
-            <a
-              href={element.fields.url}
-              style={getElementStyle<'link'>(element)}
-              target={element.fields.newTab ? '_blank' : '_self'}>
-              {linkTextReplacer(element.children)}
-            </a>
-          )
+          return renderExternalLink(element)
         }
       }
     }
 
-    return (
-      <a
-        href={element.fields.url}
-        style={getElementStyle<'link'>(element)}
-        target={element.fields.newTab ? '_blank' : '_self'}>
-        {linkTextReplacer(element.children)}
-      </a>
-    )
+    return renderExternalLink(element)
   },
   list: (element) => {
     return React.createElement(
@@ -358,6 +360,21 @@ export const defaultElementRenderers: ElementRenderers = {
       // eslint-disable-next-line @next/next/no-img-element
       return <img alt={element.value.alt} src={element.value.url} />
     }
+
+    // A non-image upload used to render nothing, so an attached PDF disappeared from the page.
+    if (!element.value.url) {
+      return null
+    }
+
+    return (
+      <RichTextLink
+        href={element.value.url}
+        newTab={true}
+        title={element.value.filename}
+        variant={'document'}>
+        {element.value.filename}
+      </RichTextLink>
+    )
   },
 }
 

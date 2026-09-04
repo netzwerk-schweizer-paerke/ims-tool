@@ -1,0 +1,19 @@
+.rich-text-link {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4em;
+  line-height: 1.3;
+}
+
+.rich-text-link__icon {
+  flex: none;
+  height: 1em;
+  width: 1em;
+}
+
+/* A paragraph holding nothing but one of these links is a list row, so it drops the prose
+   spacing that separates real paragraphs. A run of them then reads as one compact list. */
+.prose p:has(> .rich-text-link:only-child) {
+  margin-bottom: 0.15em;
+  margin-top: 0.15em;
+}
