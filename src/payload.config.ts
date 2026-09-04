@@ -13,6 +13,7 @@ import sharp from 'sharp'
 
 import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { seedDevUser } from '@/config/seed/dev-user'
+import { parkSearchEndpoint } from '@/endpoints/park-search'
 import { processPdfEndpoint } from '@/endpoints/process-pdf'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
@@ -114,7 +115,12 @@ export default buildConfig({
       transactionLog: true,
     },
   }),
-  endpoints: [s3OrphanDetectionEndpoint, tenantHealthEndpoint, processPdfEndpoint],
+  endpoints: [
+    s3OrphanDetectionEndpoint,
+    tenantHealthEndpoint,
+    processPdfEndpoint,
+    parkSearchEndpoint,
+  ],
   globals: [],
   i18n: {
     fallbackLanguage: 'de',

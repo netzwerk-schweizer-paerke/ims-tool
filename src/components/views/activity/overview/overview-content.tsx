@@ -17,12 +17,21 @@ type Props = {
   landscape: LoadedLandscape
   links: ViewLinks
   locale: string
+  /** The admin view passes the keyword search. The public page passes none. */
+  search?: ReactNode
   /** The admin view passes the edit and share actions. The public page passes none. */
   toolbar?: ReactNode
 }
 
 /** The body of the process landscape. The admin view and the public share page both render it. */
-export const OverviewContent = ({ emptyAction, landscape, links, locale, toolbar }: Props) => {
+export const OverviewContent = ({
+  emptyAction,
+  landscape,
+  links,
+  locale,
+  search,
+  toolbar,
+}: Props) => {
   const { standardActivities, strategicActivities, supportActivities } = landscape
   const isEmpty =
     standardActivities.length === 0 &&
@@ -32,7 +41,12 @@ export const OverviewContent = ({ emptyAction, landscape, links, locale, toolbar
   return (
     <div className={''}>
       {/* The gap below the toolbar is the same on every view. See `flow-content.tsx`. */}
-      {toolbar && <div className={'mb-8 flex flex-row justify-end'}>{toolbar}</div>}
+      {(search || toolbar) && (
+        <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
+          <div>{search}</div>
+          <div className={'flex flex-row items-center'}>{toolbar}</div>
+        </div>
+      )}
       <div className={'relative z-10'}>
         <DragScrollWrapper direction={'horizontal'} scrollSpeed={2} showScrollbar={true}>
           <div className="flex select-none flex-row items-stretch justify-stretch gap-8">

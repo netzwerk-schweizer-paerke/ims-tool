@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { AdminViewServerProps } from 'payload'
 import React from 'react'
 
+import { LandscapeSearch } from '@/components/landscape-search'
 import { StepNav } from '@/components/step-nav'
 import { ViewToolbar } from '@/components/view-toolbar'
 import { OverviewContent } from '@/components/views/activity/overview/overview-content'
@@ -81,6 +82,11 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
           landscape={landscape}
           links={ADMIN_VIEW_LINKS}
           locale={localeCode}
+          search={
+            selectedOrganisationId ? (
+              <LandscapeSearch links={ADMIN_VIEW_LINKS} locale={localeCode} />
+            ) : undefined
+          }
           toolbar={
             selectedOrganisationId ? (
               <ViewToolbar
