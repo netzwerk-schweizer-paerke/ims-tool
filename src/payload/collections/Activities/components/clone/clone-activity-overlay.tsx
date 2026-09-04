@@ -9,13 +9,12 @@ import {
 } from '@/payload/collections/Activities/components/clone/clone-activity-button'
 import { DrawerHeader } from '@/payload/components/drawer-header'
 import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
-import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
-import {
-  CloneConfigurationForm,
-  CloneStatusError,
-  CloneStatusPartial,
-  CloneStatusSuccess,
-} from '@/payload/utilities/cloning/ui/modal/clone-activities'
+import { type CloneConfig } from '@/payload/utilities/cloning/ui/hooks/types'
+import { useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks/use-clone-overlay'
+import { CloneConfigurationForm } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-configuration-form'
+import { CloneStatusError } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-status-error'
+import { CloneStatusPartial } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-status-partial'
+import { CloneStatusSuccess } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-status-success'
 
 type Props = {
   documents: Activity[] // Changed from 'activities' to match GenericCloneButton interface

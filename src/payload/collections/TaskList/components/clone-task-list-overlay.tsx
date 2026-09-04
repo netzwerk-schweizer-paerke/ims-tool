@@ -5,13 +5,12 @@ import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 import { TaskList } from '@/payload-types'
 import { DrawerHeader } from '@/payload/components/drawer-header'
 import { CloneLoadingOverlay } from '@/payload/utilities/cloning/ui/components'
-import { type CloneConfig, useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks'
-import {
-  CloneConfigurationForm,
-  CloneStatusError,
-  CloneStatusPartial,
-  CloneStatusSuccess,
-} from '@/payload/utilities/cloning/ui/modal/clone-activities'
+import { type CloneConfig } from '@/payload/utilities/cloning/ui/hooks/types'
+import { useCloneOverlay } from '@/payload/utilities/cloning/ui/hooks/use-clone-overlay'
+import { CloneConfigurationForm } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-configuration-form'
+import { CloneStatusError } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-status-error'
+import { CloneStatusPartial } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-status-partial'
+import { CloneStatusSuccess } from '@/payload/utilities/cloning/ui/modal/clone-activities/clone-status-success'
 
 // Use the same baseClass and drawerSlug as Activities for consistency
 export const baseClass = 'clone-task-lists'

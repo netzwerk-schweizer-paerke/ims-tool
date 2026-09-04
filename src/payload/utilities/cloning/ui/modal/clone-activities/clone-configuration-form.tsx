@@ -9,7 +9,8 @@ import {
   FormSection,
   SelectAllCheckbox,
 } from '@/payload/utilities/cloning/ui/form'
-import { CloneableCollectionSlug, useClonePreflight } from '@/payload/utilities/cloning/ui/hooks'
+import { CloneableCollectionSlug } from '@/payload/utilities/cloning/ui/hooks/types'
+import { useClonePreflight } from '@/payload/utilities/cloning/ui/hooks/use-clone-preflight'
 
 import { CloneInfoPanel } from './clone-info-panel'
 
