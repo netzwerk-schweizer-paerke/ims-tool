@@ -13,8 +13,10 @@ import sharp from 'sharp'
 
 import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { seedDevUser } from '@/config/seed/dev-user'
+import { adminStatsEndpoint } from '@/endpoints/admin-stats'
 import { parkSearchEndpoint } from '@/endpoints/park-search'
 import { processPdfEndpoint } from '@/endpoints/process-pdf'
+import { s3OrphanDeleteEndpoint } from '@/endpoints/s3-orphan-delete'
 import { s3OrphanDetectionEndpoint } from '@/endpoints/s3-orphan-detection'
 import { tenantHealthEndpoint } from '@/endpoints/tenant-health'
 import { customI18nTranslations } from '@/lib/custom-i18n-translations'
@@ -29,6 +31,7 @@ import { ShareLinks } from '@/payload/collections/ShareLinks'
 import { TaskFlows } from '@/payload/collections/TaskFlow'
 import { TaskLists } from '@/payload/collections/TaskList'
 import { Users } from '@/payload/collections/Users'
+import { Statistics } from '@/payload/globals/Statistics'
 import { deepLTranslate } from '@/plugins/deeplTranslate'
 
 const filename = fileURLToPath(import.meta.url)
@@ -117,11 +120,13 @@ export default buildConfig({
   }),
   endpoints: [
     s3OrphanDetectionEndpoint,
+    s3OrphanDeleteEndpoint,
     tenantHealthEndpoint,
     processPdfEndpoint,
     parkSearchEndpoint,
+    adminStatsEndpoint,
   ],
-  globals: [],
+  globals: [Statistics],
   i18n: {
     fallbackLanguage: 'de',
     supportedLanguages: { de, en, fr, it },

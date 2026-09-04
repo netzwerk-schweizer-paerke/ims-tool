@@ -18,6 +18,7 @@ import { ProcessTestField as ProcessTestField_1b1fa1413e304a6d3a95c1ca84726387 }
 import { ProcessTaskParallelField as ProcessTaskParallelField_ce11f6fca5c05bd2d5b0507aec04ab55 } from '@/components/graph/fields/graph/flows/parallel/process-task-parallel-field'
 import { CloneTaskFlowsButton as CloneTaskFlowsButton_3140b54a675ed487f54a48d38a32bb67 } from '@/payload/collections/TaskFlow/components/clone-task-flows-button'
 import { CloneTaskListsButton as CloneTaskListsButton_812b2d715941e8897faa8c83c55fa333 } from '@/payload/collections/TaskList/components/clone-task-lists-button'
+import { StatisticsView as StatisticsView_a54ecb7ad0012715a592b0f9a2b17267 } from '@/components/views/statistics'
 import { Icon as Icon_f8022cf35b3d492829ec1a405bd134e9 } from '@/components/icon'
 import { Logo as Logo_7a89b5675912f3f4f82dd41bbb03d52e } from '@/components/logo'
 import { ActivityLandscapeLink as ActivityLandscapeLink_1f583f1712000b1eebb17dfdc7ea52f5 } from '@/components/activity-landscape-link'
@@ -51,6 +52,7 @@ export const importMap = {
   "@/components/graph/fields/graph/flows/parallel/process-task-parallel-field#ProcessTaskParallelField": ProcessTaskParallelField_ce11f6fca5c05bd2d5b0507aec04ab55,
   "@/payload/collections/TaskFlow/components/clone-task-flows-button#CloneTaskFlowsButton": CloneTaskFlowsButton_3140b54a675ed487f54a48d38a32bb67,
   "@/payload/collections/TaskList/components/clone-task-lists-button#CloneTaskListsButton": CloneTaskListsButton_812b2d715941e8897faa8c83c55fa333,
+  "@/components/views/statistics#StatisticsView": StatisticsView_a54ecb7ad0012715a592b0f9a2b17267,
   "@/components/icon#Icon": Icon_f8022cf35b3d492829ec1a405bd134e9,
   "@/components/logo#Logo": Logo_7a89b5675912f3f4f82dd41bbb03d52e,
   "@/components/activity-landscape-link#ActivityLandscapeLink": ActivityLandscapeLink_1f583f1712000b1eebb17dfdc7ea52f5,

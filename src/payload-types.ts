@@ -112,8 +112,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('de' | 'fr' | 'it') | ('de' | 'fr' | 'it')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    statistics: Statistic;
+  };
+  globalsSelect: {
+    statistics: StatisticsSelect<false> | StatisticsSelect<true>;
+  };
   locale: 'de' | 'fr' | 'it';
   widgets: {
     collections: CollectionsWidget;
@@ -1574,6 +1578,24 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "statistics".
+ */
+export interface Statistic {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "statistics_select".
+ */
+export interface StatisticsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

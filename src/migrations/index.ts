@@ -17,6 +17,7 @@ import * as migration_20251205_214438 from './20251205_214438';
 import * as migration_20260902_160000 from './20260902_160000';
 import * as migration_20260904_093453_add_share_links from './20260904_093453_add_share_links';
 import * as migration_20260904_183652_share_link_expiry from './20260904_183652_share_link_expiry';
+import * as migration_20260904_222437_add_statistics_global from './20260904_222437_add_statistics_global';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20260904_183652_share_link_expiry.up,
     down: migration_20260904_183652_share_link_expiry.down,
-    name: '20260904_183652_share_link_expiry'
+    name: '20260904_183652_share_link_expiry',
+  },
+  {
+    up: migration_20260904_222437_add_statistics_global.up,
+    down: migration_20260904_222437_add_statistics_global.down,
+    name: '20260904_222437_add_statistics_global'
   },
 ];

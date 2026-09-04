@@ -661,6 +661,14 @@ export const I18nCollection = {
       it: 'Varie attività',
     },
   },
+  globalLabel: {
+    statistics: {
+      de: 'Statistik',
+      en: 'Statistics',
+      fr: 'Statistiques',
+      it: 'Statistiche',
+    },
+  },
   roles: {
     admin: {
       de: 'Admin',

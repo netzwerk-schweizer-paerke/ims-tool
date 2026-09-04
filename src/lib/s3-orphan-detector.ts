@@ -3,7 +3,12 @@
  * Optimized version with better error handling and timeout management
  */
 
-import { ListObjectsV2Command, ListObjectsV2CommandOutput, S3Client } from '@aws-sdk/client-s3'
+import {
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+  ListObjectsV2CommandOutput,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import { groupBy, orderBy } from 'es-toolkit'
 import { writeFileSync } from 'node:fs'
 import { CollectionSlug, PayloadRequest } from 'payload'
@@ -11,8 +16,35 @@ import { CollectionSlug, PayloadRequest } from 'payload'
 import type { Document, DocumentsPublic, Media } from '../payload-types'
 
 import { getS3Client } from './s3-client'
+import { coversWholeBucket } from './s3-orphan-safety'
+
+interface OrphanDeletionFailure {
+  key: string
+  message: string
+}
+
+interface OrphanDeletionResult {
+  deleted: string[]
+  failed: OrphanDeletionFailure[]
+  freedBytes: number
+  /** Set when the request was refused whole. Nothing is deleted in that case. */
+  refusedReason: 'covers-whole-bucket' | null
+  requested: number
+  skipped: OrphanDeletionSkip[]
+}
+
+interface OrphanDeletionSkip {
+  key: string
+  /** `referenced` means a record now points at it. `missing` means the bucket has no object. */
+  reason: 'missing' | 'referenced'
+}
 
 interface OrphanReport {
+  /**
+   * Every orphaned key. `orphansByPrefix[].objects` caps at the 10 largest per prefix for
+   * display, so it is not the deletion list. The delete endpoint takes keys from here.
+   */
+  orphanKeys: string[]
   orphansByPrefix: Array<{
     count: number
     objects: Array<{
@@ -51,6 +83,85 @@ class S3OrphanDetector {
     this.payloadRequest = req
     this.bucket = process.env.S3_BUCKET || ''
     this.s3Client = getS3Client()
+  }
+
+  /**
+   * Delete the named objects, after a fresh check that each one is still an orphan.
+   *
+   * The caller sends the keys a report showed it. That report is a point-in-time read, so a
+   * key can gain a reference between the report and the click. This re-reads the references
+   * and the bucket, and it deletes only a key that is still unreferenced and still present.
+   */
+  async deleteOrphans(keys: readonly string[]): Promise<OrphanDeletionResult> {
+    this.validateEnvironment()
+
+    const requested = [...new Set(keys)]
+    const [s3Objects, payloadReferences] = await Promise.all([
+      this.listAllS3Objects(),
+      this.collectPayloadFileReferences(),
+    ])
+
+    const sizeByKey = new Map(s3Objects.map((object) => [object.key, object.size]))
+    const deletable: string[] = []
+    const skipped: OrphanDeletionSkip[] = []
+
+    for (const key of requested) {
+      if (payloadReferences.has(key)) {
+        skipped.push({ key, reason: 'referenced' })
+        continue
+      }
+
+      if (!sizeByKey.has(key)) {
+        skipped.push({ key, reason: 'missing' })
+        continue
+      }
+
+      deletable.push(key)
+    }
+
+    // A sweep that names every object has failed to build the reference set, not found that
+    // every file is unused. Deleting on that answer empties the bucket.
+    if (coversWholeBucket(deletable.length, s3Objects.length)) {
+      return {
+        deleted: [],
+        failed: [],
+        freedBytes: 0,
+        refusedReason: 'covers-whole-bucket',
+        requested: requested.length,
+        skipped,
+      }
+    }
+
+    const deleted: string[] = []
+    const failed: OrphanDeletionFailure[] = []
+
+    // `DeleteObjects` accepts at most 1000 keys per request.
+    for (let start = 0; start < deletable.length; start += 1000) {
+      const batch = deletable.slice(start, start + 1000)
+      const response = await this.s3Client.send(
+        new DeleteObjectsCommand({
+          Bucket: this.bucket,
+          Delete: { Objects: batch.map((Key) => ({ Key })), Quiet: false },
+        }),
+      )
+
+      for (const entry of response.Deleted ?? []) {
+        if (entry.Key) deleted.push(entry.Key)
+      }
+
+      for (const entry of response.Errors ?? []) {
+        if (entry.Key) failed.push({ key: entry.Key, message: entry.Message ?? 'Unknown error' })
+      }
+    }
+
+    return {
+      deleted,
+      failed,
+      freedBytes: deleted.reduce((sum, key) => sum + (sizeByKey.get(key) ?? 0), 0),
+      refusedReason: null,
+      requested: requested.length,
+      skipped,
+    }
   }
 
   async execute(): Promise<void> {
@@ -109,6 +220,7 @@ class S3OrphanDetector {
     )
 
     return {
+      orphanKeys: orphans.map((orphan) => orphan.key),
       orphansByPrefix: sortedPrefixEntries.map(([prefix, objs]) => ({
         count: objs.length,
         objects: orderBy(
@@ -487,3 +599,4 @@ class S3OrphanDetector {
 }
 
 export { S3OrphanDetector }
+export type { OrphanDeletionFailure, OrphanDeletionResult, OrphanDeletionSkip, OrphanReport }
