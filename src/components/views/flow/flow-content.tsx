@@ -24,18 +24,19 @@ export const FlowContent = ({ flowBlock, toolbar }: Props) => {
           <Translate k={'flowBlock:title'} />
         </h3>
       </div>
-      <div className={'flex flex-row items-center justify-between gap-4'}>
+      {/* One gap below the toolbar, stated here. Every view repeats it. */}
+      <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
         <LastUpdated date={flowBlock.updatedAt} />
         {toolbar}
       </div>
       {flowBlock.description && (
-        <div className={'mt-8'}>
+        <div className={'mb-8'}>
           <div className={'prose prose-lg py-6 pl-4'}>
             <PayloadLexicalReactRenderer content={flowBlock.description} />
           </div>
         </div>
       )}
-      <div className={'mt-8'}>
+      <div>
         <div className={'grid grid-cols-[440px_auto_auto_auto]'}>
           <div></div>
           <div className={'pl-4'}>

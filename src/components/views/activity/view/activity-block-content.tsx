@@ -30,11 +30,11 @@ export const ActivityBlockContent = ({ activity, activityBlock, links, toolbar }
         <Translate k={'activityBlock:title'} />
       </h3>
     </div>
-    <div className={'flex flex-row items-center justify-between gap-4'}>
+    <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
       <LastUpdated date={activity.updatedAt} />
       {toolbar}
     </div>
-    <div className={'mt-8 grid grid-cols-[28%_auto_28%]'}>
+    <div className={'grid grid-cols-[28%_auto_28%]'}>
       {activityBlock ? (
         <>
           <div className={'grid grid-cols-[auto_48px]'}>

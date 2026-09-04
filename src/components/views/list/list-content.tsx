@@ -24,18 +24,19 @@ export const ListContent = ({ listBlock, toolbar }: Props) => {
           <Translate k={'listBlock:title'} />
         </h3>
       </div>
-      <div className={'flex flex-row items-center justify-between gap-4'}>
+      {/* One gap below the toolbar, stated here. Every view repeats it. */}
+      <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
         <LastUpdated date={listBlock.updatedAt} />
         {toolbar}
       </div>
       {listBlock.description && (
-        <div className={'mt-8'}>
+        <div className={'mb-8'}>
           <div className={'prose prose-lg py-6 pl-4'}>
             <PayloadLexicalReactRenderer content={listBlock.description} />
           </div>
         </div>
       )}
-      <div className={'mt-8'}>
+      <div>
         <div className={'grid grid-cols-3'}>
           <div className={'pl-4'}>
             <Translate k={'listBlock:table:keypoints'} />

@@ -31,7 +31,8 @@ export const OverviewContent = ({ emptyAction, landscape, links, locale, toolbar
 
   return (
     <div className={''}>
-      {toolbar && <div className={'flex flex-row justify-end'}>{toolbar}</div>}
+      {/* The gap below the toolbar is the same on every view. See `flow-content.tsx`. */}
+      {toolbar && <div className={'mb-8 flex flex-row justify-end'}>{toolbar}</div>}
       <div className={'relative z-10'}>
         <DragScrollWrapper direction={'horizontal'} scrollSpeed={2} showScrollbar={true}>
           <div className="flex select-none flex-row items-stretch justify-stretch gap-8">
