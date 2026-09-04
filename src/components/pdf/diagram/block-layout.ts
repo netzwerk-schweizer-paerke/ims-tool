@@ -86,19 +86,17 @@ export const sliceRow = (
   )
 }
 
+type OrderedBlock = { block: ActivityTaskCompoundBlock; shape: 'io' | 'task' }
+
 /**
- * Stacks one activity's blocks into a column, in the order the screen draws them.
+ * One activity's blocks in the order the screen draws them.
  *
- * The screen reads the same order in `activity-flow.tsx`: a leading input, then the tasks, then a
- * trailing output. A block with no label still takes its slot, so the arrows keep their positions.
+ * `activity-flow.tsx` reads the same order: a leading input, then the tasks, then a trailing
+ * output. A block with no label still takes its slot, so the arrows keep their positions.
  */
-export const layoutActivityColumn = (
-  activity: Activity,
-  origin: { x: number; y: number },
-  options: LayoutOptions = DEFAULT_LAYOUT,
-): ActivityColumn => {
+const orderedBlocks = (activity: Activity): OrderedBlock[] => {
   const stored = activity.blocks ?? []
-  const ordered: { block: ActivityTaskCompoundBlock; shape: 'io' | 'task' }[] = []
+  const ordered: OrderedBlock[] = []
 
   for (const [index, block] of stored.entries()) {
     const compound = block as ActivityTaskCompoundBlock
@@ -113,26 +111,49 @@ export const layoutActivityColumn = (
     }
   }
 
+  return ordered
+}
+
+/** One block's wrapper box and the shape box inside its padding. */
+const blockAt = (
+  entry: OrderedBlock,
+  x: number,
+  y: number,
+  blockWidth: number,
+  options: LayoutOptions,
+): LaidOutBlock => ({
+  id: entry.block.id,
+  label: entry.block.graph?.task?.text ?? '',
+  rects: {
+    outer: { height: options.blockHeight, width: blockWidth, x, y },
+    root: {
+      height: options.blockHeight - options.inset * 2,
+      width: blockWidth - options.inset * 2,
+      x: x + options.inset,
+      y: y + options.inset,
+    },
+  },
+  shape: entry.shape,
+})
+
+/** Stacks one activity's blocks into a column, as the strategy and standard bands draw them. */
+export const layoutActivityColumn = (
+  activity: Activity,
+  origin: { x: number; y: number },
+  options: LayoutOptions = DEFAULT_LAYOUT,
+): ActivityColumn => {
+  const ordered = orderedBlocks(activity)
   const blockWidth = blockWidthOf(options)
 
-  const blocks = ordered.map((entry, index) => {
-    const y = origin.y + index * (options.blockHeight + options.gap)
-
-    return {
-      id: entry.block.id,
-      label: entry.block.graph?.task?.text ?? '',
-      rects: {
-        outer: { height: options.blockHeight, width: blockWidth, x: origin.x, y },
-        root: {
-          height: options.blockHeight - options.inset * 2,
-          width: blockWidth - options.inset * 2,
-          x: origin.x + options.inset,
-          y: y + options.inset,
-        },
-      },
-      shape: entry.shape,
-    }
-  })
+  const blocks = ordered.map((entry, index) =>
+    blockAt(
+      entry,
+      origin.x,
+      origin.y + index * (options.blockHeight + options.gap),
+      blockWidth,
+      options,
+    ),
+  )
 
   const height =
     blocks.length === 0
@@ -140,6 +161,84 @@ export const layoutActivityColumn = (
       : blocks.length * options.blockHeight + (blocks.length - 1) * options.gap
 
   return { blocks, height, title: activity.name, width: blockWidth }
+}
+
+/**
+ * Wraps one activity's blocks across the width it is given, as the support band draws them.
+ *
+ * `activity-support.tsx` lays its blocks out with `flex-row flex-wrap` and renders no arrows. A
+ * column would make one support activity of 8 blocks eight blocks tall, which no page holds.
+ */
+export const layoutActivityGrid = (
+  activity: Activity,
+  origin: { x: number; y: number },
+  availableWidth: number,
+  columnGap: number,
+  options: LayoutOptions = DEFAULT_LAYOUT,
+): ActivityColumn => {
+  const ordered = orderedBlocks(activity)
+  const blockWidth = blockWidthOf(options)
+  const perRow = Math.max(1, Math.floor((availableWidth + columnGap) / (blockWidth + columnGap)))
+
+  const blocks = ordered.map((entry, index) =>
+    blockAt(
+      entry,
+      origin.x + (index % perRow) * (blockWidth + columnGap),
+      origin.y + Math.floor(index / perRow) * options.blockHeight,
+      blockWidth,
+      options,
+    ),
+  )
+
+  return {
+    blocks,
+    height: Math.ceil(ordered.length / perRow) * options.blockHeight,
+    title: activity.name,
+    width: availableWidth,
+  }
+}
+
+/** How many grid rows fit the space a page gives one band. */
+export const gridRowsPerSlice = (available: number, options: LayoutOptions): number =>
+  Math.max(1, Math.floor(available / options.blockHeight))
+
+/**
+ * Cuts a wrapped band into page-sized slices of whole rows, and moves each slice back to the top.
+ *
+ * One SVG cannot break, so a band taller than the page clips under `wrap={false}`. The cut reads
+ * the row a block sits on, never its index, because one grid row holds many blocks.
+ */
+export const sliceGrid = (
+  columns: ActivityColumn[],
+  rowsPerSlice: number,
+  options: LayoutOptions = DEFAULT_LAYOUT,
+): ActivityColumn[][] => {
+  const tallest = Math.max(...columns.map((column) => column.height), options.blockHeight)
+  const rows = Math.max(1, Math.ceil(tallest / options.blockHeight))
+  const sliceCount = Math.max(1, Math.ceil(rows / rowsPerSlice))
+  const band = rowsPerSlice * options.blockHeight
+
+  return Array.from({ length: sliceCount }, (_, slice) => {
+    const top = slice * band
+
+    return columns.map((column) => {
+      const blocks = column.blocks
+        .filter((block) => block.rects.outer.y >= top && block.rects.outer.y < top + band)
+        .map((block) => ({
+          ...block,
+          rects: {
+            outer: { ...block.rects.outer, y: block.rects.outer.y - top },
+            root: { ...block.rects.root, y: block.rects.root.y - top },
+          },
+        }))
+
+      const rowCount = new Set(
+        blocks.map((block) => Math.round(block.rects.outer.y / options.blockHeight)),
+      ).size
+
+      return { ...column, blocks, height: rowCount * options.blockHeight }
+    })
+  })
 }
 
 /**

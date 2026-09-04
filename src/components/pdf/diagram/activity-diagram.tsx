@@ -15,6 +15,8 @@ type Props = {
   activities: Activity[]
   columns: ActivityColumn[]
   height: number
+  /** The support band draws no arrows, because `activity-support.tsx` renders none either. */
+  showArrows?: boolean
   width: number
 }
 
@@ -89,7 +91,13 @@ const blockArrows = (activity: Activity, blocks: Map<string, BlockRects>) =>
  * The labels sit outside the SVG, because react-pdf cannot wrap text inside one. An absolutely
  * placed `Text` uses the same rectangle the shape does, so the two stay aligned.
  */
-export const ActivityDiagram = ({ activities, columns, height, width }: Props) => {
+export const ActivityDiagram = ({
+  activities,
+  columns,
+  height,
+  showArrows = true,
+  width,
+}: Props) => {
   const boxes = new Map<string, BlockRects>()
 
   for (const column of columns) {
@@ -106,7 +114,7 @@ export const ActivityDiagram = ({ activities, columns, height, width }: Props) =
             <React.Fragment key={block.id}>{blockOutline(block)}</React.Fragment>
           )),
         )}
-        {activities.flatMap((activity) => blockArrows(activity, boxes))}
+        {showArrows && activities.flatMap((activity) => blockArrows(activity, boxes))}
       </Svg>
       {columns.flatMap((column) =>
         column.blocks.map((block) => (

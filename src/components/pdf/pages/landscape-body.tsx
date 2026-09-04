@@ -6,12 +6,15 @@ import {
   blocksPerSlice,
   blockWidthOf,
   DEFAULT_LAYOUT,
+  gridRowsPerSlice,
+  layoutActivityGrid,
   layoutActivityRow,
+  sliceGrid,
   sliceRow,
 } from '@/components/pdf/diagram/block-layout'
 import { localeLabel, PdfCatalogue } from '@/components/pdf/lib/pdf-labels'
 import { NoBreak } from '@/components/pdf/pages/page-frame'
-import { styles } from '@/components/pdf/theme'
+import { LANDSCAPE_CONTENT_WIDTH, SPACE, styles } from '@/components/pdf/theme'
 import { I18nCollection } from '@/lib/i18n-collection'
 import { Activity } from '@/payload-types'
 import { LoadedLandscape } from '@/payload/utilities/share/load-landscape'
@@ -28,24 +31,54 @@ const LANDSCAPE_COLUMN_SPACE = 400
 
 type GroupProps = {
   activities: Activity[]
+  /**
+   * How the band arranges one activity's blocks.
+   *
+   * `column` stacks them and draws the flow arrows, as the strategy and standard bands do. `grid`
+   * wraps them across the page and draws none, as `activity-support.tsx` does.
+   */
+  layout?: 'column' | 'grid'
   title: string
 }
 
-const ActivityGroup = ({ activities, title }: GroupProps) => {
+const ActivityGroup = ({ activities, layout = 'column', title }: GroupProps) => {
   if (activities.length === 0) {
     return null
   }
 
   const options = DEFAULT_LAYOUT
-  const columns = layoutActivityRow(activities, { x: 0, y: 0 }, COLUMN_GAP, options)
-  const width = activities.length * blockWidthOf(options) + (activities.length - 1) * COLUMN_GAP
-  const slices = sliceRow(columns, blocksPerSlice(LANDSCAPE_COLUMN_SPACE, options), options)
+  const isGrid = layout === 'grid'
+
+  // Each activity of a wrapped band takes an equal share of the page width, as the screen's
+  // `flex-row` of `ActivitySupport` does.
+  const share =
+    (LANDSCAPE_CONTENT_WIDTH - (activities.length - 1) * COLUMN_GAP) / activities.length
+
+  const columns = isGrid
+    ? activities.map((activity, index) =>
+        layoutActivityGrid(
+          activity,
+          { x: index * (share + COLUMN_GAP), y: 0 },
+          share,
+          COLUMN_GAP,
+          options,
+        ),
+      )
+    : layoutActivityRow(activities, { x: 0, y: 0 }, COLUMN_GAP, options)
+
+  const width = isGrid
+    ? LANDSCAPE_CONTENT_WIDTH
+    : activities.length * blockWidthOf(options) + (activities.length - 1) * COLUMN_GAP
+
+  const slices = isGrid
+    ? sliceGrid(columns, gridRowsPerSlice(LANDSCAPE_COLUMN_SPACE, options), options)
+    : sliceRow(columns, blocksPerSlice(LANDSCAPE_COLUMN_SPACE, options), options)
 
   return (
     <>
       {slices.map((slice, sliceIndex) => (
         <NoBreak key={sliceIndex}>
-          <View style={{ marginBottom: 18 }}>
+          <View style={{ marginBottom: SPACE * 3 }}>
             {/* Only the first slice carries the titles. The rest continues the same row. */}
             {sliceIndex === 0 && (
               <>
@@ -68,6 +101,7 @@ const ActivityGroup = ({ activities, title }: GroupProps) => {
               activities={activities}
               columns={slice}
               height={Math.max(...slice.map((column) => column.height), options.blockHeight) + 8}
+              showArrows={!isGrid}
               width={width}
             />
           </View>
@@ -108,6 +142,7 @@ export const LandscapeBody = ({
       />
       <ActivityGroup
         activities={landscape.supportActivities}
+        layout={'grid'}
         title={localeLabel(I18nCollection.fieldLabel.supportActivities, locale)}
       />
     </View>

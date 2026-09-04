@@ -6,8 +6,11 @@ import {
   blocksPerSlice,
   blockWidthOf,
   DEFAULT_LAYOUT,
+  gridRowsPerSlice,
   layoutActivityColumn,
+  layoutActivityGrid,
   layoutActivityRow,
+  sliceGrid,
   sliceRow,
 } from './block-layout'
 
@@ -164,5 +167,107 @@ describe('sliceRow', () => {
     const { blockHeight, gap } = DEFAULT_LAYOUT
 
     expect(slices[1][0].height).toBe(blockHeight * 2 + gap)
+  })
+})
+
+describe('layoutActivityGrid', () => {
+  const GAP = 16
+  const gridOf = (count: number, availableWidth: number) =>
+    layoutActivityGrid(
+      activity(
+        'Unterstützung',
+        Array.from({ length: count }, (_, i) => block(`b${i}`, 'activity-task')),
+      ),
+      ORIGIN,
+      availableWidth,
+      GAP,
+    )
+
+  const rowWidth = (perRow: number) => perRow * (blockWidthOf(DEFAULT_LAYOUT) + GAP) - GAP
+
+  test('wraps the blocks once the row is full', () => {
+    const grid = gridOf(8, rowWidth(6))
+
+    expect(grid.blocks.map((b) => b.rects.outer.y)).toEqual([
+      0, 0, 0, 0, 0, 0,
+      DEFAULT_LAYOUT.blockHeight,
+      DEFAULT_LAYOUT.blockHeight,
+    ])
+  })
+
+  test('places the blocks left to right within a row', () => {
+    const step = blockWidthOf(DEFAULT_LAYOUT) + GAP
+    const grid = gridOf(3, rowWidth(6))
+
+    expect(grid.blocks.map((b) => b.rects.outer.x)).toEqual([0, step, step * 2])
+  })
+
+  test('reports the height in whole rows', () => {
+    expect(gridOf(8, rowWidth(6)).height).toBe(DEFAULT_LAYOUT.blockHeight * 2)
+    expect(gridOf(6, rowWidth(6)).height).toBe(DEFAULT_LAYOUT.blockHeight)
+  })
+
+  test('keeps one block per row when the width holds none', () => {
+    const grid = gridOf(3, 1)
+
+    expect(grid.blocks.map((b) => b.rects.outer.x)).toEqual([0, 0, 0])
+    expect(grid.height).toBe(DEFAULT_LAYOUT.blockHeight * 3)
+  })
+
+  test('reports zero height for an activity with no blocks', () => {
+    expect(gridOf(0, rowWidth(6)).height).toBe(0)
+  })
+})
+
+describe('gridRowsPerSlice', () => {
+  test('counts the whole rows that fit', () => {
+    expect(gridRowsPerSlice(DEFAULT_LAYOUT.blockHeight * 3, DEFAULT_LAYOUT)).toBe(3)
+  })
+
+  test('never reports zero, so a slice always carries one row', () => {
+    expect(gridRowsPerSlice(1, DEFAULT_LAYOUT)).toBe(1)
+  })
+})
+
+describe('sliceGrid', () => {
+  const GAP = 16
+  const wide = 6 * (blockWidthOf(DEFAULT_LAYOUT) + GAP) - GAP
+  const gridOf = (count: number) => [
+    layoutActivityGrid(
+      activity(
+        'Unterstützung',
+        Array.from({ length: count }, (_, i) => block(`b${i}`, 'activity-task')),
+      ),
+      ORIGIN,
+      wide,
+      GAP,
+    ),
+  ]
+
+  test('returns one slice when every row fits', () => {
+    expect(sliceGrid(gridOf(8), 5, DEFAULT_LAYOUT)).toHaveLength(1)
+  })
+
+  test('cuts on the row, so a row is never split between two slices', () => {
+    const slices = sliceGrid(gridOf(18), 2, DEFAULT_LAYOUT)
+
+    expect(slices).toHaveLength(2)
+    expect(slices[0][0].blocks.map((b) => b.id)).toEqual([
+      'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10', 'b11',
+    ])
+    expect(slices[1][0].blocks.map((b) => b.id)).toEqual(['b12', 'b13', 'b14', 'b15', 'b16', 'b17'])
+  })
+
+  test('moves each slice back to the top', () => {
+    const slices = sliceGrid(gridOf(18), 2, DEFAULT_LAYOUT)
+
+    expect(slices[1][0].blocks[0].rects.outer.y).toBe(ORIGIN.y)
+  })
+
+  test('reports the height of each slice, not of the whole grid', () => {
+    const slices = sliceGrid(gridOf(18), 2, DEFAULT_LAYOUT)
+
+    expect(slices[0][0].height).toBe(DEFAULT_LAYOUT.blockHeight * 2)
+    expect(slices[1][0].height).toBe(DEFAULT_LAYOUT.blockHeight)
   })
 })

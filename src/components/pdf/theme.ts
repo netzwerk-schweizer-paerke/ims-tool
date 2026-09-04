@@ -59,6 +59,12 @@ export const PAGE_MARGIN = 32
 /** What the two page margins leave for the content of a portrait page. */
 export const CONTENT_WIDTH = A4_WIDTH - PAGE_MARGIN * 2
 
+/** The long edge of A4, which is the width of the landscape page the process landscape uses. */
+const A4_HEIGHT = 841.89
+
+/** What the two page margins leave for the content of a landscape page. */
+export const LANDSCAPE_CONTENT_WIDTH = A4_HEIGHT - PAGE_MARGIN * 2
+
 /** The arrow between the three panels of an activity block. */
 export const PANEL_ARROW_WIDTH = 22
 
