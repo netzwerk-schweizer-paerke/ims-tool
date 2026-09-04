@@ -38,6 +38,8 @@ interface CloneConfigurationFormProps {
 
 type FormField = {
   export: boolean
+  /** Rendered muted after the label. A health finding names the record by this id. */
+  hint: string
   key: string
   label: string
 }
@@ -74,6 +76,7 @@ export const CloneConfigurationForm = ({
   const availableOptions = useMemo(() => {
     const formFields = activities.map((activity) => ({
       export: false,
+      hint: `#${activity.id}`,
       key: `activity-${activity.id}`,
       label: activity.name,
     }))
@@ -177,6 +180,7 @@ export const CloneConfigurationForm = ({
               <FormCheckbox
                 checked={formState[field.key] || false}
                 disabled={preflight.checking || isCloning}
+                hint={field.hint}
                 key={field.key}
                 label={field.label}
                 onChange={() => onCheckboxChange(field.key)}
