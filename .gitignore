@@ -51,3 +51,4 @@ WIKI.md
 .cbmignore
 .cbm/
 .codebase-memory/
+.playwright-mcp/
