@@ -10,6 +10,8 @@ import { CollectionSlug, PayloadRequest } from 'payload'
 
 import type { Document, DocumentsPublic, Media } from '../payload-types'
 
+import { getS3Client } from './s3-client'
+
 interface OrphanReport {
   orphansByPrefix: Array<{
     count: number
@@ -48,15 +50,7 @@ class S3OrphanDetector {
   constructor(req: PayloadRequest) {
     this.payloadRequest = req
     this.bucket = process.env.S3_BUCKET || ''
-    this.s3Client = new S3Client({
-      credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-      },
-      endpoint: process.env.S3_ENDPOINT || '',
-      forcePathStyle: true,
-      region: process.env.S3_REGION || 'auto',
-    })
+    this.s3Client = getS3Client()
   }
 
   async execute(): Promise<void> {

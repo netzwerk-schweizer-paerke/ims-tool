@@ -21,6 +21,8 @@ import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
 import dotenv from 'dotenv'
 import { CollectionSlug, getPayload } from 'payload'
 
+import { getS3Client } from '@/lib/s3-client'
+
 dotenv.config()
 
 /** Collections whose objects are filed under a per-document prefix. */
@@ -81,15 +83,7 @@ const run = async () => {
   const { default: config } = await import('../payload.config.js')
   const payload = await getPayload({ config })
 
-  const client = new S3Client({
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-    },
-    endpoint: process.env.S3_ENDPOINT || '',
-    forcePathStyle: true,
-    region: process.env.S3_REGION || 'auto',
-  })
+  const client = getS3Client()
 
   console.log(`Listing objects in ${bucket} …`)
   const keys = await listAllKeys(client, bucket)
