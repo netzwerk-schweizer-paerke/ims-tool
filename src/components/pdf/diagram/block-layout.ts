@@ -22,7 +22,13 @@ export type LaidOutBlock = {
 
 export type LayoutOptions = {
   blockHeight: number
-  /** The vertical space between two stacked blocks. */
+  /**
+   * The vertical space between two stacked wrapper boxes.
+   *
+   * Keep this at 0 while the blocks carry arrows. A bottom target sits `TARGET_NUDGE` below its
+   * wrapper and a top target the same distance above the next one, so the two stubs meet only
+   * when the wrappers touch. The screen stacks `.activity-block` with no gap for that reason.
+   */
   gap: number
   /** The wrapper padding around the shape. `activity/block-wrapper.tsx` uses `p-8`. */
   inset: number
@@ -32,9 +38,9 @@ export type LayoutOptions = {
  * The largest a block gets. A short row keeps this size rather than fill the page.
  *
  * The numbers match `diagram/flow-layout.ts`, so an activity block on the landscape page and a
- * task on a flow page draw the same box.
+ * task on a flow page draw the same box. The inset alone separates two stacked shapes.
  */
-export const DEFAULT_LAYOUT: LayoutOptions = { blockHeight: 68, gap: 14, inset: 9 }
+export const DEFAULT_LAYOUT: LayoutOptions = { blockHeight: 68, gap: 0, inset: 9 }
 
 /** The width one block takes, derived from its height and the screen's shape proportions. */
 export const blockWidthOf = (options: LayoutOptions): number =>

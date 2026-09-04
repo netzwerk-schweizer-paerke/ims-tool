@@ -13,7 +13,9 @@ export const BlockWrapper = ({ children, id }: Props) => {
   }
   return (
     <div className={'activity-block relative p-8'}>
-      <div className={'flex h-24 w-52 items-center justify-center text-center'}>
+      {/* The height must match `min-h-32` on the shape wrapper. A shorter box lets the shape
+          overflow, and the arrow then starts inside the visible border. */}
+      <div className={'flex h-32 w-52 items-center justify-center text-center'}>
         <div className={'root-target size-full'} id={`${id}-${RootTargetName}`}>
           {children}
         </div>
