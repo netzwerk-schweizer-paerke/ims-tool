@@ -1,8 +1,7 @@
-import { assert } from 'es-toolkit'
-import fetch from 'node-fetch'
 import { PayloadRequest } from 'payload'
 
 import { getErrorMessage } from './error-utils'
+import { readDocumentFile } from './read-document-file'
 
 export interface DocumentPreloader {
   errors: Array<{ documentId: number; error: string }>
@@ -150,55 +149,18 @@ async function preloadSingleDocument(
     throw new Error(`Source document with ID ${documentId} not found`)
   }
 
-  const { url } = sourceDocument
-  if (!url) {
-    throw new Error(`Document with ID ${documentId} has no file`)
+  const fileBuffer = await readDocumentFile(sourceDocument)
+
+  if (!sourceDocument.filename || !sourceDocument.mimeType || !sourceDocument.filesize) {
+    throw new Error('Missing required file data')
   }
 
-  // Download the file
-  const serverUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
-  const downloadUrl = `${serverUrl}${url}`
-
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30_000)
-
-  assert(process.env.PAYLOAD_API_KEY, 'PAYLOAD_API_KEY not set')
-
-  try {
-    const fileResponse = await fetch(downloadUrl, {
-      headers: {
-        Authorization: `users API-Key ${process.env.PAYLOAD_API_KEY}`,
-      },
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!fileResponse.ok) {
-      throw new Error(`HTTP error: ${fileResponse.status} ${fileResponse.statusText}`)
-    }
-
-    const arrayBuffer = await fileResponse.arrayBuffer()
-    const fileBuffer = Buffer.from(arrayBuffer)
-
-    if (
-      !fileBuffer ||
-      !sourceDocument.filename ||
-      !sourceDocument.mimeType ||
-      !sourceDocument.filesize
-    ) {
-      throw new Error('Missing required file data')
-    }
-
-    return {
-      description: sourceDocument.description || undefined,
-      fileBuffer,
-      filename: sourceDocument.filename,
-      filesize: sourceDocument.filesize,
-      id: sourceDocument.id,
-      mimeType: sourceDocument.mimeType,
-    }
-  } finally {
-    clearTimeout(timeoutId)
+  return {
+    description: sourceDocument.description || undefined,
+    fileBuffer,
+    filename: sourceDocument.filename,
+    filesize: sourceDocument.filesize,
+    id: sourceDocument.id,
+    mimeType: sourceDocument.mimeType,
   }
 }

@@ -1,10 +1,9 @@
-import { assert } from 'es-toolkit'
-import fetch from 'node-fetch'
 import { CollectionSlug, File, PayloadRequest } from 'payload'
 
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 
 import { getErrorMessage } from './error-utils'
+import { readDocumentFile } from './read-document-file'
 
 export const cloneDocumentFile = async (
   req: PayloadRequest,
@@ -33,41 +32,9 @@ export const cloneDocumentFile = async (
       throw new Error(`Source document with ID ${documentId} not found`)
     }
 
-    const { url } = sourceDocument
-    if (!url) {
-      throw new Error(`Document with ID ${documentId} has no file`)
-    }
+    const fileBuffer = await readDocumentFile(sourceDocument)
 
-    const serverUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
-    const downloadUrl = `${serverUrl}${url}`
-
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30_000)
-
-    assert(process.env.PAYLOAD_API_KEY, 'PAYLOAD_API_KEY not set')
-
-    const fileResponse = await fetch(downloadUrl, {
-      headers: {
-        Authorization: `users API-Key ${process.env.PAYLOAD_API_KEY}`,
-      },
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!fileResponse.ok) {
-      throw new Error(`HTTP error: ${fileResponse.status} ${fileResponse.statusText}`)
-    }
-
-    const arrayBuffer = await fileResponse.arrayBuffer()
-    const fileBuffer = Buffer.from(arrayBuffer)
-
-    if (
-      !fileBuffer ||
-      !sourceDocument.filename ||
-      !sourceDocument.mimeType ||
-      !sourceDocument.filesize
-    ) {
+    if (!sourceDocument.filename || !sourceDocument.mimeType || !sourceDocument.filesize) {
       throw new Error('Missing required file data')
     }
 
