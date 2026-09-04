@@ -56,7 +56,7 @@ type Kind = 'FIX' | 'INVARIANT'
 type Mode = 'after' | 'before'
 
 // Raise this with every row added. The run fails when it records a different number.
-const EXPECTED_CHECKS = 31
+const EXPECTED_CHECKS = 34
 
 const checks: Check[] = []
 const sessionCookie: Record<string, string> = {}
@@ -175,6 +175,9 @@ const run = async (mode: Mode) => {
   let parkUserId: null | number = null
   let parkAdminId: null | number = null
   let createdActivityId: null | number = null
+  let createdShareLinkId: null | number = null
+  // Read while the admin can still see across parks. A later query ANDs with the selected park.
+  let foreignFlowId: null | number = null
 
   try {
     // ---- fixtures -------------------------------------------------------
@@ -457,6 +460,12 @@ const run = async (mode: Mode) => {
       `/activities?limit=1&depth=0&where[organisation][equals]=${foreignOrg}`,
       'admin',
     )
+
+    const [foreignFlowDoc] = await docsOf(
+      `/task-flows?limit=1&depth=0&where[organisation][equals]=${foreignOrg}`,
+      'admin',
+    )
+    foreignFlowId = foreignFlowDoc?.id ?? null
     const foreignActivity = foreignActivities2[0]
 
     if (foreignActivity) {
@@ -627,7 +636,54 @@ const run = async (mode: Mode) => {
         moreThanZero(publicVisible),
       )
     }
+    // A member could not share a flow, a block or a list. The hook took `organisation` from a
+    // read with `overrideAccess: false`, and that read strips the field for a non-admin.
+    // See pitfalls/organisation-field-is-stripped-from-an-access-checked-read.
+    const [homeFlow] = await docsOf(
+      `/task-flows?where[organisation][equals]=${homeOrg}&limit=1&depth=0`,
+      'admin',
+    )
+
+    if (homeFlow) {
+      const share = await request('/share-links', {
+        as: 'user',
+        body: { targetType: 'flow', taskFlow: homeFlow.id },
+        method: 'POST',
+      })
+
+      record('FIX', 'H4 a park user shares a flow of their own park', '403', '201', String(share.status))
+
+      const created = parse(createdSchema, share.json)
+      createdShareLinkId = created?.doc.id ?? null
+
+      record(
+        'FIX',
+        'H4 the share link carries the park of the creator',
+        'no link',
+        String(homeOrg),
+        String(relationId(created?.doc.organisation) ?? 'none'),
+      )
+    }
+
+    if (foreignFlowId) {
+      const foreignShare = await request('/share-links', {
+        as: 'user',
+        body: { targetType: 'flow', taskFlow: foreignFlowId },
+        method: 'POST',
+      })
+
+      record(
+        'INVARIANT',
+        'a park user cannot share a flow of a foreign park',
+        '403',
+        '403',
+        String(foreignShare.status),
+      )
+    }
   } finally {
+    if (createdShareLinkId) {
+      await request(`/share-links/${createdShareLinkId}`, { as: 'admin', method: 'DELETE' })
+    }
     if (createdActivityId) {
       await request(`/activities/${createdActivityId}`, { as: 'admin', method: 'DELETE' })
     }
