@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+
+  // Payload resolves every admin component by string path through this generated map.
+  // The static graph cannot see that edge, so the map is the entry point for those components.
+  // Every specifier in it must use the `@/` alias. fallow resolves a bare `src/...` specifier to a
+  // package named `src`, and the components then read as unreachable.
+  "dynamicallyLoaded": ["src/app/(payload)/admin/importMap.js"],
+
+  // postcss-nested is declared only to force yarn to hoist it for Turbopack. No file imports it.
+  // See .claude/rules/project/pitfalls/turbopack-needs-hoisted-postcss-plugins.md
+  "ignoreDependencies": ["postcss-nested"],
+
+  // The two admin stylesheets reach tailwindcss through PostCSS, not through a module resolver.
+  "ignoreUnresolvedImports": ["tailwindcss"],
+
+  // payload-types.ts and the migrations are generated. Their exports are not a maintenance signal.
+  "ignoreExports": [
+    { "file": "src/payload-types.ts", "exports": ["*"] },
+    { "file": "src/migrations/*.ts", "exports": ["*"] }
+  ],
+
+  // Generated files dominate the clone report and the complexity report otherwise.
+  "duplicates": {
+    "ignore": ["src/payload-types.ts", "src/migrations/**"]
+  },
+  "health": {
+    "ignore": ["src/migrations/**"]
+  }
+}
