@@ -11,7 +11,7 @@ import { createTaskFlow, createTaskList } from './clone-task-flow-or-list'
 
 type RemapActivityTaskRelationsParams = {
   blocks: Activity['blocks']
-  documentPreloader?: DocumentPreloader
+  documentPreloader: DocumentPreloader
   /** The locales each nested task carries. It is the activity's own locale list. */
   locales: TypedLocale[]
   req: PayloadRequest

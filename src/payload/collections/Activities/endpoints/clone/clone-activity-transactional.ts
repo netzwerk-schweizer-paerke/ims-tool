@@ -11,9 +11,11 @@ import {
 } from '@/payload/utilities/cloning/clone-http-error'
 import { getCloneLocales, hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
-import { preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
+import { deleteCreatedDocuments } from '@/payload/utilities/cloning/delete-created-documents'
+import { DocumentPreloader, preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { scanActivityForDocumentIds } from '@/payload/utilities/cloning/document-scanner'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
+import { scanNestedTaskDocumentIds } from '@/payload/utilities/cloning/scan-nested-task-documents'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
@@ -80,9 +82,9 @@ export const cloneActivityTransactional: Endpoint = {
     // alone. The request locale still labels the report and drives the access check.
     const cloneLocales = getCloneLocales(req.payload.config)
 
-    // PHASE 1: Read the sources and download the documents. This must stay OUTSIDE the
-    // transaction. A download of several seconds would otherwise hold the connection in the
-    // `idle in transaction` state, with its locks and its pool slot.
+    // PHASE 1: Read the sources, download the documents and create their copies. This must stay
+    // OUTSIDE the transaction. One document create costs seconds, and would otherwise hold the
+    // connection in the `idle in transaction` state, with its locks and its pool slot.
     req.payload.logger.info({
       activityIds,
       msg: 'Phase 1: Pre-loading documents for all activities',
@@ -93,7 +95,7 @@ export const cloneActivityTransactional: Endpoint = {
       id: number
       sourcesByLocale: Map<TypedLocale, Activity>
     }> = []
-    let documentPreloader: Awaited<ReturnType<typeof preloadDocuments>>
+    let documentPreloader: DocumentPreloader
 
     try {
       // First, fetch all activities and scan for document IDs
@@ -137,15 +139,22 @@ export const cloneActivityTransactional: Endpoint = {
         activityData.push({ id: activityId, sourcesByLocale })
       }
 
-      // Pre-load all unique documents
+      // Phase 2 copies each nested task in every locale, so every locale of every nested task
+      // must reach the preload as well.
+      const activitySources = activityData.flatMap(({ sourcesByLocale }) =>
+        Array.from(sourcesByLocale.values()),
+      )
+      allDocumentIds.push(...(await scanNestedTaskDocumentIds(req, activitySources, cloneLocales)))
+
+      // Copy all unique documents into the target organisation
       const uniqueDocumentIds = Array.from(new Set(allDocumentIds))
-      documentPreloader = await preloadDocuments(req, uniqueDocumentIds)
+      documentPreloader = await preloadDocuments(req, uniqueDocumentIds, targetOrganisationId)
 
       req.payload.logger.info({
+        clonedCount: documentPreloader.clonedDocumentIds.size,
         documentCount: uniqueDocumentIds.length,
         errorCount: documentPreloader.errors.length,
-        msg: 'Phase 1 completed - documents pre-loaded',
-        preloadedCount: documentPreloader.preloadedDocuments.size,
+        msg: 'Phase 1 completed - documents copied',
       })
     } catch (error) {
       // No transaction is open yet, so there is nothing to roll back.
@@ -165,10 +174,31 @@ export const cloneActivityTransactional: Endpoint = {
       )
     }
 
-    const transactionID = await req.payload.db.beginTransaction()
+    let transactionID: number | string
 
-    if (!transactionID) {
-      return Response.json({ error: 'Failed to start database transaction' }, { status: 500 })
+    try {
+      const started = await req.payload.db.beginTransaction()
+
+      if (!started) {
+        throw new Error('The database adapter did not start a transaction')
+      }
+
+      transactionID = started
+    } catch (error) {
+      // The adapter throws when no connection is free. Phase 1 committed each copy on its own
+      // connection, so a failed begin leaves them behind as well.
+      await deleteCreatedDocuments(req, documentPreloader.clonedDocumentIds.values())
+
+      req.payload.logger.error({
+        activityIds,
+        error: getErrorMessage(error),
+        msg: 'Failed to start database transaction',
+      })
+
+      return Response.json(
+        { error: `Failed to clone activities: ${getErrorMessage(error)}` },
+        { status: 500 },
+      )
     }
 
     const tracker = CloneStatisticsTracker.getInstance(transactionID)
@@ -240,6 +270,9 @@ export const cloneActivityTransactional: Endpoint = {
       )
     } catch (error) {
       await req.payload.db.rollbackTransaction(transactionID)
+
+      // Phase 1 committed each copy on its own connection, so the rollback leaves them behind.
+      await deleteCreatedDocuments(req, documentPreloader.clonedDocumentIds.values())
 
       const status = getErrorStatus(error)
       const details = getValidationDetails(error)

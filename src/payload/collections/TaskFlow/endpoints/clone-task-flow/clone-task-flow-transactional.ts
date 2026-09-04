@@ -6,6 +6,9 @@ import { createTaskFlow } from '@/payload/collections/Activities/endpoints/clone
 import { CloneHttpError, getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import { deleteCreatedDocuments } from '@/payload/utilities/cloning/delete-created-documents'
+import { DocumentPreloader, preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
+import { scanTaskFlowForDocumentIds } from '@/payload/utilities/cloning/document-scanner'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
@@ -73,38 +76,24 @@ export const cloneTaskFlowTransactional: Endpoint = {
     // alone. The request locale still labels the report and drives the access check.
     const cloneLocales = getCloneLocales(req.payload.config)
 
-    const transactionID = await req.payload.db.beginTransaction()
+    // PHASE 1: Check access, read the sources, download the documents and create their copies.
+    // This must stay OUTSIDE the transaction. One document create costs seconds, and would
+    // otherwise hold the connection in the `idle in transaction` state.
+    req.payload.logger.info({
+      msg: 'Phase 1: Pre-loading documents for all task flows',
+      taskFlowIds,
+    })
 
-    if (!transactionID) {
-      return Response.json({ error: 'Failed to start database transaction' }, { status: 500 })
-    }
-
-    const tracker = CloneStatisticsTracker.getInstance(transactionID)
+    const allDocumentIds: number[] = []
+    const taskFlowData: Array<{ id: number; name: string }> = []
+    let documentPreloader: DocumentPreloader
 
     try {
-      req.payload.logger.info({
-        locale,
-        msg: 'Cloning multiple task flows with single transaction',
-        targetOrgId: targetOrganisationId,
-        taskFlowIds,
-        transactionID,
-      })
-
-      // Create a new request object with the transaction ID
-      const transactionalReq: PayloadRequest = {
-        ...req,
-        transactionID,
-      }
-
-      // Process each task flow within the SAME transaction
       for (const taskFlowId of taskFlowIds) {
-        // Start tracking this entity
-        tracker.startEntity(taskFlowId)
-
         // Validate access for this specific task flow
         const accessValidation = await validateCloneAccess({
           collectionSlug: 'task-flows',
-          req: transactionalReq,
+          req,
           sourceId: taskFlowId,
           targetOrgId: targetOrganisationId,
           user,
@@ -124,15 +113,108 @@ export const cloneTaskFlowTransactional: Endpoint = {
           depth: 0,
           id: taskFlowId,
           locale: 'all',
-          req: transactionalReq,
+          req,
         })
 
-        // Set source info for current entity
-        tracker.setSourceInfo(
-          sourceTaskFlow.id,
-          getLocalizedValue(sourceTaskFlow.name, cloneLocales, locale),
-          'task-flows',
-        )
+        taskFlowData.push({
+          id: sourceTaskFlow.id,
+          name: getLocalizedValue(sourceTaskFlow.name, cloneLocales, locale),
+        })
+
+        // Read every locale, so a document that only a French rich text names still reaches
+        // the preload. `false` is the only value that turns the fallback off.
+        for (const cloneLocale of cloneLocales) {
+          const localeSource = await req.payload.findByID({
+            collection: 'task-flows',
+            depth: 0,
+            fallbackLocale: false,
+            id: taskFlowId,
+            locale: cloneLocale,
+            req,
+          })
+
+          allDocumentIds.push(...scanTaskFlowForDocumentIds(localeSource))
+        }
+      }
+
+      // Copy all unique documents into the target organisation
+      const uniqueDocumentIds = Array.from(new Set(allDocumentIds))
+      documentPreloader = await preloadDocuments(req, uniqueDocumentIds, targetOrganisationId)
+
+      req.payload.logger.info({
+        clonedCount: documentPreloader.clonedDocumentIds.size,
+        documentCount: uniqueDocumentIds.length,
+        errorCount: documentPreloader.errors.length,
+        msg: 'Phase 1 completed - documents copied',
+      })
+    } catch (error) {
+      // No transaction is open yet, so there is nothing to roll back.
+      const status = getErrorStatus(error)
+
+      req.payload.logger.error({
+        error: getErrorMessage(error),
+        msg: 'Failed to read the sources before the clone',
+        stack: error instanceof Error ? error.stack : undefined,
+        status,
+        taskFlowIds,
+      })
+
+      return Response.json(
+        { error: `Failed to clone task flows: ${getErrorMessage(error)}` },
+        { status },
+      )
+    }
+
+    let transactionID: number | string
+
+    try {
+      const started = await req.payload.db.beginTransaction()
+
+      if (!started) {
+        throw new Error('The database adapter did not start a transaction')
+      }
+
+      transactionID = started
+    } catch (error) {
+      // The adapter throws when no connection is free. Phase 1 committed each copy on its own
+      // connection, so a failed begin leaves them behind as well.
+      await deleteCreatedDocuments(req, documentPreloader.clonedDocumentIds.values())
+
+      req.payload.logger.error({
+        error: getErrorMessage(error),
+        msg: 'Failed to start database transaction',
+        taskFlowIds,
+      })
+
+      return Response.json(
+        { error: `Failed to clone task flows: ${getErrorMessage(error)}` },
+        { status: 500 },
+      )
+    }
+
+    const tracker = CloneStatisticsTracker.getInstance(transactionID)
+
+    try {
+      // PHASE 2: Clone task flows using the copied documents (INSIDE transaction)
+      req.payload.logger.info({
+        locale,
+        msg: 'Phase 2: Cloning multiple task flows with single transaction',
+        targetOrgId: targetOrganisationId,
+        taskFlowIds,
+        transactionID,
+      })
+
+      // Create a new request object with the transaction ID
+      const transactionalReq: PayloadRequest = {
+        ...req,
+        transactionID,
+      }
+
+      // Process each task flow within the SAME transaction
+      for (const { id: taskFlowId, name } of taskFlowData) {
+        // Start tracking this entity
+        tracker.startEntity(taskFlowId)
+        tracker.setSourceInfo(taskFlowId, name, 'task-flows')
 
         // Execute the cloning process for this task flow, one pass per locale
         const clonedTaskFlow = await createTaskFlow(
@@ -140,6 +222,7 @@ export const cloneTaskFlowTransactional: Endpoint = {
           taskFlowId,
           targetOrganisationId,
           cloneLocales,
+          documentPreloader,
         )
 
         tracker.setCloneInfo(clonedTaskFlow.id, clonedTaskFlow.name, 'task-flows')
@@ -147,7 +230,7 @@ export const cloneTaskFlowTransactional: Endpoint = {
         req.payload.logger.info({
           clonedId: clonedTaskFlow.id,
           msg: 'Cloned successfully',
-          sourceId: sourceTaskFlow.id,
+          sourceId: taskFlowId,
         })
 
         tracker.endEntity()
@@ -172,6 +255,9 @@ export const cloneTaskFlowTransactional: Endpoint = {
       )
     } catch (error) {
       await req.payload.db.rollbackTransaction(transactionID)
+
+      // Phase 1 committed each copy on its own connection, so the rollback leaves them behind.
+      await deleteCreatedDocuments(req, documentPreloader.clonedDocumentIds.values())
 
       const status = getErrorStatus(error)
 

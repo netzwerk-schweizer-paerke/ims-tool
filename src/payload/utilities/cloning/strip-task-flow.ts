@@ -15,7 +15,7 @@ export const stripTaskFlow = async (
   req: PayloadRequest,
   organisationId: number,
   locale: TypedLocale,
-  documentPreloader?: DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ) => {
   const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const locationPrefix = obj.name ? `Task Flow "${obj.name}"` : 'Task Flow'
@@ -44,6 +44,7 @@ export const stripTaskFlow = async (
             organisationId,
             locationPrefix,
             locale,
+            documentPreloader,
           )
           strippedBlock.keypoints.keypoints = result.content
         }
@@ -55,6 +56,7 @@ export const stripTaskFlow = async (
             organisationId,
             locationPrefix,
             locale,
+            documentPreloader,
           )
           strippedBlock.tools.tools = result.content
         }
@@ -66,6 +68,7 @@ export const stripTaskFlow = async (
             organisationId,
             locationPrefix,
             locale,
+            documentPreloader,
           )
           strippedBlock.responsibility.responsibility = result.content
         }

@@ -5,6 +5,12 @@
 
 import { isRecord, isUnknownArray } from '@/payload/assertions'
 
+/** One task a block of an activity names. */
+export type TaskRelationRef = {
+  collection: 'task-flows' | 'task-lists'
+  id: number
+}
+
 /**
  * Scans an activity for all document IDs that will need to be cloned
  */
@@ -15,12 +21,7 @@ export function scanActivityForDocumentIds(activity: unknown): number[] {
     return documentIds
   }
 
-  // Direct file references
-  if (isUnknownArray(activity.files)) {
-    for (const fileRef of activity.files) {
-      documentIds.push(...readFileReferenceId(fileRef))
-    }
-  }
+  documentIds.push(...scanFileRows(activity.files))
 
   // Rich text content in blocks
   if (isUnknownArray(activity.blocks)) {
@@ -35,6 +36,46 @@ export function scanActivityForDocumentIds(activity: unknown): number[] {
   }
 
   return documentIds
+}
+
+/**
+ * Reads the task flows and task lists the blocks of one activity locale name.
+ *
+ * A relation holds the task id or the populated task, depending on the depth of the read. The
+ * task carries locales of its own, so the caller reads each one for the scan.
+ */
+export function scanActivityForTaskRelations(activity: unknown): TaskRelationRef[] {
+  const relations: TaskRelationRef[] = []
+
+  if (!isRecord(activity) || !isUnknownArray(activity.blocks)) {
+    return relations
+  }
+
+  for (const block of activity.blocks) {
+    if (!isRecord(block) || !isRecord(block.relations) || !isUnknownArray(block.relations.tasks)) {
+      continue
+    }
+
+    for (const task of block.relations.tasks) {
+      if (!isRecord(task)) {
+        continue
+      }
+
+      const { relationTo, value } = task
+
+      if (relationTo !== 'task-flows' && relationTo !== 'task-lists') {
+        continue
+      }
+
+      const id = readRelationId(value)
+
+      if (id !== undefined) {
+        relations.push({ collection: relationTo, id })
+      }
+    }
+  }
+
+  return relations
 }
 
 export function scanForDocumentIds(content: unknown): number[] {
@@ -60,6 +101,13 @@ export function scanForDocumentIds(content: unknown): number[] {
 
   // Handle general object traversal
   for (const [key, value] of Object.entries(content)) {
+    // A task an activity block names arrives populated, with its own `files` rows. Those rows
+    // hold no rich text, so the generic walk below would pass them by.
+    if (key === 'files' && isUnknownArray(value)) {
+      documentIds.push(...scanFileRows(value))
+      continue
+    }
+
     // Common rich text fields, plus any nested object worth traversing.
     if (
       ['blocks', 'content', 'description'].includes(key) ||
@@ -76,68 +124,40 @@ export function scanForDocumentIds(content: unknown): number[] {
  * Scans a task flow for all document IDs that will need to be cloned
  */
 export function scanTaskFlowForDocumentIds(taskFlow: unknown): number[] {
-  const documentIds: number[] = []
-
   if (!isRecord(taskFlow)) {
-    return documentIds
+    return []
   }
 
-  // Direct file references
-  if (isUnknownArray(taskFlow.files)) {
-    for (const fileRef of taskFlow.files) {
-      documentIds.push(...readFileReferenceId(fileRef))
-    }
-  }
+  return [
+    ...scanFileRows(taskFlow.files),
+    ...scanForDocumentIds(taskFlow.description),
+    ...scanForDocumentIds(taskFlow.blocks),
+  ]
+}
 
-  // Description field
-  if (taskFlow.description) {
-    documentIds.push(...scanForDocumentIds(taskFlow.description))
-  }
-
-  // Task content
-  if (isUnknownArray(taskFlow.tasks)) {
-    for (const task of taskFlow.tasks) {
-      if (isRecord(task) && task.content) {
-        documentIds.push(...scanForDocumentIds(task.content))
-      }
-    }
-  }
-
-  return documentIds
+/** Scans one task of either collection. */
+export function scanTaskForDocumentIds(
+  collection: TaskRelationRef['collection'],
+  task: unknown,
+): number[] {
+  return collection === 'task-flows'
+    ? scanTaskFlowForDocumentIds(task)
+    : scanTaskListForDocumentIds(task)
 }
 
 /**
  * Scans a task list for all document IDs that will need to be cloned
  */
 export function scanTaskListForDocumentIds(taskList: unknown): number[] {
-  const documentIds: number[] = []
-
   if (!isRecord(taskList)) {
-    return documentIds
+    return []
   }
 
-  // Direct file references
-  if (isUnknownArray(taskList.files)) {
-    for (const fileRef of taskList.files) {
-      documentIds.push(...readFileReferenceId(fileRef))
-    }
-  }
-
-  // Description field
-  if (taskList.description) {
-    documentIds.push(...scanForDocumentIds(taskList.description))
-  }
-
-  // Task content
-  if (isUnknownArray(taskList.tasks)) {
-    for (const task of taskList.tasks) {
-      if (isRecord(task) && task.description) {
-        documentIds.push(...scanForDocumentIds(task.description))
-      }
-    }
-  }
-
-  return documentIds
+  return [
+    ...scanFileRows(taskList.files),
+    ...scanForDocumentIds(taskList.description),
+    ...scanForDocumentIds(taskList.items),
+  ]
 }
 
 /**
@@ -159,6 +179,28 @@ function readFileReferenceId(fileRef: unknown): number[] {
   }
 
   return []
+}
+
+/** Reads the id of a relation, which holds either the raw id or the populated record. */
+function readRelationId(value: unknown): number | undefined {
+  if (typeof value === 'number') {
+    return value
+  }
+
+  if (isRecord(value) && typeof value.id === 'number') {
+    return value.id
+  }
+
+  return undefined
+}
+
+/** Reads the document ids of a `files` array, and answers nothing for any other value. */
+function scanFileRows(files: unknown): number[] {
+  if (!isUnknownArray(files)) {
+    return []
+  }
+
+  return files.flatMap((fileRef) => readFileReferenceId(fileRef))
 }
 
 function scanNode(node: unknown): number[] {

@@ -15,7 +15,7 @@ export const stripTaskList = async (
   req: PayloadRequest,
   organisationId: number,
   locale: TypedLocale,
-  documentPreloader?: DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ) => {
   const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const locationPrefix = obj.name ? `Task List "${obj.name}"` : 'Task List'
@@ -44,6 +44,7 @@ export const stripTaskList = async (
             organisationId,
             locationPrefix,
             locale,
+            documentPreloader,
           )
           strippedItem.responsibility = result.content
         }
@@ -54,6 +55,7 @@ export const stripTaskList = async (
             organisationId,
             locationPrefix,
             locale,
+            documentPreloader,
           )
           strippedItem.tools = result.content
         }
@@ -64,6 +66,7 @@ export const stripTaskList = async (
             organisationId,
             locationPrefix,
             locale,
+            documentPreloader,
           )
           strippedItem.topic = result.content
         }

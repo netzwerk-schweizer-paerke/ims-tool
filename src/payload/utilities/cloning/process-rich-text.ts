@@ -8,6 +8,12 @@ import {
 } from '@/payload/utilities/cloning/types'
 
 import { CloneStatisticsTracker } from './clone-statistics-tracker'
+import {
+  describePreloadFailure,
+  DocumentPreloader,
+  resolvePreloadedDocumentId,
+} from './document-preloader'
+import { getErrorMessage } from './error-utils'
 
 // The three assertions below rebuild the node tree and keep its shape, which the compiler cannot
 // prove. They are the only place this file asserts, and they keep the caller's field type intact.
@@ -17,7 +23,7 @@ export async function processRichTextField<TContent>(
   targetOrgId: number,
   collectionName: string,
   locale: TypedLocale,
-  documentPreloader?: import('./document-preloader').DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ): Promise<RichTextProcessingResult<TContent>> {
   const documentIds: number[] = []
   const publicDocumentIds: number[] = []
@@ -94,7 +100,7 @@ async function processNode(
   errors: MissingDocumentFileError[],
   collectionName: string,
   locale: TypedLocale,
-  documentPreloader?: import('./document-preloader').DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ): Promise<unknown> {
   if (!isRecord(node)) {
     return node
@@ -124,62 +130,29 @@ async function processNode(
         documentIds.push(docId)
 
         try {
-          // The tracker copies each source document once per entity, however many links
-          // reach it, and it counts the source and the clone on that single attempt.
-          const clonedId = await tracker.resolveClonedDocumentId(docId, async () => {
-            if (documentPreloader && documentPreloader.preloadedDocuments.has(docId)) {
-              const preloadedDoc = documentPreloader.preloadedDocuments.get(docId)!
-              const { createClonedDocumentFromPreloaded } = await import('./document-preloader')
-              const created = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
-              return created.id
-            }
-
-            // Fallback to original method (will cause transaction timeout risk)
-            const { cloneDocumentFile } = await import('./clone-document')
-            const created = await cloneDocumentFile(req, docId, targetOrgId)
-            return created.id
-          })
+          // Phase 1 copied the document before the transaction opened. The tracker counts the
+          // source and the clone once per entity, however many links reach it.
+          const clonedId = await tracker.resolveClonedDocumentId(docId, async () =>
+            resolvePreloadedDocumentId(documentPreloader, docId),
+          )
 
           relationship.value = clonedId
         } catch (error) {
-          // Try to get document details for error reporting
-          let documentName = 'Unknown'
-          let fileName = 'Unknown'
+          // The lookup ran no Payload operation, so the transaction is intact. A read of the
+          // source document for the report would run inside it, and a NotFound would kill it.
+          const failure = describePreloadFailure(documentPreloader, docId)
 
-          try {
-            const sourceDoc = await req.payload.findByID({
-              collection: 'documents',
-              depth: 0,
-              id: docId,
-              locale,
-              req,
-            })
-
-            if (sourceDoc) {
-              documentName = sourceDoc.name || 'Unnamed'
-              fileName = sourceDoc.filename || 'Unknown'
-            }
-          } catch {
-            // Couldn't get document details
-          }
-
-          const errorEntry: MissingDocumentFileError = {
+          tracker.addMissingFileError({
             documentId: docId,
-            documentName,
-            error:
-              error instanceof Error ? error.message : `Failed to clone document ${documentName}`,
-            fileName,
+            documentName: failure.documentName ?? 'Unknown',
+            error: getErrorMessage(error),
+            fileName: failure.fileName ?? 'Unknown',
             usageLocation: `${collectionName} rich text field`,
-          }
+          })
 
-          tracker.addMissingFileError(errorEntry)
-
-          // Convert failed link to text
-          const label = typeof relationship.label === 'string' ? relationship.label : 'Document'
-          processedNode.type = 'text'
-          processedNode.text = `[${label}]`
-          delete processedNode.fields
-          delete processedNode.children
+          // The link would otherwise keep a document id of the source organisation. A text node
+          // keeps the visible words in the paragraph and drops the reference.
+          return degradeLinkToText(processedNode)
         }
       }
     } else if (relationship.relationTo === 'documents-public') {
@@ -210,4 +183,28 @@ async function processNode(
   }
 
   return processedNode
+}
+
+/**
+ * Replaces a link node by a text node that carries the link's visible words.
+ *
+ * The shape follows lexical's `SerializedTextNode`. A link node keeps element keys such as a
+ * string `format`, which a text node must not carry, or the admin editor cannot load the clone.
+ */
+const degradeLinkToText = (linkNode: Record<string, unknown>): Record<string, unknown> => {
+  const words = isUnknownArray(linkNode.children)
+    ? linkNode.children
+        .map((child) => (isRecord(child) && typeof child.text === 'string' ? child.text : ''))
+        .join('')
+    : ''
+
+  return {
+    detail: 0,
+    format: 0,
+    mode: 'normal',
+    style: '',
+    text: words || '[Document]',
+    type: 'text',
+    version: 1,
+  }
 }

@@ -9,6 +9,14 @@ import type { FetchLegacyDocsTracker } from './statistics-tracker'
 import { EXCLUDED_EXTENSIONS, LEGACY_DOMAINS } from './scan-legacy-links'
 
 /**
+ * The file behind a legacy url, ready for a Payload upload
+ */
+interface LegacyFile {
+  file: PayloadFile
+  filename: string
+}
+
+/**
  * Validation result for URL security checks
  */
 interface ValidationResult {
@@ -18,6 +26,9 @@ interface ValidationResult {
 
 /**
  * Download a document from an external URL and create it in Payload CMS
+ *
+ * This is phase 1 of the migration, and no transaction is open. A failed download and a failed
+ * create both answer null, so the caller skips the link and the run continues.
  */
 export async function downloadExternalDocument(
   url: string,
@@ -25,65 +36,39 @@ export async function downloadExternalDocument(
   req: PayloadRequest,
   tracker: FetchLegacyDocsTracker,
 ): Promise<null | number> {
+  const recordFailure = (error: unknown, message: string) => {
+    const reason = error instanceof Error ? error.message : String(error)
+    req.payload.logger.error({ error: reason, url }, message)
+    tracker.addError({ error: reason, timestamp: Date.now(), url })
+  }
+
+  let download: LegacyFile
+
+  // No Payload call runs here, so a failure is recorded and the link is skipped.
   try {
-    // Validate URL for security before any processing
-    const validation = validateLegacyUrl(url)
-    if (!validation.valid) {
-      throw new Error(`URL validation failed: ${validation.error}`)
-    }
+    download = await fetchLegacyFile(url)
+  } catch (error) {
+    recordFailure(error, 'Failed to download a legacy document')
+    return null
+  }
 
-    // Extract filename from URL
-    const urlParts = new URL(url)
-    const pathname = urlParts.pathname
-    const filename = path.basename(pathname) || 'document'
-
-    // Determine file extension and MIME type
-    const ext = path.extname(filename).toLowerCase()
-    const mimeType = getMimeType(ext)
-
-    // Download the file (now safely validated)
-    const response = await fetch(url)
-
-    if (!response.ok) {
-      throw new Error(`Failed to download: ${response.status} ${response.statusText}`)
-    }
-
-    // Get file data
-    const arrayBuffer = await response.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-
-    // Generate a unique filename to avoid conflicts
-    const timestamp = Date.now()
-    const uniqueFilename = `legacy_${timestamp}_${filename}`
-
-    // Create file object for Payload upload
-    const file: PayloadFile = {
-      data: buffer,
-      mimetype: mimeType,
-      name: uniqueFilename,
-      size: buffer.length,
-    }
-
-    // Create document with file directly
+  // The create commits on its own connection, because the request carries no transaction id.
+  // A failure here leaves nothing to roll back, so it is recorded and skipped as well.
+  try {
     const document = await req.payload.create({
       collection: 'documents',
       data: {
         description: `Migrated from legacy URL: ${url}`,
-        name: filename,
+        name: download.filename,
         organisation: getIdFromRelation(organisationId),
       },
-      file,
+      file: download.file,
       req,
     })
 
     return document.id as number
   } catch (error) {
-    console.error(`Failed to download document from ${url}:`, error)
-    tracker.addError({
-      error: error instanceof Error ? error.message : String(error),
-      timestamp: Date.now(),
-      url,
-    })
+    recordFailure(error, 'Failed to create the legacy document')
     return null
   }
 }
@@ -108,6 +93,51 @@ export function extractDocumentNameFromUrl(url: string): string {
     return nameWithoutExt.replaceAll('%20', ' ').replaceAll('_', ' ').trim()
   } catch {
     return 'document'
+  }
+}
+
+/**
+ * Downloads the file behind a legacy url. Every failure throws, and no Payload call runs here.
+ */
+async function fetchLegacyFile(url: string): Promise<LegacyFile> {
+  // Validate URL for security before any processing
+  const validation = validateLegacyUrl(url)
+  if (!validation.valid) {
+    throw new Error(`URL validation failed: ${validation.error}`)
+  }
+
+  // Extract filename from URL
+  const urlParts = new URL(url)
+  const pathname = urlParts.pathname
+  const filename = path.basename(pathname) || 'document'
+
+  // Determine file extension and MIME type
+  const ext = path.extname(filename).toLowerCase()
+  const mimeType = getMimeType(ext)
+
+  // Download the file (now safely validated)
+  const response = await fetch(url)
+
+  if (!response.ok) {
+    throw new Error(`Failed to download: ${response.status} ${response.statusText}`)
+  }
+
+  // Get file data
+  const arrayBuffer = await response.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+
+  // Generate a unique filename to avoid conflicts
+  const timestamp = Date.now()
+  const uniqueFilename = `legacy_${timestamp}_${filename}`
+
+  return {
+    file: {
+      data: buffer,
+      mimetype: mimeType,
+      name: uniqueFilename,
+      size: buffer.length,
+    },
+    filename,
   }
 }
 

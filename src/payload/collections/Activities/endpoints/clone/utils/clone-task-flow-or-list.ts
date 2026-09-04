@@ -15,7 +15,8 @@ import { stripTaskList } from '../../../../../utilities/cloning/strip-task-list'
 
 interface CreateTaskOptions {
   collectionName: TaskType
-  documentPreloader?: DocumentPreloader
+  /** The copies phase 1 made, keyed by source document id. The endpoint builds it. */
+  documentPreloader: DocumentPreloader
   /** Every locale the clone carries, default first. `getCloneLocales` builds the list. */
   locales: TypedLocale[]
   req: PayloadRequest
@@ -142,7 +143,7 @@ export const createTaskFlow = async (
   sourceId: number,
   organisationId: number,
   locales: TypedLocale[],
-  documentPreloader?: DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
     collectionName: 'task-flows',
@@ -162,7 +163,7 @@ export const createTaskList = async (
   sourceId: number,
   organisationId: number,
   locales: TypedLocale[],
-  documentPreloader?: DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ) => {
   return cloneTaskFlowOrList({
     collectionName: 'task-lists',

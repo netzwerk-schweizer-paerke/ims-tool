@@ -10,7 +10,7 @@ export const stripBlocks = async (
   req: PayloadRequest,
   organisationId: number,
   locale: TypedLocale,
-  documentPreloader?: DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ) => {
   const strippedBlocks = await Promise.all(
     blocks.map(async (block) => {

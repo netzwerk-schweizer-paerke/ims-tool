@@ -13,7 +13,7 @@ export const stripActivity = async (
   req: PayloadRequest,
   organisationId: number,
   locale: TypedLocale,
-  documentPreloader?: DocumentPreloader,
+  documentPreloader: DocumentPreloader,
 ) => {
   if (!obj) {
     throw new Error('stripActivity requires an object')

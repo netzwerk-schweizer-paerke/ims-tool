@@ -4,75 +4,80 @@ import { getErrorMessage } from './error-utils'
 import { readDocumentFile } from './read-document-file'
 
 export interface DocumentPreloader {
-  errors: Array<{ documentId: number; error: string }>
+  /** Source document id to the id of its copy in the target organisation. */
+  clonedDocumentIds: Map<number, number>
+  errors: PreloadError[]
+  /** The metadata of each source document phase 1 read. The bytes are not retained. */
   preloadedDocuments: Map<number, PreloadedDocument>
 }
 
 export interface PreloadedDocument {
   description?: string
-  fileBuffer: Buffer
   filename: string
   filesize: number
   id: number
   mimeType: string
 }
 
+/** One document phase 1 could not copy, with the metadata it read before the failure. */
+export interface PreloadError {
+  documentId: number
+  documentName?: string
+  error: string
+  fileName?: string
+}
+
+/** Phase 1 copies this many documents at once. One create costs seconds, so the batch stays small. */
+const BATCH_SIZE = 5
+
 /**
- * Creates a cloned document using pre-loaded file data
- * This runs within the transaction scope but without HTTP operations
+ * Answers the failure phase 1 recorded for a document.
+ *
+ * A document the scan never reached has no entry. It gets a synthesized one, so every caller
+ * reports the same shape.
  */
-export async function createClonedDocumentFromPreloaded(
-  req: PayloadRequest,
-  preloadedDocument: PreloadedDocument,
-  targetOrgId: number,
-): Promise<{ collection: 'documents'; id: number; }> {
-  const filename = `${Date.now()}-${preloadedDocument.filename}`
-
-  const file = {
-    data: preloadedDocument.fileBuffer,
-    mimetype: preloadedDocument.mimeType,
-    name: filename,
-    size: preloadedDocument.filesize,
+export const describePreloadFailure = (
+  preloader: DocumentPreloader,
+  documentId: number,
+): PreloadError =>
+  preloader.errors.find((entry) => entry.documentId === documentId) ?? {
+    documentId,
+    error: `Document ${documentId} was not copied before the transaction opened`,
   }
 
-  const clonedDocument = await req.payload.create({
-    collection: 'documents',
-    data: {
-      description: preloadedDocument.description,
-      organisation: targetOrgId,
-    },
-    file,
-    req: {
-      ...req,
-      context: {
-        ...req.context,
-        targetOrganisationId: targetOrgId,
-      },
-    },
-  })
+/**
+ * Answers the id of the copy phase 1 made, or throws with the failure phase 1 recorded.
+ *
+ * The lookup runs no Payload operation. A throw here leaves the transaction intact, so the
+ * caller records the failure and continues.
+ */
+export const resolvePreloadedDocumentId = (
+  preloader: DocumentPreloader,
+  documentId: number,
+): number => {
+  const clonedId = preloader.clonedDocumentIds.get(documentId)
 
-  req.payload.logger.debug({
-    filename,
-    msg: 'Document created from pre-loaded data',
-    newId: clonedDocument.id,
-    originalId: preloadedDocument.id,
-  })
-
-  return {
-    collection: 'documents',
-    id: clonedDocument.id,
+  if (clonedId !== undefined) {
+    return clonedId
   }
+
+  throw new Error(describePreloadFailure(preloader, documentId).error)
 }
 
 /**
- * Pre-downloads all documents needed for cloning operations
- * This moves HTTP operations outside the transaction scope to prevent timeouts
+ * Phase 1 of a clone. Reads each source document, downloads its file from the bucket and creates
+ * the copy in the target organisation.
+ *
+ * No transaction is open here. Each copy commits on its own connection, and a failure is recorded
+ * and skipped, so one missing file never stops the other documents or the clone.
  */
 export async function preloadDocuments(
   req: PayloadRequest,
   documentIds: number[],
+  targetOrgId: number,
 ): Promise<DocumentPreloader> {
   const preloader: DocumentPreloader = {
+    clonedDocumentIds: new Map(),
     errors: [],
     preloadedDocuments: new Map(),
   }
@@ -84,83 +89,126 @@ export async function preloadDocuments(
   req.payload.logger.info({
     documentCount: documentIds.length,
     documentIds,
-    msg: 'Pre-loading documents for cloning',
+    msg: 'Phase 1: copying the documents before the transaction opens',
+    targetOrgId,
   })
 
-  // Remove duplicates
   const uniqueDocumentIds = Array.from(new Set(documentIds))
 
-  // Process documents in batches to avoid overwhelming the server
-  const batchSize = 5
-  for (let i = 0; i < uniqueDocumentIds.length; i += batchSize) {
-    const batch = uniqueDocumentIds.slice(i, i + batchSize)
+  for (let i = 0; i < uniqueDocumentIds.length; i += BATCH_SIZE) {
+    const batch = uniqueDocumentIds.slice(i, i + BATCH_SIZE)
 
     await Promise.all(
-      batch.map(async (documentId) => {
-        try {
-          const preloadedDoc = await preloadSingleDocument(req, documentId)
-          preloader.preloadedDocuments.set(documentId, preloadedDoc)
-
-          req.payload.logger.debug({
-            documentId,
-            filename: preloadedDoc.filename,
-            msg: 'Document pre-loaded successfully',
-            size: preloadedDoc.filesize,
-          })
-        } catch (error) {
-          const errorMessage = getErrorMessage(error)
-          preloader.errors.push({
-            documentId,
-            error: errorMessage,
-          })
-
-          req.payload.logger.warn({
-            documentId,
-            error: errorMessage,
-            msg: 'Failed to pre-load document',
-          })
-        }
-      }),
+      batch.map((documentId) => copySingleDocument(req, documentId, targetOrgId, preloader)),
     )
   }
 
   req.payload.logger.info({
+    clonedCount: preloader.clonedDocumentIds.size,
     errorCount: preloader.errors.length,
-    msg: 'Document pre-loading completed',
-    successCount: preloader.preloadedDocuments.size,
+    msg: 'Phase 1: document copies completed',
   })
 
   return preloader
 }
 
-async function preloadSingleDocument(
+/**
+ * Copies one document and records the outcome on the preloader. It never throws, so one failed
+ * document leaves the rest of its batch untouched.
+ */
+async function copySingleDocument(
   req: PayloadRequest,
   documentId: number,
-): Promise<PreloadedDocument> {
-  // Get document metadata
-  const sourceDocument = await req.payload.findByID({
+  targetOrgId: number,
+  preloader: DocumentPreloader,
+): Promise<void> {
+  let documentName: string | undefined
+  let fileName: string | undefined
+
+  try {
+    const sourceDocument = await req.payload.findByID({
+      collection: 'documents',
+      depth: 0,
+      id: documentId,
+      req,
+    })
+
+    if (!sourceDocument) {
+      throw new Error(`Source document with ID ${documentId} not found`)
+    }
+
+    documentName = sourceDocument.name ?? undefined
+    fileName = sourceDocument.filename ?? undefined
+
+    if (!sourceDocument.filename || !sourceDocument.mimeType || !sourceDocument.filesize) {
+      throw new Error('Missing required file data')
+    }
+
+    const preloadedDocument: PreloadedDocument = {
+      description: sourceDocument.description || undefined,
+      filename: sourceDocument.filename,
+      filesize: sourceDocument.filesize,
+      id: sourceDocument.id,
+      mimeType: sourceDocument.mimeType,
+    }
+
+    preloader.preloadedDocuments.set(documentId, preloadedDocument)
+
+    // The bytes live in this scope only. The copy exists after the create, and a batch of large
+    // files would otherwise stay on the heap until the response.
+    const fileBuffer = await readDocumentFile(sourceDocument)
+
+    const clonedId = await createClonedDocument(req, preloadedDocument, fileBuffer, targetOrgId)
+    preloader.clonedDocumentIds.set(documentId, clonedId)
+  } catch (error) {
+    const errorMessage = getErrorMessage(error)
+
+    preloader.errors.push({ documentId, documentName, error: errorMessage, fileName })
+
+    req.payload.logger.warn({
+      documentId,
+      error: errorMessage,
+      msg: 'Failed to copy a document in phase 1, the clone continues without it',
+    })
+  }
+}
+
+/** Creates the copy from the downloaded bytes. The request carries no transaction id. */
+async function createClonedDocument(
+  req: PayloadRequest,
+  preloadedDocument: PreloadedDocument,
+  fileBuffer: Buffer,
+  targetOrgId: number,
+): Promise<number> {
+  const filename = `${Date.now()}-${preloadedDocument.filename}`
+
+  const clonedDocument = await req.payload.create({
     collection: 'documents',
-    depth: 0,
-    id: documentId,
-    req,
+    data: {
+      description: preloadedDocument.description,
+      organisation: targetOrgId,
+    },
+    file: {
+      data: fileBuffer,
+      mimetype: preloadedDocument.mimeType,
+      name: filename,
+      size: preloadedDocument.filesize,
+    },
+    req: {
+      ...req,
+      context: {
+        ...req.context,
+        targetOrganisationId: targetOrgId,
+      },
+    },
   })
 
-  if (!sourceDocument) {
-    throw new Error(`Source document with ID ${documentId} not found`)
-  }
+  req.payload.logger.debug({
+    filename,
+    msg: 'Document copied in phase 1',
+    newId: clonedDocument.id,
+    originalId: preloadedDocument.id,
+  })
 
-  const fileBuffer = await readDocumentFile(sourceDocument)
-
-  if (!sourceDocument.filename || !sourceDocument.mimeType || !sourceDocument.filesize) {
-    throw new Error('Missing required file data')
-  }
-
-  return {
-    description: sourceDocument.description || undefined,
-    fileBuffer,
-    filename: sourceDocument.filename,
-    filesize: sourceDocument.filesize,
-    id: sourceDocument.id,
-    mimeType: sourceDocument.mimeType,
-  }
+  return clonedDocument.id
 }

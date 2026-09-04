@@ -1,16 +1,19 @@
 import { isArray } from 'es-toolkit/compat'
 import { PayloadRequest, TypedLocale } from 'payload'
 
-import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
-
 import { Activity, TaskFlow, TaskList } from '@/payload-types'
-import { cloneDocumentFile } from '@/payload/utilities/cloning/clone-document'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
+import {
+  describePreloadFailure,
+  DocumentPreloader,
+  resolvePreloadedDocumentId,
+} from '@/payload/utilities/cloning/document-preloader'
+import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 
 type CloneActivityDocumentsParams = {
   collectionName: 'activities' | 'task-flows' | 'task-lists'
-  documentPreloader?: DocumentPreloader
+  documentPreloader: DocumentPreloader
   locale: TypedLocale
   req: PayloadRequest
   sourceEntity: Activity | TaskFlow | TaskList
@@ -18,6 +21,12 @@ type CloneActivityDocumentsParams = {
   targetOrgId: number
 }
 
+/**
+ * Points the `files` rows of a cloned entity at the copies phase 1 made.
+ *
+ * This runs inside the transaction. The only Payload operation here is the final update, so a
+ * document phase 1 could not copy is recorded and skipped, and the clone continues without it.
+ */
 export async function cloneRelatedDocumentFiles(
   params: CloneActivityDocumentsParams,
 ): Promise<void> {
@@ -52,84 +61,49 @@ export async function cloneRelatedDocumentFiles(
         : `Document ${documentId}`
 
     try {
-      // The tracker copies each source document once per entity and counts it once. A row
-      // this entity attaches twice still needs both attachments on the clone.
-      const clonedDocumentId = await tracker.resolveClonedDocumentId(documentId, async () => {
-        if (documentPreloader && documentPreloader.preloadedDocuments.has(documentId)) {
-          const preloadedDoc = documentPreloader.preloadedDocuments.get(documentId)!
-          const { createClonedDocumentFromPreloaded } = await import(
-            '@/payload/utilities/cloning/document-preloader'
-          )
-          const created = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
-          return created.id
-        }
-
-        // Fallback to original method (will cause transaction timeout risk)
-        const created = await cloneDocumentFile(req, documentId, targetOrgId)
-        return created.id
-      })
+      // The tracker counts each source document once per entity. A row this entity attaches
+      // twice still needs both attachments on the clone.
+      const clonedDocumentId = await tracker.resolveClonedDocumentId(documentId, async () =>
+        resolvePreloadedDocumentId(documentPreloader, documentId),
+      )
 
       clonedFiles.push({ document: clonedDocumentId })
     } catch (error) {
+      // The lookup ran no Payload operation, so the transaction is intact. A read of the source
+      // document for the report would run inside it, and a NotFound there would kill it.
+      const failure = describePreloadFailure(documentPreloader, documentId)
+
       req.payload.logger.warn({
         documentId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        msg: 'Failed to clone document, continuing with others',
+        error: getErrorMessage(error),
+        msg: 'Document was not copied in phase 1, the clone continues without it',
       })
 
-      try {
-        const sourceDoc = await req.payload.findByID({
-          collection: 'documents',
-          depth: 1,
-          id: documentId,
-          locale,
-          req,
-        })
-
-        const fileName = sourceDoc.filename || 'Unknown'
-
-        let usageInfo = 'Direct file attachment'
-        if (sourceDoc.usedIn) {
-          if (typeof sourceDoc.usedIn === 'string') {
-            usageInfo = sourceDoc.usedIn
-          } else if (typeof sourceDoc.usedIn === 'object') {
-            usageInfo = JSON.stringify(sourceDoc.usedIn, null, 2)
-          }
-        }
-
-        tracker.addMissingFileError({
-          documentId,
-          documentName: sourceDoc?.name || documentName,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          fileName,
-          usageLocation: usageInfo,
-        })
-      } catch {
-        tracker.addMissingFileError({
-          documentId,
-          documentName: documentName,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          fileName: 'Unknown',
-          usageLocation: 'Direct file attachment',
-        })
-      }
+      tracker.addMissingFileError({
+        documentId,
+        documentName: failure.documentName ?? documentName,
+        error: getErrorMessage(error),
+        fileName: failure.fileName ?? 'Unknown',
+        usageLocation: 'Direct file attachment',
+      })
     }
   }
 
-  if (clonedFiles.length > 0) {
-    await req.payload.update({
-      collection: collectionName,
-      data: {
-        files: clonedFiles,
-      },
-      id: targetEntityId,
-      locale,
-      req: mergeReqContextTargetOrgId(req, targetOrgId),
-    })
+  // The create wrote the source rows first. An empty array must still replace them, or the clone
+  // keeps document ids of the source organisation, which the public share loader then reads
+  // across the tenant boundary.
+  await req.payload.update({
+    collection: collectionName,
+    data: {
+      files: clonedFiles,
+    },
+    id: targetEntityId,
+    locale,
+    req: mergeReqContextTargetOrgId(req, targetOrgId),
+  })
 
-    req.payload.logger.debug({
-      count: clonedFiles.length,
-      msg: 'Updated activity with cloned documents',
-    })
-  }
+  req.payload.logger.debug({
+    count: clonedFiles.length,
+    msg: 'Updated the clone with the copied documents',
+  })
 }

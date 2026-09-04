@@ -13,7 +13,8 @@ import { remapActivityTaskRelations } from './clone-activity-blocks'
 import { cloneRelatedDocumentFiles } from './clone-related-document-files'
 
 type ExecuteActivityCloneParams = {
-  documentPreloader?: DocumentPreloader
+  /** The copies phase 1 made, keyed by source document id. The endpoint builds it. */
+  documentPreloader: DocumentPreloader
   /** Every locale the clone carries, default first. `getCloneLocales` builds the list. */
   locales: TypedLocale[]
   req: PayloadRequest
