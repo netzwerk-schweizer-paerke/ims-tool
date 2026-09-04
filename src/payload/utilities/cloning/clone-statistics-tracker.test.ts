@@ -76,6 +76,71 @@ describe('CloneStatisticsTracker completeness', () => {
     expect(tracker.finalize().entities[0].percentComplete).toBe(100)
   })
 
+  // The strip helpers walk blocks with `Promise.all`, so three links to one document start
+  // before any of them finishes. A read-then-write guard copies the file three times.
+  test('copies a document once when several links resolve it concurrently', async () => {
+    const tracker = trackerFor('tx-concurrent')
+    tracker.startEntity(1)
+
+    let attempts = 0
+    const cloneDocument = async () => {
+      attempts++
+      await new Promise((resolve) => setTimeout(resolve, 5))
+      return 900
+    }
+
+    const ids = await Promise.all([
+      tracker.resolveClonedDocumentId(243, cloneDocument),
+      tracker.resolveClonedDocumentId(243, cloneDocument),
+      tracker.resolveClonedDocumentId(243, cloneDocument),
+    ])
+
+    tracker.setCloneInfo(2, 'Clone', 'task-flows')
+    tracker.endEntity()
+
+    const result = tracker.finalize()
+
+    expect(attempts).toBe(1)
+    expect(ids).toEqual([900, 900, 900])
+    expect(result.entities[0].source.documentFilesCount).toBe(1)
+    expect(result.entities[0].cloned.documentFilesCount).toBe(1)
+    expect(result.entities[0].percentComplete).toBe(100)
+  })
+
+  test('counts two different documents separately', async () => {
+    const tracker = trackerFor('tx-two-documents')
+    tracker.startEntity(1)
+
+    await Promise.all([
+      tracker.resolveClonedDocumentId(1, async () => 901),
+      tracker.resolveClonedDocumentId(2, async () => 902),
+      tracker.resolveClonedDocumentId(1, async () => 903),
+    ])
+
+    tracker.setCloneInfo(2, 'Clone', 'task-flows')
+    // The map is readable only while the entity is current, so read it before endEntity().
+    expect(tracker.getClonedDocumentId(1)).toBe(901)
+    tracker.endEntity()
+
+    const result = tracker.finalize()
+
+    expect(result.entities[0].source.documentFilesCount).toBe(2)
+    expect(result.entities[0].cloned.documentFilesCount).toBe(2)
+  })
+
+  test('reports one missing-file row per document, not per link', () => {
+    const tracker = trackerFor('tx-duplicate-errors')
+    tracker.startEntity(1)
+    tracker.addSourceDocument()
+    tracker.addMissingFileError(missingFile('plan.pdf'))
+    tracker.addMissingFileError(missingFile('plan.pdf'))
+    tracker.addMissingFileError(missingFile('plan.pdf'))
+    tracker.setCloneInfo(2, 'Clone', 'activities')
+    tracker.endEntity()
+
+    expect(tracker.finalize().entities[0].errors.missingDocumentFiles).toHaveLength(1)
+  })
+
   test('sums both entities into the aggregate', () => {
     const tracker = trackerFor('tx-two-entities')
 

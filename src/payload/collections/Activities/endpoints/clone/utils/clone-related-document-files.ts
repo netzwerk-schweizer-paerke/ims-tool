@@ -44,8 +44,6 @@ export async function cloneRelatedDocumentFiles(
       continue
     }
 
-    tracker.addSourceDocument()
-
     const documentId =
       typeof fileItem.document === 'object' ? fileItem.document.id : fileItem.document
     const documentName =
@@ -54,46 +52,24 @@ export async function cloneRelatedDocumentFiles(
         : `Document ${documentId}`
 
     try {
-      let clonedDoc: { collection: string; id: number; }
-
-      const existingClonedId = tracker.getClonedDocumentId(documentId)
-
-      if (existingClonedId) {
-        clonedDoc = {
-          collection: 'documents',
-          id: existingClonedId,
-        }
-        req.payload.logger.debug({
-          clonedId: existingClonedId,
-          msg: 'Reusing existing cloned document for direct attachment',
-          sourceId: documentId,
-        })
-      } else {
-        // Use pre-loaded document if available
+      // The tracker copies each source document once per entity and counts it once. A row
+      // this entity attaches twice still needs both attachments on the clone.
+      const clonedDocumentId = await tracker.resolveClonedDocumentId(documentId, async () => {
         if (documentPreloader && documentPreloader.preloadedDocuments.has(documentId)) {
           const preloadedDoc = documentPreloader.preloadedDocuments.get(documentId)!
           const { createClonedDocumentFromPreloaded } = await import(
             '@/payload/utilities/cloning/document-preloader'
           )
-          clonedDoc = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
-        } else {
-          // Fallback to original method (will cause transaction timeout risk)
-          clonedDoc = await cloneDocumentFile(req, documentId, targetOrgId)
+          const created = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
+          return created.id
         }
 
-        tracker.setDocumentCloneMapping(documentId, clonedDoc.id)
-        req.payload.logger.debug({
-          clonedId: clonedDoc.id,
-          msg: 'Document cloned and cached for direct attachment',
-          sourceId: documentId,
-        })
-      }
+        // Fallback to original method (will cause transaction timeout risk)
+        const created = await cloneDocumentFile(req, documentId, targetOrgId)
+        return created.id
+      })
 
-      // A row this entity attaches twice counts once against the source and once against the
-      // clone. Both branches must record it, or the clone loses the second attachment and the
-      // completeness figure reports a file that did reach the target as missing.
-      tracker.addClonedDocument()
-      clonedFiles.push({ document: clonedDoc.id })
+      clonedFiles.push({ document: clonedDocumentId })
     } catch (error) {
       req.payload.logger.warn({
         documentId,

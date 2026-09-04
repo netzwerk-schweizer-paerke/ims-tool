@@ -124,27 +124,21 @@ async function processNode(
         documentIds.push(docId)
 
         try {
-          // Check if already cloned (for reuse within same operation)
-          let clonedId = tracker.getClonedDocumentId(docId)
-
-          if (!clonedId) {
-            tracker.addSourceDocument()
-
-            // Use pre-loaded document if available
-            let clonedDoc
+          // The tracker copies each source document once per entity, however many links
+          // reach it, and it counts the source and the clone on that single attempt.
+          const clonedId = await tracker.resolveClonedDocumentId(docId, async () => {
             if (documentPreloader && documentPreloader.preloadedDocuments.has(docId)) {
               const preloadedDoc = documentPreloader.preloadedDocuments.get(docId)!
               const { createClonedDocumentFromPreloaded } = await import('./document-preloader')
-              clonedDoc = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
-            } else {
-              // Fallback to original method (will cause transaction timeout risk)
-              const { cloneDocumentFile } = await import('./clone-document')
-              clonedDoc = await cloneDocumentFile(req, docId, targetOrgId)
+              const created = await createClonedDocumentFromPreloaded(req, preloadedDoc, targetOrgId)
+              return created.id
             }
-            clonedId = clonedDoc.id
 
-            tracker.addClonedDocument()
-          }
+            // Fallback to original method (will cause transaction timeout risk)
+            const { cloneDocumentFile } = await import('./clone-document')
+            const created = await cloneDocumentFile(req, docId, targetOrgId)
+            return created.id
+          })
 
           relationship.value = clonedId
         } catch (error) {

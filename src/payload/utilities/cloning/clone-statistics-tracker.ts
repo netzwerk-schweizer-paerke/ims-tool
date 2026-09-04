@@ -7,6 +7,7 @@ export class CloneStatisticsTracker {
   private static instances: Map<string, CloneStatisticsTracker> = new Map()
   private currentEntityId: null | number = null
   private documentCloneMaps: Map<number, Map<number, number>> = new Map()
+  private documentClonePromises: Map<number, Map<number, Promise<number>>> = new Map()
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
 
   private constructor() {
@@ -66,8 +67,17 @@ export class CloneStatisticsTracker {
     stats.errors.otherErrors.push(error)
   }
 
+  /**
+   * One row per source document, never one per link to it. Several fields await the same
+   * clone attempt, so each of them reports the same failure.
+   */
   addMissingFileError(error: GenericCloneStatistics['errors']['missingDocumentFiles'][0]): void {
     const stats = this.getCurrentStats()
+
+    if (stats.errors.missingDocumentFiles.some((entry) => entry.documentId === error.documentId)) {
+      return
+    }
+
     stats.errors.missingDocumentFiles.push(error)
   }
 
@@ -299,7 +309,40 @@ export class CloneStatisticsTracker {
   reset(): void {
     this.entitiesStats = new Map()
     this.documentCloneMaps = new Map()
+    this.documentClonePromises = new Map()
     this.currentEntityId = null
+  }
+
+  /**
+   * Copies a source document once per entity, however many fields link it.
+   *
+   * The strip helpers walk blocks and items with `Promise.all`, so every caller reads the
+   * map before any caller writes it. Memoise the in-flight promise, never the finished id.
+   */
+  async resolveClonedDocumentId(
+    sourceId: number,
+    cloneDocument: () => Promise<number>,
+  ): Promise<number> {
+    const inFlight = this.getCurrentDocumentClonePromises()
+    const existing = inFlight.get(sourceId)
+
+    if (existing) {
+      return existing
+    }
+
+    this.addSourceDocument()
+
+    // A rejection stays in the map on purpose. One failed download is one failure for the
+    // whole entity, and a retry per link would repeat a 30-second timeout for each one.
+    const promise = cloneDocument().then((clonedId) => {
+      this.setDocumentCloneMapping(sourceId, clonedId)
+      this.addClonedDocument()
+      return clonedId
+    })
+
+    inFlight.set(sourceId, promise)
+
+    return promise
   }
 
   setCloneInfo(id: number, name: string, collection: CollectionSlug): void {
@@ -359,6 +402,7 @@ export class CloneStatisticsTracker {
         },
       })
       this.documentCloneMaps.set(entityId, new Map())
+      this.documentClonePromises.set(entityId, new Map())
     }
   }
 
@@ -367,6 +411,13 @@ export class CloneStatisticsTracker {
       throw new Error('No current entity set. Call startEntity() first.')
     }
     return this.documentCloneMaps.get(this.currentEntityId)!
+  }
+
+  private getCurrentDocumentClonePromises(): Map<number, Promise<number>> {
+    if (this.currentEntityId === null) {
+      throw new Error('No current entity set. Call startEntity() first.')
+    }
+    return this.documentClonePromises.get(this.currentEntityId)!
   }
 
   private getCurrentStats(): GenericCloneStatistics {
