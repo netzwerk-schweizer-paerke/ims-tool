@@ -20,6 +20,7 @@ import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Payload } from 'payload'
 
 import { collectRichTextValues } from '@/lib/collect-rich-text-values'
+import { getS3Client } from '@/lib/s3-client'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /**
@@ -123,12 +124,7 @@ export interface TenantHealthOptions {
   checkExternalUrls?: boolean
 }
 
-export type TenantHealthPreconditionCode =
-  | 'apiKeyInvalid'
-  | 'apiKeyMissing'
-  | 'apiKeyUnreachable'
-  | 's3BucketMissing'
-  | 's3Unreachable'
+export type TenantHealthPreconditionCode = 's3BucketMissing' | 's3Unreachable'
 
 export interface TenantHealthPreconditionResult {
   code?: TenantHealthPreconditionCode
@@ -138,12 +134,7 @@ export interface TenantHealthPreconditionResult {
 }
 
 export interface TenantHealthPreconditions {
-  /**
-   * The key the server uses for its own HTTP calls. The clone pipeline no longer needs it,
-   * because `read-document-file.ts` reads the bucket directly. The `s3` precondition is the
-   * one a clone depends on.
-   */
-  apiKey: TenantHealthPreconditionResult
+  /** A clone reads the bucket directly, so this is the only precondition it depends on. */
   s3: TenantHealthPreconditionResult
 }
 
@@ -212,16 +203,7 @@ export class TenantHealthChecker {
   constructor(payload: Payload) {
     this.payload = payload
     this.bucket = process.env.S3_BUCKET || ''
-    this.s3 = new S3Client({
-      credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-      },
-      endpoint: process.env.S3_ENDPOINT,
-      forcePathStyle: true,
-      // Garage enforces its configured s3_region and rejects a mismatch, unlike MinIO/R2.
-      region: process.env.S3_REGION || 'auto',
-    })
+    this.s3 = getS3Client()
   }
 
   async run(organisationId: number, options: TenantHealthOptions = {}): Promise<TenantHealthReport> {
@@ -373,27 +355,6 @@ export class TenantHealthChecker {
     }
 
     return { findings, ownedDocumentCount: documentResult.ownedCount }
-  }
-
-  private async checkApiKey(): Promise<TenantHealthPreconditionResult> {
-    const apiKey = process.env.PAYLOAD_API_KEY
-
-    if (!apiKey) {
-      return { code: 'apiKeyMissing', ok: false }
-    }
-
-    const serverUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
-
-    try {
-      const response = await fetch(`${serverUrl}/api/users/me`, {
-        headers: { Authorization: `users API-Key ${apiKey}` },
-      })
-      const body = (await response.json()) as { user?: unknown }
-
-      return body?.user ? { ok: true } : { code: 'apiKeyInvalid', ok: false }
-    } catch (error) {
-      return { code: 'apiKeyUnreachable', error: `${serverUrl}: ${describe(error)}`, ok: false }
-    }
   }
 
   /**
@@ -560,8 +521,7 @@ export class TenantHealthChecker {
   }
 
   private async checkPreconditions(): Promise<TenantHealthPreconditions> {
-    const [s3, apiKey] = await Promise.all([this.checkS3(), this.checkApiKey()])
-    return { apiKey, s3 }
+    return { s3: await this.checkS3() }
   }
 
   /**
@@ -1029,11 +989,7 @@ const buildReport = (
     summary: {
       blocking,
       degrading,
-      healthy:
-        blocking === 0 &&
-        degrading === 0 &&
-        parts.preconditions.s3.ok &&
-        parts.preconditions.apiKey.ok,
+      healthy: blocking === 0 && degrading === 0 && parts.preconditions.s3.ok,
     },
   }
 }

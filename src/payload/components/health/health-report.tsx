@@ -374,15 +374,6 @@ export const preconditionMessage = (
   result: TenantHealthPreconditionResult,
 ): string => {
   switch (result.code) {
-    case 'apiKeyInvalid': {
-      return t('dataHealth:precondition:apiKeyInvalid' as never)
-    }
-    case 'apiKeyMissing': {
-      return t('dataHealth:precondition:apiKeyMissing' as never)
-    }
-    case 'apiKeyUnreachable': {
-      return t('dataHealth:precondition:apiKeyUnreachable' as never)
-    }
     case 's3BucketMissing': {
       return t('dataHealth:precondition:s3BucketMissing' as never)
     }

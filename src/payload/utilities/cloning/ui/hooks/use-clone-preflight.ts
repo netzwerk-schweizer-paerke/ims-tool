@@ -94,10 +94,7 @@ const mergeReports = (reports: TenantHealthReport[]): TenantHealthReport => {
     counts: first?.counts ?? { activities: 0, documents: 0, taskFlows: 0, taskLists: 0 },
     findings,
     organisation: first?.organisation ?? { id: 0, name: '' },
-    preconditions: first?.preconditions ?? {
-      apiKey: { ok: true },
-      s3: { ok: true },
-    },
+    preconditions: first?.preconditions ?? { s3: { ok: true } },
     summary: {
       blocking: countSeverity(findings, 'blocking'),
       degrading: countSeverity(findings, 'degrading'),
