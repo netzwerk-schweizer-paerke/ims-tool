@@ -4,15 +4,17 @@ import Link from 'next/link'
 import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
 import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
 import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
+import { ViewLinks } from '@/components/views/view-links'
 import { Translate } from '@/lib/translate'
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
 type Props = {
   activity: Activity
+  links: ViewLinks
   locale: string
 }
 
-export const ActivityStrategy = ({ activity, locale }: Props) => {
+export const ActivityStrategy = ({ activity, links, locale }: Props) => {
   if (!activity.name) {
     return (
       <div>
@@ -22,11 +24,13 @@ export const ActivityStrategy = ({ activity, locale }: Props) => {
             vars={{ locale: locale.toUpperCase() }}
           />
         </p>
-        <Link
-          className={'link-hover link'}
-          href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
-          <Translate k={'activityOverview:viewInEditMode'} />
-        </Link>
+        {links.showEdit && (
+          <Link
+            className={'link-hover link'}
+            href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
+            <Translate k={'activityOverview:viewInEditMode'} />
+          </Link>
+        )}
       </div>
     )
   }
@@ -77,24 +81,42 @@ export const ActivityStrategy = ({ activity, locale }: Props) => {
           <h2 className={'mx-auto max-w-52 hyphens-auto text-xl font-bold'} lang={locale}>
           {activity.name}
         </h2>
-          <ActivityEditLink id={activity.id} locale={locale} />
+          <ActivityEditLink id={activity.id} links={links} locale={locale} />
         </div>
         <div className={'relative flex h-full grow flex-col justify-center'}>
           {blocksDisplay.input.length === 0 ? (
-            <ActivityBlock activityId={activity.id} type={'empty'} />
+            <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
           ) : (
             blocksDisplay.input.map((block) => (
-              <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'input'} />
+              <ActivityBlock
+                activityId={activity.id}
+                block={block}
+                key={block.id}
+                links={links}
+                type={'input'}
+              />
             ))
           )}
           {blocksDisplay.tasks.map((block) => (
-            <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'task'} />
+            <ActivityBlock
+              activityId={activity.id}
+              block={block}
+              key={block.id}
+              links={links}
+              type={'task'}
+            />
           ))}
           {blocksDisplay.output.length === 0 ? (
-            <ActivityBlock activityId={activity.id} type={'empty'} />
+            <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
           ) : (
             blocksDisplay.output.map((block) => (
-              <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'output'} />
+              <ActivityBlock
+                activityId={activity.id}
+                block={block}
+                key={block.id}
+                links={links}
+                type={'output'}
+              />
             ))
           )}
           <ActivityFlowArrows activity={activity} />

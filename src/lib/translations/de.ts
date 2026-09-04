@@ -494,4 +494,22 @@ export const de = {
     },
     title: 'Aufgaben',
   },
+  shareLink: {
+    close: 'Schliessen',
+    copied: 'Der Link ist in die Zwischenablage kopiert.',
+    copy: 'Link kopieren',
+    deleted: 'Der Freigabelink ist gelöscht.',
+    deleteLink: 'Freigabelink löschen',
+    error: 'Die Aktion ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    noAccount: 'Der Empfänger braucht kein Benutzerkonto.',
+    publicNotice: 'Geteilte, schreibgeschützte Ansicht',
+    scopeLandscape:
+      'Wer den Link hat, öffnet die ganze Prozesslandschaft. Das schliesst jeden Prozess und jede Liste darin ein.',
+    scopePage: 'Wer den Link hat, öffnet nur diese eine Seite.',
+    share: 'Freigabelink',
+    title: 'Diese Seite freigeben',
+    urlLabel: 'Link',
+    whoCanDelete: 'Sie und die Administratoren Ihrer Organisation können den Link löschen.',
+    working: 'Bitte warten...',
+  },
 }

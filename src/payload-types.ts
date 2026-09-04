@@ -85,6 +85,7 @@ export interface Config {
     'documents-public': DocumentsPublic;
     'task-flows': TaskFlow;
     'task-lists': TaskList;
+    'share-links': ShareLink;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -100,6 +101,7 @@ export interface Config {
     'documents-public': DocumentsPublicSelect<false> | DocumentsPublicSelect<true>;
     'task-flows': TaskFlowsSelect<false> | TaskFlowsSelect<true>;
     'task-lists': TaskListsSelect<false> | TaskListsSelect<true>;
+    'share-links': ShareLinksSelect<false> | ShareLinksSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -1006,6 +1008,24 @@ export interface DocumentsPublic {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "share-links".
+ */
+export interface ShareLink {
+  id: number;
+  token: string;
+  createdBy: number | User;
+  organisation: number | Organisation;
+  targetType: 'activityBlock' | 'activityLandscape' | 'flow' | 'list';
+  activity?: (number | null) | Activity;
+  blockId?: string | null;
+  taskFlow?: (number | null) | TaskFlow;
+  taskList?: (number | null) | TaskList;
+  locale?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1055,6 +1075,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'task-lists';
         value: number | TaskList;
+      } | null)
+    | ({
+        relationTo: 'share-links';
+        value: number | ShareLink;
       } | null)
     | ({
         relationTo: 'users';
@@ -1448,6 +1472,23 @@ export interface TaskListsSelect<T extends boolean = true> {
   createdBy?: T;
   updatedBy?: T;
   translationMeta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "share-links_select".
+ */
+export interface ShareLinksSelect<T extends boolean = true> {
+  token?: T;
+  createdBy?: T;
+  organisation?: T;
+  targetType?: T;
+  activity?: T;
+  blockId?: T;
+  taskFlow?: T;
+  taskList?: T;
+  locale?: T;
   updatedAt?: T;
   createdAt?: T;
 }

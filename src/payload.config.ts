@@ -23,6 +23,7 @@ import { Documents } from '@/payload/collections/Documents'
 import { DocumentsPublic } from '@/payload/collections/DocumentsPublic'
 import { Media } from '@/payload/collections/Media'
 import { Organisations } from '@/payload/collections/Organisations'
+import { ShareLinks } from '@/payload/collections/ShareLinks'
 import { TaskFlows } from '@/payload/collections/TaskFlow'
 import { TaskLists } from '@/payload/collections/TaskList'
 import { Users } from '@/payload/collections/Users'
@@ -83,6 +84,7 @@ export default buildConfig({
     DocumentsPublic,
     TaskFlows,
     TaskLists,
+    ShareLinks,
     Users,
   ],
   db: postgresAdapter({

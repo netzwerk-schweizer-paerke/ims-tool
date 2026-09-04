@@ -4,6 +4,7 @@ import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
 import { TaskShapeWrapper } from '@/components/graph/wrappers/task-shape-wrapper'
 import { ActivityBlockViewLink } from '@/components/views/activity/overview/activity/activity-block-view-link'
 import { BlockWrapper } from '@/components/views/activity/overview/activity/block-wrapper'
+import { ViewLinks } from '@/components/views/view-links'
 import { Translate } from '@/lib/translate'
 import { ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
@@ -15,10 +16,11 @@ export type ActivityTaskCompoundBlock = (ActivityIOBlock | ActivityTaskBlock) & 
 type Props = {
   activityId: number
   block?: ActivityIOBlock | ActivityTaskBlock
+  links: ViewLinks
   type: 'empty' | 'input' | 'output' | 'task'
 }
 
-export const ActivityBlock = ({ activityId, block, type }: Props) => {
+export const ActivityBlock = ({ activityId, block, links, type }: Props) => {
   if (!block || type === 'empty') {
     return <div className="activity-block"></div>
   }
@@ -32,7 +34,7 @@ export const ActivityBlock = ({ activityId, block, type }: Props) => {
       {type === 'input' && (
         <BlockWrapper id={block.id}>
           <IOShapeWrapper>
-            <ActivityBlockViewLink activityId={activityId} blockId={block.id}>
+            <ActivityBlockViewLink activityId={activityId} blockId={block.id} links={links}>
               <GraphLabel>{blockText}</GraphLabel>
             </ActivityBlockViewLink>
           </IOShapeWrapper>
@@ -41,7 +43,7 @@ export const ActivityBlock = ({ activityId, block, type }: Props) => {
       {type === 'output' && (
         <BlockWrapper id={block.id}>
           <IOShapeWrapper>
-            <ActivityBlockViewLink activityId={activityId} blockId={block.id}>
+            <ActivityBlockViewLink activityId={activityId} blockId={block.id} links={links}>
               <GraphLabel>{blockText}</GraphLabel>
             </ActivityBlockViewLink>
           </IOShapeWrapper>
@@ -50,7 +52,7 @@ export const ActivityBlock = ({ activityId, block, type }: Props) => {
       {type === 'task' && (
         <BlockWrapper id={block.id}>
           <TaskShapeWrapper>
-            <ActivityBlockViewLink activityId={activityId} blockId={block.id}>
+            <ActivityBlockViewLink activityId={activityId} blockId={block.id} links={links}>
               <GraphLabel>{blockText}</GraphLabel>
             </ActivityBlockViewLink>
           </TaskShapeWrapper>

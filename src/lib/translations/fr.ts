@@ -496,4 +496,22 @@ export const fr = {
     },
     title: 'Liste',
   },
+  shareLink: {
+    close: 'Fermer',
+    copied: 'Le lien est copié dans le presse-papiers.',
+    copy: 'Copier le lien',
+    deleted: 'Le lien de partage est supprimé.',
+    deleteLink: 'Supprimer le lien de partage',
+    error: "L'action a échoué. Veuillez réessayer.",
+    noAccount: "Le destinataire n'a pas besoin de compte utilisateur.",
+    publicNotice: 'Vue partagée en lecture seule',
+    scopeLandscape:
+      'Toute personne qui a le lien ouvre tout le paysage des processus. Cela comprend chaque processus et chaque liste.',
+    scopePage: 'Toute personne qui a le lien ouvre cette seule page.',
+    share: 'Lien de partage',
+    title: 'Partager cette page',
+    urlLabel: 'Lien',
+    whoCanDelete: 'Vous et les administrateurs de votre organisation pouvez supprimer le lien.',
+    working: 'Veuillez patienter...',
+  },
 }

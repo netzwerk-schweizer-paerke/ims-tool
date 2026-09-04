@@ -3,15 +3,17 @@ import Link from 'next/link'
 
 import { ActivityFlowArrows } from '@/components/views/activity/overview/activity/activity-flow-arrows'
 import { ActivityBlock } from '@/components/views/activity/overview/activity/block'
+import { ViewLinks } from '@/components/views/view-links'
 import { Translate } from '@/lib/translate'
 import { Activity, ActivityIOBlock, ActivityTaskBlock } from '@/payload-types'
 
 type Props = {
   activity: Activity
+  links: ViewLinks
   locale: string
 }
 
-export const ActivityFlow = ({ activity, locale }: Props) => {
+export const ActivityFlow = ({ activity, links, locale }: Props) => {
   if (!activity.name) {
     return (
       <div>
@@ -21,11 +23,13 @@ export const ActivityFlow = ({ activity, locale }: Props) => {
             vars={{ locale: locale.toUpperCase() }}
           />
         </p>
-        <Link
-          className={'link-hover link'}
-          href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
-          <Translate k={'activityOverview:viewInEditMode'} />
-        </Link>
+        {links.showEdit && (
+          <Link
+            className={'link-hover link'}
+            href={`/admin/collections/activities/${activity.id}?locale=${locale}`}>
+            <Translate k={'activityOverview:viewInEditMode'} />
+          </Link>
+        )}
       </div>
     )
   }
@@ -72,29 +76,47 @@ export const ActivityFlow = ({ activity, locale }: Props) => {
 
   return (
     <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
-        <div className={'relative flex w-min grow flex-col'}>
-          {blocksDisplay.input.length === 0 ? (
-            <ActivityBlock activityId={activity.id} type={'empty'} />
-          ) : (
-            blocksDisplay.input.map((block) => (
-              <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'input'} />
-            ))
-          )}
-          {blocksDisplay.tasks.map((block) => (
-            <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'task'} />
-          ))}
-          <div className={'relative grow'}>
-            <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
-          </div>
-          {blocksDisplay.output.length === 0 ? (
-            <ActivityBlock activityId={activity.id} type={'empty'} />
-          ) : (
-            blocksDisplay.output.map((block) => (
-              <ActivityBlock activityId={activity.id} block={block} key={block.id} type={'output'} />
-            ))
-          )}
-          <ActivityFlowArrows activity={activity} />
+      <div className={'relative flex w-min grow flex-col'}>
+        {blocksDisplay.input.length === 0 ? (
+          <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
+        ) : (
+          blocksDisplay.input.map((block) => (
+            <ActivityBlock
+              activityId={activity.id}
+              block={block}
+              key={block.id}
+              links={links}
+              type={'input'}
+            />
+          ))
+        )}
+        {blocksDisplay.tasks.map((block) => (
+          <ActivityBlock
+            activityId={activity.id}
+            block={block}
+            key={block.id}
+            links={links}
+            type={'task'}
+          />
+        ))}
+        <div className={'relative grow'}>
+          <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
         </div>
+        {blocksDisplay.output.length === 0 ? (
+          <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
+        ) : (
+          blocksDisplay.output.map((block) => (
+            <ActivityBlock
+              activityId={activity.id}
+              block={block}
+              key={block.id}
+              links={links}
+              type={'output'}
+            />
+          ))
+        )}
+        <ActivityFlowArrows activity={activity} />
+      </div>
     </div>
   )
 }

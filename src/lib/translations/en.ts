@@ -490,4 +490,22 @@ export const en = {
     },
     title: 'List',
   },
+  shareLink: {
+    close: 'Close',
+    copied: 'The link is copied to the clipboard.',
+    copy: 'Copy the link',
+    deleted: 'The share link is deleted.',
+    deleteLink: 'Delete the share link',
+    error: 'The action failed. Please try again.',
+    noAccount: 'The recipient needs no user account.',
+    publicNotice: 'Shared read-only view',
+    scopeLandscape:
+      'Anyone with the link opens the whole process landscape. That includes every process and every list inside it.',
+    scopePage: 'Anyone with the link opens this one page only.',
+    share: 'Share link',
+    title: 'Share this page',
+    urlLabel: 'Link',
+    whoCanDelete: 'You and the administrators of your organisation can delete the link.',
+    working: 'Please wait...',
+  },
 }

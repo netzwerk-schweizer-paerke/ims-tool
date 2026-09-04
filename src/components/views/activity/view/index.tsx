@@ -5,18 +5,17 @@ import { notFound } from 'next/navigation'
 import { AdminViewServerProps } from 'payload'
 import React from 'react'
 
-import { LastUpdated } from '@/components/last-updated'
 import { StepNav } from '@/components/step-nav'
-import { ActivityEditLink } from '@/components/views/activity/overview/activity/activity-edit-link'
-import { TasksGrid } from '@/components/views/activity/view/tasks-grid'
-import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { ViewToolbar } from '@/components/view-toolbar'
+import { ActivityBlockContent } from '@/components/views/activity/view/activity-block-content'
+import { ADMIN_VIEW_LINKS } from '@/components/views/view-links'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
-
-import './landscape-bg.css'
-import { Translate } from '@/lib/translate'
+import { ShareTarget } from '@/lib/share-link-target'
+import { findOwnShareLink } from '@/payload/utilities/find-own-share-link'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { loadActivityBlock } from '@/payload/utilities/share/load-activity-block'
 
 export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
   initPageResult,
@@ -50,73 +49,35 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
     notFound()
   }
 
-  const activityWhere = {
-    and: [
-      {
-        id: { equals: activityid },
-        organisation: {
-          equals: selectedOrganisationId,
-        },
-      },
-    ],
+  const loaded = await loadActivityBlock({
+    activityId: activityid,
+    blockId: activityBlockId,
+    locale,
+    organisationId: selectedOrganisationId,
+    payload: req.payload,
+  })
+
+  if (!loaded) {
+    // Stale link, or an activity belonging to another organisation — render the admin 404
+    // rather than an empty page.
+    notFound()
   }
 
-  const activity = await req.payload
-    .find({
-      collection: 'activities',
-      depth: 2,
-      locale,
-      where: activityWhere,
-      //   TODO: Implement doc order sorting
-    })
-    .then((res) => {
-      if (res.docs.length === 0) {
-        return null
-      }
-      if (res.docs.length > 1) {
-        logger.warn('admin/views/activity/view/index: More than one activity found')
-      }
-      return res?.docs[0]
-    })
+  const { activity, activityBlock } = loaded
 
-  const blocks = activity?.blocks ?? []
-
-  // Payload stores a separate block row per locale, and each row has its own id. A language switch
-  // therefore leaves the URL with an id that the current locale does not hold. Resolve the block by
-  // its position in the locale that owns the id.
-  const resolveBlockByPosition = async () => {
-    const blocksPerLocale = await req.payload
-      .find({
-        collection: 'activities',
-        depth: 0,
-        locale: 'all',
-        where: activityWhere,
+  const shareTarget: ShareTarget = {
+    activity: activityid,
+    blockId: activityBlockId,
+    targetType: 'activityBlock',
+  }
+  const existingShareLink = user
+    ? await findOwnShareLink({
+        organisationId: selectedOrganisationId,
+        payload: req.payload,
+        target: shareTarget,
+        userId: user.id,
       })
-      .then(
-        (res) =>
-          res.docs[0]?.blocks as unknown as Record<string, { id?: null | string }[]> | undefined,
-      )
-
-    for (const localeBlocks of Object.values(blocksPerLocale ?? {})) {
-      const index = localeBlocks.findIndex((block) => block.id === activityBlockId)
-      if (index !== -1) {
-        return blocks[index]
-      }
-    }
-
-    return undefined
-  }
-
-  const activityBlock =
-    blocks.find((block) => block.id === activityBlockId) ??
-    (activity ? await resolveBlockByPosition() : undefined)
-
-  const findTitle = (a: typeof activity, block: typeof activityBlock) => {
-    if (block?.graph?.task?.text) {
-      return block.graph.task.text
-    }
-    return a?.name
-  }
+    : null
 
   return (
     <DefaultTemplate
@@ -135,100 +96,25 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           paddingRight: 'var(--gutter-h)',
         }}>
         <StepNav
-          activity={{ blockId: activityBlockId, id: activityid, title: activity?.name }}
+          activity={{ blockId: activityBlockId, id: activityid, title: activity.name }}
           activityBlock={{
             id: activityBlockId,
             title: activityBlock?.graph?.task?.text,
           }}
         />
-        <div className={'prose lg:prose-lg'}>
-          <h1>{findTitle(activity, activityBlock)}</h1>
-          <h3>
-            <Translate k={'activityBlock:title'} />
-          </h3>
-        </div>
-        <LastUpdated date={activity?.updatedAt} />
-        <ActivityEditLink id={activityid} locale={localeCode} />
-        <div className={'mt-8 grid grid-cols-[28%_auto_28%]'}>
-          {activityBlock ? (
-            <>
-              <div className={'grid grid-cols-[auto_48px]'}>
-                <div className={'landscape-bg prose prose-lg pb-4 pl-4 pr-4 pt-2'}>
-                  <h3>
-                    <Translate k={'activityBlock:input:title'} />
-                  </h3>
-                  {activityBlock.io?.input ? (
-                    <PayloadLexicalReactRenderer content={activityBlock.io.input} />
-                  ) : (
-                    <p>
-                      <Translate k={'common:noContentDefined'} />
-                    </p>
-                  )}
-                </div>
-                <div className={'landscape-bg-arrow-right'}></div>
-              </div>
-              <div className={'grid grid-cols-[auto_48px]'}>
-                <div className={'landscape-bg relative p-4'}>
-                  <div className={'prose prose-lg flex flex-col gap-16'}>
-                    {/* `grid-auto-rows: 1fr` gives every row the height of the tallest card, so
-                        all cards match across rows. A flex wrap equalises within one row only. */}
-                    <div
-                      className={
-                        'grid grid-cols-[repeat(auto-fill,12rem)] gap-4 leading-[normal] [grid-auto-rows:1fr]'
-                      }>
-                      <TasksGrid tasks={activityBlock?.relations?.tasks} />
-                    </div>
-                  </div>
-                </div>
-                <div className={'landscape-bg-arrow-right'}></div>
-              </div>
-              <div className={'landscape-bg relative pb-4 pl-4 pr-4 pt-2'}>
-                <div className={'prose prose-lg'}>
-                  <h3>
-                    <Translate k={'activityBlock:output:title'} />
-                  </h3>
-                  {activityBlock.io?.input ? (
-                    <PayloadLexicalReactRenderer content={activityBlock.io.output} />
-                  ) : (
-                    <p>
-                      <Translate k={'common:noContentDefined'} />
-                    </p>
-                  )}
-                </div>
-              </div>
-            </>
-          ) : (
-            <div>
-              <Translate k={'common:noContentDefined'} />
-            </div>
-          )}
-        </div>
-        <div className={'mt-16 grid grid-cols-2 gap-8'}>
-          <div className={'prose prose-lg'}>
-            <h3>
-              <Translate k={'activityBlock:infos:norms'} />
-            </h3>
-            {activityBlock?.infos?.norms ? (
-              <PayloadLexicalReactRenderer content={activityBlock.infos?.norms} />
-            ) : (
-              <p>
-                <Translate k={'common:noContentDefined'} />
-              </p>
-            )}
-          </div>
-          <div className={'prose prose-lg'}>
-            <h3>
-              <Translate k={'activityBlock:infos:support'} />
-            </h3>
-            {activityBlock?.infos?.support ? (
-              <PayloadLexicalReactRenderer content={activityBlock.infos?.support} />
-            ) : (
-              <p>
-                <Translate k={'common:noContentDefined'} />
-              </p>
-            )}
-          </div>
-        </div>
+        <ActivityBlockContent
+          activity={activity}
+          activityBlock={activityBlock}
+          links={ADMIN_VIEW_LINKS}
+          toolbar={
+            <ViewToolbar
+              editHref={`/admin/collections/activities/${activityid}?locale=${localeCode}`}
+              existingLink={existingShareLink}
+              locale={localeCode}
+              target={shareTarget}
+            />
+          }
+        />
       </div>
     </DefaultTemplate>
   )

@@ -499,4 +499,22 @@ export const it = {
     },
     title: 'Lista',
   },
+  shareLink: {
+    close: 'Chiudi',
+    copied: 'Il link è copiato negli appunti.',
+    copy: 'Copia il link',
+    deleted: 'Il link di condivisione è eliminato.',
+    deleteLink: 'Elimina il link di condivisione',
+    error: "L'azione non è riuscita. Riprova.",
+    noAccount: 'Il destinatario non ha bisogno di un account.',
+    publicNotice: 'Vista condivisa di sola lettura',
+    scopeLandscape:
+      'Chi ha il link apre tutto il panorama dei processi. Sono inclusi ogni processo e ogni elenco.',
+    scopePage: 'Chi ha il link apre solo questa pagina.',
+    share: 'Link di condivisione',
+    title: 'Condividi questa pagina',
+    urlLabel: 'Link',
+    whoCanDelete: "Tu e gli amministratori della tua organizzazione potete eliminare il link.",
+    working: 'Attendere...',
+  },
 }

@@ -134,6 +134,20 @@ export const I18nCollection = {
         it: 'Elemento multimediale',
       },
     },
+    shareLinks: {
+      plural: {
+        de: 'Freigabelinks',
+        en: 'Share links',
+        fr: 'Liens de partage',
+        it: 'Link di condivisione',
+      },
+      singular: {
+        de: 'Freigabelink',
+        en: 'Share link',
+        fr: 'Lien de partage',
+        it: 'Link di condivisione',
+      },
+    },
   },
   email: {
     passwordReset: {
@@ -255,6 +269,12 @@ export const I18nCollection = {
       en: 'Block',
       fr: 'Bloc',
       it: 'Blocco',
+    },
+    blockId: {
+      de: 'Block-ID',
+      en: 'Block ID',
+      fr: 'ID du bloc',
+      it: 'ID del blocco',
     },
     blocks: {
       de: 'Blöcke',
@@ -400,6 +420,12 @@ export const I18nCollection = {
       fr: 'Éléments de liste',
       it: 'Elementi di elenco',
     },
+    locale: {
+      de: 'Sprache',
+      en: 'Language',
+      fr: 'Langue',
+      it: 'Lingua',
+    },
     logo: {
       de: 'Logo',
       en: 'Logo',
@@ -514,6 +540,12 @@ export const I18nCollection = {
       fr: 'Activité de soutien',
       it: 'Attività di supporto',
     },
+    targetType: {
+      de: 'Zieltyp',
+      en: 'Target type',
+      fr: 'Type de cible',
+      it: 'Tipo di destinazione',
+    },
     task: {
       de: 'Aufgabe',
       en: 'Task',
@@ -555,6 +587,12 @@ export const I18nCollection = {
       en: 'Text',
       fr: 'Texte',
       it: 'Testo',
+    },
+    token: {
+      de: 'Token',
+      en: 'Token',
+      fr: 'Jeton',
+      it: 'Token',
     },
     tools: {
       de: 'Werkzeuge',
@@ -623,6 +661,32 @@ export const I18nCollection = {
       en: 'User',
       fr: 'Utilisateur',
       it: 'Utente',
+    },
+  },
+  shareLinkTarget: {
+    activityBlock: {
+      de: 'Prozessgruppe',
+      en: 'Activity block',
+      fr: 'Groupe de processus',
+      it: 'Gruppo di processi',
+    },
+    activityLandscape: {
+      de: 'Prozesslandschaft',
+      en: 'Process landscape',
+      fr: 'Paysage des processus',
+      it: 'Panorama dei processi',
+    },
+    flow: {
+      de: 'Prozess',
+      en: 'Process',
+      fr: 'Processus',
+      it: 'Processo',
+    },
+    list: {
+      de: 'Liste',
+      en: 'List',
+      fr: 'Liste',
+      it: 'Elenco',
     },
   },
 }

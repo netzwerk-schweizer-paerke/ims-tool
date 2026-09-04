@@ -5,27 +5,16 @@ import { notFound } from 'next/navigation'
 import { AdminViewServerProps } from 'payload'
 import React from 'react'
 
-import { LastUpdated } from '@/components/last-updated'
 import { StepNav } from '@/components/step-nav'
-import { FlowBlock } from '@/components/views/flow/flow-block'
-import { FlowEditLink } from '@/components/views/flow/flow-edit-link'
-import { PayloadLexicalReactRenderer } from '@/lib/lexical-render/src/payload-lexical-react-renderer'
+import { ViewToolbar } from '@/components/view-toolbar'
+import { FlowContent } from '@/components/views/flow/flow-content'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
-import { Translate } from '@/lib/translate'
-import { TaskFlow } from '@/payload-types'
+import { ShareTarget } from '@/lib/share-link-target'
+import { findOwnShareLink } from '@/payload/utilities/find-own-share-link'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-
-function isTaskFlowArray(flowRelation: unknown): flowRelation is TaskFlow[] {
-  return (
-    Array.isArray(flowRelation) &&
-    flowRelation.every(
-      (flow) =>
-        typeof flow === 'object' && flow !== null && 'id' in flow && typeof flow.id === 'number',
-    )
-  )
-}
+import { loadFlow } from '@/payload/utilities/share/load-flow'
 
 export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
   initPageResult,
@@ -56,90 +45,30 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
     notFound()
   }
 
-  const flowBlock = await req.payload
-    .find({
-      collection: 'task-flows',
-      depth: 2,
-      locale,
-      where: {
-        and: [
-          {
-            id: { equals: flowId },
-            organisation: {
-              equals: selectedOrganisationId,
-            },
-          },
-        ],
-      },
-      //   TODO: Implement doc order sorting
-    })
-    .then((res) => {
-      if (res.docs.length === 0) {
-        return null
-      }
-      if (res.docs.length > 1) {
-        logger.warn('admin/views/flow/index: More than one flow block found')
-      }
-      return res?.docs[0]
-    })
+  const loaded = await loadFlow({
+    flowId,
+    locale,
+    organisationId: selectedOrganisationId,
+    payload: req.payload,
+  })
 
-  if (!flowBlock) {
+  if (!loaded) {
     // Stale link, or a flow belonging to another organisation — render the admin 404
     // rather than an error page
     notFound()
   }
 
-  const blocks = flowBlock.blocks || []
+  const { activity, flowBlock } = loaded
 
-  const activity = await req.payload
-    .find({
-      collection: 'activities',
-      depth: 2,
-      locale,
-      where: {
-        and: [
-          {
-            organisation: {
-              equals: selectedOrganisationId,
-            },
-          },
-        ],
-      },
-    })
-    .then((res) => {
-      let blockId = ''
-      let blockTitle = ''
-      const activity = res.docs.filter((doc) => {
-        // These are activity blocks that contain flows and lists
-        const activityBlocks = doc.blocks
-        return activityBlocks?.some((block) => {
-          const flowRelation = block.relations?.tasks
-            ?.filter((task) => task.relationTo === 'task-flows')
-            .map((task) => task.value)
-          if (isTaskFlowArray(flowRelation) && flowRelation.some((flow) => flow.id === flowId)) {
-            blockId = block.id as string
-            blockTitle = block?.graph?.task?.text as string
-            return true
-          }
-          return false
-        })
+  const shareTarget: ShareTarget = { targetType: 'flow', taskFlow: flowId }
+  const existingShareLink = user
+    ? await findOwnShareLink({
+        organisationId: selectedOrganisationId,
+        payload: req.payload,
+        target: shareTarget,
+        userId: user.id,
       })
-      if (activity.length === 0) {
-        // An orphaned flow — no activity block references it. The flow itself still renders;
-        // only the breadcrumb is unavailable.
-        logger.warn('admin/views/flow/index: No activity references this flow')
-        return null
-      }
-      if (activity.length > 1) {
-        logger.warn('admin/views/flow/index: More than one activity found')
-      }
-      return {
-        blockId,
-        blockTitle,
-        id: activity[0].id,
-        name: activity[0].name,
-      }
-    })
+    : null
 
   return (
     <DefaultTemplate
@@ -164,43 +93,17 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
             flowBlock={{ id: flowId, title: flowBlock.name }}
           />
         )}
-        <div className={'prose prose-lg'}>
-          <h1>{flowBlock.name}</h1>
-          <h3>
-            <Translate k={'flowBlock:title'} />
-          </h3>
-          <LastUpdated date={flowBlock?.updatedAt} />
-          <FlowEditLink id={flowBlock.id} locale={localeCode} />
-        </div>
-        {flowBlock.description && (
-          <div className={'mt-8'}>
-            <div className={'prose prose-lg py-6 pl-4'}>
-              <PayloadLexicalReactRenderer content={flowBlock.description} />
-            </div>
-          </div>
-        )}
-        <div className={'mt-8'}>
-          <div className={'grid grid-cols-[440px_auto_auto_auto]'}>
-            <div></div>
-            <div className={'pl-4'}>
-              <Translate k={'flowBlock:table:keypoints'} />
-            </div>
-            <div className={'pl-4'}>
-              <Translate k={'flowBlock:table:tools'} />
-            </div>
-            <div className={'pl-4'}>
-              <Translate k={'flowBlock:table:responsibility'} />
-            </div>
-            {blocks.map((block, i) => (
-              <FlowBlock block={block} key={i} />
-            ))}
-          </div>
-          {blocks.length === 0 && (
-            <p>
-              <Translate k={'common:noContentDefined'} />
-            </p>
-          )}
-        </div>
+        <FlowContent
+          flowBlock={flowBlock}
+          toolbar={
+            <ViewToolbar
+              editHref={`/admin/collections/task-flows/${flowId}?locale=${localeCode}`}
+              existingLink={existingShareLink}
+              locale={localeCode}
+              target={shareTarget}
+            />
+          }
+        />
       </div>
     </DefaultTemplate>
   )
