@@ -242,9 +242,17 @@ export const traverseFields = ({
           break
         }
 
-        const richTextDataFrom = siblingDataFrom[field.name] as object
+        const richTextDataFrom = siblingDataFrom[field.name]
 
-        if (!richTextDataFrom) {
+        // Legacy and imported rows hold a plain string in a richText column. The `in`
+        // operator throws on a primitive, and that throw reached the caller as an opaque
+        // 500. Narrow to a record first, so a non-Lexical value skips the field instead.
+        if (!isRecord(richTextDataFrom)) {
+          logger.warn({
+            fieldName: field.name,
+            msg: 'Skipped a richText field whose value is not a Lexical object',
+            valueType: typeof richTextDataFrom,
+          })
           break
         }
 
