@@ -1,5 +1,6 @@
 import { CollectionSlug, PayloadRequest } from 'payload'
 
+import { calculatePercentComplete } from './calculate-percent-complete'
 import { GenericCloneStatistics, MissingDocumentFileError, OtherErrors } from './types'
 
 export class CloneStatisticsTracker {
@@ -110,14 +111,8 @@ export class CloneStatisticsTracker {
     // Calculate completeness based on document files
     const totalSourceFiles = stats.source.documentFilesCount + stats.source.publicDocumentFilesCount
     const totalClonedFiles = stats.cloned.documentFilesCount + stats.cloned.publicDocumentFilesCount
-    const errorCount = stats.errors.missingDocumentFiles.length
 
-    if (totalSourceFiles === 0) {
-      stats.percentComplete = 100
-    } else {
-      const successfulFiles = totalClonedFiles - errorCount
-      stats.percentComplete = Math.round((successfulFiles / totalSourceFiles) * 100)
-    }
+    stats.percentComplete = calculatePercentComplete(totalSourceFiles, totalClonedFiles)
   }
 
   determineSuccessLevel(): 'fail' | 'partial' | 'success' {
@@ -238,14 +233,8 @@ export class CloneStatisticsTracker {
       aggregated.source.documentFilesCount + aggregated.source.publicDocumentFilesCount
     const totalClonedFiles =
       aggregated.cloned.documentFilesCount + aggregated.cloned.publicDocumentFilesCount
-    const totalErrors = aggregated.errors.missingDocumentFiles.length
 
-    if (totalSourceFiles === 0) {
-      aggregated.percentComplete = 100
-    } else {
-      const successfulFiles = totalClonedFiles - totalErrors
-      aggregated.percentComplete = Math.round((successfulFiles / totalSourceFiles) * 100)
-    }
+    aggregated.percentComplete = calculatePercentComplete(totalSourceFiles, totalClonedFiles)
 
     // Determine success level using the new method
     const successLevel = this.determineSuccessLevel()
