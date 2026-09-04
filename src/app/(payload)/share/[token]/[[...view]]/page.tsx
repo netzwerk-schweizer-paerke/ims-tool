@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import config from '@payload-config'
-import { toNumber } from 'es-toolkit/compat'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -13,7 +12,7 @@ import { ListContent } from '@/components/views/list/list-content'
 import { ShareShell } from '@/components/views/share-shell'
 import { shareViewLinks } from '@/components/views/view-links'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
-import { ShareTarget, shareTargetFromLink, StoredShareLink } from '@/lib/share-link-target'
+import { resolveRequestedTarget } from '@/lib/share-scope'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { loadActivityBlock } from '@/payload/utilities/share/load-activity-block'
 import { loadFlow } from '@/payload/utilities/share/load-flow'
@@ -28,50 +27,6 @@ export const metadata: Metadata = {
 type Args = {
   params: Promise<{ token: string; view?: string[] }>
   searchParams: Promise<{ [key: string]: string | string[] }>
-}
-
-/**
- * The page the visitor asked for, or null.
- *
- * A landscape link covers the whole park, so its visitor may open any page of it. A link to one
- * page covers that page alone, and a deeper path under it resolves to nothing.
- */
-const resolveRequestedTarget = (
-  link: StoredShareLink,
-  view: string[],
-): null | ShareTarget => {
-  const granted = shareTargetFromLink(link)
-
-  if (!granted) {
-    return null
-  }
-
-  if (view.length === 0) {
-    return granted
-  }
-
-  if (granted.targetType !== 'activityLandscape') {
-    return null
-  }
-
-  if (view.length === 2 && view[0] === 'flow') {
-    const taskFlow = toNumber(view[1])
-    return taskFlow ? { targetType: 'flow', taskFlow } : null
-  }
-
-  if (view.length === 2 && view[0] === 'list') {
-    const taskList = toNumber(view[1])
-    return taskList ? { targetType: 'list', taskList } : null
-  }
-
-  if (view.length === 4 && view[0] === 'activity' && view[2] === 'block') {
-    const activity = toNumber(view[1])
-    return activity && view[3]
-      ? { activity, blockId: view[3], targetType: 'activityBlock' }
-      : null
-  }
-
-  return null
 }
 
 /**
@@ -131,8 +86,16 @@ const SharePage = async ({ params, searchParams }: Args) => {
   // A visitor who followed a link inside the park needs the way back to the entry page.
   const backHref = view && view.length > 0 ? `${links.basePath}?locale=${localeCode}` : undefined
 
+  // The export mirrors the page the visitor is on, so the query repeats the view path.
+  const viewQuery = view && view.length > 0 ? `&view=${encodeURIComponent(view.join('/'))}` : ''
+  const pdfBase = `${links.basePath}/pdf?locale=${encodeURIComponent(localeCode)}`
+
   const shell = (children: React.ReactNode) => (
-    <ShareShell backHref={backHref} organisationName={organisation?.name}>
+    <ShareShell
+      backHref={backHref}
+      organisationName={organisation?.name}
+      pdfDeepHref={target.targetType === 'activityLandscape' ? `${pdfBase}&deep=1` : null}
+      pdfHref={`${pdfBase}${viewQuery}`}>
       {children}
     </ShareShell>
   )

@@ -27,6 +27,9 @@ const nextConfig = {
       },
     ]
   },
+  // pdfkit reads its font metrics from disk, so a bundler breaks it. `withPayload` spreads this
+  // array into its own, so the entry survives.
+  serverExternalPackages: ['@react-pdf/renderer'],
 }
 
 export default withPayload(nextConfig)

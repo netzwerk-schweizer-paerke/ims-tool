@@ -77,6 +77,43 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
     timeout.current = setTimeout(() => setMessage(null), MESSAGE_MS)
   }, [])
 
+  /** The admin export names its target in the query. The endpoint reads the park from the session. */
+  const downloadPdf = useCallback(
+    (deep: boolean) => {
+      const query = new URLSearchParams({ locale })
+
+      if (deep) {
+        query.set('deep', '1')
+      }
+
+      switch (target.targetType) {
+        case 'activityBlock': {
+          query.set('target', 'activityBlock')
+          query.set('activity', String(target.activity))
+          query.set('block', target.blockId)
+          break
+        }
+        case 'activityLandscape': {
+          query.set('target', 'landscape')
+          break
+        }
+        case 'flow': {
+          query.set('target', 'flow')
+          query.set('flow', String(target.taskFlow))
+          break
+        }
+        case 'list': {
+          query.set('target', 'list')
+          query.set('list', String(target.taskList))
+          break
+        }
+      }
+
+      window.location.assign(`/api/process-pdf?${query.toString()}`)
+    },
+    [locale, target],
+  )
+
   const createLink = useCallback(async (): Promise<ShareLinkRef> => {
     const response = await fetch('/api/share-links', {
       body: JSON.stringify({ ...target, locale }),
@@ -177,6 +214,15 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
         size={'small'}
         url={editHref}>
         <Translate k={'common:edit'} />
+      </Button>
+      <Button
+        buttonStyle={'secondary'}
+        margin={false}
+        onClick={() => downloadPdf(false)}
+        secondaryActions={{ label: t('pdf:downloadAll'), onClick: () => downloadPdf(true) }}
+        size={'small'}
+        tooltip={t('pdf:downloadPage')}>
+        <Translate k={'pdf:download'} />
       </Button>
       <Button
         buttonStyle={'secondary'}

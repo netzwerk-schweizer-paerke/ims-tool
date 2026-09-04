@@ -29,15 +29,10 @@ export type Point = { x: number; y: number }
 export type Rect = { height: number; width: number; x: number; y: number }
 
 /** `strokeWidth * headSize` in the fork's terms. The head path is a unit square. */
-const HEAD_SIZE = 12
+export const HEAD_SIZE = 12
 
 /** `arrowShapes.arrow1.offsetForward` */
 const HEAD_OFFSET_FORWARD = 0.25
-
-const HEAD_OFFSET = HEAD_SIZE * HEAD_OFFSET_FORWARD
-
-/** How far the grid break pulls a control point back to clear the head. */
-const HEAD_CORRECTION = (HEAD_SIZE * (1 - HEAD_OFFSET_FORWARD)) / 2
 
 /** The unit-square head from the fork's `constants.tsx`. The transform scales it. */
 export const ARROW_HEAD_PATH = 'M 0 0 L 1 0.5 L 0 1 L 0.25 0.5 z'
@@ -68,11 +63,21 @@ export const anchorPoint = (rect: Rect, side: AnchorSide): Point => {
 /**
  * Builds one arrow from its two endpoint rectangles. Both rectangles must sit in the same
  * coordinate space. The caller measures once per layer and reuses the result.
+ *
+ * `headSize` scales the head and the line shortening together. The PDF draws smaller than the
+ * screen, so it passes its own value. Omit it and the screen geometry is unchanged.
  */
-export const buildArrow = (spec: ArrowSpec, startRect: Rect, endRect: Rect): ArrowGeometry => {
+export const buildArrow = (
+  spec: ArrowSpec,
+  startRect: Rect,
+  endRect: Rect,
+  headSize: number = HEAD_SIZE,
+): ArrowGeometry => {
   const start = anchorPoint(startRect, spec.startAnchor)
   const end = anchorPoint(endRect, spec.endAnchor)
   const showHead = spec.showHead ?? true
+  const headOffset = headSize * HEAD_OFFSET_FORWARD
+  const headCorrection = (headSize * (1 - HEAD_OFFSET_FORWARD)) / 2
 
   const dx = end.x - start.x
   const dy = end.y - start.y
@@ -94,16 +99,16 @@ export const buildArrow = (spec: ArrowSpec, startRect: Rect, endRect: Rect): Arr
 
   if (showHead) {
     if (isHorizontal(spec.endAnchor)) {
-      xHeadOffset += HEAD_OFFSET * xSign
-      x2 -= HEAD_SIZE * (1 - HEAD_OFFSET_FORWARD) * xSign
-      yHeadOffset += (HEAD_SIZE * xSign) / 2
+      xHeadOffset += headOffset * xSign
+      x2 -= headSize * (1 - HEAD_OFFSET_FORWARD) * xSign
+      yHeadOffset += (headSize * xSign) / 2
       headOrient =
         spec.endAnchor === 'left' ? (xSign < 0 ? 180 : 0) : xSign > 0 ? 360 : 180
     } else {
-      xHeadOffset += (HEAD_SIZE * -ySign) / 2
+      xHeadOffset += (headSize * -ySign) / 2
       // The fork reads `yHeadOffset` here after the line above writes it. Keep the order.
-      yHeadOffset += HEAD_OFFSET * ySign
-      y2 -= HEAD_SIZE * ySign - yHeadOffset
+      yHeadOffset += headOffset * ySign
+      y2 -= headSize * ySign - yHeadOffset
       headOrient = spec.endAnchor === 'top' ? (ySign > 0 ? 450 : 270) : ySign < 0 ? 270 : 90
     }
   }
@@ -122,8 +127,8 @@ export const buildArrow = (spec: ArrowSpec, startRect: Rect, endRect: Rect): Arr
       cpx1 += absDx * 0.5 * xSign
       cpx2 -= absDx * 0.5 * xSign
       if (showHead) {
-        cpx1 -= HEAD_CORRECTION * xSign
-        cpx2 += HEAD_CORRECTION * xSign
+        cpx1 -= headCorrection * xSign
+        cpx2 += headCorrection * xSign
       }
       break
     }
@@ -139,8 +144,8 @@ export const buildArrow = (spec: ArrowSpec, startRect: Rect, endRect: Rect): Arr
       cpy1 += absDy * 0.5 * ySign
       cpy2 -= absDy * 0.5 * ySign
       if (showHead) {
-        cpy1 -= HEAD_CORRECTION * ySign
-        cpy2 += HEAD_CORRECTION * ySign
+        cpy1 -= headCorrection * ySign
+        cpy2 += headCorrection * ySign
       }
     }
   }
@@ -148,7 +153,7 @@ export const buildArrow = (spec: ArrowSpec, startRect: Rect, endRect: Rect): Arr
   return {
     d: `M ${x1} ${y1} L ${cpx1} ${cpy1} L ${cpx2} ${cpy2} L ${x2} ${y2}`,
     head: showHead
-      ? { orient: headOrient, scale: HEAD_SIZE, x: x2 - xHeadOffset, y: y2 - yHeadOffset }
+      ? { orient: headOrient, scale: headSize, x: x2 - xHeadOffset, y: y2 - yHeadOffset }
       : null,
   }
 }
