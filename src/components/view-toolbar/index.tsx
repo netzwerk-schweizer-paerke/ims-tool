@@ -3,11 +3,16 @@
 import { Button, Drawer, useDrawerSlug, useModal, useTranslation } from '@payloadcms/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { DateTime } from '@/components/date-time'
+import { EXPIRY_MONTH_OPTIONS } from '@/lib/share-link-expiry'
 import { buildShareUrl, ShareTarget } from '@/lib/share-link-target'
 import { Translate } from '@/lib/translate'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
 const MESSAGE_MS = 3000
+
+/** The select value that stands for a link with no expiry. */
+const UNLIMITED = ''
 
 type Message = 'copied' | 'deleted' | 'error'
 
@@ -18,13 +23,14 @@ const MESSAGE_KEYS: Record<Message, I18nKeys> = {
 }
 
 export type ShareLinkRef = {
+  expiresAt: null | string
   id: number
   token: string
 }
 
 type Props = {
   editHref: string
-  /** The link this user already created for this page, resolved on the server. */
+  /** The live link this user already created for this page, resolved on the server. */
   existingLink: null | ShareLinkRef
   locale: string
   target: ShareTarget
@@ -37,6 +43,10 @@ const isShareLinkRef = (value: unknown): value is ShareLinkRef =>
   typeof value.id === 'number' &&
   'token' in value &&
   typeof value.token === 'string'
+
+/** The create answers with the stored row, whose `expiresAt` the server computed. */
+const expiryOf = (doc: object): null | string =>
+  'expiresAt' in doc && typeof doc.expiresAt === 'string' ? doc.expiresAt : null
 
 const warn = (message: string) => {
   // A client component must not import the tslog logger, which would reach the browser bundle.
@@ -56,6 +66,7 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
 
   const [link, setLink] = useState<null | ShareLinkRef>(existingLink)
   const [url, setUrl] = useState<null | string>(null)
+  const [months, setMonths] = useState<string>(UNLIMITED)
   const [message, setMessage] = useState<Message | null>(null)
   const [busy, setBusy] = useState(false)
   const timeout = useRef<null | ReturnType<typeof setTimeout>>(null)
@@ -114,52 +125,61 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
     [locale, target],
   )
 
-  const createLink = useCallback(async (): Promise<ShareLinkRef> => {
-    const response = await fetch('/api/share-links', {
-      body: JSON.stringify({ ...target, locale }),
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-    })
-
-    if (!response.ok) {
-      throw new Error(`the create answered ${response.status}`)
-    }
-
-    const body: unknown = await response.json()
-    const doc =
-      typeof body === 'object' && body !== null && 'doc' in body
-        ? (body as { doc: unknown }).doc
-        : null
-
-    if (!isShareLinkRef(doc)) {
-      throw new Error('the create returned no token')
-    }
-
-    return doc
-  }, [locale, target])
-
-  /** The dialog mints the link on open, so the preview always shows a real URL. */
-  const handleOpen = useCallback(async () => {
+  /**
+   * The dialog shows the link the page already has. A page with none shows the duration choice,
+   * because the server computes the expiry from the chosen month count at create time.
+   */
+  const handleOpen = useCallback(() => {
     openModal(drawerSlug)
     setMessage(null)
+    setUrl(
+      link ? buildShareUrl({ locale, origin: window.location.origin, token: link.token }) : null,
+    )
+  }, [drawerSlug, link, locale, openModal])
 
+  const handleCreate = useCallback(async () => {
     if (busy) {
       return
     }
     setBusy(true)
 
     try {
-      const current = link ?? (await createLink())
-      setLink(current)
-      setUrl(buildShareUrl({ locale, origin: window.location.origin, token: current.token }))
+      const response = await fetch('/api/share-links', {
+        body: JSON.stringify({
+          ...target,
+          expiresInMonths: months === UNLIMITED ? null : Number(months),
+          locale,
+        }),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        throw new Error(`the create answered ${response.status}`)
+      }
+
+      const body: unknown = await response.json()
+      const doc =
+        typeof body === 'object' && body !== null && 'doc' in body
+          ? (body as { doc: unknown }).doc
+          : null
+
+      if (!isShareLinkRef(doc)) {
+        throw new Error('the create returned no token')
+      }
+
+      const created: ShareLinkRef = { ...doc, expiresAt: expiryOf(doc) }
+
+      setLink(created)
+      setUrl(buildShareUrl({ locale, origin: window.location.origin, token: created.token }))
     } catch (error) {
       warn(error instanceof Error ? error.message : 'the create failed')
       showMessage('error')
     } finally {
       setBusy(false)
     }
-  }, [busy, createLink, drawerSlug, link, locale, openModal, showMessage])
+  }, [busy, locale, months, showMessage, target])
 
   const handleCopy = useCallback(async () => {
     if (!url) {
@@ -260,38 +280,85 @@ export const ViewToolbar = ({ editHref, existingLink, locale, target }: Props) =
           <p>
             <Translate k={'shareLink:whoCanDelete'} />
           </p>
-          <label className={'flex flex-col gap-1'}>
-            <span className={'text-sm'}>
-              <Translate k={'shareLink:urlLabel'} />
-            </span>
-            <input
-              className={'w-full rounded border p-2 font-mono text-sm'}
-              onFocus={(event) => event.currentTarget.select()}
-              readOnly
-              value={url ?? ''}
-            />
-          </label>
+          {link ? (
+            <>
+              <label className={'flex flex-col gap-1'}>
+                <span className={'text-sm'}>
+                  <Translate k={'shareLink:urlLabel'} />
+                </span>
+                <input
+                  className={'w-full rounded border p-2 font-mono text-sm'}
+                  onFocus={(event) => event.currentTarget.select()}
+                  readOnly
+                  value={url ?? ''}
+                />
+              </label>
+              <p className={'text-sm'}>
+                {link.expiresAt ? (
+                  <>
+                    <Translate k={'shareLink:expiresOn'} />
+                    {': '}
+                    <DateTime date={link.expiresAt} />
+                  </>
+                ) : (
+                  <>
+                    <Translate k={'shareLink:expiry'} />
+                    {': '}
+                    <Translate k={'shareLink:expiryUnlimited'} />
+                  </>
+                )}
+              </p>
+            </>
+          ) : (
+            <label className={'flex flex-col gap-1'}>
+              <span className={'text-sm'}>
+                <Translate k={'shareLink:expiry'} />
+              </span>
+              <select
+                className={'w-full rounded border p-2 text-sm'}
+                onChange={(event) => setMonths(event.currentTarget.value)}
+                value={months}>
+                <option value={UNLIMITED}>{t('shareLink:expiryUnlimited')}</option>
+                {EXPIRY_MONTH_OPTIONS.map((count) => (
+                  <option key={count} value={String(count)}>
+                    {t('shareLink:expiryMonths', { count })}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <div aria-live={'polite'} className={'min-h-6 text-sm'} role={'status'}>
             {busy && !message && <Translate k={'shareLink:working'} />}
             {message && <Translate k={MESSAGE_KEYS[message]} />}
           </div>
           <div className={'flex flex-row items-center gap-2'}>
-            <Button
-              buttonStyle={'primary'}
-              disabled={!url}
-              margin={false}
-              onClick={handleCopy}
-              size={'small'}>
-              <Translate k={'shareLink:copy'} />
-            </Button>
-            {link && (
+            {link ? (
+              <>
+                <Button
+                  buttonStyle={'primary'}
+                  disabled={!url}
+                  margin={false}
+                  onClick={handleCopy}
+                  size={'small'}>
+                  <Translate k={'shareLink:copy'} />
+                </Button>
+                <Button
+                  buttonStyle={'error'}
+                  disabled={busy}
+                  margin={false}
+                  onClick={handleDelete}
+                  size={'small'}>
+                  <Translate k={'shareLink:deleteLink'} />
+                </Button>
+              </>
+            ) : (
               <Button
-                buttonStyle={'error'}
+                buttonStyle={'primary'}
                 disabled={busy}
                 margin={false}
-                onClick={handleDelete}
+                onClick={handleCreate}
                 size={'small'}>
-                <Translate k={'shareLink:deleteLink'} />
+                <Translate k={'shareLink:createLink'} />
               </Button>
             )}
             <Button

@@ -1021,6 +1021,8 @@ export interface ShareLink {
   taskFlow?: (number | null) | TaskFlow;
   taskList?: (number | null) | TaskList;
   locale?: string | null;
+  expiresInMonths?: number | null;
+  expiresAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1489,6 +1491,8 @@ export interface ShareLinksSelect<T extends boolean = true> {
   taskFlow?: T;
   taskList?: T;
   locale?: T;
+  expiresInMonths?: T;
+  expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

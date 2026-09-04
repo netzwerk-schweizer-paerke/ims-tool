@@ -13,6 +13,8 @@ import { ShareShell } from '@/components/views/share-shell'
 import { shareViewLinks } from '@/components/views/view-links'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { resolveRequestedTarget } from '@/lib/share-scope'
+import { Translate } from '@/lib/translate'
+import { findShareLinkByToken } from '@/payload/utilities/find-share-link-by-token'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { loadActivityBlock } from '@/payload/utilities/share/load-activity-block'
 import { loadFlow } from '@/payload/utilities/share/load-flow'
@@ -43,23 +45,25 @@ const SharePage = async ({ params, searchParams }: Args) => {
   }
 
   const payload = await getPayload({ config })
+  const lookup = await findShareLinkByToken(payload, token)
 
-  // The visitor holds a token and no session, so the read overrides access. The token is the
-  // only credential, and it never reaches a log line.
-  const link = await payload
-    .find({
-      collection: 'share-links',
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      where: { token: { equals: token } },
-    })
-    .then((res) => res.docs[0] ?? null)
+  // The expired page renders before the park is read, so a dead link never names the park it
+  // belonged to. The visitor still learns that the link existed, and that they need a new one.
+  if (lookup.kind === 'expired') {
+    return (
+      <ShareShell>
+        <p>
+          <Translate k={'shareLink:expired'} />
+        </p>
+      </ShareShell>
+    )
+  }
 
-  if (!link) {
+  if (lookup.kind === 'unknown') {
     notFound()
   }
 
+  const link = lookup.link
   const organisationId = getIdFromRelation(link.organisation)
   const target = resolveRequestedTarget(link, view ?? [])
 

@@ -8,6 +8,7 @@ import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { buildProcessPdf } from '@/lib/pdf/build-process-pdf'
 import { parseViewQuery, resolveRequestedTarget } from '@/lib/share-scope'
+import { findShareLinkByToken } from '@/payload/utilities/find-share-link-by-token'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /** The path of one section under a share token, so a QR code reaches the live page. */
@@ -48,23 +49,18 @@ export const GET = async (
   }
 
   const payload = await getPayload({ config })
+  const lookup = await findShareLinkByToken(payload, token)
 
-  // The visitor holds a token and no session, so the read overrides access. The token never
-  // reaches a log line.
-  const link = await payload
-    .find({
-      collection: 'share-links',
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      where: { token: { equals: token } },
-    })
-    .then((res) => res.docs[0] ?? null)
+  // The body names no park, because the holder of a dead link must learn nothing about it.
+  if (lookup.kind === 'expired') {
+    return new Response('This share link has expired.', { status: 410 })
+  }
 
-  if (!link) {
+  if (lookup.kind === 'unknown') {
     return new Response('Not found', { status: 404 })
   }
 
+  const link = lookup.link
   const organisationId = getIdFromRelation(link.organisation)
   const target = resolveRequestedTarget(link, parseViewQuery(query.get('view')))
 

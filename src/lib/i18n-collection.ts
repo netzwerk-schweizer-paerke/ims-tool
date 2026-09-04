@@ -318,6 +318,18 @@ export const I18nCollection = {
       fr: 'Anglais',
       it: 'Inglese',
     },
+    expiresAt: {
+      de: 'Gültig bis',
+      en: 'Valid until',
+      fr: "Valable jusqu'au",
+      it: 'Valido fino al',
+    },
+    expiresInMonths: {
+      de: 'Gültigkeitsdauer in Monaten',
+      en: 'Validity in months',
+      fr: 'Durée de validité en mois',
+      it: 'Durata di validità in mesi',
+    },
     field: {
       de: 'Feld',
       en: 'Field',

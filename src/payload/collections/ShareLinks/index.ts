@@ -1,7 +1,9 @@
 import { CollectionConfig } from 'payload'
 
+import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { isProduction } from '@/lib/environment'
 import { I18nCollection } from '@/lib/i18n-collection'
+import { MAX_EXPIRY_MONTHS } from '@/lib/share-link-expiry'
 import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
 import {
   isShareLinkAdmin,
@@ -26,7 +28,7 @@ export const ShareLinks: CollectionConfig = {
     update: shareLinkAdminAccess,
   },
   admin: {
-    defaultColumns: ['token', 'targetType', 'createdBy', 'organisation', 'createdAt'],
+    defaultColumns: ['token', 'targetType', 'createdBy', 'organisation', 'createdAt', 'expiresAt'],
     group: I18nCollection.collectionGroup.settings,
     hidden: ({ user }) => !isShareLinkAdmin(user),
     hideAPIURL: isProduction,
@@ -102,6 +104,27 @@ export const ShareLinks: CollectionConfig = {
       label: I18nCollection.fieldLabel.locale,
       name: 'locale',
       type: 'text',
+    },
+    {
+      // The creator picks a month count and the hook turns it into `expiresAt`. An absent value
+      // means the link never expires.
+      access: { update: serverOnlyField },
+      admin: { readOnly: true },
+      label: I18nCollection.fieldLabel.expiresInMonths,
+      max: MAX_EXPIRY_MONTHS,
+      min: 1,
+      name: 'expiresInMonths',
+      type: 'number',
+    },
+    {
+      // The instant is computed from the server clock, so a browser with a wrong clock cannot
+      // stretch a link past the chosen month count.
+      access: { create: serverOnlyField, update: serverOnlyField },
+      admin: { date: { displayFormat: ADMIN_DATE_FORMAT }, readOnly: true },
+      index: true,
+      label: I18nCollection.fieldLabel.expiresAt,
+      name: 'expiresAt',
+      type: 'date',
     },
   ],
   hooks: {

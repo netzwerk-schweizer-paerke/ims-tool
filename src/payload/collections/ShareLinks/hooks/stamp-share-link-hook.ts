@@ -3,6 +3,11 @@ import type { CollectionBeforeChangeHook, PayloadRequest } from 'payload'
 import { randomBytes } from 'node:crypto'
 import { APIError } from 'payload'
 
+import {
+  expiryFromMonths,
+  isExpiryMonths,
+  MAX_EXPIRY_MONTHS,
+} from '@/lib/share-link-expiry'
 import { ShareTarget, shareTargetFromLink, StoredShareLink } from '@/lib/share-link-target'
 import { checkOrganisationRoles } from '@/payload/utilities/check-organisation-roles'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
@@ -14,6 +19,8 @@ const TOKEN_BYTES = 16
 
 type ShareLinkData = StoredShareLink & {
   createdBy?: unknown
+  expiresAt?: unknown
+  expiresInMonths?: unknown
   organisation?: unknown
   token?: unknown
 }
@@ -93,9 +100,27 @@ const resolveTargetOrganisation = async (
 }
 
 /**
- * Stamps the token, the creator and the organisation on a new share link.
+ * The month count the caller chose, or null for a link that never expires.
  *
- * A share link opens without a session, so the three values must never come from the client.
+ * An out-of-range value is refused rather than clamped, because a silent clamp hides a broken
+ * caller. `expiresAt` denies a client write, so this count is the only way to set the expiry.
+ */
+const resolveExpiryMonths = (value: unknown): null | number => {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  if (!isExpiryMonths(value)) {
+    throw new APIError(`A share link expires after 1 to ${MAX_EXPIRY_MONTHS} months.`, 400)
+  }
+
+  return value
+}
+
+/**
+ * Stamps the token, the creator, the organisation and the expiry on a new share link.
+ *
+ * A share link opens without a session, so these values must never come from the client.
  * `createdBy` also carries the delete rule. The token stays out of every log line, because tslog
  * runs in pretty mode and a caller could forge a log entry.
  */
@@ -122,9 +147,15 @@ export const stampShareLinkHook: CollectionBeforeChangeHook = async ({ data, ope
     throw new APIError('The share link names a page you cannot read.', 403)
   }
 
+  const expiresInMonths = resolveExpiryMonths(incoming.expiresInMonths)
+
   return {
     ...incoming,
     createdBy: req.user.id,
+    // The server clock decides the instant. A browser clock never reaches this value.
+    expiresAt:
+      expiresInMonths === null ? null : expiryFromMonths(expiresInMonths, new Date()).toISOString(),
+    expiresInMonths,
     organisation,
     token: randomBytes(TOKEN_BYTES).toString('base64url'),
   }
