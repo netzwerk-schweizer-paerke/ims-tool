@@ -1,6 +1,7 @@
 import { Field } from 'payload'
 
 import { I18nCollection } from '@/lib/i18n-collection'
+import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 
 export const tabsMetadata: Field[] = [
@@ -10,6 +11,7 @@ export const tabsMetadata: Field[] = [
         fields: [
           {
             editor: lexicalEditorReducedFeatures,
+            hooks: { beforeChange: [coerceRichTextFieldHook] },
             label: false,
             name: 'keypoints',
             type: 'richText',
@@ -22,6 +24,7 @@ export const tabsMetadata: Field[] = [
         fields: [
           {
             editor: lexicalEditorReducedFeatures,
+            hooks: { beforeChange: [coerceRichTextFieldHook] },
             label: false,
             name: 'tools',
             type: 'richText',
@@ -34,6 +37,7 @@ export const tabsMetadata: Field[] = [
         fields: [
           {
             editor: lexicalEditorReducedFeatures,
+            hooks: { beforeChange: [coerceRichTextFieldHook] },
             label: false,
             name: 'responsibility',
             type: 'richText',

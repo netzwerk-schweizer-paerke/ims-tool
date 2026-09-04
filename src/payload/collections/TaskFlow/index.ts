@@ -4,6 +4,7 @@ import { isProduction } from '@/lib/environment'
 import { I18nCollection } from '@/lib/i18n-collection'
 import { currentOrganisationCollectionReadAccess } from '@/payload/collections/access/current-organisation-collection-read-access'
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
+import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
 import { ProcessTaskInputOutputBlock } from '@/payload/collections/TaskFlow/blocks/task-input-output'
 import { ProcessTaskParallelBlock } from '@/payload/collections/TaskFlow/blocks/task-parallel'
 import { ProcessTestOutputBlock } from '@/payload/collections/TaskFlow/blocks/test-output'
@@ -50,6 +51,7 @@ export const TaskFlows: CollectionConfig = {
     },
     {
       editor: lexicalEditorReducedFeatures,
+      hooks: { beforeChange: [coerceRichTextFieldHook] },
       label: I18nCollection.fieldLabel.description,
       localized: true,
       name: 'description',

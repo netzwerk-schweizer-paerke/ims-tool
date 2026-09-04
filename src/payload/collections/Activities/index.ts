@@ -8,6 +8,7 @@ import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-o
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone/clone-activity-transactional'
 import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
+import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
@@ -49,6 +50,7 @@ export const Activities: CollectionConfig = {
     },
     {
       editor: lexicalEditorReducedFeatures,
+      hooks: { beforeChange: [coerceRichTextFieldHook] },
       label: I18nCollection.fieldLabel.description,
       localized: true,
       name: 'description',
