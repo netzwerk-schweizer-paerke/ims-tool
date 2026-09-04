@@ -29,31 +29,34 @@ ims-tool/
 │   ├── components/       # Reusable UI components
 │   │   └── organisation-select/ # Organization selection components
 │   ├── config/           # Application configuration
+│   ├── endpoints/        # Custom Payload REST endpoints
+│   ├── hooks/            # React hooks
 │   ├── lib/              # Utility functions and shared code
 │   ├── migrations/       # Database migrations
 │   ├── payload/          # Payload CMS configuration
 │   │   └── collections/  # Collection definitions
 │   ├── plugins/          # Custom plugins
 │   │   └── deeplTranslate/ # DeepL translation integration
-│   └── tests/            # Unit and integration tests
-├── .env                  # Environment variables
-└── payload.config.ts     # Payload CMS configuration
+│   ├── scripts/          # Standalone maintenance scripts
+│   ├── tests/            # Shared test mocks and fixtures
+│   └── payload.config.ts # Payload CMS configuration
+└── .env                  # Environment variables
 ```
 
 ## Technical Architecture
 
-- **Frontend**: React 19, Next.js 15
+- **Frontend**: React 19, Next.js 16
 - **Backend**: Payload CMS 3.x, Node.js 24+
 - **Database**: PostgreSQL (via @payloadcms/db-postgres)
 - **Storage**: S3-compatible storage (via @payloadcms/storage-s3)
 - **Email**: Nodemailer integration (via @payloadcms/email-nodemailer)
-- **Styling**: TailwindCSS
-- **Testing**: Jest, ts-jest
+- **Styling**: TailwindCSS 3
+- **Testing**: Vitest
 - **Languages**: TypeScript, JavaScript, SCSS
 
 ### Core Collections
 
-- **Organizations**: Represents individual parks in the network
+- **Organisations**: Represents individual parks in the network
 - **Users**: User accounts with role-based permissions
 - **Activities**: Main processes and activities documentation
 - **TaskFlows**: Structured workflow definitions
