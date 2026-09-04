@@ -1,4 +1,9 @@
+import { TenantHealthReport } from '@/lib/tenant-health-checker'
+
 import { GenericCloneStatisticsFinalized } from '../../types'
+
+/** The three collections that carry a clone endpoint and a health check. */
+export type CloneableCollectionSlug = 'activities' | 'task-flows' | 'task-lists'
 
 export interface CloneApiResponse {
   message: string
@@ -20,6 +25,15 @@ export interface CloneFormData {
   selectedItems: string[]
   targetOrganisation: TargetOrganisation
 }
+
+/**
+ * `superseded` means the selection changed while the check ran. The caller must not clone on
+ * it, because the answer describes rows the user has since deselected.
+ */
+export type ClonePreflightOutcome =
+  | { report: TenantHealthReport; status: 'checked' }
+  | { status: 'failed' }
+  | { status: 'superseded' }
 
 export interface CloneResults {
   data: GenericCloneStatisticsFinalized
@@ -72,6 +86,15 @@ export interface UseCloneOverlayResult {
   status: CloneStatus
   targetOrgId: null | number
   targetOrgName: string
+}
+
+export interface UseClonePreflightResult {
+  checking: boolean
+  clear: () => void
+  /** The check itself could not run. The clone proceeds, so the form must say so. */
+  failed: boolean
+  report: null | TenantHealthReport
+  run: (collection: CloneableCollectionSlug, ids: number[]) => Promise<ClonePreflightOutcome>
 }
 
 export interface UseCloneStateResult {

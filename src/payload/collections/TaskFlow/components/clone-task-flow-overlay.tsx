@@ -89,6 +89,7 @@ export const CloneTaskFlowOverlay: React.FC<Props> = ({
             <CloneConfigurationForm
               activities={taskFlows}
               baseClass={baseClass}
+              collectionSlug="task-flows"
               isCloning={cloning}
               onCancel={handleClose}
               onSubmit={onFormSubmit}

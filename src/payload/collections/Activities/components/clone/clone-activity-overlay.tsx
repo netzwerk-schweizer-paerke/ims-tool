@@ -87,6 +87,7 @@ export const CloneActivityOverlay: React.FC<Props> = ({ documents, targetOrganis
             <CloneConfigurationForm
               activities={documents}
               baseClass={baseClass}
+              collectionSlug="activities"
               isCloning={cloning}
               onCancel={handleClose}
               onSubmit={onFormSubmit}

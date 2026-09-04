@@ -2,12 +2,14 @@ import { Button, Select, useTranslation } from '@payloadcms/ui'
 import React, { useMemo, useState } from 'react'
 
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
+import { HealthReport } from '@/payload/components/health/health-report'
 import {
   FormCheckbox,
   FormLabel,
   FormSection,
   SelectAllCheckbox,
 } from '@/payload/utilities/cloning/ui/form'
+import { CloneableCollectionSlug, useClonePreflight } from '@/payload/utilities/cloning/ui/hooks'
 
 import { CloneInfoPanel } from './clone-info-panel'
 
@@ -23,6 +25,8 @@ type CloneableEntity = {
 interface CloneConfigurationFormProps {
   activities: CloneableEntity[]
   baseClass: string
+  /** The collection the rows belong to. The pre-flight check needs it to address each row. */
+  collectionSlug: CloneableCollectionSlug
   isCloning: boolean
   onCancel: () => void
   onSubmit: (
@@ -50,28 +54,29 @@ type SelectOption = {
   value: unknown
 }
 
-export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
+export const CloneConfigurationForm = ({
   activities,
   baseClass,
+  collectionSlug,
   isCloning,
   onCancel,
   onSubmit,
   targetOrganisations,
-}) => {
+}: CloneConfigurationFormProps) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const [formState, setFormState] = useState<Record<string, boolean>>({})
   const [selectedOption, setSelectedOption] = useState<
     undefined | { label: string; value: number }
   >()
+  const preflight = useClonePreflight()
 
+  // An absent key already reads as false below, so the rows need no seeding pass.
   const availableOptions = useMemo(() => {
-    const formFields = activities.map((activity) => {
-      setFormState((prevState) => ({
-        ...prevState,
-        [`activity-${activity.id}`]: false,
-      }))
-      return { export: false, key: `activity-${activity.id}`, label: activity.name }
-    })
+    const formFields = activities.map((activity) => ({
+      export: false,
+      key: `activity-${activity.id}`,
+      label: activity.name,
+    }))
     return [
       {
         fields: formFields,
@@ -91,6 +96,7 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
       newState[field.key] = shouldSelectAll
     }
     setFormState(newState)
+    preflight.clear()
   }
 
   const onCheckboxChange = (key: string) => {
@@ -98,6 +104,8 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
       ...prevState,
       [key]: !prevState[key],
     }))
+    // The report describes one selection. A changed selection makes it stale.
+    preflight.clear()
   }
 
   const onOrganisationChange = (option: SelectOption | SelectOption[]) => {
@@ -111,15 +119,28 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
   const disableSave = useMemo(() => {
     const activitiesSelected = Object.values(formState).some(Boolean)
     const organisationSelected = !!selectedOption
-    return !(activitiesSelected && organisationSelected && !isCloning)
-  }, [formState, selectedOption, isCloning])
+    return !(activitiesSelected && organisationSelected && !isCloning && !preflight.checking)
+  }, [formState, selectedOption, isCloning, preflight.checking])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedOption) return
 
     const selectedActivities = Object.entries(formState)
       .filter(([_, selected]) => selected)
       .map(([key]) => key.split('-', 2)[1])
+      .filter((id): id is string => Boolean(id))
+
+    // A blocking finding names a condition that makes the endpoint throw. The endpoint rolls
+    // the whole batch back on the first throw, so one bad row cancels every other selection.
+    const outcome = await preflight.run(collectionSlug, selectedActivities.map(Number))
+
+    if (outcome.status === 'superseded') {
+      return
+    }
+
+    if (outcome.status === 'checked' && outcome.report.summary.blocking > 0) {
+      return
+    }
 
     onSubmit(selectedActivities, selectedOption)
   }
@@ -132,6 +153,18 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
           <p className="mt-2 text-lg">{t('cloneActivity:form:instructions')}</p>
         </div>
 
+        {preflight.report && (
+          <div className="space-y-4">
+            <HealthReport report={preflight.report} />
+          </div>
+        )}
+
+        {preflight.failed && (
+          <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+            {t('dataHealth:preconditionFailed')}
+          </p>
+        )}
+
         <div>
           <FormLabel>{t('cloneActivity:form:activities')}</FormLabel>
           <FormSection>
@@ -143,6 +176,7 @@ export const CloneConfigurationForm: React.FC<CloneConfigurationFormProps> = ({
             {availableOptions[0]?.fields?.map((field) => (
               <FormCheckbox
                 checked={formState[field.key] || false}
+                disabled={preflight.checking || isCloning}
                 key={field.key}
                 label={field.label}
                 onChange={() => onCheckboxChange(field.key)}
