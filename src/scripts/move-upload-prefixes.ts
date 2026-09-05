@@ -246,26 +246,41 @@ const rollback = async (client: S3Client, bucket: string, keys: string[]): Promi
   }
 }
 
-const USAGE = `Usage: yarn s3:move-prefixes [--apply] [--help]
+const USAGE = `Usage: yarn s3:move-prefixes [--apply] [--limit <n>] [--help]
 
 Moves every documents or media object whose S3 prefix does not name its own organisation, then
 re-points the row at the new key. Dry run by default.
 
 Required env vars (via .env):
-  DATABASE_URI          Postgres connection string
+  POSTGRES_URI          Postgres connection string
   S3_BUCKET             The bucket that holds the uploads
   S3_ENDPOINT           The S3 endpoint
   S3_ACCESS_KEY_ID      The access key
   S3_SECRET_ACCESS_KEY  The secret key
-  S3_REGION             The region SigV4 signs with
+  S3_REGION             The region SigV4 signs with, 'auto' when unset
 
 Options:
-  --apply    Move the objects and write the prefixes. Without it the script only reports.
-  --help     Print this text.
+  --apply      Move the objects and write the prefixes. Without it the script only reports.
+  --limit <n>  Move at most n records. Use it to prove the first row on a new S3 provider.
+  --help       Print this text.
 
 The orphan report lists a freshly copied object as an orphan until the row update lands.
 \`isTooRecentToDelete\` refuses a delete inside 24 hours, so a concurrent report is safe. Re-run the
 report after this script, because the old keys become real orphans until the delete step removes them.`
+
+/** Reads `--limit <n>`. Returns null when the flag is absent, and throws on an unusable value. */
+const limitFromArgv = (argv: string[]): null | number => {
+  const index = argv.indexOf('--limit')
+  if (index === -1) return null
+
+  const parsed = Number(argv[index + 1])
+
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error(`--limit needs a positive whole number, and it got '${argv[index + 1]}'`)
+  }
+
+  return parsed
+}
 
 const run = async () => {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
@@ -273,6 +288,7 @@ const run = async () => {
     process.exit(0)
   }
 
+  const limit = limitFromArgv(process.argv)
   const shouldApply = process.argv.includes('--apply')
   const bucket = process.env.S3_BUCKET || ''
   if (!bucket) throw new Error('S3_BUCKET is not set')
@@ -295,12 +311,15 @@ const run = async () => {
   console.log(`  ${bucketKeys.size} objects\n`)
 
   const { moves, refusals, scanned } = await plan(payload, bucketKeys)
+  const selected = limit === null ? moves : moves.slice(0, limit)
 
   console.log(`Checked ${scanned} records`)
   console.log(`  movable  ${moves.length}`)
-  console.log(`  refused  ${refusals.length}\n`)
+  console.log(`  refused  ${refusals.length}`)
+  if (limit !== null) console.log(`  selected ${selected.length} of ${moves.length} by --limit`)
+  console.log('')
 
-  for (const move of moves) {
+  for (const move of selected) {
     for (const key of move.keys) console.log(`  ${key.source} -> ${key.target}`)
   }
   for (const refusal of refusals) {
@@ -312,14 +331,14 @@ const run = async () => {
     process.exit(0)
   }
 
-  console.log(`\nMoving ${moves.length} records …`)
-  const { failures, moved } = await apply(payload, client, bucket, moves)
+  console.log(`\nMoving ${selected.length} records …`)
+  const { failures, moved } = await apply(payload, client, bucket, selected)
 
   for (const failure of failures) {
     console.log(`  FAILED ${failure.collection}#${failure.id}: ${failure.reason}`)
   }
 
-  console.log(`\nDone. Moved ${moved} of ${moves.length}.`)
+  console.log(`\nDone. Moved ${moved} of ${selected.length}.`)
   console.log('Re-run the orphan report: the old keys are orphans until the delete step clears.')
   process.exit(refusals.length + failures.length > 0 ? 1 : 0)
 }
