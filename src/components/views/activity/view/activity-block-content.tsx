@@ -56,10 +56,12 @@ export const ActivityBlockContent = ({ activity, activityBlock, links, toolbar }
             <div className={'landscape-bg relative p-4'}>
               <div className={'prose prose-lg flex flex-col gap-16'}>
                 {/* `grid-auto-rows: 1fr` gives every row the height of the tallest card, so
-                    all cards match across rows. A flex wrap equalises within one row only. */}
+                    all cards match across rows. A flex wrap equalises within one row only.
+                    The track is 13rem because every shape wrapper sets `min-w-52`. A narrower
+                    track makes the card overflow into the gutter, and the gap disappears. */}
                 <div
                   className={
-                    'grid grid-cols-[repeat(auto-fill,12rem)] gap-4 leading-[normal] [grid-auto-rows:1fr]'
+                    'grid grid-cols-[repeat(auto-fill,13rem)] gap-4 leading-[normal] [grid-auto-rows:1fr]'
                   }>
                   <TasksGrid links={links} tasks={activityBlock?.relations?.tasks} />
                 </div>
