@@ -1,13 +1,13 @@
-import { CollectionBeforeChangeHook } from 'payload'
+import { APIError, CollectionBeforeChangeHook } from 'payload'
 
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { resolveUploadOrganisationId } from '@/payload/utilities/resolve-upload-organisation-id'
 
 /**
  * Files an upload under a per-organisation folder, `<collection-slug>/<org-id>`,
  * which is the S3 key prefix the storage adapter writes to and the static
  * handler later reads back from.
  *
- * Two properties matter and both are load-bearing (PIMS-88):
+ * Three properties matter and all three are load-bearing (PIMS-88):
  *
  * 1. **It only assigns when a file is actually in flight.** After the object is
  *    in S3, `plugin-cloud-storage`'s `afterChange` hook re-saves the document
@@ -20,6 +20,9 @@ import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
  *    slug makes the hook idempotent; appending to `data.prefix` grew a segment
  *    on every re-entry (`documents/18` → `documents/18/18`) and orphaned the
  *    document from its own object.
+ * 3. **It refuses an upload it cannot file.** An unresolved organisation used to
+ *    interpolate as the literal string `documents/null`, which mixed three parks
+ *    into one folder. 188 rows landed there before this guard existed.
  *
  * The slug is the right base because `payload.config.ts` configures each of
  * these collections with `prefix: <Collection>.slug`.
@@ -28,19 +31,21 @@ export const assignOrgToUploadBeforeChangeHook: CollectionBeforeChangeHook = asy
   collection,
   context,
   data,
+  originalDoc,
   req,
-  req: { user },
 }) => {
   if (!req.file) {
     return data
   }
 
-  // Cloning writes into a different organisation than the one the acting user
-  // currently has selected, and passes that target through the request context.
-  const targetOrgId =
-    context?.targetOrganisationId ||
-    req.context?.targetOrganisationId ||
-    getIdFromRelation(user?.selectedOrganisation)
+  const targetOrgId = resolveUploadOrganisationId({ context, data, originalDoc, req })
+
+  if (targetOrgId === null) {
+    throw new APIError(
+      `Cannot store an upload in ${collection.slug}: no organisation resolved for it.`,
+      400,
+    )
+  }
 
   data.prefix = `${collection.slug}/${targetOrgId}`
 

@@ -1,12 +1,6 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
-
-import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { describe, expect, test } from 'vitest'
 
 import { assignOrgToUploadBeforeChangeHook } from './assign-org-to-upload-before-change-hook'
-
-vi.mock('@/payload/utilities/get-id-from-relation', () => ({
-  getIdFromRelation: vi.fn(),
-}))
 
 const SELECTED_ORG = 18
 
@@ -14,6 +8,7 @@ type HookArgs = {
   collection?: { slug: string }
   context?: Record<string, unknown>
   data: Record<string, unknown>
+  originalDoc?: Record<string, unknown>
   req: { context?: Record<string, unknown>; file?: unknown; user?: unknown }
 }
 
@@ -27,15 +22,14 @@ const invoke = (args: HookArgs) =>
 
 const uploading = (data: Record<string, unknown> = {}): HookArgs => ({
   data: { prefix: 'documents', ...data },
-  req: { file: { filename: 'report.pdf' }, user: { selectedOrganisation: SELECTED_ORG } },
+  req: {
+    context: {},
+    file: { filename: 'report.pdf' },
+    user: { roles: [], selectedOrganisation: SELECTED_ORG },
+  },
 })
 
 describe('assignOrgToUploadBeforeChangeHook', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(getIdFromRelation).mockReturnValue(SELECTED_ORG)
-  })
-
   test('files a new upload under the acting user’s organisation', async () => {
     const result = await invoke(uploading())
 
@@ -58,7 +52,6 @@ describe('assignOrgToUploadBeforeChangeHook', () => {
     })
 
     expect(result.prefix).toBe('documents/7')
-    expect(getIdFromRelation).not.toHaveBeenCalled()
   })
 
   test('reads the target organisation off req.context as well', async () => {
@@ -69,6 +62,16 @@ describe('assignOrgToUploadBeforeChangeHook', () => {
     })
 
     expect(result.prefix).toBe('documents/7')
+  })
+
+  // A replaced file must not follow the acting user into another park.
+  test('keeps a replaced file in the organisation that owns the stored row', async () => {
+    const result = await invoke({
+      ...uploading(),
+      originalDoc: { organisation: 11 },
+    })
+
+    expect(result.prefix).toBe('documents/11')
   })
 
   // PIMS-88: the cloud-storage plugin re-saves the document from its own
@@ -98,5 +101,14 @@ describe('assignOrgToUploadBeforeChangeHook', () => {
     const second = await invoke(uploading({ prefix: first.prefix }))
 
     expect(second.prefix).toBe(first.prefix)
+  })
+
+  // 188 rows landed under the literal `documents/null` before this guard existed.
+  test('refuses an upload whose organisation does not resolve', async () => {
+    const args = uploading()
+
+    await expect(
+      invoke({ ...args, req: { ...args.req, user: { roles: [], selectedOrganisation: null } } }),
+    ).rejects.toThrow(/no organisation resolved/)
   })
 })

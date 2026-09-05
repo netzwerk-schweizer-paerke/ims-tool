@@ -21,6 +21,7 @@
     "generate:importMap": "payload generate:importMap",
     "smoke:access": "node --experimental-strip-types --no-warnings ./src/scripts/smoke-access-control.ts",
     "clone:cleanup": "tsx ./src/scripts/delete-clone-test-rows.ts",
+    "s3:move-prefixes": "tsx ./src/scripts/move-upload-prefixes.ts",
     "email:dev": "email dev",
     "email:export": "email export",
     "typecheck": "npx tsc --noEmit",
