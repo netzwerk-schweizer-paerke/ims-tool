@@ -7,12 +7,28 @@
  */
 
 /**
- * The delete action is built and disarmed.
+ * The master switch for the delete action.
  *
- * `POST /api/s3-orphan-delete` is not registered in `src/payload.config.ts` while the scan is
- * broken. Restore both together, after the scan is repaired and re-measured.
+ * Set it to false, and unregister `s3OrphanDeleteEndpoint` in `src/payload.config.ts`, whenever
+ * the scan is in doubt. Measured on 2026-09-05: 1777 objects, 1562 matched, 215 orphans.
  */
-export const ORPHAN_DELETE_ENABLED = false
+export const ORPHAN_DELETE_ENABLED = true
+
+/**
+ * An object younger than this is never a settled orphan.
+ *
+ * The scan lists the bucket and reads the rows at two different moments. An upload that lands
+ * between them has an object and no row yet, so it reads as an orphan.
+ */
+export const ORPHAN_MIN_AGE_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Refuse one object that the bucket wrote too recently.
+ *
+ * The caller passes `now` so the test stays pure and the whole request uses one clock reading.
+ */
+export const isTooRecentToDelete = (lastModified: Date, now: Date): boolean =>
+  now.getTime() - lastModified.getTime() < ORPHAN_MIN_AGE_MS
 
 /**
  * Refuse a single request that covers every object in the bucket.

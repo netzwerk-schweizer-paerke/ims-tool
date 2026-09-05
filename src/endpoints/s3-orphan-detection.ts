@@ -5,28 +5,6 @@ import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
 
-export interface OrphanReport {
-  orphansByPrefix: Array<{
-    count: number
-    objects: Array<{
-      key: string
-      lastModified: string
-      size: number
-      sizeFormatted: string
-    }>
-    prefix: string
-    totalSize: number
-  }>
-  summary: {
-    orphanedCount: number
-    totalOrphanedSize: number
-    totalOrphanedSizeFormatted: string
-    totalReferencedFiles: number
-    totalS3Objects: number
-  }
-  timestamp: string
-}
-
 export const s3OrphanDetectionEndpoint: Endpoint = {
   handler: async (req) => {
     try {

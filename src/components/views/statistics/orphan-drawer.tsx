@@ -109,26 +109,50 @@ export const OrphanDrawer = ({ locale }: Props) => {
 
         {report ? (
           <div className={'flex flex-col gap-3 text-sm'}>
-            <p className={'m-0 [color:var(--theme-elevation-500)]'}>
-              {formatCount(report.summary.totalS3Objects, locale)} ·{' '}
-              {formatCount(report.summary.totalReferencedFiles, locale)} ·{' '}
-              {formatCount(report.summary.orphanedCount, locale)} ·{' '}
-              {report.summary.totalOrphanedSizeFormatted}
-            </p>
-            <ul className={'m-0 flex list-none flex-col gap-2 p-0'}>
+            <dl className={'m-0 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4'}>
+              <SummaryItem
+                label={t('statistics:orphanReport:objects')}
+                value={formatCount(report.summary.totalS3Objects, locale)}
+              />
+              <SummaryItem
+                label={t('statistics:orphanReport:referenced')}
+                value={formatCount(report.summary.matchedReferences, locale)}
+              />
+              <SummaryItem
+                label={t('statistics:orphanReport:orphans')}
+                value={formatCount(report.summary.orphanedCount, locale)}
+              />
+              <SummaryItem
+                label={t('statistics:orphanReport:reclaimable')}
+                value={report.summary.totalOrphanedSizeFormatted}
+              />
+            </dl>
+
+            {report.summary.scanComplete ? null : (
+              <p
+                className={
+                  'm-0 rounded-md border p-3 [border-color:var(--theme-error-250)] [color:var(--theme-error-600)]'
+                }>
+                {t('statistics:orphanReport:incomplete')}
+              </p>
+            )}
+            <ul className={'m-0 flex list-none flex-col gap-1 p-0'}>
               {report.orphansByPrefix.map((group) => (
-                <li className={'flex flex-col gap-1'} key={group.prefix}>
-                  <span className={'font-semibold'}>
-                    {group.prefix} — {formatCount(group.count, locale)} ·{' '}
-                    {formatBytes(group.totalSize, locale)}
-                  </span>
-                  <ul className={'m-0 flex list-none flex-col p-0 [color:var(--theme-elevation-500)]'}>
-                    {group.objects.map((object) => (
-                      <li className={'truncate'} key={object.key}>
-                        {object.key} — {object.sizeFormatted}
-                      </li>
-                    ))}
-                  </ul>
+                <li className={'font-semibold'} key={group.prefix}>
+                  {group.prefix} — {formatCount(group.count, locale)} ·{' '}
+                  {formatBytes(group.totalSize, locale)}
+                </li>
+              ))}
+            </ul>
+
+            {/* Every key, never a sample. Nobody may confirm a deletion they could not read. */}
+            <ul
+              className={
+                'm-0 flex max-h-72 list-none flex-col overflow-y-auto rounded-md border p-2 text-xs [border-color:var(--theme-border-color)] [color:var(--theme-elevation-500)]'
+              }>
+              {orphanKeys.map((key) => (
+                <li className={'truncate'} key={key}>
+                  {key}
                 </li>
               ))}
             </ul>
@@ -200,6 +224,13 @@ export const OrphanDrawer = ({ locale }: Props) => {
     </Drawer>
   )
 }
+
+const SummaryItem = ({ label, value }: { label: string; value: string }) => (
+  <div className={'flex flex-col'}>
+    <dt className={'text-xs [color:var(--theme-elevation-500)]'}>{label}</dt>
+    <dd className={'m-0 font-semibold'}>{value}</dd>
+  </div>
+)
 
 const describeError = async (
   caught: unknown,

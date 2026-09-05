@@ -1,6 +1,8 @@
 /**
- * S3 Orphan Detection Utility for Payload CMS
- * Optimized version with better error handling and timeout management
+ * Find the S3 objects that no Payload record points at, and delete the ones an operator names.
+ *
+ * Both entry points run inside the server, through `src/endpoints/s3-orphan-*.ts`. There is no
+ * command-line entry point, so every message goes to the Payload logger.
  */
 
 import {
@@ -10,13 +12,13 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import { groupBy, orderBy } from 'es-toolkit'
-import { writeFileSync } from 'node:fs'
-import { CollectionSlug, PayloadRequest } from 'payload'
+import { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
 import type { Document, DocumentsPublic, Media } from '../payload-types'
 
 import { getS3Client } from './s3-client'
-import { coversWholeBucket, referenceScanFailed } from './s3-orphan-safety'
+import { buildStoredKeys } from './s3-orphan-keys'
+import { coversWholeBucket, isTooRecentToDelete, referenceScanFailed } from './s3-orphan-safety'
 
 interface OrphanDeletionFailure {
   key: string
@@ -28,15 +30,18 @@ interface OrphanDeletionResult {
   failed: OrphanDeletionFailure[]
   freedBytes: number
   /** Set when the request was refused whole. Nothing is deleted in that case. */
-  refusedReason: 'covers-whole-bucket' | 'reference-scan-failed' | null
+  refusedReason: 'covers-whole-bucket' | 'reference-scan-failed' | 'reference-scan-incomplete' | null
   requested: number
   skipped: OrphanDeletionSkip[]
 }
 
 interface OrphanDeletionSkip {
   key: string
-  /** `referenced` means a record now points at it. `missing` means the bucket has no object. */
-  reason: 'missing' | 'referenced'
+  /**
+   * `referenced` means a record now points at it. `missing` means the bucket has no object.
+   * `too-recent` means the bucket wrote it inside the upload window.
+   */
+  reason: 'missing' | 'referenced' | 'too-recent'
 }
 
 interface OrphanReport {
@@ -57,13 +62,26 @@ interface OrphanReport {
     totalSize: number
   }>
   summary: {
+    /** Bucket objects that a reference points at. Zero with references present means a broken scan. */
+    matchedReferences: number
     orphanedCount: number
+    /** False when the scan missed rows. The report is then unusable, and a deletion refuses. */
+    scanComplete: boolean
     totalOrphanedSize: number
     totalOrphanedSizeFormatted: string
     totalReferencedFiles: number
     totalS3Objects: number
   }
   timestamp: string
+}
+
+interface ReferenceScan {
+  /**
+   * False when a query failed, a page came back short, or a row named a file the scan could not
+   * place. A deletion refuses on false, because a missed reference makes a live object an orphan.
+   */
+  complete: boolean
+  references: Set<string>
 }
 
 interface S3Object {
@@ -75,12 +93,14 @@ interface S3Object {
 
 class S3OrphanDetector {
   private bucket: string
+  private logger: Payload['logger']
   private payloadRequest: PayloadRequest
   private s3Client: S3Client
   private readonly TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes
 
   constructor(req: PayloadRequest) {
     this.payloadRequest = req
+    this.logger = req.payload.logger
     this.bucket = process.env.S3_BUCKET || ''
     this.s3Client = getS3Client()
   }
@@ -96,52 +116,46 @@ class S3OrphanDetector {
     this.validateEnvironment()
 
     const requested = [...new Set(keys)]
-    const [s3Objects, payloadReferences] = await Promise.all([
+    const [s3Objects, scan] = await Promise.all([
       this.listAllS3Objects(),
       this.collectPayloadFileReferences(),
     ])
 
-    const sizeByKey = new Map(s3Objects.map((object) => [object.key, object.size]))
+    const objectByKey = new Map(s3Objects.map((object) => [object.key, object]))
     const deletable: string[] = []
     const skipped: OrphanDeletionSkip[] = []
+    // One clock reading for the whole request, so two keys never land on different sides.
+    const now = new Date()
 
     for (const key of requested) {
-      if (payloadReferences.has(key)) {
+      if (scan.references.has(key)) {
         skipped.push({ key, reason: 'referenced' })
         continue
       }
 
-      if (!sizeByKey.has(key)) {
+      const object = objectByKey.get(key)
+
+      if (!object) {
         skipped.push({ key, reason: 'missing' })
+        continue
+      }
+
+      if (isTooRecentToDelete(object.lastModified, now)) {
+        skipped.push({ key, reason: 'too-recent' })
         continue
       }
 
       deletable.push(key)
     }
 
-    // The primary guard. A scan that collected references and matched none of them built the
-    // keys wrongly. The request size does not enter this test, so a chunked caller cannot walk
-    // past it one batch at a time.
-    const matchedReferences = s3Objects.filter((object) => payloadReferences.has(object.key)).length
+    const refusedReason = this.refuseDeletion(scan, s3Objects, deletable.length)
 
-    if (referenceScanFailed(matchedReferences, payloadReferences.size)) {
+    if (refusedReason) {
       return {
         deleted: [],
         failed: [],
         freedBytes: 0,
-        refusedReason: 'reference-scan-failed',
-        requested: requested.length,
-        skipped,
-      }
-    }
-
-    // A single sweep that names every object is the same failure seen from the request side.
-    if (coversWholeBucket(deletable.length, s3Objects.length)) {
-      return {
-        deleted: [],
-        failed: [],
-        freedBytes: 0,
-        refusedReason: 'covers-whole-bucket',
+        refusedReason,
         requested: requested.length,
         skipped,
       }
@@ -180,54 +194,16 @@ class S3OrphanDetector {
     return {
       deleted,
       failed,
-      freedBytes: deleted.reduce((sum, key) => sum + (sizeByKey.get(key) ?? 0), 0),
+      freedBytes: deleted.reduce((sum, key) => sum + (objectByKey.get(key)?.size ?? 0), 0),
       refusedReason: null,
       requested: requested.length,
       skipped,
     }
   }
 
-  async execute(): Promise<void> {
-    try {
-      console.log('🚀 Starting S3 Orphan Detection...')
-      const startTime = Date.now()
-
-      // Validate environment
-      this.validateEnvironment()
-
-      // List all S3 objects
-      const s3Objects = await this.listAllS3Objects()
-
-      // Collect Payload file references
-      const payloadReferences = await this.collectPayloadFileReferences()
-
-      // Find orphans
-      const orphans = this.findOrphans(s3Objects, payloadReferences)
-
-      // Generate report
-      const report = this.generateReport(s3Objects, payloadReferences, orphans)
-
-      // Display report
-      this.displayReport(report)
-
-      // Save detailed report
-      const reportFilename = `.tmp-workspace/s3-orphan-report-${Date.now()}.json`
-      writeFileSync(reportFilename, JSON.stringify(report, null, 2))
-      console.log(String.raw`\n💾 Detailed report saved to: ${reportFilename}`)
-
-      const totalTime = Math.round((Date.now() - startTime) / 1000)
-      console.log(String.raw`\n✅ S3 Orphan Detection completed successfully in ${totalTime}s!`)
-    } catch (error) {
-      console.error('❌ Error during S3 orphan detection:', error)
-      // Rethrow rather than process.exit(): this module is imported by the
-      // s3-orphan-detection endpoint, so exiting here would take the server down.
-      throw error
-    }
-  }
-
   public generateReport(
     s3Objects: S3Object[],
-    payloadReferences: Set<string>,
+    scan: ReferenceScan,
     orphans: S3Object[],
   ): OrphanReport {
     const totalOrphanedSize = orphans.reduce((sum, obj) => sum + obj.size, 0)
@@ -260,10 +236,12 @@ class S3OrphanDetector {
         totalSize: objs.reduce((sum, obj) => sum + obj.size, 0),
       })),
       summary: {
+        matchedReferences: s3Objects.filter((object) => scan.references.has(object.key)).length,
         orphanedCount: orphans.length,
+        scanComplete: scan.complete,
         totalOrphanedSize,
         totalOrphanedSizeFormatted: this.formatBytes(totalOrphanedSize),
-        totalReferencedFiles: payloadReferences.size,
+        totalReferencedFiles: scan.references.size,
         totalS3Objects: s3Objects.length,
       },
       timestamp: new Date().toISOString(),
@@ -282,183 +260,133 @@ class S3OrphanDetector {
     const s3Objects = await this.listAllS3Objects()
 
     // Collect Payload file references
-    const payloadReferences = await this.collectPayloadFileReferences()
+    const scan = await this.collectPayloadFileReferences()
 
     // Find orphans
-    const orphans = this.findOrphans(s3Objects, payloadReferences)
+    const orphans = this.findOrphans(s3Objects, scan.references)
 
     // Generate and return report
-    return this.generateReport(s3Objects, payloadReferences, orphans)
+    return this.generateReport(s3Objects, scan, orphans)
   }
 
-  private async collectDirectFileReferences(fileReferences: Set<string>): Promise<void> {
-    // Process Media collection
-    try {
-      console.log(`  📄 Scanning media collection...`)
-      const mediaResult = await this.payloadRequest.payload.find({
-        collection: 'media',
-        depth: 0, // No relations needed
-        limit: 0, // Get all records
-      })
+  /**
+   * Read every upload row of the installation, and build its keys from the stored columns.
+   *
+   * This is the authoritative half of the scan. A key it misses makes a live object read as an
+   * orphan, so every miss marks the whole scan incomplete.
+   */
+  private async collectDirectFileReferences(scan: ReferenceScan): Promise<void> {
+    const collections = ['documents', 'documents-public', 'media'] as const
 
-      for (const doc of mediaResult.docs as Media[]) {
-        // Main file URL
-        if (doc.url) {
-          const key = this.extractS3Key(doc.url)
-          if (key) fileReferences.add(key)
+    for (const collection of collections) {
+      try {
+        const result = await this.payloadRequest.payload.find({
+          collection,
+          depth: 0,
+          limit: 0,
+          // Every park, never the selected one. An access-checked read returns the selected
+          // park alone, and every other park's files then read as orphans.
+          overrideAccess: true,
+        })
+
+        if (result.docs.length !== result.totalDocs) {
+          scan.complete = false
+          this.logger.warn(
+            { collection, read: result.docs.length, total: result.totalDocs },
+            '[S3Orphans] Short page: the scan did not read every row',
+          )
         }
 
-        // Thumbnail URL
-        if (doc.thumbnailURL) {
-          const key = this.extractS3Key(doc.thumbnailURL)
-          if (key) fileReferences.add(key)
-        }
+        let unbuildableRows = 0
 
-        // Media collection size variants
-        if (doc.sizes) {
-          for (const sizeData of Object.values(doc.sizes)) {
-            if (!(typeof sizeData === 'object' && sizeData && 'url' in sizeData)) {
-            	continue;
-            }
+        for (const doc of result.docs as Array<Document | DocumentsPublic | Media>) {
+          const { keys, unbuildable } = buildStoredKeys(doc)
 
-            const key = sizeData.url ? this.extractS3Key(sizeData.url) : null
-            if (key) fileReferences.add(key)
+          if (unbuildable) {
+            unbuildableRows += 1
+            scan.complete = false
           }
+
+          for (const key of keys) scan.references.add(key)
         }
+
+        if (unbuildableRows > 0) {
+          this.logger.warn(
+            { collection, unbuildableRows },
+            '[S3Orphans] Rows name a file the scan cannot place',
+          )
+        }
+
+        this.logger.info(
+          { collection, rows: result.docs.length },
+          '[S3Orphans] Read an upload collection',
+        )
+      } catch (error) {
+        scan.complete = false
+        this.logger.error(
+          { collection, error: error instanceof Error ? error.message : String(error) },
+          '[S3Orphans] Could not scan an upload collection',
+        )
       }
-      console.log(`    ✅ Found ${mediaResult.docs.length} media records`)
-    } catch (error) {
-      console.warn(`    ⚠️  Warning: Could not scan media collection:`, error)
-    }
-
-    // Process Documents collection
-    try {
-      console.log(`  📄 Scanning documents collection...`)
-      const documentsResult = await this.payloadRequest.payload.find({
-        collection: 'documents',
-        depth: 0, // No relations needed
-        limit: 0, // Get all records
-      })
-
-      for (const doc of documentsResult.docs as Document[]) {
-        // Main file URL
-        if (doc.url) {
-          const key = this.extractS3Key(doc.url)
-          if (key) fileReferences.add(key)
-        }
-
-        // Thumbnail URL
-        if (doc.thumbnailURL) {
-          const key = this.extractS3Key(doc.thumbnailURL)
-          if (key) fileReferences.add(key)
-        }
-      }
-      console.log(`    ✅ Found ${documentsResult.docs.length} documents records`)
-    } catch (error) {
-      console.warn(`    ⚠️  Warning: Could not scan documents collection:`, error)
-    }
-
-    // Process Documents Public collection
-    try {
-      console.log(`  📄 Scanning documents-public collection...`)
-      const documentsPublicResult = await this.payloadRequest.payload.find({
-        collection: 'documents-public',
-        depth: 0, // No relations needed
-        limit: 0, // Get all records
-      })
-
-      for (const doc of documentsPublicResult.docs as DocumentsPublic[]) {
-        // Main file URL
-        if (doc.url) {
-          const key = this.extractS3Key(doc.url)
-          if (key) fileReferences.add(key)
-        }
-
-        // Thumbnail URL
-        if (doc.thumbnailURL) {
-          const key = this.extractS3Key(doc.thumbnailURL)
-          if (key) fileReferences.add(key)
-        }
-      }
-      console.log(`    ✅ Found ${documentsPublicResult.docs.length} documents-public records`)
-    } catch (error) {
-      console.warn(`    ⚠️  Warning: Could not scan documents-public collection:`, error)
     }
   }
 
-  private async collectPayloadFileReferences(): Promise<Set<string>> {
-    console.log('🔍 Collecting Payload file references...')
+  private async collectPayloadFileReferences(): Promise<ReferenceScan> {
+    const scan: ReferenceScan = { complete: true, references: new Set<string>() }
 
-    const fileReferences = new Set<string>()
+    await this.collectDirectFileReferences(scan)
+    await this.collectRichTextFileReferences(scan)
 
-    // Direct file collection references
-    await this.collectDirectFileReferences(fileReferences)
-
-    // Rich text file references (with timeout protection)
-    await this.collectRichTextFileReferences(fileReferences)
-
-    console.log(`✅ Found ${fileReferences.size} unique file references in Payload`)
-    return fileReferences
+    this.logger.info(
+      { complete: scan.complete, references: scan.references.size },
+      '[S3Orphans] Collected the Payload file references',
+    )
+    return scan
   }
 
-  private async collectRichTextFileReferences(fileReferences: Set<string>): Promise<void> {
+  /**
+   * Add whatever the rich text points at, on top of the row scan.
+   *
+   * This half never subtracts. It catches an absolute S3 link that somebody pasted into a field,
+   * which owns no upload row of its own.
+   */
+  private async collectRichTextFileReferences(scan: ReferenceScan): Promise<void> {
     const collections: CollectionSlug[] = ['activities', 'task-flows', 'task-lists']
 
     for (const collection of collections) {
-      console.log(`  📝 Scanning ${collection} rich text content...`)
-
       try {
         const result = await this.payloadRequest.payload.find({
           collection,
           depth: 1, // Get one level of relationships for upload references
           limit: 0, // Get all records for comprehensive scan
+          overrideAccess: true,
         })
+
+        if (result.docs.length !== result.totalDocs) {
+          scan.complete = false
+          this.logger.warn(
+            { collection, read: result.docs.length, total: result.totalDocs },
+            '[S3Orphans] Short page: the scan did not read every row',
+          )
+        }
 
         let refsFound = 0
         for (const doc of result.docs) {
-          const prevSize = fileReferences.size
-          this.scanDocumentForFileReferences(doc, fileReferences)
-          refsFound += fileReferences.size - prevSize
+          const prevSize = scan.references.size
+          this.scanDocumentForFileReferences(doc, scan.references)
+          refsFound += scan.references.size - prevSize
         }
 
-        console.log(
-          `    ✅ Scanned ${result.docs.length} ${collection} records, found ${refsFound} file references`,
+        this.logger.info(
+          { collection, references: refsFound, rows: result.docs.length },
+          '[S3Orphans] Scanned the rich text content',
         )
       } catch (error) {
-        console.warn(`    ⚠️  Warning: Could not scan ${collection} collection:`, error)
-      }
-    }
-  }
-
-  private displayReport(report: OrphanReport): void {
-    console.log(String.raw`\n` + '='.repeat(80))
-    console.log('📊 S3 ORPHAN DETECTION REPORT')
-    console.log('='.repeat(80))
-
-    console.log(`📦 Total S3 Objects: ${report.summary.totalS3Objects.toLocaleString()}`)
-    console.log(`🔗 Referenced Files: ${report.summary.totalReferencedFiles.toLocaleString()}`)
-    console.log(`🗑️  Orphaned Objects: ${report.summary.orphanedCount.toLocaleString()}`)
-    console.log(`💾 Orphaned Size: ${report.summary.totalOrphanedSizeFormatted}`)
-
-    if (report.orphansByPrefix.length > 0) {
-      console.log(String.raw`\n📊 ORPHANS BY PREFIX:`)
-      for (const prefixData of report.orphansByPrefix) {
-        const prefixSize = this.formatBytes(prefixData.totalSize)
-        console.log(`  ${prefixData.prefix}/: ${prefixData.count} objects (${prefixSize})`)
-      }
-
-      // Show sample orphaned files
-      const allOrphans = report.orphansByPrefix.flatMap((p) => p.objects)
-      if (allOrphans.length > 0) {
-        console.log(String.raw`\n🗑️  SAMPLE ORPHANED FILES (first 10):`)
-        const sampleOrphans = allOrphans.slice(0, 10)
-        for (const orphan of sampleOrphans) {
-          console.log(`  ${orphan.key} (${orphan.sizeFormatted})`)
-        }
-
-        if (allOrphans.length > 10) {
-          console.log(`  ... and ${allOrphans.length - 10} more (see full report)`)
-        }
+        scan.complete = false
+        this.logger.error(
+          { collection, error: error instanceof Error ? error.message : String(error) },
+          '[S3Orphans] Could not scan a rich text collection',
+        )
       }
     }
   }
@@ -480,11 +408,10 @@ class S3OrphanDetector {
   }
 
   private findOrphans(s3Objects: S3Object[], payloadReferences: Set<string>): S3Object[] {
-    console.log('🔍 Finding orphaned objects...')
 
     const orphans = s3Objects.filter((obj) => !payloadReferences.has(obj.key))
 
-    console.log(`✅ Found ${orphans.length} orphaned objects`)
+    this.logger.info({ orphans: orphans.length }, '[S3Orphans] Found the orphaned objects')
     return orphans
   }
 
@@ -504,11 +431,8 @@ class S3OrphanDetector {
   }
 
   private async listAllS3Objects(): Promise<S3Object[]> {
-    console.log('📦 Listing all S3 objects...')
-
     const objects: S3Object[] = []
     let continuationToken: string | undefined
-    let totalObjects = 0
 
     do {
       const command = new ListObjectsV2Command({
@@ -533,15 +457,35 @@ class S3OrphanDetector {
             size: obj.Size,
           })
         }
-        totalObjects += response.Contents.length
       }
 
       continuationToken = response.NextContinuationToken
-      process.stdout.write(String.raw`\r📦 Found ${totalObjects} S3 objects...`)
     } while (continuationToken)
 
-    console.log(String.raw`\n✅ Listed ${objects.length} S3 objects total`)
+    this.logger.info({ objects: objects.length }, '[S3Orphans] Listed the bucket')
     return objects
+  }
+
+  /**
+   * Decide whether the whole request must be refused, before a single object is deleted.
+   *
+   * Each test answers a different question. The scan may have missed rows, it may have built
+   * every key wrongly, or the request may cover the bucket. Any one of those makes a deletion
+   * unsafe, and none of them depends on how many keys the caller sent.
+   */
+  private refuseDeletion(
+    scan: ReferenceScan,
+    s3Objects: S3Object[],
+    deletableCount: number,
+  ): OrphanDeletionResult['refusedReason'] {
+    if (!scan.complete) return 'reference-scan-incomplete'
+
+    const matched = s3Objects.filter((object) => scan.references.has(object.key)).length
+
+    if (referenceScanFailed(matched, scan.references.size)) return 'reference-scan-failed'
+    if (coversWholeBucket(deletableCount, s3Objects.length)) return 'covers-whole-bucket'
+
+    return null
   }
 
   private scanDocumentForFileReferences(obj: unknown, fileReferences: Set<string>): void {
@@ -552,6 +496,12 @@ class S3OrphanDetector {
         this.scanDocumentForFileReferences(item, fileReferences)
       }
       return
+    }
+
+    // A populated upload relation carries the same two columns as its own row, so the key needs
+    // no URL parse here either.
+    if ('filename' in obj && 'prefix' in obj) {
+      for (const key of buildStoredKeys(obj).keys) fileReferences.add(key)
     }
 
     // Check for upload/relationship nodes in rich text

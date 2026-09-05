@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { coversWholeBucket, referenceScanFailed } from '@/lib/s3-orphan-safety'
+import {
+  coversWholeBucket,
+  isTooRecentToDelete,
+  ORPHAN_MIN_AGE_MS,
+  referenceScanFailed,
+} from '@/lib/s3-orphan-safety'
 
 describe('coversWholeBucket', () => {
   it('refuses a request that names every object', () => {
@@ -38,5 +43,27 @@ describe('referenceScanFailed', () => {
 
   it('allows an installation that holds no references at all', () => {
     expect(referenceScanFailed(0, 0)).toBe(false)
+  })
+})
+
+describe('isTooRecentToDelete', () => {
+  const now = new Date('2026-09-05T12:00:00.000Z')
+  const at = (offsetMs: number) => new Date(now.getTime() - offsetMs)
+
+  it('refuses an object the bucket wrote inside the upload window', () => {
+    // The row of an upload in flight is not committed yet, so its object reads as an orphan.
+    expect(isTooRecentToDelete(at(0), now)).toBe(true)
+    expect(isTooRecentToDelete(at(60_000), now)).toBe(true)
+    expect(isTooRecentToDelete(at(ORPHAN_MIN_AGE_MS - 1), now)).toBe(true)
+  })
+
+  it('allows an object that is older than the window', () => {
+    expect(isTooRecentToDelete(at(ORPHAN_MIN_AGE_MS), now)).toBe(false)
+    expect(isTooRecentToDelete(at(ORPHAN_MIN_AGE_MS * 30), now)).toBe(false)
+  })
+
+  it('refuses an object with a timestamp in the future', () => {
+    // A skewed bucket clock must never make an object look old enough.
+    expect(isTooRecentToDelete(new Date(now.getTime() + 60_000), now)).toBe(true)
   })
 })
