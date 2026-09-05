@@ -38,21 +38,29 @@ done
 
 # --- Cluster layout (single node) ---
 
+# Capacity is a relative weight for spreading partitions across nodes, not a quota. With a
+# single node it is nominal, but `garage status` reports usage against it, so keep it above the
+# real dataset. The dev bucket held 1.2 GiB across 1777 objects in 2026-09.
+CAPACITY="8G"
+
 NODE_ID=$($GARAGE status 2>/dev/null | awk 'NR>2 && /^[a-f0-9]/{print $1; exit}')
 if [ -z "$NODE_ID" ]; then
   echo "ERROR: Could not determine Garage node ID" >&2
   exit 1
 fi
 
-if $GARAGE layout show 2>/dev/null | grep -q "$NODE_ID"; then
-  echo "Layout already assigned for node $NODE_ID"
+# Stage the capacity on every run. Garage discards a no-op, so an existing cluster converges
+# when CAPACITY changes. The output of `layout assign` always claims a change is staged, so
+# read `layout show` instead.
+$GARAGE layout assign -z dc1 -c "$CAPACITY" "$NODE_ID" >/dev/null 2>&1
+
+if $GARAGE layout show 2>/dev/null | grep -q "STAGED ROLE CHANGES"; then
+  # `layout apply` takes the version it creates, which is the current one plus one.
+  NEXT_VERSION=$(($($GARAGE layout show 2>/dev/null | awk '/layout version:/{print $NF}') + 1))
+  echo "Applying layout version $NEXT_VERSION with capacity $CAPACITY..."
+  $GARAGE layout apply --version "$NEXT_VERSION"
 else
-  # Capacity is a relative weight for spreading partitions across nodes, not a
-  # quota — with a single node it is nominal, but keep it above the real dataset
-  # so `garage status` doesn't report >100% usage. Prod media was ~1.1 GB in 2026-08.
-  echo "Assigning layout for node $NODE_ID..."
-  $GARAGE layout assign -z dc1 -c 4G "$NODE_ID"
-  $GARAGE layout apply --version 1
+  echo "Layout already at capacity $CAPACITY for node $NODE_ID"
 fi
 
 # --- Bucket ---
