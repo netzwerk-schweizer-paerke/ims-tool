@@ -39,7 +39,9 @@ interface ReqMocks {
   beginTransaction: Mock
   commitTransaction: Mock
   delete: Mock
+  findByID: Mock
   rollbackTransaction: Mock
+  update: Mock
 }
 
 const makeReq = (
@@ -51,7 +53,10 @@ const makeReq = (
     beginTransaction: vi.fn().mockResolvedValue(transactionID),
     commitTransaction: vi.fn().mockResolvedValue(undefined),
     delete: vi.fn().mockResolvedValue({}),
+    // The link remap reads every clone back. A record with no link writes nothing.
+    findByID: vi.fn().mockResolvedValue({ id: 77, name: 'Clone' }),
     rollbackTransaction: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockResolvedValue({ id: 77 }),
     ...overrides,
   }
 
@@ -66,7 +71,9 @@ const makeReq = (
         rollbackTransaction: mocks.rollbackTransaction,
       },
       delete: mocks.delete,
+      findByID: mocks.findByID,
       logger,
+      update: mocks.update,
     },
     user: { id: 1 },
   } as unknown as PayloadRequest

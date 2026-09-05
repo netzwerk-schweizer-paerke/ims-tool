@@ -9,6 +9,7 @@ export class CloneStatisticsTracker {
   private documentCloneMaps: Map<number, Map<number, number>> = new Map()
   private documentClonePromises: Map<number, Map<number, Promise<number>>> = new Map()
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
+  private taskCloneMaps: Map<number, Map<string, number>> = new Map()
   private taskClonePromises: Map<number, Map<string, Promise<number>>> = new Map()
 
   /**
@@ -275,6 +276,35 @@ export class CloneStatisticsTracker {
     return this.getCurrentDocumentCloneMap().get(sourceId)
   }
 
+  /**
+   * Answers the clone of one source task, or undefined when this entity did not copy it.
+   *
+   * The link remap runs after every entity, so it names the entity instead of the current one.
+   */
+  getClonedTaskId(
+    entityId: number,
+    collection: 'task-flows' | 'task-lists',
+    sourceId: number,
+  ): number | undefined {
+    return this.taskCloneMaps.get(entityId)?.get(`${collection}:${sourceId}`)
+  }
+
+  /** Every task this entity copied. The link remap reads each one back to patch its links. */
+  getClonedTaskRecords(
+    entityId: number,
+  ): Array<{ collection: 'task-flows' | 'task-lists'; id: number }> {
+    const entries = this.taskCloneMaps.get(entityId)
+
+    if (!entries) {
+      return []
+    }
+
+    return Array.from(entries.entries()).map(([key, id]) => ({
+      collection: key.startsWith('task-flows:') ? 'task-flows' : 'task-lists',
+      id,
+    }))
+  }
+
   getStatistics(entityId?: number): GenericCloneStatistics {
     const targetEntityId = entityId ?? this.currentEntityId
     if (targetEntityId === null) {
@@ -293,6 +323,7 @@ export class CloneStatisticsTracker {
     this.entitiesStats = new Map()
     this.documentCloneMaps = new Map()
     this.documentClonePromises = new Map()
+    this.taskCloneMaps = new Map()
     this.taskClonePromises = new Map()
     this.currentEntityId = null
   }
@@ -350,8 +381,17 @@ export class CloneStatisticsTracker {
 
     this.addSourceRelatedItem()
 
+    // The entity is captured here, never read in the callback. The link remap reads this map
+    // after `endEntity` has already cleared the current entity.
+    const entityId = this.currentEntityId
+
     const promise = cloneTask().then((clonedId) => {
       this.addClonedRelatedItem()
+
+      if (entityId !== null) {
+        this.taskCloneMaps.get(entityId)?.set(key, clonedId)
+      }
+
       return clonedId
     })
 
@@ -424,6 +464,7 @@ export class CloneStatisticsTracker {
       })
       this.documentCloneMaps.set(entityId, new Map())
       this.documentClonePromises.set(entityId, new Map())
+      this.taskCloneMaps.set(entityId, new Map())
       this.taskClonePromises.set(entityId, new Map())
     }
   }

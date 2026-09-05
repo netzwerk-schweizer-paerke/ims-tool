@@ -138,7 +138,7 @@ async function processNode(
  * The shape follows lexical's `SerializedTextNode`. A link node keeps element keys such as a
  * string `format`, which a text node must not carry, or the admin editor cannot load the clone.
  */
-const degradeLinkToText = (linkNode: Record<string, unknown>): Record<string, unknown> => {
+export const degradeLinkToText = (linkNode: Record<string, unknown>): Record<string, unknown> => {
   const words = isUnknownArray(linkNode.children)
     ? linkNode.children
         .map((child) => (isRecord(child) && typeof child.text === 'string' ? child.text : ''))

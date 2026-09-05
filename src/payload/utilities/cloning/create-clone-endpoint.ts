@@ -12,6 +12,7 @@ import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statis
 import { deleteCreatedDocuments } from '@/payload/utilities/cloning/delete-created-documents'
 import { DocumentPreloader, preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
+import { CloneRecordRef, remapTaskLinks } from '@/payload/utilities/cloning/remap-task-links'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
@@ -262,6 +263,8 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
         transactionID,
       }
 
+      const clonedEntries: Array<{ entityId: number; record: CloneRecordRef }> = []
+
       // Process each source within the SAME transaction
       for (const { id: sourceId, name, source } of entries) {
         tracker.startEntity(sourceId)
@@ -285,7 +288,39 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
           sourceId,
         })
 
+        clonedEntries.push({
+          entityId: sourceId,
+          record: { collection: collectionSlug, id: cloned.id },
+        })
+
         tracker.endEntity()
+      }
+
+      // A rich text link cannot resolve while the clone runs, because two task flows often link
+      // each other. Patch every link once the batch holds every clone.
+      const rootClones = new Map(
+        clonedEntries.map(({ entityId, record }) => [`${collectionSlug}:${entityId}`, record.id]),
+      )
+
+      for (const { entityId, record } of clonedEntries) {
+        const linkTotals = await remapTaskLinks({
+          cloneLocales,
+          lookupClonedTask: (collection, taskSourceId) =>
+            tracker.getClonedTaskId(entityId, collection, taskSourceId) ??
+            rootClones.get(`${collection}:${taskSourceId}`),
+          records: [record, ...tracker.getClonedTaskRecords(entityId)],
+          req: transactionalReq,
+          targetOrgId: targetOrganisationId,
+        })
+
+        if (linkTotals.degraded > 0 || linkTotals.remapped > 0) {
+          req.payload.logger.info({
+            degradedLinks: linkTotals.degraded,
+            msg: 'Resolved the rich text links to nested tasks',
+            remappedLinks: linkTotals.remapped,
+            sourceId: entityId,
+          })
+        }
       }
 
       // Commit the SINGLE transaction after ALL sources are processed
