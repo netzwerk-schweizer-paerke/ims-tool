@@ -12,10 +12,20 @@
  * The order per row is copy, verify, update the row, delete the old object. An interruption
  * therefore leaves an orphan object and never a dead link.
  *
+ * **It reads `pg` and the S3 SDK directly, and it never boots Payload.** The deployed image is a
+ * Next standalone build with no `src/` and no `tsx`, and it publishes no database port. Both
+ * packages are already inside that image, so this one file runs there unchanged. The update
+ * touches the `prefix` column alone, which leaves `updated_at` as it was.
+ *
  * Dry run by default. Pass --apply to write.
  *
- *   yarn tsx src/scripts/move-upload-prefixes.ts
- *   yarn tsx src/scripts/move-upload-prefixes.ts --apply
+ *   yarn s3:move-prefixes
+ *   yarn s3:move-prefixes --apply
+ *
+ * In production, run it inside the app container, which already holds the credentials:
+ *
+ *   docker cp move-upload-prefixes.ts app:/tmp/
+ *   docker exec app node --experimental-strip-types --no-warnings /tmp/move-upload-prefixes.ts
  */
 /* eslint-disable unicorn/no-process-exit -- CLI entry point: the exit code is the result. */
 import {
@@ -25,38 +35,39 @@ import {
   ListObjectsV2Command,
   S3Client,
 } from '@aws-sdk/client-s3'
-import dotenv from 'dotenv'
-import { CollectionSlug, getPayload } from 'payload'
+import { Client } from 'pg'
 
-dotenv.config()
-
-/** Collections whose objects are filed under a per-organisation prefix. */
-const COLLECTIONS: CollectionSlug[] = ['documents', 'media']
+/** Collections whose objects are filed under a per-organisation prefix, with their tables. */
+const COLLECTIONS = [
+  { prefixBase: 'documents', table: 'documents' },
+  { prefixBase: 'media', table: 'media' },
+] as const
 
 interface Move {
-  collection: CollectionSlug
-  id: number | string
+  id: number
   /** Every key the row claims, paired with where that key must end up. */
   keys: { source: string; target: string }[]
+  table: string
   targetPrefix: string
-  updatedAt: string
 }
 
 interface Refusal {
-  collection: CollectionSlug
-  id: number | string
+  id: number
   reason: string
+  table: string
 }
 
-/** The stored shape this script reads. Payload's own type is far wider. */
-interface StoredUpload {
-  filename?: null | string
-  id: number | string
-  organisation?: null | number | { id?: number }
-  prefix?: null | string
-  sizes?: null | Record<string, null | { filename?: null | string }>
-  updatedAt?: string
-}
+/**
+ * Builds the `x-amz-copy-source` value.
+ *
+ * The header carries `<bucket>/<key>` and the key must be URL-encoded. Each segment is encoded on
+ * its own, so the separators stay literal. Verified against garage v2.2.0 on 2026-09-05.
+ */
+const copySourceOf = (bucket: string, key: string): string =>
+  `${bucket}/${key
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')}`
 
 const listAllKeys = async (client: S3Client, bucket: string): Promise<Set<string>> => {
   const keys = new Set<string>()
@@ -80,70 +91,65 @@ const listAllKeys = async (client: S3Client, bucket: string): Promise<Set<string
 }
 
 /**
- * Builds the `x-amz-copy-source` value.
+ * Reads the size-variant filename columns from the catalog.
  *
- * The header carries `<bucket>/<key>` and the key must be URL-encoded. Each segment is encoded on
- * its own, so the separators stay literal. Verified against garage v2.2.0 on 2026-09-05.
+ * Media declares three image sizes today and documents declares none. A new size adds a column, so
+ * the catalog is the only source that stays correct.
  */
-const copySourceOf = (bucket: string, key: string): string =>
-  `${bucket}/${key.split('/').map((segment) => encodeURIComponent(segment)).join('/')}`
+const sizeFilenameColumns = async (pg: Client, table: string): Promise<string[]> => {
+  const { rows } = await pg.query<{ column_name: string }>(
+    String.raw`select column_name from information_schema.columns
+     where table_schema = 'public' and table_name = $1 and column_name like 'sizes\_%\_filename'
+     order by column_name`,
+    [table],
+  )
 
-const organisationIdOf = (doc: StoredUpload): null | number => {
-  const value = typeof doc.organisation === 'object' ? doc.organisation?.id : doc.organisation
-  return typeof value === 'number' ? value : null
-}
-
-/** The row's own filename plus one per size variant. Media declares variants; documents does not. */
-const filenamesOf = (doc: StoredUpload): string[] => {
-  const filenames = doc.filename ? [doc.filename] : []
-
-  for (const variant of Object.values(doc.sizes ?? {})) {
-    if (variant?.filename) filenames.push(variant.filename)
-  }
-
-  return filenames
+  return rows.map((row) => row.column_name)
 }
 
 const plan = async (
-  payload: Awaited<ReturnType<typeof getPayload>>,
+  pg: Client,
   bucketKeys: Set<string>,
 ): Promise<{ moves: Move[]; refusals: Refusal[]; scanned: number }> => {
   const moves: Move[] = []
   const refusals: Refusal[] = []
   let scanned = 0
 
-  for (const collection of COLLECTIONS) {
-    const result = await payload.find({
-      collection,
-      depth: 0,
-      limit: 0,
-      overrideAccess: true,
-      pagination: false,
-    })
+  for (const { prefixBase, table } of COLLECTIONS) {
+    const sizeColumns = await sizeFilenameColumns(pg, table)
+    // The names come from the catalog, never from input, and each one is quoted.
+    const selected = ['id', 'filename', 'prefix', 'organisation_id', ...sizeColumns]
+      .map((column) => `"${column}"`)
+      .join(', ')
 
-    for (const doc of result.docs as unknown as StoredUpload[]) {
+    const { rows } = await pg.query<Record<string, null | number | string>>(
+      `select ${selected} from "${table}" order by id`,
+    )
+
+    for (const row of rows) {
       scanned += 1
 
-      const organisationId = organisationIdOf(doc)
-      const prefix = doc.prefix ?? ''
+      const id = Number(row.id)
+      const organisationId = row.organisation_id === null ? null : Number(row.organisation_id)
+      const prefix = typeof row.prefix === 'string' ? row.prefix : ''
 
       // A row with no organisation is the shape this repair exists to prevent, so it is named
       // rather than skipped. `TenantHealthChecker` passes over it too, because it owns no park.
       if (organisationId === null) {
-        if (prefix) {
-          refusals.push({ collection, id: doc.id, reason: `the row names no organisation` })
-        }
+        if (prefix) refusals.push({ id, reason: 'the row names no organisation', table })
         continue
       }
 
-      const targetPrefix = `${collection}/${organisationId}`
+      const targetPrefix = `${prefixBase}/${organisationId}`
 
       if (!prefix || prefix === targetPrefix) continue
 
-      const filenames = filenamesOf(doc)
+      const filenames = ['filename', ...sizeColumns]
+        .map((column) => row[column])
+        .filter((value): value is string => typeof value === 'string' && value !== '')
 
       if (filenames.length === 0) {
-        refusals.push({ collection, id: doc.id, reason: 'the row names no file' })
+        refusals.push({ id, reason: 'the row names no file', table })
         continue
       }
 
@@ -156,23 +162,23 @@ const plan = async (
 
       if (absent.length > 0) {
         refusals.push({
-          collection,
-          id: doc.id,
+          id,
           reason: `the bucket holds no object at ${absent.map((key) => key.source).join(', ')}`,
+          table,
         })
         continue
       }
 
       if (occupied.length > 0) {
         refusals.push({
-          collection,
-          id: doc.id,
+          id,
           reason: `an object already sits at ${occupied.map((key) => key.target).join(', ')}`,
+          table,
         })
         continue
       }
 
-      moves.push({ collection, id: doc.id, keys, targetPrefix, updatedAt: doc.updatedAt ?? '' })
+      moves.push({ id, keys, table, targetPrefix })
     }
   }
 
@@ -180,7 +186,7 @@ const plan = async (
 }
 
 const apply = async (
-  payload: Awaited<ReturnType<typeof getPayload>>,
+  pg: Client,
   client: S3Client,
   bucket: string,
   moves: Move[],
@@ -205,21 +211,18 @@ const apply = async (
         copied.push(key.target)
       }
 
-      // The adapter write skips every collection hook, and it carries the stored `updatedAt`
-      // through. A moved row therefore does not read as edited today.
-      await payload.db.updateOne({
-        collection: move.collection,
-        data: { prefix: move.targetPrefix, updatedAt: move.updatedAt },
-        id: move.id,
-      })
+      await pg.query(`update "${move.table}" set "prefix" = $1 where "id" = $2`, [
+        move.targetPrefix,
+        move.id,
+      ])
     } catch (error) {
       // A media row claims one key per size variant. A half-copied row would refuse itself on the
       // next run with "an object already sits at …", so the partial copies go away here.
       await rollback(client, bucket, copied)
       failures.push({
-        collection: move.collection,
         id: move.id,
         reason: `the move failed and was rolled back: ${error instanceof Error ? error.message : String(error)}`,
+        table: move.table,
       })
       continue
     }
@@ -229,7 +232,7 @@ const apply = async (
     }
 
     moved += 1
-    console.log(`  moved ${move.collection}#${move.id} -> ${move.targetPrefix}`)
+    console.log(`  moved ${move.table}#${move.id} -> ${move.targetPrefix}`)
   }
 
   return { failures, moved }
@@ -246,12 +249,12 @@ const rollback = async (client: S3Client, bucket: string, keys: string[]): Promi
   }
 }
 
-const USAGE = `Usage: yarn s3:move-prefixes [--apply] [--limit <n>] [--help]
+const USAGE = `Usage: move-upload-prefixes [--apply] [--limit <n>] [--help]
 
 Moves every documents or media object whose S3 prefix does not name its own organisation, then
 re-points the row at the new key. Dry run by default.
 
-Required env vars (via .env):
+Required env vars:
   POSTGRES_URI          Postgres connection string
   S3_BUCKET             The bucket that holds the uploads
   S3_ENDPOINT           The S3 endpoint
@@ -263,6 +266,10 @@ Options:
   --apply      Move the objects and write the prefixes. Without it the script only reports.
   --limit <n>  Move at most n records. Use it to prove the first row on a new S3 provider.
   --help       Print this text.
+
+Locally, pass the environment with 'node --env-file=.env'. In production, run it inside the app
+container, which already holds the credentials and reaches Postgres and MinIO on the internal
+network.
 
 The orphan report lists a freshly copied object as an orphan until the row update lands.
 \`isTooRecentToDelete\` refuses a delete inside 24 hours, so a concurrent report is safe. Re-run the
@@ -290,11 +297,11 @@ const run = async () => {
 
   const limit = limitFromArgv(process.argv)
   const shouldApply = process.argv.includes('--apply')
-  const bucket = process.env.S3_BUCKET || ''
-  if (!bucket) throw new Error('S3_BUCKET is not set')
 
-  const { default: config } = await import('../payload.config.js')
-  const payload = await getPayload({ config })
+  const bucket = process.env.S3_BUCKET || ''
+  const connectionString = process.env.POSTGRES_URI || ''
+  if (!bucket) throw new Error('S3_BUCKET is not set')
+  if (!connectionString) throw new Error('POSTGRES_URI is not set')
 
   const client = new S3Client({
     credentials: {
@@ -306,41 +313,50 @@ const run = async () => {
     region: process.env.S3_REGION || 'auto',
   })
 
-  console.log(`Listing objects in ${bucket} …`)
-  const bucketKeys = await listAllKeys(client, bucket)
-  console.log(`  ${bucketKeys.size} objects\n`)
+  const pg = new Client({ connectionString })
+  await pg.connect()
 
-  const { moves, refusals, scanned } = await plan(payload, bucketKeys)
-  const selected = limit === null ? moves : moves.slice(0, limit)
+  try {
+    console.log(`Listing objects in ${bucket} …`)
+    const bucketKeys = await listAllKeys(client, bucket)
+    console.log(`  ${bucketKeys.size} objects\n`)
 
-  console.log(`Checked ${scanned} records`)
-  console.log(`  movable  ${moves.length}`)
-  console.log(`  refused  ${refusals.length}`)
-  if (limit !== null) console.log(`  selected ${selected.length} of ${moves.length} by --limit`)
-  console.log('')
+    const { moves, refusals, scanned } = await plan(pg, bucketKeys)
+    const selected = limit === null ? moves : moves.slice(0, limit)
 
-  for (const move of selected) {
-    for (const key of move.keys) console.log(`  ${key.source} -> ${key.target}`)
+    console.log(`Checked ${scanned} records`)
+    console.log(`  movable  ${moves.length}`)
+    console.log(`  refused  ${refusals.length}`)
+    if (limit !== null) console.log(`  selected ${selected.length} of ${moves.length} by --limit`)
+    console.log('')
+
+    for (const move of selected) {
+      for (const key of move.keys) console.log(`  ${key.source} -> ${key.target}`)
+    }
+    for (const refusal of refusals) {
+      console.log(`  REFUSED ${refusal.table}#${refusal.id}: ${refusal.reason}`)
+    }
+
+    if (!shouldApply) {
+      console.log('\nDry run — pass --apply to move these objects.')
+      return refusals.length > 0 ? 1 : 0
+    }
+
+    console.log(`\nMoving ${selected.length} records …`)
+    const { failures, moved } = await apply(pg, client, bucket, selected)
+
+    for (const failure of failures) {
+      console.log(`  FAILED ${failure.table}#${failure.id}: ${failure.reason}`)
+    }
+
+    console.log(`\nDone. Moved ${moved} of ${selected.length}.`)
+    console.log('Re-run the orphan report: the old keys are orphans until the delete step clears.')
+
+    return refusals.length + failures.length > 0 ? 1 : 0
+  } finally {
+    await pg.end()
   }
-  for (const refusal of refusals) {
-    console.log(`  REFUSED ${refusal.collection}#${refusal.id}: ${refusal.reason}`)
-  }
-
-  if (!shouldApply) {
-    console.log('\nDry run — pass --apply to move these objects.')
-    process.exit(0)
-  }
-
-  console.log(`\nMoving ${selected.length} records …`)
-  const { failures, moved } = await apply(payload, client, bucket, selected)
-
-  for (const failure of failures) {
-    console.log(`  FAILED ${failure.collection}#${failure.id}: ${failure.reason}`)
-  }
-
-  console.log(`\nDone. Moved ${moved} of ${selected.length}.`)
-  console.log('Re-run the orphan report: the old keys are orphans until the delete step clears.')
-  process.exit(refusals.length + failures.length > 0 ? 1 : 0)
 }
 
-void run()
+const code = await run()
+process.exit(code)
