@@ -7,6 +7,7 @@ import { ParkSearchIndex } from '@/lib/search/types'
 import { getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /**
  * The searchable content of the caller's park, flattened to plain text.
@@ -17,6 +18,13 @@ import { requireAuthentication } from '@/payload/utilities/endpoints/require-aut
 export const parkSearchEndpoint: Endpoint = {
   handler: async (req) => {
     requireAuthentication(req)
+
+    // A super admin with no selected park reads every park, because
+    // `currentOrganisationCollectionReadAccess` returns `true` on that branch. The search covers
+    // one park, so it refuses instead of indexing all of them.
+    if (getIdFromRelation(req.user?.selectedOrganisation) === null) {
+      return Response.json({ error: 'No organisation selected' }, { status: 400 })
+    }
 
     // `req.locale` follows the admin language, which includes `en`. A query needs a content
     // locale, and a block id belongs to one locale. See `block-id-is-per-locale`.
