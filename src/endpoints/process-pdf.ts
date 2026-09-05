@@ -108,7 +108,9 @@ export const processPdfEndpoint: Endpoint = {
       req,
     })
 
-    const origin = req.headers?.get('origin') ?? ''
+    // A top-level navigation sends no `Origin` header, and the QR code then carried a bare path.
+    // Payload fills `req.origin` from the request URL, which the share route reads the same way.
+    const origin = req.origin
 
     try {
       const { buffer, filename } = await buildProcessPdf({
