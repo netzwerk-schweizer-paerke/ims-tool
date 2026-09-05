@@ -9,8 +9,9 @@
 /**
  * The master switch for the delete action.
  *
- * Set it to false, and unregister `s3OrphanDeleteEndpoint` in `src/payload.config.ts`, whenever
- * the scan is in doubt. A repair of the stored prefixes is such a case.
+ * Set it to false whenever the scan is in doubt. It gates the endpoint and the drawer button, so
+ * one edit disarms both. Unregister `s3OrphanDeleteEndpoint` in `src/payload.config.ts` as well
+ * when the route must not exist at all.
  *
  * Measured after the prefix repair, 2026-09-05: 1797 objects, 1582 matched, 215 orphans.
  */

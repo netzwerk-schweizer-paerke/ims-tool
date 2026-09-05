@@ -4,6 +4,7 @@ import { z } from 'zod'
 import type { OrphanDeletionResult } from '@/lib/s3-orphan-detector'
 
 import { S3OrphanDetector } from '@/lib/s3-orphan-detector'
+import { ORPHAN_DELETE_ENABLED } from '@/lib/s3-orphan-safety'
 import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
@@ -25,6 +26,12 @@ export type S3OrphanDeleteEndpointResult =
 
 export const s3OrphanDeleteEndpoint: Endpoint = {
   handler: async (req) => {
+    // The switch gates the endpoint, never the button alone. A super admin with a shell reaches
+    // this handler directly, so a check that lives only in the drawer disarms nothing.
+    if (!ORPHAN_DELETE_ENABLED) {
+      return Response.json({ error: 'The S3 orphan deletion is turned off.' }, { status: 503 })
+    }
+
     requireAuthentication(req)
     const user = req.user
 

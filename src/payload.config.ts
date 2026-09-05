@@ -120,9 +120,9 @@ export default buildConfig({
   }),
   endpoints: [
     s3OrphanDetectionEndpoint,
-    // Unregister this endpoint and set `ORPHAN_DELETE_ENABLED` to false together, whenever the
-    // orphan scan is in doubt. See
-    // `.claude/rules/project/pitfalls/s3-orphan-detector-flags-every-object.md`.
+    // `ORPHAN_DELETE_ENABLED` in `src/lib/s3-orphan-safety.ts` disarms this endpoint and the
+    // drawer button together. Unregister the line below as well when the route must not exist.
+    // See `.claude/rules/project/pitfalls/s3-orphan-detector-flags-every-object.md`.
     s3OrphanDeleteEndpoint,
     tenantHealthEndpoint,
     processPdfEndpoint,
