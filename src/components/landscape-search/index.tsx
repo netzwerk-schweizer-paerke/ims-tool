@@ -79,7 +79,7 @@ const isParkSearchIndex = (value: unknown): value is { hits: ParkSearchHit[] } =
   typeof value === 'object' && value !== null && 'hits' in value && Array.isArray(value.hits)
 
 /**
- * The keyword search of one park. It expands on focus, and it loads its index once.
+ * The keyword search of one park. It loads its index once, on the first focus.
  *
  * The whole park is a few hundred records, so the filter runs in the browser. A request per
  * keystroke would re-read every record instead.
@@ -206,8 +206,8 @@ export const LandscapeSearch = ({ links, locale }: Props) => {
           aria-expanded={showList}
           aria-label={t('landscapeSearch:open')}
           className={
-            'w-40 border-0 bg-transparent p-0 text-[13px] leading-[22px] outline-none ' +
-            'transition-[width] duration-200 focus:w-72 [color:var(--theme-text)] ' +
+            'w-80 border-0 bg-transparent p-0 text-[13px] leading-[22px] outline-none ' +
+            '[color:var(--theme-text)] ' +
             '[&::-webkit-search-cancel-button]:appearance-none'
           }
           onChange={(event) => {

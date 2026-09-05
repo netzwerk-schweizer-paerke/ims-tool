@@ -30,7 +30,7 @@ export const ActivityBlockContent = ({ activity, activityBlock, links, toolbar }
         <Translate k={'activityBlock:title'} />
       </h3>
     </div>
-    <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
+    <div className={'mb-16 flex flex-row items-center justify-between gap-4'}>
       <LastUpdated date={activity.updatedAt} />
       {toolbar}
     </div>

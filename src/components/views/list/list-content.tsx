@@ -25,7 +25,7 @@ export const ListContent = ({ listBlock, toolbar }: Props) => {
         </h3>
       </div>
       {/* One gap below the toolbar, stated here. Every view repeats it. */}
-      <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
+      <div className={'mb-16 flex flex-row items-center justify-between gap-4'}>
         <LastUpdated date={listBlock.updatedAt} />
         {toolbar}
       </div>

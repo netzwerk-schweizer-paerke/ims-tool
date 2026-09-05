@@ -42,7 +42,7 @@ export const OverviewContent = ({
     <div className={''}>
       {/* The gap below the toolbar is the same on every view. See `flow-content.tsx`. */}
       {(search || toolbar) && (
-        <div className={'mb-8 flex flex-row items-center justify-between gap-4'}>
+        <div className={'mb-16 flex flex-row items-center justify-between gap-4'}>
           <div>{search}</div>
           <div className={'flex flex-row items-center'}>{toolbar}</div>
         </div>
