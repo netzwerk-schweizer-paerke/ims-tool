@@ -5,7 +5,10 @@ import type { DocumentPreloader } from '@/payload/utilities/cloning/document-pre
 import { TaskFlow, TaskList } from '@/payload-types'
 import { CloneHttpError, getValidationDetails } from '@/payload/utilities/cloning/clone-http-error'
 import { hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
-import { cloneRelatedDocumentFiles } from '@/payload/utilities/cloning/clone-related-document-files'
+import {
+  ClonedFileRow,
+  cloneRelatedDocumentFiles,
+} from '@/payload/utilities/cloning/clone-related-document-files'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
@@ -44,6 +47,7 @@ export const cloneTaskFlowOrList = async ({
   tracker,
 }: CreateTaskOptions) => {
   let created: Task | undefined
+  let clonedFileRows: ClonedFileRow[] | undefined
 
   req.payload.logger.debug({
     locales,
@@ -88,7 +92,19 @@ export const cloneTaskFlowOrList = async ({
         )
 
     try {
-      if (!created) {
+      if (created) {
+        // `files` rows are shared by every locale, and a write without their ids replaces them
+        // all. `cloneRelatedDocumentFiles` writes this locale's documents onto the rows below.
+        const { files: _files, ...localeData } = stripped
+
+        created = await req.payload.update({
+          collection: collectionName,
+          data: localeData,
+          id: created.id,
+          locale,
+          req: mergeReqContextTargetOrgId(req, targetOrgId),
+        })
+      } else {
         const rows = isTaskFlow ? (source as TaskFlow).blocks : (source as TaskList).items
         countRows(tracker, rows?.length ?? 0)
 
@@ -98,31 +114,18 @@ export const cloneTaskFlowOrList = async ({
           locale,
           req: mergeReqContextTargetOrgId(req, targetOrgId),
         })
-
-        await cloneRelatedDocumentFiles({
-          collectionName,
-          documentPreloader,
-          locale,
-          req,
-          sourceEntity: source,
-          targetEntityId: created.id,
-          targetOrgId,
-          tracker,
-        })
-
-        continue
       }
 
-      // `files` rows are shared by every locale, and a write replaces the whole array. Keeping
-      // the field here would drop the rows the creating locale made.
-      const { files: _files, ...localeData } = stripped
-
-      created = await req.payload.update({
-        collection: collectionName,
-        data: localeData,
-        id: created.id,
+      clonedFileRows = await cloneRelatedDocumentFiles({
+        clonedFileRows,
+        collectionName,
+        documentPreloader,
         locale,
-        req: mergeReqContextTargetOrgId(req, targetOrgId),
+        req,
+        sourceEntity: source,
+        targetEntityId: created.id,
+        targetOrgId,
+        tracker,
       })
     } catch (error) {
       req.payload.logger.error({
