@@ -55,11 +55,6 @@ export type TechnicalStats = {
   adminLanguages: string[]
   contentLocales: string[]
   environment: string
-  migrationsApplied: number
-  migrationsDeclared: number
-  /** The name of the most recently applied migration, or null when none has run. */
-  migrationsLatestName: null | string
-  migrationsLatestRunAt: null | string
   nodeVersion: string
   s3Bucket: string
   s3Endpoint: string

@@ -609,7 +609,6 @@ export const de = {
     kpi: {
       activities: 'Aktivitäten',
       documents: 'Dokumente',
-      media: 'Medien',
       parks: 'Pärke',
       storage: 'Belegt',
       taskFlows: 'Prozesse',

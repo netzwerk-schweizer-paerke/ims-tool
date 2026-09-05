@@ -613,7 +613,6 @@ export const it = {
     kpi: {
       activities: 'Attività',
       documents: 'Documenti',
-      media: 'Media',
       parks: 'Parchi',
       storage: 'Occupato',
       taskFlows: 'Processi',

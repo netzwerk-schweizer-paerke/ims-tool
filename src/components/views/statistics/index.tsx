@@ -105,10 +105,6 @@ export const StatisticsView = async ({ initPageResult }: DocumentViewServerProps
         <SectionCard title={<Translate k={'statistics:card:content'} />}>
           <dl className={'m-0 flex flex-col gap-2 text-sm'}>
             <Row
-              label={<Translate k={'statistics:kpi:media'} />}
-              value={formatCount(stats.content.totals.media, locale)}
-            />
-            <Row
               label={<Translate k={'statistics:content:documentsPublic'} />}
               value={formatCount(stats.content.documentsPublic, locale)}
             />
@@ -189,23 +185,6 @@ export const StatisticsView = async ({ initPageResult }: DocumentViewServerProps
           <Row
             label={<Translate k={'statistics:technical:s3Bucket'} />}
             value={stats.technical.s3Bucket || <Translate k={'statistics:technical:unset'} />}
-          />
-          <Row
-            label={<Translate k={'statistics:technical:migrationsApplied'} />}
-            value={formatCount(stats.technical.migrationsApplied, locale)}
-          />
-          <Row
-            label={<Translate k={'statistics:technical:migrationsPending'} />}
-            value={formatCount(
-              Math.max(stats.technical.migrationsDeclared - stats.technical.migrationsApplied, 0),
-              locale,
-            )}
-          />
-          <Row
-            label={<Translate k={'statistics:technical:migrationsLatest'} />}
-            value={
-              stats.technical.migrationsLatestName ?? <Translate k={'statistics:technical:unset'} />
-            }
           />
         </dl>
       </SectionCard>

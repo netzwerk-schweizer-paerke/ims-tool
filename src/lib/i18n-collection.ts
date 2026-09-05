@@ -663,10 +663,10 @@ export const I18nCollection = {
   },
   globalLabel: {
     statistics: {
-      de: 'Statistik',
-      en: 'Statistics',
-      fr: 'Statistiques',
-      it: 'Statistiche',
+      de: 'Statistik & Tools',
+      en: 'Statistics & tools',
+      fr: 'Statistiques et outils',
+      it: 'Statistiche e strumenti',
     },
   },
   roles: {

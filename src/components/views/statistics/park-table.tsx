@@ -53,9 +53,6 @@ export const ParkTable = ({ locale, rows }: Props) => {
               <Translate k={'statistics:kpi:documents'} />
             </th>
             <th className={HEAD} scope={'col'}>
-              <Translate k={'statistics:kpi:media'} />
-            </th>
-            <th className={HEAD} scope={'col'}>
               <Translate k={'statistics:kpi:storage'} />
             </th>
             <th className={`${HEAD} w-32 text-left`} scope={'col'}>
@@ -81,7 +78,6 @@ export const ParkTable = ({ locale, rows }: Props) => {
               <td className={CELL}>{formatCount(row.taskFlows, locale)}</td>
               <td className={CELL}>{formatCount(row.taskLists, locale)}</td>
               <td className={CELL}>{formatCount(row.documents, locale)}</td>
-              <td className={CELL}>{formatCount(row.media, locale)}</td>
               <td className={CELL}>{formatBytes(row.storageBytes, locale)}</td>
               <td className={'px-3 py-2'}>
                 <MeterBar

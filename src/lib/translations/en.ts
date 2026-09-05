@@ -601,7 +601,6 @@ export const en = {
     kpi: {
       activities: 'Activities',
       documents: 'Documents',
-      media: 'Media',
       parks: 'Parks',
       storage: 'Stored',
       taskFlows: 'Processes',

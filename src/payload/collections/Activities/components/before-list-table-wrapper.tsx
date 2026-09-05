@@ -3,7 +3,6 @@ import { Payload } from 'payload'
 import { User } from '@/payload-types'
 // import { FetchLegacyDocsButton } from '@/payload/collections/Activities/components/legacy-fetcher/fetch-legacy-docs-button'
 import { CloneActivityButton } from '@/payload/collections/Activities/components/clone/clone-activity-button'
-import { TenantHealthButton } from '@/payload/collections/Activities/components/health/tenant-health-button'
 // import { checkUserRoles } from '@/payload/utilities/check-user-roles'
 // import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 
@@ -18,7 +17,6 @@ export const BeforeListTableWrapper = async ({ payload, user }: Props) => {
   return (
     <div className={'flex gap-6'}>
       <CloneActivityButton payload={payload} user={user} />
-      <TenantHealthButton user={user} />
       {/*{isSuperAdmin && <FetchLegacyDocsButton user={user} payload={payload} />}*/}
     </div>
   )

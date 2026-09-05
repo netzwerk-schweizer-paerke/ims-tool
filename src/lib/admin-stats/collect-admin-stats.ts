@@ -9,7 +9,6 @@ import {
   tallyUsers,
 } from '@/lib/admin-stats/tally-rows'
 import { getLocaleCodes } from '@/lib/locale-utils'
-import { migrations } from '@/migrations'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 
 /**
@@ -107,7 +106,7 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
       ],
       totalBytes: sumBytes(documentTally) + sumBytes(mediaTally) + publicBytes.bytes,
     },
-    technical: await collectTechnicalStats(payload),
+    technical: collectTechnicalStats(payload),
     timestamp: new Date().toISOString(),
     users: {
       noPark: userTally.noPark,
@@ -117,33 +116,14 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
   }
 }
 
-const collectTechnicalStats = async (payload: Payload): Promise<TechnicalStats> => {
-  const applied = await payload.find({
-    collection: 'payload-migrations',
-    depth: 0,
-    limit: 0,
-    overrideAccess: true,
-    sort: '-name',
-    // Payload writes a `dev` row with batch -1 whenever it auto-pushes the schema. It is not
-    // an applied migration, so `getMigrations` excludes it and so does this count.
-    where: { batch: { not_equals: -1 } },
-  })
-
-  const latest = applied.docs[0]
-
-  return {
-    adminLanguages: Object.keys(payload.config.i18n.supportedLanguages ?? {}),
-    contentLocales: getLocaleCodes(payload.config),
-    environment: process.env.NODE_ENV ?? 'unknown',
-    migrationsApplied: applied.totalDocs,
-    migrationsDeclared: migrations.length,
-    migrationsLatestName: latest ? readText(latest.name) || null : null,
-    migrationsLatestRunAt: latest ? readText(latest.updatedAt) || null : null,
-    nodeVersion: process.version,
-    s3Bucket: process.env.S3_BUCKET ?? '',
-    s3Endpoint: process.env.S3_ENDPOINT ?? '',
-  }
-}
+const collectTechnicalStats = (payload: Payload): TechnicalStats => ({
+  adminLanguages: Object.keys(payload.config.i18n.supportedLanguages ?? {}),
+  contentLocales: getLocaleCodes(payload.config),
+  environment: process.env.NODE_ENV ?? 'unknown',
+  nodeVersion: process.version,
+  s3Bucket: process.env.S3_BUCKET ?? '',
+  s3Endpoint: process.env.S3_ENDPOINT ?? '',
+})
 
 const countOnly = async (payload: Payload, collection: 'share-links'): Promise<number> => {
   const result = await payload.find({
