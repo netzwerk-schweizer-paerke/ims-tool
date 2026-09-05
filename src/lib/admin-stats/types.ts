@@ -12,7 +12,9 @@ export type AdminStatsReport = {
     documentsPublic: number
     perLocale: LocaleCoverage[]
     shareLinks: number
-    totals: Record<TenantScopedCollection, number>
+    // `media` is absent on purpose. The storage card counts those files, so a second total
+    // would state the same number twice.
+    totals: Record<Exclude<TenantScopedCollection, 'media'>, number>
   }
   parks: ParkStatsRow[]
   storage: {
@@ -37,7 +39,6 @@ export type ParkStatsRow = {
   id: number
   /** The organisation language, or an empty string when the record carries none. */
   language: string
-  media: number
   name: string
   storageBytes: number
   taskFlows: number

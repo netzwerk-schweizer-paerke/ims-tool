@@ -60,7 +60,6 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
       documents: documentBytes.count,
       id,
       language: readText(organisation.organisationLanguage),
-      media: mediaBytes.count,
       name: readText(organisation.name),
       storageBytes: documentBytes.bytes + mediaBytes.bytes,
       taskFlows: read(flowTally, id).count,
@@ -88,7 +87,6 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
       totals: {
         activities: activities.length,
         documents: documents.length,
-        media: media.length,
         'task-flows': taskFlows.length,
         'task-lists': taskLists.length,
       },
