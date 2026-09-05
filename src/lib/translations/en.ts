@@ -645,6 +645,7 @@ export const en = {
       orphans: 'Orphans',
       reclaimable: 'Reclaimable',
       referenced: 'Objects in use',
+      running: 'Scanning...',
     },
     parkTable: {
       empty: 'No park exists yet.',

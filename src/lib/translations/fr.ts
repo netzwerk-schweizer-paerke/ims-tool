@@ -656,6 +656,7 @@ export const fr = {
       orphans: 'Fichiers orphelins',
       reclaimable: 'Récupérable',
       referenced: 'Objets utilisés',
+      running: 'Analyse en cours...',
     },
     parkTable: {
       empty: 'Aucun parc n’existe encore.',

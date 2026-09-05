@@ -22,7 +22,10 @@ export const OrphanDrawer = ({ locale }: Props) => {
   const [result, setResult] = useState<null | OrphanDeletionResult>(null)
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  // Which action runs, never a shared boolean. One flag made the delete button read
+  // "Deleting..." while the report was still scanning.
+  const [pending, setPending] = useState<'delete' | 'report' | null>(null)
+  const busy = pending !== null
 
   // The server refuses a request the client could not rule out, and answers 409 with the
   // result body. Name the reason, because `HTTP 409` tells the operator nothing.
@@ -33,6 +36,7 @@ export const OrphanDrawer = ({ locale }: Props) => {
   const confirmWord = t('statistics:orphanDelete:confirmWord')
   const deleteLabel = t('statistics:orphanDelete:button')
   const runningLabel = t('statistics:orphanDelete:running')
+  const scanningLabel = t('statistics:orphanReport:running')
   const orphanKeys = report?.orphanKeys ?? []
   // A report that flags every object has failed to build the reference set. The endpoint
   // refuses such a request as well; this keeps the button from offering it at all.
@@ -44,7 +48,7 @@ export const OrphanDrawer = ({ locale }: Props) => {
     !wholeBucket
 
   const runReport = async () => {
-    setBusy(true)
+    setPending('report')
     setError('')
     setResult(null)
     setConfirmation('')
@@ -57,11 +61,11 @@ export const OrphanDrawer = ({ locale }: Props) => {
       setError(await describeError(error_))
     }
 
-    setBusy(false)
+    setPending(null)
   }
 
   const runDelete = async () => {
-    setBusy(true)
+    setPending('delete')
     setError('')
 
     try {
@@ -78,7 +82,7 @@ export const OrphanDrawer = ({ locale }: Props) => {
       setError(await describeError(error_, refusalMessages))
     }
 
-    setBusy(false)
+    setPending(null)
   }
 
   return (
@@ -145,13 +149,17 @@ export const OrphanDrawer = ({ locale }: Props) => {
               ))}
             </ul>
 
-            {/* Every key, never a sample. Nobody may confirm a deletion they could not read. */}
+            {/*
+              Every key, never a sample, and never a truncated one. Nobody may confirm a deletion
+              they could not read. The admin root font size is 13px, so a Tailwind size class
+              renders below 12px here.
+            */}
             <ul
               className={
-                'm-0 flex max-h-72 list-none flex-col overflow-y-auto rounded-md border p-2 text-xs [border-color:var(--theme-border-color)] [color:var(--theme-elevation-500)]'
+                'm-0 flex max-h-72 list-none flex-col gap-1 overflow-y-auto rounded-md border p-3 font-mono text-[13px] leading-snug [border-color:var(--theme-border-color)] [color:var(--theme-elevation-650)]'
               }>
               {orphanKeys.map((key) => (
-                <li className={'truncate'} key={key}>
+                <li className={'break-all'} key={key}>
                   {key}
                 </li>
               ))}
@@ -213,10 +221,10 @@ export const OrphanDrawer = ({ locale }: Props) => {
 
           <div className={'flex gap-2'}>
             <Button buttonStyle={'secondary'} disabled={busy} onClick={runReport}>
-              {t('statistics:maintenance:orphanReport')}
+              {pending === 'report' ? scanningLabel : t('statistics:maintenance:orphanReport')}
             </Button>
             <Button buttonStyle={'error'} disabled={busy || !armed} onClick={runDelete}>
-              {busy ? runningLabel : deleteLabel}
+              {pending === 'delete' ? runningLabel : deleteLabel}
             </Button>
           </div>
         </div>
@@ -227,8 +235,9 @@ export const OrphanDrawer = ({ locale }: Props) => {
 
 const SummaryItem = ({ label, value }: { label: string; value: string }) => (
   <div className={'flex flex-col'}>
-    <dt className={'text-xs [color:var(--theme-elevation-500)]'}>{label}</dt>
-    <dd className={'m-0 font-semibold'}>{value}</dd>
+    {/* The admin root font size is 13px, so `text-xs` renders at 9.75px and reads as noise. */}
+    <dt className={'text-[13px] [color:var(--theme-elevation-650)]'}>{label}</dt>
+    <dd className={'m-0 text-[18px] font-semibold [color:var(--theme-text)]'}>{value}</dd>
   </div>
 )
 

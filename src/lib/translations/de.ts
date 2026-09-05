@@ -655,6 +655,7 @@ export const de = {
       orphans: 'Verwaiste Dateien',
       reclaimable: 'Freigebbar',
       referenced: 'Objekte in Verwendung',
+      running: 'Wird geprüft...',
     },
     parkTable: {
       empty: 'Es existiert noch kein Park.',

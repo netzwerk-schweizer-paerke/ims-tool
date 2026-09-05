@@ -658,6 +658,7 @@ export const it = {
       orphans: 'File orfani',
       reclaimable: 'Recuperabile',
       referenced: 'Oggetti in uso',
+      running: 'Scansione in corso...',
     },
     parkTable: {
       empty: 'Non esiste ancora nessun parco.',
