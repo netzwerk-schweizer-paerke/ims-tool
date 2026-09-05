@@ -2732,6 +2732,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@payloadcms/ui@patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch":
+  version: 3.88.0
+  resolution: "@payloadcms/ui@patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch::version=3.88.0&hash=33099c"
+  dependencies:
+    "@date-fns/tz": "npm:1.2.0"
+    "@dnd-kit/core": "npm:6.3.1"
+    "@dnd-kit/sortable": "npm:10.0.0"
+    "@dnd-kit/utilities": "npm:3.2.2"
+    "@faceless-ui/modal": "npm:3.0.0"
+    "@faceless-ui/scroll-info": "npm:2.0.0"
+    "@faceless-ui/window-info": "npm:3.0.1"
+    "@monaco-editor/react": "npm:4.7.0"
+    "@payloadcms/translations": "npm:3.88.0"
+    bson-objectid: "npm:2.0.4"
+    date-fns: "npm:4.1.0"
+    dequal: "npm:2.0.3"
+    md5: "npm:2.3.0"
+    object-to-formdata: "npm:4.5.1"
+    qs-esm: "npm:8.0.1"
+    react-datepicker: "npm:7.6.0"
+    react-image-crop: "npm:10.1.8"
+    react-select: "npm:5.9.0"
+    scheduler: "npm:0.25.0"
+    sonner: "npm:^1.7.2"
+    ts-essentials: "npm:10.0.3"
+    use-context-selector: "npm:2.0.0"
+    uuid: "npm:13.0.2"
+  peerDependencies:
+    next: ">=15.2.9 <15.3.0 || >=15.3.9 <15.4.0 || >=15.4.11 <15.5.0 || >=16.2.6 <17.0.0"
+    payload: 3.88.0
+    react: ^19.0.1 || ^19.1.2 || ^19.2.1
+    react-dom: ^19.0.1 || ^19.1.2 || ^19.2.1
+  checksum: 10/81355820228f97b5dccaa307ef89f90439e3e881a245f728c5f09d04396e14524eb82b5845f62255c480ae6d82c52475bc540a24ae13a0bafaa1d4ca4216b1e0
+  languageName: node
+  linkType: hard
+
 "@pinojs/redact@npm:^0.4.0":
   version: 0.4.0
   resolution: "@pinojs/redact@npm:0.4.0"
@@ -10610,7 +10646,7 @@ __metadata:
     "@payloadcms/plugin-cloud-storage": "npm:3.88.0"
     "@payloadcms/richtext-lexical": "npm:3.88.0"
     "@payloadcms/storage-s3": "npm:3.88.0"
-    "@payloadcms/ui": "npm:3.88.0"
+    "@payloadcms/ui": "patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch"
     "@react-email/components": "npm:^1.0.12"
     "@react-email/render": "npm:^2.1.0"
     "@react-pdf/renderer": "npm:4.9.0"

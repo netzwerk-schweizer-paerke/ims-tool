@@ -44,7 +44,7 @@
     "@payloadcms/plugin-cloud-storage": "3.88.0",
     "@payloadcms/richtext-lexical": "3.88.0",
     "@payloadcms/storage-s3": "3.88.0",
-    "@payloadcms/ui": "3.88.0",
+    "@payloadcms/ui": "patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "@react-pdf/renderer": "4.9.0",
@@ -96,5 +96,8 @@
     "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.11"
   },
-  "packageManager": "yarn@4.18.0"
+  "packageManager": "yarn@4.18.0",
+  "resolutions": {
+    "@payloadcms/ui@npm:3.88.0": "patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch"
+  }
 }
