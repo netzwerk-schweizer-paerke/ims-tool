@@ -129,7 +129,11 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { ids: sourceIds, locale: requestedLocale, targetOrganisationId } = validatedBody
+    const { ids, locale: requestedLocale, targetOrganisationId } = validatedBody
+
+    // A repeated id would clone one source twice, and the link remap would then visit the same
+    // nested records twice. The second visit degrades the links the first visit resolved.
+    const sourceIds = Array.from(new Set(ids))
 
     // Narrow the request locale to a configured content locale before any write starts.
     const locale = toContentLocale(requestedLocale, req.payload.config)
@@ -298,11 +302,19 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
 
       // A rich text link cannot resolve while the clone runs, because two task flows often link
       // each other. Patch every link once the batch holds every clone.
+      //
+      // `rootClones` answers a link that names another source of the same batch. Only a task
+      // endpoint matches it, because no task link ever names an activity.
       const rootClones = new Map(
         clonedEntries.map(({ entityId, record }) => [`${collectionSlug}:${entityId}`, record.id]),
       )
 
       for (const { entityId, record } of clonedEntries) {
+        // The strip pass saw every rich text this clone wrote. No task link means no work.
+        if (!tracker.hasTaskLinks(entityId)) {
+          continue
+        }
+
         const linkTotals = await remapTaskLinks({
           cloneLocales,
           lookupClonedTask: (collection, taskSourceId) =>
@@ -313,13 +325,26 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
           targetOrgId: targetOrganisationId,
         })
 
-        if (linkTotals.degraded > 0 || linkTotals.remapped > 0) {
-          req.payload.logger.info({
-            degradedLinks: linkTotals.degraded,
-            msg: 'Resolved the rich text links to nested tasks',
-            remappedLinks: linkTotals.remapped,
-            sourceId: entityId,
+        // Each counter counts one task, however many links name it.
+        req.payload.logger.info({
+          degradedTasks: linkTotals.degraded,
+          keptTasks: linkTotals.kept,
+          msg: 'Resolved the rich text links to nested tasks',
+          remappedTasks: linkTotals.remapped,
+          sourceId: entityId,
+        })
+
+        if (linkTotals.dropped.length > 0) {
+          // A dropped link is a content loss. Report it, or the caller reads an incomplete
+          // copy as a complete one.
+          const names = linkTotals.dropped.map((task) => task.name.trim()).join(', ')
+
+          tracker.startEntity(entityId)
+          tracker.addError({
+            errorMessage: `Links to ${linkTotals.dropped.length} record(s) outside the target organisation became plain text: ${names}`,
+            op: 'remapTaskLinks',
           })
+          tracker.endEntity()
         }
       }
 

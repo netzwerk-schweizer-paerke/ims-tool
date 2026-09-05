@@ -11,6 +11,7 @@ export class CloneStatisticsTracker {
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
   private taskCloneMaps: Map<number, Map<string, number>> = new Map()
   private taskClonePromises: Map<number, Map<string, Promise<number>>> = new Map()
+  private taskLinkEntities: Set<number> = new Set()
 
   /**
    * The endpoint keys one instance per transaction through `getInstance`. Every helper below it
@@ -305,6 +306,7 @@ export class CloneStatisticsTracker {
     }))
   }
 
+
   getStatistics(entityId?: number): GenericCloneStatistics {
     const targetEntityId = entityId ?? this.currentEntityId
     if (targetEntityId === null) {
@@ -317,6 +319,23 @@ export class CloneStatisticsTracker {
       throw new Error(`No statistics found for entity ${targetEntityId}`)
     }
     return stats
+  }
+
+  /**
+   * Answers whether any rich text of this entity links a task.
+   *
+   * The strip pass walks every rich text the clone writes. A false answer means the link remap
+   * has nothing to read back.
+   */
+  hasTaskLinks(entityId: number): boolean {
+    return this.taskLinkEntities.has(entityId)
+  }
+
+  /** Records that one rich text field links a task. `processNode` calls it. */
+  noteTaskLink(): void {
+    if (this.currentEntityId !== null) {
+      this.taskLinkEntities.add(this.currentEntityId)
+    }
   }
 
   reset(): void {

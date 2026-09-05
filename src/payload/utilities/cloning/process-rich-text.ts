@@ -117,6 +117,13 @@ async function processNode(
     } else if (relationship.relationTo === 'documents-public') {
       tracker.addClonedPublicDocument()
       tracker.addSourcePublicDocument()
+    } else if (
+      relationship.relationTo === 'task-flows' ||
+      relationship.relationTo === 'task-lists'
+    ) {
+      // A task link cannot resolve here, because the clone of its target may not exist yet.
+      // `remapTaskLinks` patches it after the batch, and this marks the entity for that pass.
+      tracker.noteTaskLink()
     }
   }
 
