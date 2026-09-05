@@ -10,7 +10,9 @@
  * The master switch for the delete action.
  *
  * Set it to false, and unregister `s3OrphanDeleteEndpoint` in `src/payload.config.ts`, whenever
- * the scan is in doubt. Measured on 2026-09-05: 1777 objects, 1562 matched, 215 orphans.
+ * the scan is in doubt. A repair of the stored prefixes is such a case.
+ *
+ * Measured after the prefix repair, 2026-09-05: 1797 objects, 1582 matched, 215 orphans.
  */
 export const ORPHAN_DELETE_ENABLED = true
 
