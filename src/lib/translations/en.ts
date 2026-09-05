@@ -366,7 +366,6 @@ export const en = {
     blocking: 'Blocking',
     blockingHint: 'Cloning aborts with an error on these.',
     blockNumber: 'Block {{number}}',
-    button: 'Check data',
     checkExternalUrls: 'Check external links',
     checkExternalUrlsHint:
       'Requests every external link once. Takes somewhat longer and sends requests to third-party servers.',
@@ -431,7 +430,6 @@ export const en = {
     shared: 'Shared resources',
     sharedHint:
       'Public documents belong to every park. They are deliberately not cloned — copies keep pointing at the original. These findings therefore affect all parks, not just this one.',
-    title: 'Data health check',
     titleDocument: 'Check of this item',
   },
   documentUsage: {
@@ -629,6 +627,8 @@ export const en = {
       failed_one: '1 object could not be deleted.',
       failed_other: '{{count}} objects could not be deleted.',
       nothingToDelete: 'Run the orphan report first. It found nothing to delete.',
+      refusedIncomplete:
+        'The server refused the deletion. The scan did not read every record, so a file in use could appear in this list.',
       refusedScanFailed:
         'The server refused the deletion. The scan collected file references and matched none of them against the bucket, so the report is wrong.',
       refusedWholeBucket:
@@ -638,6 +638,14 @@ export const en = {
       skipped_other: '{{count}} objects gained a reference and stay.',
       summary: 'This deletes {{count}} objects and frees {{size}}. It cannot be undone.',
       title: 'Delete the reported orphans',
+    },
+    orphanReport: {
+      incomplete:
+        'The scan did not read every record. Treat this report as wrong, and do not delete on it.',
+      objects: 'Objects in the bucket',
+      orphans: 'Orphans',
+      reclaimable: 'Reclaimable',
+      referenced: 'Objects in use',
     },
     parkTable: {
       empty: 'No park exists yet.',
@@ -654,9 +662,6 @@ export const en = {
       adminLanguages: 'Admin languages',
       contentLocales: 'Content languages',
       environment: 'Environment',
-      migrationsApplied: 'Applied migrations',
-      migrationsLatest: 'Latest migration',
-      migrationsPending: 'Pending migrations',
       node: 'Node version',
       s3Bucket: 'S3 bucket',
       s3Endpoint: 'S3 endpoint',

@@ -369,7 +369,6 @@ export const fr = {
     blocking: 'Bloquant',
     blockingHint: 'Le clonage s’interrompt avec une erreur sur ces points.',
     blockNumber: 'Bloc {{number}}',
-    button: 'Vérifier les données',
     checkExternalUrls: 'Vérifier les liens externes',
     checkExternalUrlsHint:
       'Interroge chaque lien externe une fois. Un peu plus long et envoie des requêtes à des serveurs tiers.',
@@ -438,7 +437,6 @@ export const fr = {
     shared: 'Ressources partagées',
     sharedHint:
       'Les documents publics appartiennent à tous les parcs. Ils ne sont délibérément pas clonés — les copies continuent de pointer vers l’original. Ces résultats concernent donc tous les parcs, pas seulement celui-ci.',
-    title: 'Contrôle des données',
     titleDocument: 'Contrôle de cet élément',
   },
   documentUsage: {
@@ -639,6 +637,8 @@ export const fr = {
       failed_other: '{{count}} objets n’ont pas pu être supprimés.',
       nothingToDelete:
         'Exécutez d’abord le rapport. Il n’a rien trouvé à supprimer.',
+      refusedIncomplete:
+        'Le serveur a refusé la suppression. L’analyse n’a pas lu chaque enregistrement. Un fichier utilisé peut donc figurer dans cette liste.',
       refusedScanFailed:
         'Le serveur a refusé la suppression. L’analyse a collecté des références de fichiers et n’en a trouvé aucune dans le bucket. Le rapport est donc faux.',
       refusedWholeBucket:
@@ -649,6 +649,14 @@ export const fr = {
       summary:
         'Cette action supprime {{count}} objets et libère {{size}}. Elle est irréversible.',
       title: 'Supprimer les fichiers orphelins signalés',
+    },
+    orphanReport: {
+      incomplete:
+        'L’analyse n’a pas lu chaque enregistrement. Traitez ce rapport comme faux, et ne supprimez rien sur cette base.',
+      objects: 'Objets dans le bucket',
+      orphans: 'Fichiers orphelins',
+      reclaimable: 'Récupérable',
+      referenced: 'Objets utilisés',
     },
     parkTable: {
       empty: 'Aucun parc n’existe encore.',
@@ -666,9 +674,6 @@ export const fr = {
       adminLanguages: 'Langues de l’interface',
       contentLocales: 'Langues du contenu',
       environment: 'Environnement',
-      migrationsApplied: 'Migrations appliquées',
-      migrationsLatest: 'Migration la plus récente',
-      migrationsPending: 'Migrations en attente',
       node: 'Version de Node',
       s3Bucket: 'Bucket S3',
       s3Endpoint: 'Point de terminaison S3',

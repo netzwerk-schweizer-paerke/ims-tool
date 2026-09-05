@@ -371,7 +371,6 @@ export const it = {
     blocking: 'Bloccante',
     blockingHint: 'La clonazione si interrompe con un errore su questi punti.',
     blockNumber: 'Blocco {{number}}',
-    button: 'Verifica dati',
     checkExternalUrls: 'Verifica i link esterni',
     checkExternalUrlsHint:
       'Interroga ogni link esterno una volta. Richiede un po’ più di tempo e invia richieste a server di terze parti.',
@@ -439,7 +438,6 @@ export const it = {
     shared: 'Risorse condivise',
     sharedHint:
       'I documenti pubblici appartengono a tutti i parchi. Non vengono clonati di proposito — le copie continuano a puntare all’originale. Questi risultati riguardano quindi tutti i parchi, non solo questo.',
-    title: 'Controllo dei dati',
     titleDocument: 'Controllo di questo elemento',
   },
   documentUsage: {
@@ -641,6 +639,8 @@ export const it = {
       failed_one: '1 oggetto non è stato eliminato.',
       failed_other: '{{count}} oggetti non sono stati eliminati.',
       nothingToDelete: 'Eseguire prima il rapporto. Non ha trovato nulla da eliminare.',
+      refusedIncomplete:
+        'Il server ha rifiutato l’eliminazione. La scansione non ha letto ogni record. Un file in uso può quindi comparire in questo elenco.',
       refusedScanFailed:
         'Il server ha rifiutato l’eliminazione. La scansione ha raccolto riferimenti a file e non ne ha trovato nessuno nel bucket. Il rapporto è quindi errato.',
       refusedWholeBucket:
@@ -651,6 +651,14 @@ export const it = {
       summary:
         'Questa azione elimina {{count}} oggetti e libera {{size}}. Non è reversibile.',
       title: 'Elimina i file orfani segnalati',
+    },
+    orphanReport: {
+      incomplete:
+        'La scansione non ha letto ogni record. Consideri errato questo rapporto, e non elimini nulla in base a esso.',
+      objects: 'Oggetti nel bucket',
+      orphans: 'File orfani',
+      reclaimable: 'Recuperabile',
+      referenced: 'Oggetti in uso',
     },
     parkTable: {
       empty: 'Non esiste ancora nessun parco.',
@@ -668,9 +676,6 @@ export const it = {
       adminLanguages: "Lingue dell'interfaccia",
       contentLocales: 'Lingue dei contenuti',
       environment: 'Ambiente',
-      migrationsApplied: 'Migrazioni applicate',
-      migrationsLatest: 'Migrazione più recente',
-      migrationsPending: 'Migrazioni in sospeso',
       node: 'Versione di Node',
       s3Bucket: 'Bucket S3',
       s3Endpoint: 'Endpoint S3',

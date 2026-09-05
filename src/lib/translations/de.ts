@@ -369,7 +369,6 @@ export const de = {
     blocking: 'Blockierend',
     blockingHint: 'Das Klonen bricht bei diesen Punkten mit einem Fehler ab.',
     blockNumber: 'Block {{number}}',
-    button: 'Daten prüfen',
     checkExternalUrls: 'Externe Links prüfen',
     checkExternalUrlsHint:
       'Ruft jeden externen Link einmal auf. Dauert etwas länger und sendet Anfragen an fremde Server.',
@@ -436,7 +435,6 @@ export const de = {
     shared: 'Geteilte Ressourcen',
     sharedHint:
       'Öffentliche Dokumente gehören allen Parks. Sie werden bewusst nicht geklont — Kopien verweisen weiterhin auf das Original. Diese Befunde betreffen daher alle Parks, nicht nur diesen.',
-    title: 'Datenprüfung',
     titleDocument: 'Prüfung dieses Eintrags',
   },
   documentUsage: {
@@ -620,9 +618,9 @@ export const de = {
     },
     loading: 'Die Statistik wird geladen…',
     maintenance: {
-      health: 'Datenprüfung des Parks',
+      health: 'Parkdaten prüfen',
       healthHint: 'Führt die Datenprüfung über einen ganzen Park aus.',
-      orphanReport: 'S3-Bericht über verwaiste Dateien',
+      orphanReport: 'Verwaiste Dateien auflisten',
       orphanReportHint: 'Listet jedes S3-Objekt auf, das kein Datensatz referenziert.',
       title: 'Wartung',
     },
@@ -638,6 +636,8 @@ export const de = {
       failed_other: '{{count}} Objekte konnten nicht gelöscht werden.',
       nothingToDelete:
         'Führen Sie zuerst den Bericht aus. Er hat nichts zum Löschen gefunden.',
+      refusedIncomplete:
+        'Der Server hat das Löschen abgelehnt. Die Suche hat nicht jeden Datensatz gelesen. Eine benutzte Datei kann deshalb in dieser Liste stehen.',
       refusedScanFailed:
         'Der Server hat das Löschen abgelehnt. Die Suche hat Dateireferenzen gesammelt und keine davon im Bucket gefunden. Der Bericht ist deshalb falsch.',
       refusedWholeBucket:
@@ -648,6 +648,14 @@ export const de = {
       summary:
         'Damit werden {{count}} Objekte gelöscht und {{size}} freigegeben. Das lässt sich nicht rückgängig machen.',
       title: 'Gemeldete verwaiste Dateien löschen',
+    },
+    orphanReport: {
+      incomplete:
+        'Die Suche hat nicht jeden Datensatz gelesen. Behandeln Sie diesen Bericht als falsch, und löschen Sie nichts darauf.',
+      objects: 'Objekte im Bucket',
+      orphans: 'Verwaiste Dateien',
+      reclaimable: 'Freigebbar',
+      referenced: 'Objekte in Verwendung',
     },
     parkTable: {
       empty: 'Es existiert noch kein Park.',
@@ -665,9 +673,6 @@ export const de = {
       adminLanguages: 'Sprachen der Oberfläche',
       contentLocales: 'Inhaltssprachen',
       environment: 'Umgebung',
-      migrationsApplied: 'Angewendete Migrationen',
-      migrationsLatest: 'Neueste Migration',
-      migrationsPending: 'Offene Migrationen',
       node: 'Node-Version',
       s3Bucket: 'S3-Bucket',
       s3Endpoint: 'S3-Endpunkt',
