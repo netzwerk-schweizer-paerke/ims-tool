@@ -7,7 +7,7 @@ import {
 } from '@/components/graph/fields/graph/lib/root-target'
 
 /** The screen renders each outer target as a 2px square. */
-const TARGET_SIZE = 2
+export const TARGET_SIZE = 2
 
 /**
  * Tailwind's `translate-y-1` is 0.25rem, which is 4px at the admin root font size.

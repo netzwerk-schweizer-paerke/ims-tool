@@ -4,18 +4,24 @@ import React from 'react'
 import { ARROW_HEAD_PATH, buildArrow } from '@/components/graph/fields/graph/lib/arrow-geometry'
 import { OuterTargetsEnum } from '@/components/graph/fields/graph/lib/outer-targets'
 import { FlowHalf, layoutFlowBlock } from '@/components/pdf/diagram/flow-layout'
-import { BlockRects, TARGET_NUDGE, targetRect } from '@/components/pdf/diagram/target-rects'
+import {
+  BlockRects,
+  TARGET_NUDGE,
+  TARGET_SIZE,
+  targetRect,
+} from '@/components/pdf/diagram/target-rects'
 import { COLORS, PDF_HEAD_SIZE, PDF_STROKE_WIDTH, styles } from '@/components/pdf/theme'
 import { ProcessTaskCompoundBlock } from '@/components/views/flow/flow-block'
-import { assignBlockArrows } from '@/components/views/flow/lib/assign-block-arrows'
+import { ArrowEndpoint, resolveBlockArrows } from '@/components/views/flow/lib/resolve-block-arrows'
 
 /**
- * The nudged targets sit outside the band, so the canvas needs air above and below.
+ * The distance from the band edge to the first ink of a nudged stub.
  *
- * It matches the nudge exactly. A larger pad would leave a gap between the top stub and the run
- * that arrives from the block above.
+ * A top target sits `TARGET_NUDGE` above the band, and an arrow anchors on that target's own
+ * bottom edge. The ink therefore starts `TARGET_SIZE` lower. A larger pad leaves a gap between
+ * the top stub and the run that arrives from the block above.
  */
-const BAND_PAD = TARGET_NUDGE
+const BAND_PAD = TARGET_NUDGE - TARGET_SIZE
 
 /** A target on the bottom edge continues into the next block, so the run needs a connector. */
 const BOTTOM_TARGETS = new Set<string>([
@@ -67,6 +73,13 @@ const shapeFor = (half: FlowHalf) => {
   )
 }
 
+/** The rectangle one endpoint names, or null when its half or its target is absent. */
+const rectOf = (endpoint: ArrowEndpoint, boxes: Map<string, BlockRects>) => {
+  const rects = boxes.get(endpoint.halfId)
+
+  return rects ? targetRect(rects, endpoint.target) : null
+}
+
 /**
  * Where a run leaves the band downwards, as x offsets in the column.
  *
@@ -80,16 +93,12 @@ const connectorOffsets = (
 ): number[] => {
   const offsets = new Set<number>()
 
-  for (const entry of assignBlockArrows(block)) {
-    const rects = boxes.get(entry.id)
-    if (!rects) continue
+  for (const arrow of resolveBlockArrows(block)) {
+    for (const endpoint of [arrow.start, arrow.end]) {
+      if (!BOTTOM_TARGETS.has(endpoint.target)) continue
 
-    for (const spec of entry.arrows) {
-      for (const name of [spec.start, spec.end]) {
-        if (!BOTTOM_TARGETS.has(name)) continue
-        const rect = targetRect(rects, name)
-        if (rect) offsets.add(rect.x + rect.width / 2)
-      }
+      const rect = rectOf(endpoint, boxes)
+      if (rect) offsets.add(rect.x + rect.width / 2)
     }
   }
 
@@ -128,36 +137,31 @@ export const FlowBlockDiagram = ({ block }: { block: ProcessTaskCompoundBlock })
           {layout.halves.map((half) => (
             <React.Fragment key={half.id}>{shapeFor(half)}</React.Fragment>
           ))}
-          {assignBlockArrows(block).flatMap((entry, entryIndex) => {
-            const rects = boxes.get(entry.id)
-            if (!rects) return []
+          {resolveBlockArrows(block).flatMap(({ end, entryIndex, index, spec, start }) => {
+            const startRect = rectOf(start, boxes)
+            const endRect = rectOf(end, boxes)
+            if (!startRect || !endRect) return []
 
-            return entry.arrows.flatMap((spec, index) => {
-              const start = targetRect(rects, spec.start)
-              const end = targetRect(rects, spec.end)
-              if (!start || !end) return []
+            const { d, head } = buildArrow(spec, startRect, endRect, PDF_HEAD_SIZE)
 
-              const { d, head } = buildArrow(spec, start, end, PDF_HEAD_SIZE)
-
-              return [
-                <React.Fragment key={`${entry.id}-${entryIndex}-${index}`}>
+            return [
+              <React.Fragment key={`${entryIndex}-${start.halfId}-${end.halfId}-${index}`}>
+                <Path
+                  d={d}
+                  fill={'none'}
+                  stroke={COLORS.outline}
+                  strokeLinecap={'butt'}
+                  strokeWidth={PDF_STROKE_WIDTH}
+                />
+                {head && (
                   <Path
-                    d={d}
-                    fill={'none'}
-                    stroke={COLORS.outline}
-                    strokeLinecap={'butt'}
-                    strokeWidth={PDF_STROKE_WIDTH}
+                    d={ARROW_HEAD_PATH}
+                    fill={COLORS.outline}
+                    transform={`translate(${head.x} ${head.y}) rotate(${head.orient}) scale(${head.scale})`}
                   />
-                  {head && (
-                    <Path
-                      d={ARROW_HEAD_PATH}
-                      fill={COLORS.outline}
-                      transform={`translate(${head.x} ${head.y}) rotate(${head.orient}) scale(${head.scale})`}
-                    />
-                  )}
-                </React.Fragment>,
-              ]
-            })
+                )}
+              </React.Fragment>,
+            ]
           })}
         </Svg>
         {layout.halves.map((half) => (
