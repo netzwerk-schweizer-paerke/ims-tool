@@ -38,13 +38,13 @@
     "@aws-sdk/client-s3": "3.1107.0",
     "@faceless-ui/modal": "3.0.1",
     "@faceless-ui/scroll-info": "2.0.0",
-    "@payloadcms/db-postgres": "3.88.0",
-    "@payloadcms/email-nodemailer": "3.88.0",
-    "@payloadcms/next": "3.88.0",
-    "@payloadcms/plugin-cloud-storage": "3.88.0",
-    "@payloadcms/richtext-lexical": "3.88.0",
-    "@payloadcms/storage-s3": "3.88.0",
-    "@payloadcms/ui": "patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch",
+    "@payloadcms/db-postgres": "3.90.1",
+    "@payloadcms/email-nodemailer": "3.90.1",
+    "@payloadcms/next": "3.90.1",
+    "@payloadcms/plugin-cloud-storage": "3.90.1",
+    "@payloadcms/richtext-lexical": "3.90.1",
+    "@payloadcms/storage-s3": "3.90.1",
+    "@payloadcms/ui": "patch:@payloadcms/ui@npm%3A3.90.1#~/.yarn/patches/@payloadcms-ui-npm-3.90.1-a531f1acda.patch",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "@react-pdf/renderer": "4.9.0",
@@ -58,7 +58,7 @@
     "ky": "^2.1.0",
     "lucide-react": "^1.39.0",
     "next": "16.3.4",
-    "payload": "3.88.0",
+    "payload": "3.90.1",
     "qrcode-generator": "^2.0.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -98,6 +98,6 @@
   },
   "packageManager": "yarn@4.18.0",
   "resolutions": {
-    "@payloadcms/ui@npm:3.88.0": "patch:@payloadcms/ui@npm%3A3.88.0#~/.yarn/patches/@payloadcms-ui-npm-3.88.0-cdf4e07968.patch"
+    "@payloadcms/ui@npm:3.90.1": "patch:@payloadcms/ui@npm%3A3.90.1#~/.yarn/patches/@payloadcms-ui-npm-3.90.1-a531f1acda.patch"
   }
 }
