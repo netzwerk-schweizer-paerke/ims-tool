@@ -255,6 +255,9 @@ export const LandscapeSearch = ({ links, locale }: Props) => {
               id={`${LIST_ID}-${index}`}
               key={`${match.hit.target.kind}-${index}`}
               onClick={() => setOpen(false)}
+              // Safari and Firefox do not focus a link on mousedown. The blur then reports no
+              // related target, so handleBlur closes the list before the click reaches this row.
+              onMouseDown={(event) => event.preventDefault()}
               onMouseEnter={() => setActive(index)}
               role={'option'}
               style={{ borderColor: 'var(--theme-border-color)' }}>
