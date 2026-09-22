@@ -345,6 +345,9 @@ export const findingMessage = (t: Translator, finding: TenantHealthFinding): str
     case 'missingRequiredField': {
       return t('dataHealth:finding:missingRequiredField', params)
     }
+    case 'missingRequiredFieldUnlocalised': {
+      return t('dataHealth:finding:missingRequiredFieldUnlocalised', params)
+    }
     case 'prefixOrganisationMismatch': {
       return t('dataHealth:finding:prefixOrganisationMismatch', params)
     }

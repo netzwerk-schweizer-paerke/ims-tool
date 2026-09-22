@@ -377,8 +377,7 @@ export const fr = {
     counts:
       'Vérifié : {{activities}} groupes de processus, {{taskFlows}} processus, {{taskLists}} listes, {{documents}} documents',
     degrading: 'Dégradant',
-    degradingHint:
-      'Le clonage réussit, mais la copie arrive incomplète — généralement sans le fichier concerné.',
+    degradingHint: 'Le clonage réussit, mais la copie arrive incomplète.',
     field: {
       description: 'Description',
       document: 'Document',
@@ -411,7 +410,8 @@ export const fr = {
         'Champ de texte enrichi : la valeur enregistrée n’est pas un objet.',
       malformedRichTextRoot: 'Champ de texte enrichi : « root » n’est pas un objet.',
       missingRequiredField:
-        'Le champ obligatoire « {{field}} » est vide dans la langue par défaut ({{locale}}). Le clonage échoue à la validation.',
+        'Le champ obligatoire « {{field}} » est vide dans la langue du parc ({{locale}}).',
+      missingRequiredFieldUnlocalised: 'Le champ obligatoire « {{field}} » est vide.',
       prefixOrganisationMismatch:
         'Stocké sous « {{prefix}} », attendu « {{expected}} ». Le fichier reste accessible, mais l’organisation S3 ne correspond plus au parc.',
       s3ObjectMissing:

@@ -131,6 +131,18 @@ export function toContentLocale(
   return isContentLocale(code, config) ? code : undefined
 }
 
+/**
+ * The content locale a park writes its data in, from `organisations.organisationLanguage`.
+ * That field also offers `en`, which is an admin language and not a content locale, and it is
+ * optional, so a park created before the field carries null. Both answer the default locale.
+ */
+export function toParkLocale(
+  organisationLanguage: null | string | undefined,
+  config: Configs,
+): string {
+  return toContentLocale(organisationLanguage, config) ?? getDefaultLocaleCode(config)
+}
+
 function isContentLocale(code: string, config: Configs): code is TypedLocale {
   return getLocaleCodes(config).includes(code)
 }

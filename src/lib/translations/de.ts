@@ -377,8 +377,7 @@ export const de = {
     counts:
       'Geprüft: {{activities}} Prozessgruppen, {{taskFlows}} Prozesse, {{taskLists}} Listen, {{documents}} Dokumente',
     degrading: 'Beeinträchtigend',
-    degradingHint:
-      'Das Klonen gelingt, aber die Kopie kommt unvollständig an — meist ohne die betroffene Datei.',
+    degradingHint: 'Das Klonen gelingt, aber die Kopie kommt unvollständig an.',
     field: {
       description: 'Beschreibung',
       document: 'Dokument',
@@ -408,8 +407,8 @@ export const de = {
       malformedRichTextNoChildren: 'Rich-Text-Feld: "root" enthält kein "children"-Array.',
       malformedRichTextNotObject: 'Rich-Text-Feld: Der gespeicherte Wert ist kein Objekt.',
       malformedRichTextRoot: 'Rich-Text-Feld: "root" ist kein Objekt.',
-      missingRequiredField:
-        'Pflichtfeld "{{field}}" ist in der Standardsprache ({{locale}}) leer. Das Klonen scheitert an der Validierung.',
+      missingRequiredField: 'Pflichtfeld "{{field}}" ist in der Parksprache ({{locale}}) leer.',
+      missingRequiredFieldUnlocalised: 'Pflichtfeld "{{field}}" ist leer.',
       prefixOrganisationMismatch:
         'Liegt unter "{{prefix}}", erwartet wäre "{{expected}}". Die Datei ist weiterhin erreichbar, aber die S3-Ablage passt nicht mehr zum Park.',
       s3ObjectMissing:

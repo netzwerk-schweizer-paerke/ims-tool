@@ -379,8 +379,7 @@ export const it = {
     counts:
       'Verificato: {{activities}} gruppi di processi, {{taskFlows}} processi, {{taskLists}} elenchi, {{documents}} documenti',
     degrading: 'Degradante',
-    degradingHint:
-      'La clonazione riesce, ma la copia arriva incompleta — di solito senza il file interessato.',
+    degradingHint: 'La clonazione riesce, ma la copia arriva incompleta.',
     field: {
       description: 'Descrizione',
       document: 'Documento',
@@ -413,7 +412,8 @@ export const it = {
         'Campo di testo formattato: il valore memorizzato non è un oggetto.',
       malformedRichTextRoot: 'Campo di testo formattato: «root» non è un oggetto.',
       missingRequiredField:
-        'Il campo obbligatorio «{{field}}» è vuoto nella lingua predefinita ({{locale}}). La clonazione fallisce la validazione.',
+        'Il campo obbligatorio «{{field}}» è vuoto nella lingua del parco ({{locale}}).',
+      missingRequiredFieldUnlocalised: 'Il campo obbligatorio «{{field}}» è vuoto.',
       prefixOrganisationMismatch:
         'Archiviato sotto «{{prefix}}», atteso «{{expected}}». Il file è ancora raggiungibile, ma la struttura S3 non corrisponde più al parco.',
       s3ObjectMissing:

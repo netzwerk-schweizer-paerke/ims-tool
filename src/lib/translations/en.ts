@@ -374,8 +374,7 @@ export const en = {
     counts:
       'Checked: {{activities}} activities, {{taskFlows}} processes, {{taskLists}} lists, {{documents}} documents',
     degrading: 'Degrading',
-    degradingHint:
-      'Cloning succeeds, but the copy arrives incomplete — usually without the affected file.',
+    degradingHint: 'Cloning succeeds, but the copy arrives incomplete.',
     field: {
       description: 'Description',
       document: 'Document',
@@ -406,7 +405,8 @@ export const en = {
       malformedRichTextNotObject: 'Rich text field: the stored value is not an object.',
       malformedRichTextRoot: 'Rich text field: "root" is not an object.',
       missingRequiredField:
-        'Required field "{{field}}" is empty in the default locale ({{locale}}). Cloning fails validation.',
+        'Required field "{{field}}" is empty in the park language ({{locale}}).',
+      missingRequiredFieldUnlocalised: 'Required field "{{field}}" is empty.',
       prefixOrganisationMismatch:
         'Stored under "{{prefix}}", expected "{{expected}}". The file still resolves, but the S3 layout no longer matches the park.',
       s3ObjectMissing:

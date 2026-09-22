@@ -5,7 +5,7 @@
  * Every check maps to a concrete failure site in the cloning pipeline:
  *
  * - a reference cloning actually follows makes `findByID` throw, aborting the clone (blocking)
- * - a missing required field in the default locale makes `payload.create` throw (blocking)
+ * - a missing required field leaves the park without usable content in its own language (blocking)
  * - a broken document reference is swallowed into `addMissingFileError`, so the clone
  *   "succeeds" but silently arrives without the file (degrading)
  *
@@ -20,6 +20,7 @@ import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Payload } from 'payload'
 
 import { collectRichTextValues } from '@/lib/collect-rich-text-values'
+import { getLocaleCodes, toParkLocale } from '@/lib/locale-utils'
 import { getS3Client } from '@/lib/s3-client'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
@@ -93,6 +94,7 @@ export type TenantHealthFindingCode =
   | 'malformedRichTextNotObject'
   | 'malformedRichTextRoot'
   | 'missingRequiredField'
+  | 'missingRequiredFieldUnlocalised'
   | 'prefixOrganisationMismatch'
   | 's3ObjectMissing'
   | 's3ObjectUnreadable'
@@ -231,6 +233,7 @@ export class TenantHealthChecker {
       organisationId,
       preconditions,
       options,
+      toParkLocale(organisation?.organisationLanguage, this.payload.config),
     )
 
     findings.push(...analysis.findings)
@@ -286,6 +289,7 @@ export class TenantHealthChecker {
       organisationId,
       preconditions,
       options,
+      toParkLocale(organisation?.organisationLanguage, this.payload.config),
     )
 
     return buildReport({
@@ -307,6 +311,7 @@ export class TenantHealthChecker {
     organisationId: number,
     preconditions: TenantHealthPreconditions,
     options: TenantHealthOptions,
+    parkLocale: string,
   ): Promise<{ findings: TenantHealthFinding[]; ownedDocumentCount: number }> {
     const findings: TenantHealthFinding[] = []
     const referenced: Reference[] = []
@@ -315,7 +320,7 @@ export class TenantHealthChecker {
     for (const entity of entities) {
       const source: TenantHealthEntityRef = { collection: entity.__collection, id: entity.id }
 
-      findings.push(...this.checkRequiredFields(entity, source))
+      findings.push(...this.checkRequiredFields(entity, source, parkLocale))
 
       const walk = walkForReferences(entity)
       referenced.push(...walk.references.map((reference) => ({ ...reference, owner: source })))
@@ -682,34 +687,45 @@ export class TenantHealthChecker {
     return findings
   }
 
-  /** Required fields are only fatal in the default locale — `fallback: true` covers the rest. */
+  /**
+   * Required fields are judged in the park's own language, which `organisationLanguage` names.
+   * The configured default locale is `de` for every park, so it answered the wrong question for
+   * an Italian or a French park. `toParkLocale` resolves the park's locale.
+   */
   private checkRequiredFields(
     entity: LoadedEntity,
     source: TenantHealthEntityRef,
+    parkLocale: string,
   ): TenantHealthFinding[] {
     const findings: TenantHealthFinding[] = []
-    const defaultLocale = this.payload.config.localization
-      ? this.payload.config.localization.defaultLocale
-      : 'de'
 
     const { name } = entity
-    const localisedName = typeof name === 'object' && name !== null ? name[defaultLocale] : name
+    const names = typeof name === 'object' && name !== null ? name : { [parkLocale]: name }
+    // `hasLocaleContent` in `cloning/clone-locales.ts` applies the same test to the same field.
+    const hasName = (code: string) =>
+      typeof names[code] === 'string' && names[code].trim().length > 0
 
-    if (!localisedName) {
+    if (!hasName(parkLocale)) {
+      // The clone creates the record from the first locale that holds a name, so a record named
+      // in any other locale still copies. Only a record with no name at all fails to clone.
+      const cloneable = getLocaleCodes(this.payload.config).some(hasName)
+
       findings.push({
         code: 'missingRequiredField',
-        locale: defaultLocale,
-        params: { field: 'name', locale: defaultLocale },
+        locale: parkLocale,
+        params: { field: 'name', locale: parkLocale },
         path: 'name',
-        severity: 'blocking',
+        severity: cloneable ? 'degrading' : 'blocking',
         source,
       })
     }
 
+    // `variant` carries no `localized: true`, so it holds one value for every locale. A message
+    // that names a language would describe a field the park cannot translate.
     if (source.collection === 'activities' && !entity.variant) {
       findings.push({
-        code: 'missingRequiredField',
-        params: { field: 'variant', locale: defaultLocale },
+        code: 'missingRequiredFieldUnlocalised',
+        params: { field: 'variant' },
         path: 'variant',
         severity: 'blocking',
         source,
