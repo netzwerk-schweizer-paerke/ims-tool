@@ -44,6 +44,9 @@ const URL_PROBE_TIMEOUT_MS = 8000
  */
 const INCONCLUSIVE_URL_STATUSES = new Set([401, 403, 405, 406, 429, 999])
 
+/** Below this share of a park's records, a missing translation is a gap and not a wrong setting. */
+const PARK_LANGUAGE_HINT_SHARE = 0.5
+
 export interface TenantHealthEntityRef {
   collection: string
   id: number
@@ -93,11 +96,26 @@ export type TenantHealthFindingCode =
   | 'malformedRichTextNoChildren'
   | 'malformedRichTextNotObject'
   | 'malformedRichTextRoot'
-  | 'missingRequiredField'
+  | 'missingNameInEveryLocale'
+  | 'missingParkLanguageName'
   | 'missingRequiredFieldUnlocalised'
   | 'prefixOrganisationMismatch'
   | 's3ObjectMissing'
   | 's3ObjectUnreadable'
+
+/**
+ * A note about the park as a whole, rather than about one row.
+ *
+ * `parkLanguageLikelyWrong` fires when most of a park's records carry no name in the declared
+ * park language. Measured on 2026-09-22, Parco Val Calanca declares `it` and holds German data,
+ * so 26 of its 30 records report a finding that one field edit on the park would clear.
+ */
+export interface TenantHealthHint {
+  code: TenantHealthHintCode
+  params: Record<string, number | string>
+}
+
+export type TenantHealthHintCode = 'parkLanguageLikelyWrong'
 
 /**
  * Where in the source document the problem sits, in terms a user can act on.
@@ -149,6 +167,8 @@ export interface TenantHealthReport {
     taskLists: number
   }
   findings: TenantHealthFinding[]
+  /** Park-wide notes. The single-document check produces none, because one row proves nothing. */
+  hints: TenantHealthHint[]
   organisation: { id: number; name: string }
   preconditions: TenantHealthPreconditions
   summary: {
@@ -228,15 +248,33 @@ export class TenantHealthChecker {
       this.findAll('task-lists', organisationId),
     ])
 
+    const parkLocale = toParkLocale(organisation?.organisationLanguage, this.payload.config)
     const analysis = await this.analyse(
       [...activities, ...taskFlows, ...taskLists],
       organisationId,
       preconditions,
       options,
-      toParkLocale(organisation?.organisationLanguage, this.payload.config),
+      parkLocale,
     )
 
     findings.push(...analysis.findings)
+
+    const entityCount = activities.length + taskFlows.length + taskLists.length
+    const missingParkLanguage = findings.filter(
+      (finding) => finding.code === 'missingParkLanguageName',
+    ).length
+
+    // A park whose records are mostly unnamed in its own language usually declares the wrong
+    // language. One edit on the park clears every one of those findings.
+    const hints: TenantHealthHint[] =
+      entityCount > 0 && missingParkLanguage > entityCount * PARK_LANGUAGE_HINT_SHARE
+        ? [
+            {
+              code: 'parkLanguageLikelyWrong',
+              params: { locale: parkLocale, missing: missingParkLanguage, total: entityCount },
+            },
+          ]
+        : []
 
     return buildReport({
       counts: {
@@ -249,6 +287,7 @@ export class TenantHealthChecker {
         taskLists: taskLists.length,
       },
       findings,
+      hints,
       organisation: { id: organisationId, name: organisation?.name ?? `#${organisationId}` },
       preconditions,
     })
@@ -300,6 +339,8 @@ export class TenantHealthChecker {
         taskLists: collection === 'task-lists' ? 1 : 0,
       },
       findings: analysis.findings,
+      // One row cannot show that the park declares the wrong language.
+      hints: [],
       organisation: { id: organisationId, name: organisation?.name ?? `#${organisationId}` },
       preconditions,
     })
@@ -710,14 +751,24 @@ export class TenantHealthChecker {
       // in any other locale still copies. Only a record with no name at all fails to clone.
       const cloneable = getLocaleCodes(this.payload.config).some(hasName)
 
-      findings.push({
-        code: 'missingRequiredField',
-        locale: parkLocale,
-        params: { field: 'name', locale: parkLocale },
-        path: 'name',
-        severity: cloneable ? 'degrading' : 'blocking',
-        source,
-      })
+      findings.push(
+        cloneable
+          ? {
+              code: 'missingParkLanguageName',
+              locale: parkLocale,
+              params: { field: 'name', locale: parkLocale },
+              path: 'name',
+              severity: 'degrading',
+              source,
+            }
+          : {
+              code: 'missingNameInEveryLocale',
+              params: { field: 'name' },
+              path: 'name',
+              severity: 'blocking',
+              source,
+            },
+      )
     }
 
     // `variant` carries no `localized: true`, so it holds one value for every locale. A message

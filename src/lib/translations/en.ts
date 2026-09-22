@@ -382,6 +382,7 @@ export const en = {
       infos: 'Activity info',
       io: 'Input / Output',
       keypoints: 'Key points',
+      name: 'Name',
       relations: 'Linked tasks',
       responsibility: 'Responsibility',
       tools: 'Tools',
@@ -404,9 +405,11 @@ export const en = {
       malformedRichTextNoChildren: 'Rich text field: "root" has no "children" array.',
       malformedRichTextNotObject: 'Rich text field: the stored value is not an object.',
       malformedRichTextRoot: 'Rich text field: "root" is not an object.',
-      missingRequiredField:
-        'Required field "{{field}}" is empty in the park language ({{locale}}).',
-      missingRequiredFieldUnlocalised: 'Required field "{{field}}" is empty.',
+      missingNameInEveryLocale:
+        'The required field "{{field}}" is empty in every language. A field holding only spaces counts as empty. Enter a name.',
+      missingParkLanguageName:
+        'The required field "{{field}}" is missing in the park language ({{locale}}). Add it, or correct the park language under Organisations.',
+      missingRequiredFieldUnlocalised: 'The required field "{{field}}" is empty. Choose a value.',
       prefixOrganisationMismatch:
         'Stored under "{{prefix}}", expected "{{expected}}". The file still resolves, but the S3 layout no longer matches the park.',
       s3ObjectMissing:
@@ -415,8 +418,14 @@ export const en = {
     },
     healthy: 'No problems found. This park’s data is fully cloneable.',
     healthyDocument: 'No problems found in this item.',
+    hint: 'Hint',
+    hintText: {
+      parkLanguageLikelyWrong:
+        'In {{missing}} of {{total}} records the name is missing in the park language ({{locale}}). Check this park’s language under Organisations.',
+    },
     itemNumber: 'Entry {{number}}',
     jumpToBlock: 'Jump to block',
+    jumpToField: 'Jump to field',
     noFindings: 'No findings',
     openRelated: 'Referenced item',
     openSource: 'Open',

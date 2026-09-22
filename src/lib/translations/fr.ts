@@ -385,6 +385,7 @@ export const fr = {
       infos: 'Informations',
       io: 'Entrée / Sortie',
       keypoints: 'Points clés',
+      name: 'Nom',
       relations: 'Tâches liées',
       responsibility: 'Responsabilité',
       tools: 'Outils',
@@ -409,9 +410,12 @@ export const fr = {
       malformedRichTextNotObject:
         'Champ de texte enrichi : la valeur enregistrée n’est pas un objet.',
       malformedRichTextRoot: 'Champ de texte enrichi : « root » n’est pas un objet.',
-      missingRequiredField:
-        'Le champ obligatoire « {{field}} » est vide dans la langue du parc ({{locale}}).',
-      missingRequiredFieldUnlocalised: 'Le champ obligatoire « {{field}} » est vide.',
+      missingNameInEveryLocale:
+        'Le champ obligatoire « {{field}} » est vide dans toutes les langues. Un champ ne contenant que des espaces compte comme vide. Saisissez un nom.',
+      missingParkLanguageName:
+        'Le champ obligatoire « {{field}} » manque dans la langue du parc ({{locale}}). Ajoutez-le, ou corrigez la langue du parc sous Organisations.',
+      missingRequiredFieldUnlocalised:
+        'Le champ obligatoire « {{field}} » est vide. Choisissez une valeur.',
       prefixOrganisationMismatch:
         'Stocké sous « {{prefix}} », attendu « {{expected}} ». Le fichier reste accessible, mais l’organisation S3 ne correspond plus au parc.',
       s3ObjectMissing:
@@ -420,8 +424,14 @@ export const fr = {
     },
     healthy: 'Aucun problème détecté. Les données de ce parc sont entièrement clonables.',
     healthyDocument: 'Aucun problème détecté dans cet élément.',
+    hint: 'Remarque',
+    hintText: {
+      parkLanguageLikelyWrong:
+        'Dans {{missing}} enregistrements sur {{total}}, le nom manque dans la langue du parc ({{locale}}). Vérifiez la langue de ce parc sous Organisations.',
+    },
     itemNumber: 'Entrée {{number}}',
     jumpToBlock: 'Aller au bloc',
+    jumpToField: 'Aller au champ',
     noFindings: 'Aucun résultat',
     openRelated: 'Élément référencé',
     openSource: 'Ouvrir',

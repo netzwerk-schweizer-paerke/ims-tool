@@ -385,6 +385,7 @@ export const de = {
       infos: 'Aktivitätsinfos',
       io: 'Eingabe / Ausgabe',
       keypoints: 'Merkpunkte',
+      name: 'Name',
       relations: 'Verknüpfte Aufgaben',
       responsibility: 'Verantwortung',
       tools: 'Werkzeuge',
@@ -407,8 +408,12 @@ export const de = {
       malformedRichTextNoChildren: 'Rich-Text-Feld: "root" enthält kein "children"-Array.',
       malformedRichTextNotObject: 'Rich-Text-Feld: Der gespeicherte Wert ist kein Objekt.',
       malformedRichTextRoot: 'Rich-Text-Feld: "root" ist kein Objekt.',
-      missingRequiredField: 'Pflichtfeld "{{field}}" ist in der Parksprache ({{locale}}) leer.',
-      missingRequiredFieldUnlocalised: 'Pflichtfeld "{{field}}" ist leer.',
+      missingNameInEveryLocale:
+        'Das Pflichtfeld "{{field}}" ist in allen Sprachen leer. Ein Feld mit nur Leerzeichen gilt als leer. Tragen Sie einen Namen ein.',
+      missingParkLanguageName:
+        'Das Pflichtfeld "{{field}}" fehlt in der Parksprache ({{locale}}). Ergänzen Sie es, oder korrigieren Sie die Parksprache unter Organisationen.',
+      missingRequiredFieldUnlocalised:
+        'Das Pflichtfeld "{{field}}" ist leer. Wählen Sie einen Wert.',
       prefixOrganisationMismatch:
         'Liegt unter "{{prefix}}", erwartet wäre "{{expected}}". Die Datei ist weiterhin erreichbar, aber die S3-Ablage passt nicht mehr zum Park.',
       s3ObjectMissing:
@@ -417,8 +422,14 @@ export const de = {
     },
     healthy: 'Keine Probleme gefunden. Die Daten dieses Parks sind vollständig klonbar.',
     healthyDocument: 'Keine Probleme in diesem Eintrag gefunden.',
+    hint: 'Hinweis',
+    hintText: {
+      parkLanguageLikelyWrong:
+        'In {{missing}} von {{total}} Datensätzen fehlt der Name in der Parksprache ({{locale}}). Prüfen Sie die Parksprache dieses Parks unter Organisationen.',
+    },
     itemNumber: 'Eintrag {{number}}',
     jumpToBlock: 'Zum Block springen',
+    jumpToField: 'Zum Feld springen',
     noFindings: 'Keine Befunde',
     openRelated: 'Betroffener Verweis',
     openSource: 'Öffnen',

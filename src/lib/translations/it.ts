@@ -387,6 +387,7 @@ export const it = {
       infos: 'Informazioni',
       io: 'Input / Output',
       keypoints: 'Punti chiave',
+      name: 'Nome',
       relations: 'Attività collegate',
       responsibility: 'Responsabilità',
       tools: 'Strumenti',
@@ -411,9 +412,12 @@ export const it = {
       malformedRichTextNotObject:
         'Campo di testo formattato: il valore memorizzato non è un oggetto.',
       malformedRichTextRoot: 'Campo di testo formattato: «root» non è un oggetto.',
-      missingRequiredField:
-        'Il campo obbligatorio «{{field}}» è vuoto nella lingua del parco ({{locale}}).',
-      missingRequiredFieldUnlocalised: 'Il campo obbligatorio «{{field}}» è vuoto.',
+      missingNameInEveryLocale:
+        'Il campo obbligatorio «{{field}}» è vuoto in tutte le lingue. Un campo con soli spazi conta come vuoto. Inserisca un nome.',
+      missingParkLanguageName:
+        'Il campo obbligatorio «{{field}}» manca nella lingua del parco ({{locale}}). Lo aggiunga, oppure corregga la lingua del parco sotto Organizzazioni.',
+      missingRequiredFieldUnlocalised:
+        'Il campo obbligatorio «{{field}}» è vuoto. Scelga un valore.',
       prefixOrganisationMismatch:
         'Archiviato sotto «{{prefix}}», atteso «{{expected}}». Il file è ancora raggiungibile, ma la struttura S3 non corrisponde più al parco.',
       s3ObjectMissing:
@@ -422,8 +426,14 @@ export const it = {
     },
     healthy: 'Nessun problema rilevato. I dati di questo parco sono completamente clonabili.',
     healthyDocument: 'Nessun problema rilevato in questo elemento.',
+    hint: 'Nota',
+    hintText: {
+      parkLanguageLikelyWrong:
+        'In {{missing}} record su {{total}} manca il nome nella lingua del parco ({{locale}}). Verifichi la lingua di questo parco sotto Organizzazioni.',
+    },
     itemNumber: 'Voce {{number}}',
     jumpToBlock: 'Vai al blocco',
+    jumpToField: 'Vai al campo',
     noFindings: 'Nessun risultato',
     openRelated: 'Elemento referenziato',
     openSource: 'Apri',

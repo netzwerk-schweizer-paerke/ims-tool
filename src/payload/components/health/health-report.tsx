@@ -5,6 +5,7 @@ import React from 'react'
 import {
   TenantHealthEntityRef,
   TenantHealthFinding,
+  TenantHealthLocation,
   TenantHealthPreconditionResult,
   TenantHealthReport,
   TenantHealthSeverity,
@@ -66,6 +67,15 @@ export const HealthReport = ({ onJump, report, showOrganisation = false }: Healt
           </ul>
         </section>
       )}
+
+      {report.hints.map((hint) => (
+        <section
+          className="rounded-lg border border-sky-200 bg-sky-50 p-4 text-sky-900"
+          key={hint.code}>
+          <h2 className="font-semibold">{t('dataHealth:hint')}</h2>
+          <p className="text-sm">{t('dataHealth:hintText:parkLanguageLikelyWrong', hint.params)}</p>
+        </section>
+      ))}
 
       {report.findings.length === 0 && failedPreconditions.length === 0 && (
         <p className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-700">
@@ -204,9 +214,7 @@ const FindingGroup = ({ findings, hint, onJump, severity, title }: FindingGroupP
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 <EntityLink
                   anchor={finding.location?.anchor}
-                  label={t(
-                    finding.location?.anchor ? 'dataHealth:jumpToBlock' : 'dataHealth:openSource',
-                  )}
+                  label={t(jumpLabelKey(finding.location))}
                   onJump={onJump}
                   target={finding.source}
                 />
@@ -250,6 +258,18 @@ const locationLabel = (t: Translator, finding: TenantHealthFinding): string => {
   return parts.join(' · ')
 }
 
+/**
+ * Only a row inside an array field is a block. A top-level field such as `name` anchors
+ * `field-name`, and calling that a block sends the reader looking for a block that is not there.
+ */
+const jumpLabelKey = (location?: TenantHealthLocation): I18nKeys => {
+  if (!location?.anchor) {
+    return 'dataHealth:openSource'
+  }
+
+  return location.container ? 'dataHealth:jumpToBlock' : 'dataHealth:jumpToField'
+}
+
 /** Blocks, list entries and file rows all use `<field>-row-N`, but read differently. */
 const rowLabel = (t: Translator, container: string | undefined, number: number): string => {
   switch (container) {
@@ -285,6 +305,9 @@ const fieldLabel = (t: Translator, field: string): string => {
     }
     case 'keypoints': {
       return t('dataHealth:field:keypoints')
+    }
+    case 'name': {
+      return t('dataHealth:field:name')
     }
     case 'relations': {
       return t('dataHealth:field:relations')
@@ -342,8 +365,11 @@ export const findingMessage = (t: Translator, finding: TenantHealthFinding): str
     case 'malformedRichTextRoot': {
       return t('dataHealth:finding:malformedRichTextRoot', params)
     }
-    case 'missingRequiredField': {
-      return t('dataHealth:finding:missingRequiredField', params)
+    case 'missingNameInEveryLocale': {
+      return t('dataHealth:finding:missingNameInEveryLocale', params)
+    }
+    case 'missingParkLanguageName': {
+      return t('dataHealth:finding:missingParkLanguageName', params)
     }
     case 'missingRequiredFieldUnlocalised': {
       return t('dataHealth:finding:missingRequiredFieldUnlocalised', params)

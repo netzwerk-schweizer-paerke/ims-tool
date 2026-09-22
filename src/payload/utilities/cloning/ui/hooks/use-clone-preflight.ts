@@ -93,6 +93,8 @@ const mergeReports = (reports: TenantHealthReport[]): TenantHealthReport => {
     checkedAt: new Date().toISOString(),
     counts: first?.counts ?? { activities: 0, documents: 0, taskFlows: 0, taskLists: 0 },
     findings,
+    // Every merged report comes from a single-row check, which produces no park-wide hint.
+    hints: [],
     organisation: first?.organisation ?? { id: 0, name: '' },
     preconditions: first?.preconditions ?? { s3: { ok: true } },
     summary: {
