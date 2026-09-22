@@ -5,6 +5,7 @@ import React from 'react'
 import {
   TenantHealthEntityRef,
   TenantHealthFinding,
+  TenantHealthHintCode,
   TenantHealthLocation,
   TenantHealthPreconditionResult,
   TenantHealthReport,
@@ -15,6 +16,11 @@ import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 export type Translator = (key: I18nKeys, vars?: Record<string, unknown>) => string
 
 const SEVERITY_ORDER: TenantHealthSeverity[] = ['blocking', 'degrading']
+
+/** A lookup keeps every key static and makes a new hint code fail the build until it has text. */
+const HINT_KEYS: Record<TenantHealthHintCode, I18nKeys> = {
+  parkLanguageMismatch: 'dataHealth:hintText:parkLanguageMismatch',
+}
 
 interface HealthReportProps {
   /**
@@ -73,7 +79,7 @@ export const HealthReport = ({ onJump, report, showOrganisation = false }: Healt
           className="rounded-lg border border-sky-200 bg-sky-50 p-4 text-sky-900"
           key={hint.code}>
           <h2 className="font-semibold">{t('dataHealth:hint')}</h2>
-          <p className="text-sm">{t('dataHealth:hintText:parkLanguageLikelyWrong', hint.params)}</p>
+          <p className="text-sm">{t(HINT_KEYS[hint.code], hint.params)}</p>
         </section>
       ))}
 

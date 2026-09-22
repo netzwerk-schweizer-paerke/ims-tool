@@ -374,7 +374,7 @@ export const en = {
     counts:
       'Checked: {{activities}} activities, {{taskFlows}} processes, {{taskLists}} lists, {{documents}} documents',
     degrading: 'Degrading',
-    degradingHint: 'Cloning succeeds, but the copy arrives incomplete.',
+    degradingHint: 'Cloning succeeds. A file can be missing, or content stays untranslated.',
     field: {
       description: 'Description',
       document: 'Document',
@@ -420,8 +420,8 @@ export const en = {
     healthyDocument: 'No problems found in this item.',
     hint: 'Hint',
     hintText: {
-      parkLanguageLikelyWrong:
-        'In {{missing}} of {{total}} records the name is missing in the park language ({{locale}}). Check this park’s language under Organisations.',
+      parkLanguageMismatch:
+        'In {{missing}} of {{total}} records the name is missing in the park language ({{locale}}). Either this park is not translated yet, or the park language under Organisations is set wrong.',
     },
     itemNumber: 'Entry {{number}}',
     jumpToBlock: 'Jump to block',

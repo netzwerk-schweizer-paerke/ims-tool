@@ -377,7 +377,8 @@ export const fr = {
     counts:
       'Vérifié : {{activities}} groupes de processus, {{taskFlows}} processus, {{taskLists}} listes, {{documents}} documents',
     degrading: 'Dégradant',
-    degradingHint: 'Le clonage réussit, mais la copie arrive incomplète.',
+    degradingHint:
+      'Le clonage réussit. Un fichier peut manquer, ou un contenu reste non traduit.',
     field: {
       description: 'Description',
       document: 'Document',
@@ -426,8 +427,8 @@ export const fr = {
     healthyDocument: 'Aucun problème détecté dans cet élément.',
     hint: 'Remarque',
     hintText: {
-      parkLanguageLikelyWrong:
-        'Dans {{missing}} enregistrements sur {{total}}, le nom manque dans la langue du parc ({{locale}}). Vérifiez la langue de ce parc sous Organisations.',
+      parkLanguageMismatch:
+        'Dans {{missing}} enregistrements sur {{total}}, le nom manque dans la langue du parc ({{locale}}). Soit ce parc n’est pas encore traduit, soit la langue du parc sous Organisations est mal réglée.',
     },
     itemNumber: 'Entrée {{number}}',
     jumpToBlock: 'Aller au bloc',

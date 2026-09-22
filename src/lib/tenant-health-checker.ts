@@ -106,16 +106,16 @@ export type TenantHealthFindingCode =
 /**
  * A note about the park as a whole, rather than about one row.
  *
- * `parkLanguageLikelyWrong` fires when most of a park's records carry no name in the declared
- * park language. Measured on 2026-09-22, Parco Val Calanca declares `it` and holds German data,
- * so 26 of its 30 records report a finding that one field edit on the park would clear.
+ * `parkLanguageMismatch` fires when most of a park's records carry no name in the declared park
+ * language. The checker cannot name the cause: a clone from a German park produces the same
+ * reading as a wrongly set park language, because the clone copies no locale the source lacked.
  */
 export interface TenantHealthHint {
   code: TenantHealthHintCode
   params: Record<string, number | string>
 }
 
-export type TenantHealthHintCode = 'parkLanguageLikelyWrong'
+export type TenantHealthHintCode = 'parkLanguageMismatch'
 
 /**
  * Where in the source document the problem sits, in terms a user can act on.
@@ -264,13 +264,13 @@ export class TenantHealthChecker {
       (finding) => finding.code === 'missingParkLanguageName',
     ).length
 
-    // A park whose records are mostly unnamed in its own language usually declares the wrong
-    // language. One edit on the park clears every one of those findings.
+    // The declared language and the stored content disagree across most of the park. The two
+    // causes are an untranslated park and a wrongly set park language. The message names both.
     const hints: TenantHealthHint[] =
       entityCount > 0 && missingParkLanguage > entityCount * PARK_LANGUAGE_HINT_SHARE
         ? [
             {
-              code: 'parkLanguageLikelyWrong',
+              code: 'parkLanguageMismatch',
               params: { locale: parkLocale, missing: missingParkLanguage, total: entityCount },
             },
           ]

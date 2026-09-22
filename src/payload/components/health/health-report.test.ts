@@ -76,13 +76,23 @@ describe('the German strings behind those keys', () => {
     expect(de.dataHealth.finding[code]).toMatch(/Tragen Sie|Ergänzen Sie|Wählen Sie/)
   })
 
-  test('points the park-language hint at the organisation record', () => {
-    expect(de.dataHealth.hintText.parkLanguageLikelyWrong).toContain('Organisationen')
+  // A clone from a German park produces the same reading as a wrongly set park language, so the
+  // hint must offer both causes. It would otherwise send an editor to break a correct setting.
+  test('gives the park-language hint both of its causes', () => {
+    expect(de.dataHealth.hintText.parkLanguageMismatch).toContain('übersetzt')
+    expect(de.dataHealth.hintText.parkLanguageMismatch).toContain('Organisationen')
   })
 
-  // A degrading finding is now a missing translation as often as a missing file, so the hint
-  // must not promise that the file is the cause.
-  test('keeps the degrading hint free of the file claim', () => {
-    expect(de.dataHealth.degradingHint).not.toContain('Datei')
+  // A degrading finding is a missing file or a missing translation. The clone carries the
+  // source's content either way, so the hint must not claim that the copy arrives incomplete.
+  test('names both degrading outcomes and claims neither as the only one', () => {
+    expect(de.dataHealth.degradingHint).toContain('Datei')
+    expect(de.dataHealth.degradingHint).toContain('unübersetzt')
+    expect(de.dataHealth.degradingHint).not.toContain('unvollständig')
+  })
+
+  // Both remaining blocking codes genuinely throw CloneHttpError 400, so this promise is true.
+  test('keeps the blocking hint on the clone abort', () => {
+    expect(de.dataHealth.blockingHint).toContain('bricht')
   })
 })
