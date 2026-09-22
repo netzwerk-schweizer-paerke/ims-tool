@@ -2,7 +2,13 @@ import type { SVGProps } from 'react'
 
 import * as React from 'react'
 const NspLarge = (props: SVGProps<SVGSVGElement>) => (
-  <svg fill="none" height={129} width={211} xmlns="http://www.w3.org/2000/svg" {...props}>
+  <svg
+    fill="none"
+    height={129}
+    viewBox="0 0 211 129"
+    width={211}
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}>
     <mask
       height={122}
       id="nsp-large_svg__a"

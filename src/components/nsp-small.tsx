@@ -2,7 +2,13 @@ import type { SVGProps } from 'react'
 
 import * as React from 'react'
 const NspSmall = (props: SVGProps<SVGSVGElement>) => (
-  <svg fill="none" height={32} width={32} xmlns="http://www.w3.org/2000/svg" {...props}>
+  <svg
+    fill="none"
+    height={32}
+    viewBox="0 0 32 32"
+    width={32}
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}>
     <mask
       height={33}
       id="nsp-small_svg__a"
