@@ -754,7 +754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/types@npm:^7.26.0, @babel/types@npm:^7.29.0, @babel/types@npm:^7.29.7, @babel/types@npm:^7.29.8":
+"@babel/types@npm:^7.29.0, @babel/types@npm:^7.29.7, @babel/types@npm:^7.29.8":
   version: 7.29.8
   resolution: "@babel/types@npm:7.29.8"
   dependencies:
@@ -4659,15 +4659,6 @@ __metadata:
     cosmiconfig: "npm:^7.0.0"
     resolve: "npm:^1.19.0"
   checksum: 10/30be6ca45e9a124c58ca00af9a0753e5410ec0b79a737714fc4722bbbeb693e55d9258f05c437145ef4a867c2d1603e06a1c292d66c243ce1227458c8ea2ca8c
-  languageName: node
-  linkType: hard
-
-"babel-plugin-react-compiler@npm:1.0.0":
-  version: 1.0.0
-  resolution: "babel-plugin-react-compiler@npm:1.0.0"
-  dependencies:
-    "@babel/types": "npm:^7.26.0"
-  checksum: 10/51358f4da7dd338afd93ca647af3b5b95fdedd2ffde78719fbba5c542e3d66d338f020bc61234caf4ddf25cddbf517ae101ff76e362e3244d1047c1e64d90a60
   languageName: node
   linkType: hard
 
@@ -11093,7 +11084,6 @@ __metadata:
     "@vitest/coverage-v8": "npm:^4.1.11"
     "@vitest/eslint-plugin": "npm:^1.6.27"
     autoprefixer: "npm:^10.6.1"
-    babel-plugin-react-compiler: "npm:1.0.0"
     cross-env: "npm:^10.1.0"
     date-fns: "npm:4.4.0"
     deepl-node: "npm:^1.28.0"
