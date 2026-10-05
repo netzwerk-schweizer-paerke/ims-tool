@@ -10,10 +10,19 @@ vi.mock('@/payload/utilities/cloning/validate-access', () => ({
 vi.mock('@/payload/utilities/cloning/document-preloader', () => ({
   preloadDocuments: vi.fn(),
 }))
+// The block lookup and the per-locale write have their own tests. Here only the order counts.
+vi.mock('@/payload/utilities/cloning/attach-task-to-block', () => ({
+  attachTaskToBlock: vi.fn(),
+  resolveBlockTarget: vi.fn(),
+}))
 
 import type { CloneEndpointConfig } from '@/payload/utilities/cloning/create-clone-endpoint'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 
+import {
+  attachTaskToBlock,
+  resolveBlockTarget,
+} from '@/payload/utilities/cloning/attach-task-to-block'
 import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { createCloneEndpoint } from '@/payload/utilities/cloning/create-clone-endpoint'
@@ -439,5 +448,72 @@ describe('createCloneEndpoint in link mode', () => {
     await handle(req)
 
     expect(preloadDocuments).toHaveBeenCalledTimes(1)
+  })
+})
+
+// PIMS-83: a pasted Prozess or Liste is linked to the Prozessgruppe it was pasted into.
+describe('createCloneEndpoint with a block target', () => {
+  const target = { activityId: 31, blockId: 'block-de-2' }
+  const resolved = { activityId: 31, blockIndex: 2 }
+
+  test('checks the target before any copy, and links the copy inside the transaction', async () => {
+    vi.mocked(resolveBlockTarget).mockResolvedValue(resolved)
+    vi.mocked(attachTaskToBlock).mockResolvedValue(2)
+    const { mocks, req } = makeReq('tx-target', {}, { ...validBody, target })
+
+    const response = await handle(req)
+
+    expect(response.status).toBe(200)
+    expect(resolveBlockTarget).toHaveBeenCalledWith(req, target, TARGET_ORG_ID)
+    expect(vi.mocked(resolveBlockTarget).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(preloadDocuments).mock.invocationCallOrder[0],
+    )
+    expect(attachTaskToBlock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        req: expect.objectContaining({ transactionID: 'tx-target' }),
+        target: resolved,
+        task: { id: 77, relationTo: 'task-flows' },
+      }),
+    )
+    expect(vi.mocked(attachTaskToBlock).mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.commitTransaction.mock.invocationCallOrder[0],
+    )
+  })
+
+  test('answers the target error and copies nothing when the target is wrong', async () => {
+    vi.mocked(resolveBlockTarget).mockRejectedValue(
+      new CloneHttpError('Target activity 31 is not in the target park', 400),
+    )
+    const { mocks, req } = makeReq('tx-bad-target', {}, { ...validBody, target })
+
+    const response = await handle(req)
+
+    expect(response.status).toBe(400)
+    expect(readSource).not.toHaveBeenCalled()
+    expect(preloadDocuments).not.toHaveBeenCalled()
+    expect(mocks.beginTransaction).not.toHaveBeenCalled()
+  })
+
+  // A copy that no Prozessgruppe links is invisible in the landscape.
+  test('rolls back and deletes the copies when no locale holds the target block', async () => {
+    vi.mocked(resolveBlockTarget).mockResolvedValue(resolved)
+    vi.mocked(attachTaskToBlock).mockResolvedValue(0)
+    const { mocks, req } = makeReq('tx-no-locale', {}, { ...validBody, target })
+
+    const response = await handle(req)
+
+    expect(response.status).toBe(400)
+    expect(mocks.rollbackTransaction).toHaveBeenCalledWith('tx-no-locale')
+    expect(mocks.delete).toHaveBeenCalledWith(deletedCopy)
+    expect(mocks.commitTransaction).not.toHaveBeenCalled()
+  })
+
+  test('links nothing when the body names no target', async () => {
+    const { req } = makeReq('tx-no-target')
+
+    await handle(req)
+
+    expect(resolveBlockTarget).not.toHaveBeenCalled()
+    expect(attachTaskToBlock).not.toHaveBeenCalled()
   })
 })

@@ -7,6 +7,12 @@ import type {
 
 import { User } from '@/payload-types'
 import {
+  attachTaskToBlock,
+  type BlockTarget,
+  resolveBlockTarget,
+  type ResolvedBlockTarget,
+} from '@/payload/utilities/cloning/attach-task-to-block'
+import {
   CloneHttpError,
   getErrorStatus,
   getValidationDetails,
@@ -35,6 +41,11 @@ export interface ClonePipelineArgs {
   req: PayloadRequest
   /** Unique source ids. */
   sourceIds: number[]
+  /**
+   * A Prozessgruppe that links each copy (PIMS-83). Valid for task flows and task lists only.
+   * Without it, a copy stands alone in the target park, as a list-view clone does.
+   */
+  target?: BlockTarget
   targetOrganisationId: number
   user: null | User
 }
@@ -52,9 +63,19 @@ export interface ClonePipelineResult {
  */
 export const runClonePipeline = async <TSource>(
   config: CloneEndpointConfig<TSource>,
-  { cloneLocales, locale, mode, req, sourceIds, targetOrganisationId, user }: ClonePipelineArgs,
+  {
+    cloneLocales,
+    locale,
+    mode,
+    req,
+    sourceIds,
+    target,
+    targetOrganisationId,
+    user,
+  }: ClonePipelineArgs,
 ): Promise<ClonePipelineResult> => {
   const { cloneSource, collectionSlug, collectNestedDocumentIds, label, readSource } = config
+  let resolvedTarget: null | ResolvedBlockTarget = null
 
   // In link mode the preloader maps every document to itself. A cleanup over its values would
   // delete the originals, so only a copy run may delete what phase 1 created.
@@ -82,6 +103,14 @@ export const runClonePipeline = async <TSource>(
   let documentPreloader: DocumentPreloader
 
   try {
+    if (target) {
+      if (collectionSlug === 'activities') {
+        throw new CloneHttpError('An activity cannot be pasted into a Prozessgruppe', 400)
+      }
+
+      resolvedTarget = await resolveBlockTarget(req, target, targetOrganisationId)
+    }
+
     for (const sourceId of sourceIds) {
       const accessValidation = await validateCloneAccess({
         collectionSlug,
@@ -239,6 +268,20 @@ export const runClonePipeline = async <TSource>(
           req: transactionalReq,
           returning: false,
         })
+      }
+
+      if (resolvedTarget && collectionSlug !== 'activities') {
+        const written = await attachTaskToBlock({
+          cloneLocales,
+          req: transactionalReq,
+          target: resolvedTarget,
+          task: { id: cloned.id, relationTo: collectionSlug },
+        })
+
+        // A copy nobody links is invisible in the landscape, so a failed attach fails the paste.
+        if (written === 0) {
+          throw new CloneHttpError('The target Prozessgruppe exists in no locale', 400)
+        }
       }
 
       req.payload.logger.info({

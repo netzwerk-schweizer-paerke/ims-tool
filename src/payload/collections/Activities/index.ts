@@ -6,6 +6,7 @@ import { currentOrganisationCollectionReadAccess } from '@/payload/collections/a
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
+import { attachTaskEndpoint } from '@/payload/collections/Activities/endpoints/attach-task'
 import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone/clone-activity-transactional'
 import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
 import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
@@ -40,7 +41,7 @@ export const Activities: CollectionConfig = {
     hideAPIURL: isProduction,
     useAsTitle: 'name',
   },
-  endpoints: [cloneActivityTransactional, fetchLegacyDocsTransactional],
+  endpoints: [cloneActivityTransactional, fetchLegacyDocsTransactional, attachTaskEndpoint],
   fields: [
     {
       label: I18nCollection.fieldLabel.name,

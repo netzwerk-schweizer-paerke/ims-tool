@@ -15,6 +15,8 @@ const batchCloneBodySchema = z.object({
   locale: z.string(),
   // Absent for every clone from a list view. A paste inside one park sends `link` (PIMS-83).
   mode: z.enum(['copy', 'link']).default('copy'),
+  // A paste of a Prozess or a Liste names the Prozessgruppe that links the copy (PIMS-83).
+  target: z.object({ activityId: z.number().min(1), blockId: z.string().min(1) }).optional(),
   targetOrganisationId: z.number(),
 })
 
@@ -118,7 +120,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { ids, locale: requestedLocale, mode, targetOrganisationId } = validatedBody
+    const { ids, locale: requestedLocale, mode, target, targetOrganisationId } = validatedBody
 
     // A repeated id would clone one source twice, and the link remap would then visit the same
     // nested records twice. The second visit degrades the links the first visit resolved.
@@ -145,6 +147,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       mode,
       req,
       sourceIds,
+      target,
       targetOrganisationId,
       user,
     })
