@@ -451,6 +451,27 @@ describe('createCloneEndpoint in link mode', () => {
   })
 })
 
+// PIMS-83: a pasted Prozessgruppe lands in an existing Thema. That Thema is not a clone.
+describe('createCloneEndpoint for a config that writes into an existing record', () => {
+  test('stamps no clone source', async () => {
+    const intoExisting = createCloneEndpoint<string>({
+      cloneSource,
+      collectionSlug: 'activities',
+      label: { plural: 'blocks', singular: 'Block' },
+      readSource,
+      stampsCloneSource: false,
+    })
+    const { mocks, req } = makeReq('tx-existing', {
+      findByID: vi.fn().mockResolvedValue({ id: SOURCE_ID, organisation: 3 }),
+    })
+
+    const response = await intoExisting.handler(req)
+
+    expect(response.status).toBe(200)
+    expect(mocks.updateOne).not.toHaveBeenCalled()
+  })
+})
+
 // PIMS-83: a pasted Prozess or Liste is linked to the Prozessgruppe it was pasted into.
 describe('createCloneEndpoint with a block target', () => {
   const target = { activityId: 31, blockId: 'block-de-2' }

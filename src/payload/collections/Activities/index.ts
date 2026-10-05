@@ -9,6 +9,7 @@ import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
 import { attachTaskEndpoint } from '@/payload/collections/Activities/endpoints/attach-task'
 import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone/clone-activity-transactional'
 import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
+import { pasteBlockEndpoint } from '@/payload/collections/Activities/endpoints/paste-block'
 import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
 import { clonedFromOrganisationField } from '@/payload/fields/cloned-from-organisation'
@@ -41,7 +42,12 @@ export const Activities: CollectionConfig = {
     hideAPIURL: isProduction,
     useAsTitle: 'name',
   },
-  endpoints: [cloneActivityTransactional, fetchLegacyDocsTransactional, attachTaskEndpoint],
+  endpoints: [
+    cloneActivityTransactional,
+    fetchLegacyDocsTransactional,
+    attachTaskEndpoint,
+    pasteBlockEndpoint,
+  ],
   fields: [
     {
       label: I18nCollection.fieldLabel.name,

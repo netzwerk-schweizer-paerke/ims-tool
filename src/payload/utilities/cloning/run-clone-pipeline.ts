@@ -260,7 +260,7 @@ export const runClonePipeline = async <TSource>(
 
       // The statistics count this field (PIMS-93). A database write sets one column and runs
       // no collection hook, so the clone keeps its `updatedBy` and its locales.
-      if (sourceOrganisationId !== null) {
+      if (sourceOrganisationId !== null && config.stampsCloneSource !== false) {
         await req.payload.db.updateOne({
           collection: collectionSlug,
           data: { clonedFromOrganisation: sourceOrganisationId },

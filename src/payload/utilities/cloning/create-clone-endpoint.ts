@@ -47,6 +47,11 @@ export interface CloneEndpointConfig<TSource> {
   label: { plural: string; singular: string }
   /** Reads one source in phase 1, with no transaction open. The access check already passed. */
   readSource: (args: ReadCloneSourceArgs) => Promise<ReadCloneSourceResult<TSource>>
+  /**
+   * False when `cloneSource` writes into an existing record instead of a new one. A pasted
+   * Prozessgruppe lands in an existing Thema, which must not read as a clone (PIMS-83, PIMS-93).
+   */
+  stampsCloneSource?: boolean
 }
 
 export type CloneEndpointResult =
