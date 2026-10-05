@@ -7,7 +7,6 @@ import {
   useConfig,
   useDocumentInfo,
   useLocale,
-  usePreferences,
   useTranslation,
 } from '@payloadcms/ui'
 import { TypedLocale } from 'payload'
@@ -50,7 +49,6 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
   const locale = useLocale()
   const { i18n, t } = useTranslation<DeepLTranslationsObject, DeepLTranslationKeys>()
   const { config } = useConfig()
-  const { setPreference } = usePreferences()
 
   // All available locales
   const allLocales = React.useMemo(() => {
@@ -172,10 +170,12 @@ export const StandaloneTranslatorModal: React.FC<Props> = ({ modalSlug, onClose 
     }
   }
 
-  const onViewTranslation = async () => {
-    // Change the locale preference and reload
-    await setPreference('locale', selectedToLocale)
-    window.location.reload()
+  // Payload reads `?locale=` before the saved preference, and it saves the URL locale as the new
+  // preference. A plain reload therefore keeps the source locale.
+  const onViewTranslation = () => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('locale', selectedToLocale)
+    window.location.assign(url.href)
   }
 
   return (
