@@ -13,6 +13,8 @@ import { requireAuthentication } from '@/payload/utilities/endpoints/require-aut
 const batchCloneBodySchema = z.object({
   ids: z.array(z.number().min(1)).min(1, 'At least one ID is required'),
   locale: z.string(),
+  // Absent for every clone from a list view. A paste inside one park sends `link` (PIMS-83).
+  mode: z.enum(['copy', 'link']).default('copy'),
   targetOrganisationId: z.number(),
 })
 
@@ -116,7 +118,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { ids, locale: requestedLocale, targetOrganisationId } = validatedBody
+    const { ids, locale: requestedLocale, mode, targetOrganisationId } = validatedBody
 
     // A repeated id would clone one source twice, and the link remap would then visit the same
     // nested records twice. The second visit degrades the links the first visit resolved.
@@ -140,6 +142,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
     const { body, status } = await runClonePipeline(config, {
       cloneLocales,
       locale,
+      mode,
       req,
       sourceIds,
       targetOrganisationId,

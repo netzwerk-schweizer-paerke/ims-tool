@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 
 import { CloneStatisticsTracker } from './clone-statistics-tracker'
 
@@ -194,6 +194,22 @@ describe('CloneStatisticsTracker completeness', () => {
     expect(secondPass).toBe(700)
     expect(result.entities[0].source.relatedEntitiesCount).toBe(1)
     expect(result.entities[0].cloned.relatedEntitiesCount).toBe(1)
+  })
+
+  // PIMS-83: a paste inside one park links the original task. The link remap must never read it
+  // back, or it rewrites the original's links.
+  test('answers the source task in link mode, and records nothing', async () => {
+    const tracker = trackerFor('tx-task-link')
+    tracker.linkTasksInPlace()
+    tracker.startEntity(1)
+    const cloneTask = vi.fn(async () => 701)
+
+    const linked = await tracker.resolveClonedTaskId('task-flows', 55, cloneTask)
+
+    expect(linked).toBe(55)
+    expect(cloneTask).not.toHaveBeenCalled()
+    expect(tracker.getClonedTaskRecords(1)).toEqual([])
+    expect(tracker.getClonedTaskId(1, 'task-flows', 55)).toBeUndefined()
   })
 
   // A task flow and a task list are separate tables, so both can carry the same id.
