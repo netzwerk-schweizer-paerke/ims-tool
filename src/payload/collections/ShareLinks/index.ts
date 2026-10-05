@@ -4,13 +4,13 @@ import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { isProduction } from '@/lib/environment'
 import { I18nCollection } from '@/lib/i18n-collection'
 import { MAX_EXPIRY_MONTHS } from '@/lib/share-link-expiry'
-import { authenticatedCollectionAccess } from '@/payload/collections/access/authenticated-collection-access'
 import {
-  isShareLinkAdmin,
   shareLinkAdminAccess,
+  shareLinkCreateAccess,
   shareLinkOwnerOrAdminAccess,
 } from '@/payload/collections/ShareLinks/access/share-link-access'
 import { stampShareLinkHook } from '@/payload/collections/ShareLinks/hooks/stamp-share-link-hook'
+import { isParkAdmin } from '@/payload/utilities/is-park-admin'
 
 /**
  * A share link opens without a session, so the client never writes these three fields. Payload
@@ -22,7 +22,7 @@ export const ShareLinks: CollectionConfig = {
   access: {
     // The hook resolves the target with the caller's own read access, so a create cannot reach
     // a page the caller may not see.
-    create: authenticatedCollectionAccess,
+    create: shareLinkCreateAccess,
     delete: shareLinkOwnerOrAdminAccess,
     read: shareLinkOwnerOrAdminAccess,
     update: shareLinkAdminAccess,
@@ -30,7 +30,7 @@ export const ShareLinks: CollectionConfig = {
   admin: {
     defaultColumns: ['token', 'targetType', 'createdBy', 'organisation', 'createdAt', 'expiresAt'],
     group: I18nCollection.collectionGroup.settings,
-    hidden: ({ user }) => !isShareLinkAdmin(user),
+    hidden: ({ user }) => !isParkAdmin(user),
     hideAPIURL: isProduction,
     useAsTitle: 'token',
   },

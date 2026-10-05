@@ -10,9 +10,8 @@ vi.mock('@/lib/logger', () => ({
 
 import { User } from '@/payload-types'
 import {
-  administeredOrganisationId,
-  isShareLinkAdmin,
   shareLinkAdminAccess,
+  shareLinkCreateAccess,
   shareLinkOwnerOrAdminAccess,
 } from '@/payload/collections/ShareLinks/access/share-link-access'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
@@ -42,43 +41,25 @@ const impostor: User = {
   organisations: [{ organisation: OTHER_PARK, roles: [ROLE_SUPER_ADMIN] }],
 }
 
-describe('administeredOrganisationId', () => {
-  test('returns the park a park admin administers', () => {
-    expect(administeredOrganisationId(parkAdmin)).toBe(PARK)
-  })
-
-  test('returns null for a member who is not a park admin', () => {
-    expect(administeredOrganisationId(parkMember)).toBeNull()
-  })
-
-  test('returns null when the selected park is not one the user belongs to', () => {
-    expect(administeredOrganisationId(impostor)).toBeNull()
-  })
-
-  test('returns null when no park is selected', () => {
-    expect(administeredOrganisationId(createMockUser({ id: 5 }))).toBeNull()
-  })
-
-  test('returns null for an anonymous caller', () => {
-    expect(administeredOrganisationId(null)).toBeNull()
-  })
-})
-
-describe('isShareLinkAdmin', () => {
+describe('shareLinkCreateAccess', () => {
   test('admits a super admin', () => {
-    expect(isShareLinkAdmin(superAdmin)).toBe(true)
+    expect(callAccess(shareLinkCreateAccess, superAdmin)).toBe(true)
   })
 
   test('admits a park admin', () => {
-    expect(isShareLinkAdmin(parkAdmin)).toBe(true)
+    expect(callAccess(shareLinkCreateAccess, parkAdmin)).toBe(true)
   })
 
-  test('refuses a plain member', () => {
-    expect(isShareLinkAdmin(parkMember)).toBe(false)
+  test('refuses a reader', () => {
+    expect(callAccess(shareLinkCreateAccess, parkMember)).toBe(false)
+  })
+
+  test('refuses an admin of another park', () => {
+    expect(callAccess(shareLinkCreateAccess, impostor)).toBe(false)
   })
 
   test('refuses an anonymous caller', () => {
-    expect(isShareLinkAdmin(null)).toBe(false)
+    expect(callAccess(shareLinkCreateAccess, null)).toBe(false)
   })
 })
 

@@ -14,6 +14,7 @@ import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
 import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { isParkAdmin } from '@/payload/utilities/is-park-admin'
 import { loadList } from '@/payload/utilities/share/load-list'
 
 export const ListBlockView: React.FC<AdminViewServerProps> = async ({
@@ -96,6 +97,7 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
           listBlock={listBlock}
           toolbar={
             <ViewToolbar
+              canShare={isParkAdmin(user)}
               editHref={`/admin/collections/task-lists/${listId}?locale=${localeCode}`}
               existingLinks={existingShareLinks}
               locale={localeCode}

@@ -645,13 +645,27 @@ const run = async (mode: Mode) => {
     )
 
     if (homeFlow) {
-      const share = await request('/share-links', {
+      const readerShare = await request('/share-links', {
         as: 'user',
         body: { targetType: 'flow', taskFlow: homeFlow.id },
         method: 'POST',
       })
 
-      record('FIX', 'H4 a park user shares a flow of their own park', '403', '201', String(share.status))
+      record(
+        'FIX',
+        'PIMS-92 a reader cannot share a flow of their own park',
+        '201',
+        '403',
+        String(readerShare.status),
+      )
+
+      const share = await request('/share-links', {
+        as: 'padmin',
+        body: { targetType: 'flow', taskFlow: homeFlow.id },
+        method: 'POST',
+      })
+
+      record('FIX', 'H4 a park admin shares a flow of their own park', '403', '201', String(share.status))
 
       const created = parse(createdSchema, share.json)
       createdShareLinkId = created?.doc.id ?? null
@@ -667,14 +681,14 @@ const run = async (mode: Mode) => {
 
     if (foreignFlowId) {
       const foreignShare = await request('/share-links', {
-        as: 'user',
+        as: 'padmin',
         body: { targetType: 'flow', taskFlow: foreignFlowId },
         method: 'POST',
       })
 
       record(
         'INVARIANT',
-        'a park user cannot share a flow of a foreign park',
+        'a park admin cannot share a flow of a foreign park',
         '403',
         '403',
         String(foreignShare.status),

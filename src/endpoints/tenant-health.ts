@@ -80,9 +80,10 @@ export const tenantHealthEndpoint: Endpoint = {
         return Response.json(report, { status: 200 })
       }
 
-      // Document scope: anyone who may read the row may check it. The Local API defaults
-      // `overrideAccess` to true, so `req` alone applies no filter. Pass it explicitly, or
-      // a park user reads the health report of any other park's document.
+      // Document scope: anyone who may read the row may check it. The admin panel hides the
+      // button from a reader (PIMS-92), but the clone preflight still calls this for one.
+      // The Local API defaults `overrideAccess` to true, so `req` alone applies no filter. Pass
+      // it explicitly, or a park user reads the health report of any other park's document.
       const doc = await req.payload.findByID({
         collection: body.collection,
         depth: 0,

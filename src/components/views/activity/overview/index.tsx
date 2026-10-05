@@ -15,6 +15,7 @@ import { ShareTarget } from '@/lib/share-link-target'
 import { Translate } from '@/lib/translate'
 import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { isParkAdmin } from '@/payload/utilities/is-park-admin'
 import { loadLandscape } from '@/payload/utilities/share/load-landscape'
 
 export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
@@ -90,6 +91,7 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
           toolbar={
             selectedOrganisationId ? (
               <ViewToolbar
+                canShare={isParkAdmin(user)}
                 editHref={'/admin/collections/activities'}
                 existingLinks={existingShareLinks}
                 locale={localeCode}

@@ -14,6 +14,7 @@ import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
 import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
+import { isParkAdmin } from '@/payload/utilities/is-park-admin'
 import { loadFlow } from '@/payload/utilities/share/load-flow'
 
 export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
@@ -97,6 +98,7 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
           flowBlock={flowBlock}
           toolbar={
             <ViewToolbar
+              canShare={isParkAdmin(user)}
               editHref={`/admin/collections/task-flows/${flowId}?locale=${localeCode}`}
               existingLinks={existingShareLinks}
               locale={localeCode}
