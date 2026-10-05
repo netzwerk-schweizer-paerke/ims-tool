@@ -62,7 +62,6 @@ export const ActivityBlock = ({ activityId, block, links, type }: Props) => {
                   label: (block as ActivityTaskCompoundBlock).graph?.task?.text ?? '',
                   organisationId: links.organisationId,
                 }}
-                variant={'compact'}
               />
             ) : undefined
           }

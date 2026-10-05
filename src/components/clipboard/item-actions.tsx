@@ -20,16 +20,22 @@ type Props = {
   editHref?: string
   /** Where a paste from this menu lands. Absent when the user may not paste. */
   pasteTarget?: PasteTarget
-  /** `toolbar` renders a labelled button, `compact` a small trigger for a tile corner. */
-  variant?: 'compact' | 'toolbar'
 }
 
-const TOOLBAR_TRIGGER = 'btn btn--size-small btn--style-secondary m-0'
-const COMPACT_TRIGGER =
-  'flex h-6 w-6 items-center justify-center rounded text-base leading-none opacity-60 hover:opacity-100 [background-color:var(--theme-elevation-50)]'
+/** A round trigger with three vertical dots. The parent places it in a top right corner. */
+const TRIGGER =
+  'flex size-7 items-center justify-center rounded-full border border-solid transition-colors [border-color:var(--theme-elevation-150)] [background-color:var(--theme-elevation-0)] [color:var(--theme-elevation-800)] hover:[background-color:var(--theme-elevation-100)]'
+
+const VerticalDots = () => (
+  <svg aria-hidden={true} fill={'currentColor'} height={14} viewBox={'0 0 4 16'} width={4}>
+    <circle cx={2} cy={2} r={1.6} />
+    <circle cx={2} cy={8} r={1.6} />
+    <circle cx={2} cy={14} r={1.6} />
+  </svg>
+)
 
 /** The menu that holds edit, copy and paste for one item (PIMS-83). */
-export const ItemActions = ({ copyItem, editHref, pasteTarget, variant = 'toolbar' }: Props) => {
+export const ItemActions = ({ copyItem, editHref, pasteTarget }: Props) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const { code: locale } = useLocale()
   const router = useRouter()
@@ -94,18 +100,14 @@ export const ItemActions = ({ copyItem, editHref, pasteTarget, variant = 'toolba
   return (
     <Popup
       button={
-        variant === 'toolbar' ? (
-          <span className={TOOLBAR_TRIGGER}>
-            {/* Collapsing this ternary would build the key by interpolation; i18n keys
-                must stay static literals so the extractor can find them. */}
-            {/* eslint-disable-next-line unicorn/prefer-minimal-ternary */}
-            {busy ? t('clipboard:working') : t('clipboard:actions')}
-          </span>
-        ) : (
-          <span aria-label={t('clipboard:actions')} className={COMPACT_TRIGGER} role={'img'}>
-            ⋯
-          </span>
-        )
+        <span
+          aria-busy={busy}
+          aria-label={t('clipboard:actions')}
+          className={`${TRIGGER} ${busy ? 'animate-pulse' : ''}`}
+          role={'img'}
+          title={t('clipboard:actions')}>
+          <VerticalDots />
+        </span>
       }
       buttonType={'custom'}
       disabled={busy}

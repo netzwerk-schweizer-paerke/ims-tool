@@ -257,8 +257,6 @@ export const ViewToolbar = ({
 
   return (
     <div className={'flex flex-row items-center gap-2'}>
-      {/* Edit, copy and paste share one menu (PIMS-83). */}
-      <ItemActions copyItem={copyItem} editHref={editHref} pasteTarget={pasteTarget} />
       {pasteTarget || copyItem ? <ClipboardHolding /> : null}
       <Button
         buttonStyle={'secondary'}
@@ -420,6 +418,8 @@ export const ViewToolbar = ({
           </Drawer>
         </>
       )}
+      {/* Edit, copy and paste share one menu in the top right corner (PIMS-83). */}
+      <ItemActions copyItem={copyItem} editHref={editHref} pasteTarget={pasteTarget} />
     </div>
   )
 }
