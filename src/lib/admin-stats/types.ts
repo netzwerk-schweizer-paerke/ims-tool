@@ -1,3 +1,6 @@
+/** The window of the "active users" column of the park table (PIMS-93). */
+export const ACTIVE_USER_DAYS = 30
+
 /** The five collections that carry `adminSettingsField`, and therefore an `organisation`. */
 export const TENANT_SCOPED_COLLECTIONS = [
   'activities',
@@ -8,6 +11,8 @@ export const TENANT_SCOPED_COLLECTIONS = [
 ] as const
 
 export type AdminStatsReport = {
+  /** Clones per source park and target park, recorded since PIMS-93. Largest first. */
+  clones: ClonePairRow[]
   content: {
     documentsPublic: number
     perLocale: LocaleCoverage[]
@@ -26,6 +31,14 @@ export type AdminStatsReport = {
   users: UserStats
 }
 
+export type ClonePairRow = {
+  activities: number
+  sourceName: string
+  targetName: string
+  taskFlows: number
+  taskLists: number
+}
+
 export type LocaleCoverage = {
   locale: string
   /** Records that carry a name in this locale. */
@@ -34,6 +47,8 @@ export type LocaleCoverage = {
 }
 
 export type ParkStatsRow = {
+  /** Members whose last login falls within `ACTIVE_USER_DAYS`. */
+  activeUsers: number
   activities: number
   documents: number
   id: number

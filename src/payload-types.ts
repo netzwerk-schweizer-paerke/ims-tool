@@ -225,6 +225,7 @@ export interface User {
   roles: ('admin' | 'user')[];
   organisations?: UserOrganisations;
   selectedOrganisation?: (number | null) | Organisation;
+  lastLoginAt?: string | null;
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -292,6 +293,7 @@ export interface Activity {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  clonedFromOrganisation?: (number | null) | Organisation;
   translationMeta?:
     | {
         [k: string]: unknown;
@@ -452,6 +454,7 @@ export interface TaskFlow {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  clonedFromOrganisation?: (number | null) | Organisation;
   translationMeta?:
     | {
         [k: string]: unknown;
@@ -865,6 +868,7 @@ export interface TaskList {
   organisation?: (number | null) | Organisation;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
+  clonedFromOrganisation?: (number | null) | Organisation;
   translationMeta?:
     | {
         [k: string]: unknown;
@@ -1232,6 +1236,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  clonedFromOrganisation?: T;
   translationMeta?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1370,6 +1375,7 @@ export interface TaskFlowsSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  clonedFromOrganisation?: T;
   translationMeta?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1485,6 +1491,7 @@ export interface TaskListsSelect<T extends boolean = true> {
   organisation?: T;
   createdBy?: T;
   updatedBy?: T;
+  clonedFromOrganisation?: T;
   translationMeta?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1518,6 +1525,7 @@ export interface UsersSelect<T extends boolean = true> {
   roles?: T;
   organisations?: T | UserOrganisationsSelect<T>;
   selectedOrganisation?: T;
+  lastLoginAt?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;

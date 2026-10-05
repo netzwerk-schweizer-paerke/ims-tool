@@ -608,11 +608,18 @@ export const it = {
   },
   statistics: {
     card: {
+      clones: 'Attività di clonazione',
       content: 'Contenuti',
       storage: 'Archivio dei file',
       technical: 'Tecnica',
       tenants: 'Parchi',
       users: 'Utenti',
+    },
+    clones: {
+      empty: 'Non è stato clonato nulla dall’inizio della registrazione.',
+      note: 'I numeri contano i record clonati per parco di origine e parco di destinazione. I cloni precedenti al 5 ottobre 2026 non sono registrati.',
+      source: 'Dal parco',
+      target: 'Nel parco',
     },
     content: {
       documentsPublic: 'Documenti pubblici',
@@ -621,6 +628,7 @@ export const it = {
       translated: '{{done}} su {{total}}',
     },
     error: 'Le statistiche non sono state caricate. Riprovare.',
+    exportCsv: 'Esporta come CSV',
     kpi: {
       activities: 'Attività',
       documents: 'Documenti',
@@ -672,10 +680,13 @@ export const it = {
       running: 'Scansione in corso...',
     },
     parkTable: {
+      activeUsers: 'Attivi (30 giorni)',
+      activeUsersHint: 'Membri che hanno effettuato l’accesso negli ultimi 30 giorni.',
       empty: 'Non esiste ancora nessun parco.',
       language: 'Lingua',
       park: 'Parco',
       share: 'Quota rispetto al parco più grande',
+      storageBytes: 'Occupato (byte)',
       total: 'Totale',
     },
     storage: {

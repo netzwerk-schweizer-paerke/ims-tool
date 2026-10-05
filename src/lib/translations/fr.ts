@@ -605,11 +605,18 @@ export const fr = {
   },
   statistics: {
     card: {
+      clones: 'Activités de clonage',
       content: 'Contenus',
       storage: 'Stockage de fichiers',
       technical: 'Technique',
       tenants: 'Parcs',
       users: 'Utilisateurs',
+    },
+    clones: {
+      empty: 'Rien n’a été cloné depuis le début de l’enregistrement.',
+      note: 'Les nombres comptent les enregistrements clonés par parc source et parc cible. Les clones antérieurs au 5 octobre 2026 ne sont pas enregistrés.',
+      source: 'Depuis le parc',
+      target: 'Vers le parc',
     },
     content: {
       documentsPublic: 'Documents publics',
@@ -618,6 +625,7 @@ export const fr = {
       translated: '{{done}} sur {{total}}',
     },
     error: 'Les statistiques n’ont pas pu être chargées. Veuillez réessayer.',
+    exportCsv: 'Exporter en CSV',
     kpi: {
       activities: 'Activités',
       documents: 'Documents',
@@ -670,10 +678,13 @@ export const fr = {
       running: 'Analyse en cours...',
     },
     parkTable: {
+      activeUsers: 'Actifs (30 jours)',
+      activeUsersHint: 'Membres qui se sont connectés au cours des 30 derniers jours.',
       empty: 'Aucun parc n’existe encore.',
       language: 'Langue',
       park: 'Parc',
       share: 'Part du plus grand parc',
+      storageBytes: 'Occupé (octets)',
       total: 'Total',
     },
     storage: {

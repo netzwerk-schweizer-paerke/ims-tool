@@ -26,6 +26,10 @@ export const MaintenanceToolbar = ({ locale, parks }: Props) => {
 
   return (
     <div className={'flex flex-wrap items-center gap-2'}>
+      {/* The endpoint answers with `Content-Disposition: attachment`, so the page stays. */}
+      <a className={`${TOGGLE} no-underline`} href={'/api/admin-stats/csv'}>
+        {t('statistics:exportCsv')}
+      </a>
       <DrawerToggler
         className={TOGGLE}
         disabled={parks.length === 0}

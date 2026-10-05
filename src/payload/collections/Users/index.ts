@@ -1,5 +1,6 @@
 import { CollectionConfig } from 'payload'
 
+import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { renderPasswordResetEmail } from '@/lib/email-renderer'
 import { isProduction } from '@/lib/environment'
 import { I18nCollection } from '@/lib/i18n-collection'
@@ -11,6 +12,7 @@ import {
 import { adminAndSelfCollectionAccess } from '@/payload/collections/Users/access/admin-and-self-collection-access'
 import { adminAndSelfFieldAccess } from '@/payload/collections/Users/access/admin-and-self-field-access'
 import { enforceSelectedOrganisationMembershipHook } from '@/payload/collections/Users/hooks/enforce-selected-organisation-membership-hook'
+import { recordLastLoginAfterLoginHook } from '@/payload/collections/Users/hooks/record-last-login-after-login-hook'
 import { recordSelectedOrganisationAfterLoginHook } from '@/payload/collections/Users/hooks/record-selected-organisation-after-login-hook'
 import { ROLE_SUPER_ADMIN, ROLE_USER } from '@/payload/utilities/constants'
 
@@ -174,9 +176,26 @@ export const Users: CollectionConfig = {
       relationTo: 'organisations',
       type: 'relationship',
     },
+    {
+      // Only `recordLastLoginAfterLoginHook` writes this, through the Local API.
+      access: {
+        create: () => false,
+        read: superAdminFieldAccess,
+        update: () => false,
+      },
+      admin: {
+        date: { displayFormat: ADMIN_DATE_FORMAT },
+        position: 'sidebar',
+        readOnly: true,
+      },
+      index: true,
+      label: I18nCollection.fieldLabel.lastLoginAt,
+      name: 'lastLoginAt',
+      type: 'date',
+    },
   ],
   hooks: {
-    afterLogin: [recordSelectedOrganisationAfterLoginHook],
+    afterLogin: [recordSelectedOrganisationAfterLoginHook, recordLastLoginAfterLoginHook],
     beforeChange: [enforceSelectedOrganisationMembershipHook],
   },
   labels: {

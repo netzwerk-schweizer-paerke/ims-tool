@@ -282,6 +282,12 @@ export const I18nCollection = {
       fr: 'Blocs',
       it: 'Blocchi',
     },
+    clonedFromOrganisation: {
+      de: 'Geklont aus Park',
+      en: 'Cloned from park',
+      fr: 'Cloné depuis le parc',
+      it: 'Clonato dal parco',
+    },
     content: {
       de: 'Inhalt',
       en: 'Content',
@@ -401,6 +407,12 @@ export const I18nCollection = {
       en: 'Key points',
       fr: 'Points clés',
       it: 'Punti chiave',
+    },
+    lastLoginAt: {
+      de: 'Letzte Anmeldung',
+      en: 'Last login',
+      fr: 'Dernière connexion',
+      it: 'Ultimo accesso',
     },
     lastName: {
       de: 'Nachname',

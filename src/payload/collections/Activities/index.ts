@@ -10,6 +10,7 @@ import { cloneActivityTransactional } from '@/payload/collections/Activities/end
 import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
 import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { clonedFromOrganisationField } from '@/payload/fields/cloned-from-organisation'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 
@@ -30,7 +31,7 @@ export const Activities: CollectionConfig = {
       edit: {
         beforeDocumentControls: [
           {
-            path: '@/payload/components/health/document-health-button#DocumentHealthButton',
+            path: '@/payload/components/health/document-health-control#DocumentHealthControl',
           },
         ],
       },
@@ -92,6 +93,7 @@ export const Activities: CollectionConfig = {
     },
     filesArrayField,
     adminSettingsField(),
+    clonedFromOrganisationField,
   ],
   labels: {
     plural: I18nCollection.fieldLabel.activities,

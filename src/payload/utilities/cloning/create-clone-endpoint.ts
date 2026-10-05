@@ -17,6 +17,7 @@ import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/typ
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
+import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 const batchCloneBodySchema = z.object({
   ids: z.array(z.number().min(1)).min(1, 'At least one ID is required'),
@@ -159,7 +160,12 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
     })
 
     const allDocumentIds: number[] = []
-    const entries: Array<{ id: number; name: string; source: TSource }> = []
+    const entries: Array<{
+      id: number
+      name: string
+      source: TSource
+      sourceOrganisationId: null | number
+    }> = []
     let documentPreloader: DocumentPreloader
 
     try {
@@ -186,8 +192,23 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
           sourceId,
         })
 
+        // `validateCloneAccess` returns early for a super admin, so it cannot supply this id.
+        const sourceRecord = await req.payload.findByID({
+          collection: collectionSlug,
+          depth: 0,
+          id: sourceId,
+          overrideAccess: true,
+          req,
+          select: { organisation: true },
+        })
+
         allDocumentIds.push(...documentIds)
-        entries.push({ id: sourceId, name, source })
+        entries.push({
+          id: sourceId,
+          name,
+          source,
+          sourceOrganisationId: getIdFromRelation(sourceRecord.organisation),
+        })
       }
 
       if (collectNestedDocumentIds) {
@@ -270,7 +291,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       const clonedEntries: Array<{ entityId: number; record: CloneRecordRef }> = []
 
       // Process each source within the SAME transaction
-      for (const { id: sourceId, name, source } of entries) {
+      for (const { id: sourceId, name, source, sourceOrganisationId } of entries) {
         tracker.startEntity(sourceId)
         tracker.setSourceInfo(sourceId, name, collectionSlug)
 
@@ -285,6 +306,18 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
         })
 
         tracker.setCloneInfo(cloned.id, cloned.name, collectionSlug)
+
+        // The statistics count this field (PIMS-93). A database write sets one column and runs
+        // no collection hook, so the clone keeps its `updatedBy` and its locales.
+        if (sourceOrganisationId !== null) {
+          await req.payload.db.updateOne({
+            collection: collectionSlug,
+            data: { clonedFromOrganisation: sourceOrganisationId },
+            id: cloned.id,
+            req: transactionalReq,
+            returning: false,
+          })
+        }
 
         req.payload.logger.info({
           clonedId: cloned.id,

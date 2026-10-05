@@ -1,13 +1,20 @@
 import type { Payload } from 'payload'
 
-import type { AdminStatsReport, ParkStatsRow, TechnicalStats } from '@/lib/admin-stats/types'
+import type {
+  AdminStatsReport,
+  ClonePairRow,
+  ParkStatsRow,
+  TechnicalStats,
+} from '@/lib/admin-stats/types'
 
 import {
   countByOrganisation,
   countNamedPerLocale,
   type OrganisationTally,
+  tallyClones,
   tallyUsers,
 } from '@/lib/admin-stats/tally-rows'
+import { ACTIVE_USER_DAYS } from '@/lib/admin-stats/types'
 import { getLocaleCodes } from '@/lib/locale-utils'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 
@@ -39,7 +46,7 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
     findAll(payload, 'documents', { filesize: true, organisation: true }),
     findAll(payload, 'media', { filesize: true, organisation: true }),
     findAll(payload, 'documents-public', { filesize: true }),
-    findAll(payload, 'users', { organisations: true, roles: true }),
+    findAll(payload, 'users', { lastLoginAt: true, organisations: true, roles: true }),
     countOnly(payload, 'share-links'),
   ])
 
@@ -48,7 +55,8 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
   const listTally = countByOrganisation(taskLists)
   const documentTally = countByOrganisation(documents)
   const mediaTally = countByOrganisation(media)
-  const userTally = tallyUsers(users, ROLE_SUPER_ADMIN)
+  const activeSince = new Date(Date.now() - ACTIVE_USER_DAYS * 24 * 60 * 60 * 1000)
+  const userTally = tallyUsers(users, ROLE_SUPER_ADMIN, activeSince)
 
   const parks: ParkStatsRow[] = organisations.map((organisation) => {
     const id = readNumber(organisation.id)
@@ -56,6 +64,7 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
     const mediaBytes = read(mediaTally, id)
 
     return {
+      activeUsers: userTally.activeByPark.get(id) ?? 0,
       activities: read(activityTally, id).count,
       documents: documentBytes.count,
       id,
@@ -75,7 +84,22 @@ export const collectAdminStats = async (payload: Payload): Promise<AdminStatsRep
     locales,
   )
 
+  const parkNames = new Map(parks.map((park) => [park.id, park.name]))
+  const clones: ClonePairRow[] = tallyClones({ activities, taskFlows, taskLists })
+    .map((pair) => ({
+      activities: pair.activities,
+      sourceName: parkNames.get(pair.source) ?? `#${pair.source}`,
+      targetName: parkNames.get(pair.target) ?? `#${pair.target}`,
+      taskFlows: pair.taskFlows,
+      taskLists: pair.taskLists,
+    }))
+    .toSorted(
+      (a, b) =>
+        b.activities + b.taskFlows + b.taskLists - (a.activities + a.taskFlows + a.taskLists),
+    )
+
   return {
+    clones,
     content: {
       documentsPublic: documentsPublic.length,
       perLocale: locales.map((locale) => ({
@@ -167,7 +191,7 @@ const findLocalisedContent = async <TSlug extends 'activities' | 'task-flows' | 
     limit: 0,
     locale: 'all',
     overrideAccess: true,
-    select: { name: true, organisation: true },
+    select: { clonedFromOrganisation: true, name: true, organisation: true },
   })
 
   return result.docs

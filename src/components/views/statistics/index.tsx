@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { DocumentViewServerProps } from 'payload'
 import { ReactNode } from 'react'
 
+import { CloneTable } from '@/components/views/statistics/clone-table'
 import { MaintenanceToolbar } from '@/components/views/statistics/maintenance-toolbar'
 import { MeterBar } from '@/components/views/statistics/meter-bar'
 import { ParkTable } from '@/components/views/statistics/park-table'
@@ -80,8 +81,16 @@ export const StatisticsView = async ({ initPageResult }: DocumentViewServerProps
         />
       </div>
 
-      <SectionCard title={<Translate k={'statistics:card:tenants'} />}>
+      <SectionCard
+        note={<Translate k={'statistics:parkTable:activeUsersHint'} />}
+        title={<Translate k={'statistics:card:tenants'} />}>
         <ParkTable locale={locale} rows={stats.parks} />
+      </SectionCard>
+
+      <SectionCard
+        note={<Translate k={'statistics:clones:note'} />}
+        title={<Translate k={'statistics:card:clones'} />}>
+        <CloneTable locale={locale} rows={stats.clones} />
       </SectionCard>
 
       <div className={'grid gap-6 lg:grid-cols-3'}>

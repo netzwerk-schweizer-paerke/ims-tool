@@ -1,5 +1,19 @@
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
+export type ClonedRow = {
+  clonedFromOrganisation?: unknown
+  organisation?: unknown
+}
+
+/** The clones of one source park into one target park, per collection. */
+export type ClonePairTally = {
+  activities: number
+  source: number
+  target: number
+  taskFlows: number
+  taskLists: number
+}
+
 export type LocalisedName = Record<string, unknown>
 
 export type OrganisationScopedRow = {
@@ -18,11 +32,14 @@ export type RowTally = {
 }
 
 export type UserRow = {
+  lastLoginAt?: null | string
   organisations?: null | { organisation?: unknown }[]
   roles?: null | string[]
 }
 
 export type UserTally = {
+  /** Members per park whose last login is at or after `activeSince`. */
+  activeByPark: Map<number, number>
   byPark: Map<number, number>
   noPark: number
   superAdmins: number
@@ -86,9 +103,15 @@ export const countNamedPerLocale = (
 /**
  * Count users overall, per role and per organisation.
  *
- * A user can belong to several parks, so the per-park counts sum to more than the total.
+ * A user can belong to several parks, so the per-park counts sum to more than the total. An
+ * active user counts as active in every park they belong to.
  */
-export const tallyUsers = (rows: readonly UserRow[], superAdminRole: string): UserTally => {
+export const tallyUsers = (
+  rows: readonly UserRow[],
+  superAdminRole: string,
+  activeSince: Date,
+): UserTally => {
+  const activeByPark = new Map<number, number>()
   const byPark = new Map<number, number>()
   let noPark = 0
   let superAdmins = 0
@@ -110,15 +133,62 @@ export const tallyUsers = (rows: readonly UserRow[], superAdminRole: string): Us
       continue
     }
 
+    const active = isAtOrAfter(row.lastLoginAt, activeSince)
+
     for (const park of parks) {
       byPark.set(park, (byPark.get(park) ?? 0) + 1)
+
+      if (active) {
+        activeByPark.set(park, (activeByPark.get(park) ?? 0) + 1)
+      }
     }
   }
 
-  return { byPark, noPark, superAdmins, total: rows.length }
+  return { activeByPark, byPark, noPark, superAdmins, total: rows.length }
+}
+
+/**
+ * Count the clones per source park and target park. A row with no source park was never cloned,
+ * or was cloned before PIMS-93 started to record the source.
+ */
+export const tallyClones = (rows: {
+  activities: readonly ClonedRow[]
+  taskFlows: readonly ClonedRow[]
+  taskLists: readonly ClonedRow[]
+}): ClonePairTally[] => {
+  const pairs = new Map<string, ClonePairTally>()
+
+  for (const key of ['activities', 'taskFlows', 'taskLists'] as const) {
+    for (const row of rows[key]) {
+      const source = getIdFromRelation(row.clonedFromOrganisation)
+      const target = getIdFromRelation(row.organisation)
+
+      if (source === null || target === null) {
+        continue
+      }
+
+      const id = `${source}:${target}`
+      const pair = pairs.get(id) ?? { activities: 0, source, target, taskFlows: 0, taskLists: 0 }
+
+      pair[key] += 1
+      pairs.set(id, pair)
+    }
+  }
+
+  return pairs.values().toArray()
 }
 
 const hasText = (value: unknown): boolean => typeof value === 'string' && value.trim().length > 0
+
+const isAtOrAfter = (value: unknown, since: Date): boolean => {
+  if (typeof value !== 'string') {
+    return false
+  }
+
+  const time = Date.parse(value)
+
+  return Number.isFinite(time) && time >= since.getTime()
+}
 
 const isLocalisedName = (value: unknown): value is LocalisedName =>
   typeof value === 'object' && value !== null && !Array.isArray(value)

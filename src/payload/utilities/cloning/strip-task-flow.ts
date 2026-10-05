@@ -19,7 +19,7 @@ export const stripTaskFlow = async (
   documentPreloader: DocumentPreloader,
   tracker: CloneStatisticsTracker,
 ) => {
-  const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
+  const { clonedFromOrganisation, createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const locationPrefix = obj.name ? `Task Flow "${obj.name}"` : 'Task Flow'
 
   if (strippedEntity.description) {

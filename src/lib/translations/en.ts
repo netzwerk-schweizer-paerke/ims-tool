@@ -594,11 +594,18 @@ export const en = {
   },
   statistics: {
     card: {
+      clones: 'Clone activity',
       content: 'Content',
       storage: 'File storage',
       technical: 'Technical',
       tenants: 'Parks',
       users: 'Users',
+    },
+    clones: {
+      empty: 'Nothing was cloned since the recording started.',
+      note: 'The counts are cloned records per source park and target park. Clones before 5 October 2026 are not recorded.',
+      source: 'From park',
+      target: 'Into park',
     },
     content: {
       documentsPublic: 'Public documents',
@@ -607,6 +614,7 @@ export const en = {
       translated: '{{done}} of {{total}}',
     },
     error: 'The statistics could not load. Try again.',
+    exportCsv: 'Export as CSV',
     kpi: {
       activities: 'Activities',
       documents: 'Documents',
@@ -657,10 +665,13 @@ export const en = {
       running: 'Scanning...',
     },
     parkTable: {
+      activeUsers: 'Active (30 days)',
+      activeUsersHint: 'Members who logged in within the last 30 days.',
       empty: 'No park exists yet.',
       language: 'Language',
       park: 'Park',
       share: 'Share of the largest park',
+      storageBytes: 'Stored (bytes)',
       total: 'Total',
     },
     storage: {

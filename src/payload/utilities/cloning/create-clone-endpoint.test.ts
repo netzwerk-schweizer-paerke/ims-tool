@@ -42,6 +42,7 @@ interface ReqMocks {
   findByID: Mock
   rollbackTransaction: Mock
   update: Mock
+  updateOne: Mock
 }
 
 const makeReq = (
@@ -57,6 +58,7 @@ const makeReq = (
     findByID: vi.fn().mockResolvedValue({ id: 77, name: 'Clone' }),
     rollbackTransaction: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue({ id: 77 }),
+    updateOne: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   }
 
@@ -69,6 +71,7 @@ const makeReq = (
         beginTransaction: mocks.beginTransaction,
         commitTransaction: mocks.commitTransaction,
         rollbackTransaction: mocks.rollbackTransaction,
+        updateOne: mocks.updateOne,
       },
       delete: mocks.delete,
       findByID: mocks.findByID,
@@ -197,6 +200,29 @@ describe('createCloneEndpoint', () => {
     )
     expect(vi.mocked(preloadDocuments).mock.invocationCallOrder[0]).toBeLessThan(
       mocks.beginTransaction.mock.invocationCallOrder[0],
+    )
+  })
+
+  // PIMS-93: the statistics aggregate this column per source and target park.
+  test('stamps the source park on the clone, inside the transaction', async () => {
+    const SOURCE_ORG_ID = 3
+    const { mocks, req } = makeReq('tx-source', {
+      findByID: vi.fn().mockResolvedValue({ id: SOURCE_ID, organisation: SOURCE_ORG_ID }),
+    })
+
+    const response = await handle(req)
+
+    expect(response.status).toBe(200)
+    expect(mocks.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'task-flows',
+        data: { clonedFromOrganisation: SOURCE_ORG_ID },
+        id: 77,
+        req: expect.objectContaining({ transactionID: 'tx-source' }),
+      }),
+    )
+    expect(mocks.updateOne.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.commitTransaction.mock.invocationCallOrder[0],
     )
   })
 

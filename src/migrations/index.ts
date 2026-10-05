@@ -19,6 +19,7 @@ import * as migration_20260904_093453_add_share_links from './20260904_093453_ad
 import * as migration_20260904_183652_share_link_expiry from './20260904_183652_share_link_expiry';
 import * as migration_20260904_222437_add_statistics_global from './20260904_222437_add_statistics_global';
 import * as migration_20260922_065619_payload_3_90_1 from './20260922_065619_payload_3_90_1';
+import * as migration_20261005_133037_pims_93_last_login_and_clone_source from './20261005_133037_pims_93_last_login_and_clone_source';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20260922_065619_payload_3_90_1.up,
     down: migration_20260922_065619_payload_3_90_1.down,
-    name: '20260922_065619_payload_3_90_1'
+    name: '20260922_065619_payload_3_90_1',
+  },
+  {
+    up: migration_20261005_133037_pims_93_last_login_and_clone_source.up,
+    down: migration_20261005_133037_pims_93_last_login_and_clone_source.down,
+    name: '20261005_133037_pims_93_last_login_and_clone_source'
   },
 ];

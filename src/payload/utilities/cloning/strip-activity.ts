@@ -24,7 +24,7 @@ export const stripActivity = async (
     throw new Error('stripActivity requires an organisationId')
   }
 
-  const { createdAt, createdBy, id, updatedAt, updatedBy, ...stripped } = obj
+  const { clonedFromOrganisation, createdAt, createdBy, id, updatedAt, updatedBy, ...stripped } = obj
 
   if (stripped.description) {
     const result = await processRichTextField(

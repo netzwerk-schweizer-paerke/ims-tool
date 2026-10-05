@@ -9,7 +9,7 @@ import { UnorderedListFeatureClient as UnorderedListFeatureClient_e70f5e05f09f93
 import { ActivityIOField as ActivityIOField_caf9a311801e7db98fb5e995e8a2596d } from '@/components/graph/fields/graph/activities/io/activity-i-o-field'
 import { ActivityTaskField as ActivityTaskField_6665d552f7f6a0ad37f39384c6c9f950 } from '@/components/graph/fields/graph/activities/task/activity-task-field'
 import { BeforeListTableWrapper as BeforeListTableWrapper_74592d2078933a5095f41d31c1f58f8d } from '@/payload/collections/Activities/components/before-list-table-wrapper'
-import { DocumentHealthButton as DocumentHealthButton_8076ad28c6e6c7ac777a780312e306b0 } from '@/payload/components/health/document-health-button'
+import { DocumentHealthControl as DocumentHealthControl_59c6c3b5e687827c9efd107e66d69cee } from '@/payload/components/health/document-health-control'
 import { SimpleCustomButton as SimpleCustomButton_60d2bab7b2aa60d4c6b0bb74d5c9870f } from '@/plugins/deeplTranslate/client/components/buttons/simple-custom-button'
 import { DocumentUsageField as DocumentUsageField_d8674a9ebef88de20dbcc7c240989f48 } from '@/payload/components/document-usage/document-usage-field'
 import { ProcessInputOutputField as ProcessInputOutputField_7dfabc5f295cb2097425696bedb6f5db } from '@/components/graph/fields/graph/flows/io/process-input-output-field'
@@ -43,7 +43,7 @@ export const importMap = {
   "@/components/graph/fields/graph/activities/io/activity-i-o-field#ActivityIOField": ActivityIOField_caf9a311801e7db98fb5e995e8a2596d,
   "@/components/graph/fields/graph/activities/task/activity-task-field#ActivityTaskField": ActivityTaskField_6665d552f7f6a0ad37f39384c6c9f950,
   "@/payload/collections/Activities/components/before-list-table-wrapper#BeforeListTableWrapper": BeforeListTableWrapper_74592d2078933a5095f41d31c1f58f8d,
-  "@/payload/components/health/document-health-button#DocumentHealthButton": DocumentHealthButton_8076ad28c6e6c7ac777a780312e306b0,
+  "@/payload/components/health/document-health-control#DocumentHealthControl": DocumentHealthControl_59c6c3b5e687827c9efd107e66d69cee,
   "@/plugins/deeplTranslate/client/components/buttons/simple-custom-button#SimpleCustomButton": SimpleCustomButton_60d2bab7b2aa60d4c6b0bb74d5c9870f,
   "@/payload/components/document-usage/document-usage-field#DocumentUsageField": DocumentUsageField_d8674a9ebef88de20dbcc7c240989f48,
   "@/components/graph/fields/graph/flows/io/process-input-output-field#ProcessInputOutputField": ProcessInputOutputField_7dfabc5f295cb2097425696bedb6f5db,

@@ -118,6 +118,21 @@ describe('stripTaskList', () => {
     expect(tracker.getStatistics(ENTITY_ID).cloned.documentFilesCount).toBe(1)
   })
 
+  // PIMS-93: a nested copy must not inherit the source park of an earlier clone. The Local API
+  // create overrides field access, so the stripper is the only guard.
+  test('drops the clone source park of the record it copies', async () => {
+    const stripped = await stripTaskList(
+      { ...makeSource(), clonedFromOrganisation: 17 } as TaskList,
+      req,
+      TARGET_ORG_ID,
+      'de',
+      preloaderWith({ [DOCUMENT_ID]: 900 }),
+      startedTracker(),
+    )
+
+    expect('clonedFromOrganisation' in stripped).toBe(false)
+  })
+
   test('reports a document phase 1 could not copy on the injected tracker, with the list name', async () => {
     const tracker = startedTracker()
 

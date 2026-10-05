@@ -6,6 +6,7 @@ import { currentOrganisationCollectionReadAccess } from '@/payload/collections/a
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 import { coerceRichTextFieldHook } from '@/payload/collections/hooks/coerce-rich-text-field-hook'
 import { adminSettingsField } from '@/payload/fields/admin-settings'
+import { clonedFromOrganisationField } from '@/payload/fields/cloned-from-organisation'
 import { filesArrayField } from '@/payload/fields/files-array'
 import { lexicalEditorReducedFeatures } from '@/payload/utilities/lexical-editors/reduced'
 
@@ -28,7 +29,7 @@ export const TaskLists: CollectionConfig = {
       edit: {
         beforeDocumentControls: [
           {
-            path: '@/payload/components/health/document-health-button#DocumentHealthButton',
+            path: '@/payload/components/health/document-health-control#DocumentHealthControl',
           },
         ],
       },
@@ -94,6 +95,7 @@ export const TaskLists: CollectionConfig = {
     },
     filesArrayField,
     adminSettingsField({ sidebar: true }),
+    clonedFromOrganisationField,
   ],
   labels: {
     plural: I18nCollection.fieldLabel.taskLists,

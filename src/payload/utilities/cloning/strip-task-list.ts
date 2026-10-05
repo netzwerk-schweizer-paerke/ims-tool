@@ -19,7 +19,7 @@ export const stripTaskList = async (
   documentPreloader: DocumentPreloader,
   tracker: CloneStatisticsTracker,
 ) => {
-  const { createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
+  const { clonedFromOrganisation, createdAt, createdBy, id, updatedAt, updatedBy, ...strippedEntity } = obj
   const locationPrefix = obj.name ? `Task List "${obj.name}"` : 'Task List'
 
   if (strippedEntity.description) {

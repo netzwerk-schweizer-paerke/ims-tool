@@ -13,7 +13,7 @@ import sharp from 'sharp'
 
 import { ADMIN_DATE_FORMAT } from '@/config/date-format'
 import { seedDevUser } from '@/config/seed/dev-user'
-import { adminStatsEndpoint } from '@/endpoints/admin-stats'
+import { adminStatsCsvEndpoint, adminStatsEndpoint } from '@/endpoints/admin-stats'
 import { parkSearchEndpoint } from '@/endpoints/park-search'
 import { processPdfEndpoint } from '@/endpoints/process-pdf'
 import { s3OrphanDeleteEndpoint } from '@/endpoints/s3-orphan-delete'
@@ -128,6 +128,7 @@ export default buildConfig({
     processPdfEndpoint,
     parkSearchEndpoint,
     adminStatsEndpoint,
+    adminStatsCsvEndpoint,
   ],
   globals: [Statistics],
   i18n: {

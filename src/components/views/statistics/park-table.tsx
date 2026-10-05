@@ -41,6 +41,9 @@ export const ParkTable = ({ locale, rows }: Props) => {
               <Translate k={'statistics:kpi:users'} />
             </th>
             <th className={HEAD} scope={'col'}>
+              <Translate k={'statistics:parkTable:activeUsers'} />
+            </th>
+            <th className={HEAD} scope={'col'}>
               <Translate k={'statistics:kpi:activities'} />
             </th>
             <th className={HEAD} scope={'col'}>
@@ -74,6 +77,7 @@ export const ParkTable = ({ locale, rows }: Props) => {
                 {row.language}
               </td>
               <td className={CELL}>{formatCount(row.users, locale)}</td>
+              <td className={CELL}>{formatCount(row.activeUsers, locale)}</td>
               <td className={CELL}>{formatCount(row.activities, locale)}</td>
               <td className={CELL}>{formatCount(row.taskFlows, locale)}</td>
               <td className={CELL}>{formatCount(row.taskLists, locale)}</td>

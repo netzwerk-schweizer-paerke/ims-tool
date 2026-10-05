@@ -1,6 +1,73 @@
 import { describe, expect, it } from 'vitest'
 
-import { countByOrganisation, countNamedPerLocale, tallyUsers } from '@/lib/admin-stats/tally-rows'
+import {
+  countByOrganisation,
+  countNamedPerLocale,
+  tallyClones,
+  tallyUsers,
+} from '@/lib/admin-stats/tally-rows'
+
+const SINCE = new Date('2026-09-05T00:00:00.000Z')
+
+describe('tallyUsers activity', () => {
+  it('counts a login at or after the cut-off as active in every park of the user', () => {
+    const { activeByPark, byPark } = tallyUsers(
+      [
+        { lastLoginAt: '2026-09-05T00:00:00.000Z', organisations: [{ organisation: 1 }] },
+        { lastLoginAt: '2026-10-01T08:00:00.000Z', organisations: [{ organisation: 1 }, { organisation: 2 }] },
+        { lastLoginAt: '2026-09-04T23:59:59.999Z', organisations: [{ organisation: 1 }] },
+      ],
+      'admin',
+      SINCE,
+    )
+
+    expect(byPark.get(1)).toBe(3)
+    expect(activeByPark.get(1)).toBe(2)
+    expect(activeByPark.get(2)).toBe(1)
+  })
+
+  it('counts a user who never logged in, or carries an invalid date, as inactive', () => {
+    const { activeByPark } = tallyUsers(
+      [
+        { organisations: [{ organisation: 1 }] },
+        { lastLoginAt: null, organisations: [{ organisation: 1 }] },
+        { lastLoginAt: 'not a date', organisations: [{ organisation: 1 }] },
+      ],
+      'admin',
+      SINCE,
+    )
+
+    expect(activeByPark.get(1)).toBeUndefined()
+  })
+})
+
+describe('tallyClones', () => {
+  it('counts each collection per source and target park', () => {
+    const pairs = tallyClones({
+      activities: [
+        { clonedFromOrganisation: 17, organisation: 6 },
+        { clonedFromOrganisation: { id: 17 }, organisation: { id: 6 } },
+      ],
+      taskFlows: [{ clonedFromOrganisation: 17, organisation: 6 }],
+      taskLists: [{ clonedFromOrganisation: 17, organisation: 9 }],
+    })
+
+    expect(pairs).toEqual([
+      { activities: 2, source: 17, target: 6, taskFlows: 1, taskLists: 0 },
+      { activities: 0, source: 17, target: 9, taskFlows: 0, taskLists: 1 },
+    ])
+  })
+
+  it('skips a row with no source park or no target park', () => {
+    const pairs = tallyClones({
+      activities: [{ organisation: 6 }, { clonedFromOrganisation: null, organisation: 6 }],
+      taskFlows: [{ clonedFromOrganisation: 17 }],
+      taskLists: [],
+    })
+
+    expect(pairs).toEqual([])
+  })
+})
 
 describe('countByOrganisation', () => {
   it('counts a bare id and a populated relation as the same park', () => {
@@ -78,6 +145,7 @@ describe('tallyUsers', () => {
     const { byPark, total } = tallyUsers(
       [{ organisations: [{ organisation: 1 }, { organisation: 2 }] }, { organisations: [{ organisation: 2 }] }],
       'admin',
+      SINCE,
     )
 
     expect(byPark.get(1)).toBe(1)
@@ -89,13 +157,14 @@ describe('tallyUsers', () => {
     const { byPark } = tallyUsers(
       [{ organisations: [{ organisation: 4 }, { organisation: { id: 4 } }] }],
       'admin',
+      SINCE,
     )
 
     expect(byPark.get(4)).toBe(1)
   })
 
   it('counts a user with no membership as noPark', () => {
-    const { noPark } = tallyUsers([{ organisations: [] }, { organisations: null }, {}], 'admin')
+    const { noPark } = tallyUsers([{ organisations: [] }, { organisations: null }, {}], 'admin', SINCE)
 
     expect(noPark).toBe(3)
   })
@@ -104,6 +173,7 @@ describe('tallyUsers', () => {
     const { superAdmins } = tallyUsers(
       [{ roles: ['admin'] }, { roles: ['user'] }, { roles: null }],
       'admin',
+      SINCE,
     )
 
     expect(superAdmins).toBe(1)
