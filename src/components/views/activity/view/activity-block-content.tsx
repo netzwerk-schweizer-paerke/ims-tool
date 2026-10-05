@@ -14,6 +14,8 @@ type Props = {
   activity: Activity
   activityBlock: ActivityBlock | undefined
   links: ViewLinks
+  /** The content locale of the edit links on the Prozess and Liste tiles. */
+  locale?: string
   /** The admin view passes the edit and share actions. The public page passes none. */
   toolbar?: ReactNode
 }
@@ -22,7 +24,13 @@ const findTitle = (activity: Activity, block: ActivityBlock | undefined) =>
   block?.graph?.task?.text || activity.name
 
 /** The body of an activity block page. The admin view and the public share page both render it. */
-export const ActivityBlockContent = ({ activity, activityBlock, links, toolbar }: Props) => (
+export const ActivityBlockContent = ({
+  activity,
+  activityBlock,
+  links,
+  locale,
+  toolbar,
+}: Props) => (
   <>
     <div className={'prose lg:prose-lg'}>
       <h1>{findTitle(activity, activityBlock)}</h1>
@@ -63,7 +71,11 @@ export const ActivityBlockContent = ({ activity, activityBlock, links, toolbar }
                   className={
                     'grid grid-cols-[repeat(auto-fill,13rem)] gap-4 leading-[normal] [grid-auto-rows:1fr]'
                   }>
-                  <TasksGrid links={links} tasks={activityBlock?.relations?.tasks} />
+                  <TasksGrid
+                    links={links}
+                    locale={locale}
+                    tasks={activityBlock?.relations?.tasks}
+                  />
                 </div>
               </div>
             </div>

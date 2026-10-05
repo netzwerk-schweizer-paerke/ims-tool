@@ -113,6 +113,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           activity={activity}
           activityBlock={activityBlock}
           links={links}
+          locale={localeCode}
           toolbar={
             <ViewToolbar
               canShare={isParkAdmin(user)}
