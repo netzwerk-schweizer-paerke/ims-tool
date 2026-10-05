@@ -12,6 +12,7 @@ import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
 import { getCloneLocales, hasLocaleContent } from '@/payload/utilities/cloning/clone-locales'
 import { scanActivityForDocumentIds } from '@/payload/utilities/cloning/document-scanner'
 import { insertBlock } from '@/payload/utilities/cloning/insert-block'
+import { lockActivityForPaste } from '@/payload/utilities/cloning/lock-activity'
 import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 import { runClonePipeline } from '@/payload/utilities/cloning/run-clone-pipeline'
 import { scanNestedTaskDocumentIds } from '@/payload/utilities/cloning/scan-nested-task-documents'
@@ -44,12 +45,19 @@ const pasteBlockConfig = (
     let written = 0
     let name = ''
 
-    for (const locale of cloneLocales) {
-      const block = source.get(locale)
+    // The source block of the first locale that has one. A target locale without its own source
+    // block gets this one, so every locale of the Thema gains a block at the same position.
+    // Locales resolve a block by position, and a gap in one locale would shift every later block.
+    const fallbackBlock = source.values().next().value
 
-      if (!block) {
-        continue
-      }
+    if (!fallbackBlock) {
+      throw new CloneHttpError('The Prozessgruppe exists in no language', 404)
+    }
+
+    await lockActivityForPaste(req, targetActivityId)
+
+    for (const locale of cloneLocales) {
+      const block = source.get(locale) ?? fallbackBlock
 
       const target = await req.payload.findByID({
         collection: 'activities',
@@ -98,10 +106,7 @@ const pasteBlockConfig = (
     }
 
     if (written === 0) {
-      throw new CloneHttpError(
-        'The Prozessgruppe and the target Thema share no language with content',
-        400,
-      )
+      throw new CloneHttpError('The target Thema has no content in any language', 400)
     }
 
     return { id: targetActivityId, name }

@@ -59,6 +59,12 @@ describe('appendTaskRelation', () => {
     expect(appendTaskRelation(blocks, 0, { id: 9, relationTo: 'task-flows' })).not.toBeNull()
   })
 
+  test('answers null when the block at the index is an input/output block in this locale', () => {
+    const blocks = [{ blockType: 'activity-io', id: 'out', relations: { tasks: [] } }]
+
+    expect(appendTaskRelation(blocks, 0, { id: 9, relationTo: 'task-flows' })).toBeNull()
+  })
+
   test('answers null when the locale has no block at the index', () => {
     expect(appendTaskRelation([block('a')], 3, { id: 9, relationTo: 'task-flows' })).toBeNull()
   })

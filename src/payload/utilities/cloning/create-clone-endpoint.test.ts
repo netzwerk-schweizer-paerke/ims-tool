@@ -475,7 +475,7 @@ describe('createCloneEndpoint for a config that writes into an existing record',
 // PIMS-83: a pasted Prozess or Liste is linked to the Prozessgruppe it was pasted into.
 describe('createCloneEndpoint with a block target', () => {
   const target = { activityId: 31, blockId: 'block-de-2' }
-  const resolved = { activityId: 31, blockIndex: 2 }
+  const resolved = { activityId: 31, blockIndex: 2, organisationId: TARGET_ORG_ID }
 
   test('checks the target before any copy, and links the copy inside the transaction', async () => {
     vi.mocked(resolveBlockTarget).mockResolvedValue(resolved)

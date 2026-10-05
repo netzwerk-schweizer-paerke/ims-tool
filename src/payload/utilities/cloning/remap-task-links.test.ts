@@ -104,15 +104,21 @@ describe('remapTaskLinks', () => {
     expect(writtenChildren()[0].fields).toBeUndefined()
   })
 
-  test('degrades a link whose task no longer exists', async () => {
+  // A thrown NotFound rolls the clone transaction back inside Payload, before any catch can run.
+  // The read must therefore ask for null, and a missing task must not throw.
+  test('degrades a link whose task no longer exists, without a thrown NotFound', async () => {
     givenStored({ description: richText(link('task-flows', SOURCE_TASK_ID)) })
-    findByID = vi.fn(async ({ id }: { id: number }) => {
+    findByID = vi.fn(async ({ disableErrors, id }: { disableErrors?: boolean; id: number }) => {
       if (id === CLONE_ID) return stored
+      if (disableErrors) return null
       throw new Error('NotFound')
     })
     req = { context: {}, payload: { findByID, update } } as unknown as PayloadRequest
 
     expect(await run(clonesNothing)).toMatchObject({ degraded: 1 })
+    expect(findByID).toHaveBeenCalledWith(
+      expect.objectContaining({ disableErrors: true, id: SOURCE_TASK_ID }),
+    )
   })
 
   test('leaves a document link and a public document link untouched', async () => {

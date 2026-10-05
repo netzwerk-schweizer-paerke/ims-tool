@@ -103,14 +103,6 @@ export const runClonePipeline = async <TSource>(
   let documentPreloader: DocumentPreloader
 
   try {
-    if (target) {
-      if (collectionSlug === 'activities') {
-        throw new CloneHttpError('An activity cannot be pasted into a Prozessgruppe', 400)
-      }
-
-      resolvedTarget = await resolveBlockTarget(req, target, targetOrganisationId)
-    }
-
     for (const sourceId of sourceIds) {
       const accessValidation = await validateCloneAccess({
         collectionSlug,
@@ -126,7 +118,19 @@ export const runClonePipeline = async <TSource>(
           accessValidation.error?.status ?? 403,
         )
       }
+    }
 
+    // After the access check, so a caller with no role in the target park learns nothing about
+    // which activity and block ids exist there.
+    if (target) {
+      if (collectionSlug === 'activities') {
+        throw new CloneHttpError('An activity cannot be pasted into a Prozessgruppe', 400)
+      }
+
+      resolvedTarget = await resolveBlockTarget(req, target, targetOrganisationId)
+    }
+
+    for (const sourceId of sourceIds) {
       const { documentIds, name, source } = await readSource({
         cloneLocales,
         locale,

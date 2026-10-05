@@ -32,7 +32,7 @@ export const findBlockIndex = (
 
 /**
  * Appends a task to the relations of the block at `index`. It answers null when there is nothing
- * to write: the locale has no block there, or the block already links the task.
+ * to write: the locale has no task block there, or the block already links the task.
  */
 export const appendTaskRelation = (
   blocks: readonly StoredBlock[],
@@ -41,7 +41,9 @@ export const appendTaskRelation = (
 ): null | StoredBlock[] => {
   const block = blocks[index]
 
-  if (!block) {
+  // Locales can fall out of step by position. A task must then never land in an input/output
+  // block that sits at this index in one locale only.
+  if (block?.blockType !== 'activity-task') {
     return null
   }
 

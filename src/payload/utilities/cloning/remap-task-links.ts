@@ -286,24 +286,27 @@ const readTaskOwner = async (
   req: PayloadRequest,
   target: TaskLinkTarget,
 ): Promise<{ name: string; organisationId: null | number }> => {
-  try {
-    const task = await req.payload.findByID({
-      collection: target.collection,
-      depth: 0,
-      id: target.sourceId,
-      overrideAccess: true,
-      req,
-    })
+  // A thrown NotFound makes `findByID` roll back the open transaction before any catch runs, and
+  // the clone would then commit nothing while it reports success. `disableErrors` answers null.
+  const task = await req.payload.findByID({
+    collection: target.collection,
+    depth: 0,
+    disableErrors: true,
+    id: target.sourceId,
+    overrideAccess: true,
+    req,
+  })
 
-    const organisation = task.organisation
-    const organisationId = isRecord(organisation) ? organisation.id : organisation
-
-    return {
-      name: typeof task.name === 'string' ? task.name : String(target.sourceId),
-      organisationId: typeof organisationId === 'number' ? organisationId : null,
-    }
-  } catch {
+  if (!task) {
     return { name: String(target.sourceId), organisationId: null }
+  }
+
+  const organisation = task.organisation
+  const organisationId = isRecord(organisation) ? organisation.id : organisation
+
+  return {
+    name: typeof task.name === 'string' ? task.name : String(target.sourceId),
+    organisationId: typeof organisationId === 'number' ? organisationId : null,
   }
 }
 

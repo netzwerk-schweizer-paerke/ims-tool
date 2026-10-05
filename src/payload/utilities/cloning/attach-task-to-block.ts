@@ -7,12 +7,14 @@ import {
   type TaskCollection,
 } from '@/payload/utilities/cloning/block-position'
 import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
+import { lockActivityForPaste } from '@/payload/utilities/cloning/lock-activity'
+import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-req-context-target-org-id'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /** A Prozessgruppe: one task block of one activity (PIMS-83). */
 export type BlockTarget = { activityId: number; blockId: string }
 
-export type ResolvedBlockTarget = { activityId: number; blockIndex: number }
+export type ResolvedBlockTarget = { activityId: number; blockIndex: number; organisationId: number }
 
 /**
  * Checks a paste target before anything is written, and answers the block position.
@@ -59,7 +61,7 @@ export const resolveBlockTarget = async (
     throw new CloneHttpError('Only a Prozessgruppe can receive a Prozess or a Liste', 400)
   }
 
-  return { activityId: target.activityId, blockIndex }
+  return { activityId: target.activityId, blockIndex, organisationId }
 }
 
 /**
@@ -80,6 +82,8 @@ export const attachTaskToBlock = async ({
   task: { id: number; relationTo: TaskCollection }
 }): Promise<number> => {
   let written = 0
+
+  await lockActivityForPaste(req, target.activityId)
 
   for (const locale of cloneLocales) {
     const activity = await req.payload.findByID({
@@ -105,7 +109,9 @@ export const attachTaskToBlock = async ({
       id: target.activityId,
       locale,
       overrideAccess: true,
-      req,
+      // Without the target park in the context, the organisation hook writes the caller's
+      // selected park onto the Thema, and the Thema leaves its park.
+      req: mergeReqContextTargetOrgId(req, target.organisationId),
     })
 
     written += 1
