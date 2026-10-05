@@ -20,8 +20,8 @@ export const ActivityEditLink = ({ activity, links, locale }: Props) => {
   const organisationId = links.canCopy ? (links.organisationId ?? null) : null
 
   return (
-    // The title area is `relative` with side padding, so the menu sits in its top right corner.
-    <div className={'absolute right-0 top-0'}>
+    // The title area is a centred flex row, so the menu sits right next to the title text.
+    <div className={'shrink-0'}>
       <ItemActions
         copyItem={
           organisationId === null

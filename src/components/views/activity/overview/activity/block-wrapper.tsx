@@ -18,12 +18,13 @@ export const BlockWrapper = ({ actions, children, id }: Props) => {
       {/* The height must match `min-h-32` on the shape wrapper. A shorter box lets the shape
           overflow, and the arrow then starts inside the visible border. */}
       <div className={'flex h-32 w-52 items-center justify-center text-center'}>
-        <div className={'root-target size-full'} id={`${id}-${RootTargetName}`}>
+        <div className={'root-target relative size-full'} id={`${id}-${RootTargetName}`}>
           {children}
+          {/* Inside the box, top right. An absolute child leaves the measured box unchanged. */}
+          {actions && <div className={'absolute right-1.5 top-1.5 z-20'}>{actions}</div>}
         </div>
       </div>
       <OuterTargets id={id} />
-      {actions && <div className={'absolute right-1 top-1 z-10'}>{actions}</div>}
     </div>
   )
 }
