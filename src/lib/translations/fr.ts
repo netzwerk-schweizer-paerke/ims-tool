@@ -50,6 +50,17 @@ export const fr = {
       title: "Choisir l'organisation active",
     },
   },
+  clipboard: {
+    actions: 'Actions',
+    clear: 'Vider le presse-papiers',
+    copied: '« {{label}} » est copié. Collez-le un niveau plus haut.',
+    copy: 'Copier',
+    holding: 'Copié : {{label}}',
+    pasted: '« {{label}} » est collé.',
+    pasteFailed: 'Le collage a échoué : {{error}}',
+    pasteHere: 'Coller « {{label}} » ici',
+    working: 'Veuillez patienter…',
+  },
   cloneActivity: {
     button: 'Cloner les activités',
     clone: 'Cloner les activités',

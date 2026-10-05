@@ -50,6 +50,17 @@ export const it = {
       title: 'Scegli organizzazione attiva',
     },
   },
+  clipboard: {
+    actions: 'Azioni',
+    clear: 'Svuota gli appunti',
+    copied: '«{{label}}» è copiato. Incollalo un livello più in alto.',
+    copy: 'Copia',
+    holding: 'Copiato: {{label}}',
+    pasted: '«{{label}}» è incollato.',
+    pasteFailed: 'Incollare non è riuscito: {{error}}',
+    pasteHere: 'Incolla «{{label}}» qui',
+    working: 'Attendere prego…',
+  },
   cloneActivity: {
     button: 'Clona attività',
     clone: 'Clona attività',

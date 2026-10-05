@@ -1,3 +1,4 @@
+import { ItemActions } from '@/components/clipboard/item-actions'
 import { ConnectionStateType } from '@/components/graph/fields/graph/lib/connection-types'
 import { GraphLabel } from '@/components/graph/graph-label'
 import { IOShapeWrapper } from '@/components/graph/wrappers/i-o-shape-wrapper'
@@ -50,7 +51,22 @@ export const ActivityBlock = ({ activityId, block, links, type }: Props) => {
         </BlockWrapper>
       )}
       {type === 'task' && (
-        <BlockWrapper id={block.id}>
+        <BlockWrapper
+          actions={
+            links.showEdit && links.canCopy && links.organisationId && block.id ? (
+              <ItemActions
+                copyItem={{
+                  activityId,
+                  blockId: block.id,
+                  kind: 'activityBlock',
+                  label: (block as ActivityTaskCompoundBlock).graph?.task?.text ?? '',
+                  organisationId: links.organisationId,
+                }}
+                variant={'compact'}
+              />
+            ) : undefined
+          }
+          id={block.id}>
           <TaskShapeWrapper>
             <ActivityBlockViewLink activityId={activityId} blockId={block.id} links={links}>
               <GraphLabel>{blockText}</GraphLabel>

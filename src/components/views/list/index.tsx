@@ -12,6 +12,8 @@ import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { isParkAdmin } from '@/payload/utilities/is-park-admin'
@@ -98,6 +100,17 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
           toolbar={
             <ViewToolbar
               canShare={isParkAdmin(user)}
+              copyItem={
+                // PIMS-83, first release: super admins only.
+                checkUserRoles([ROLE_SUPER_ADMIN], user)
+                  ? {
+                      id: listId,
+                      kind: 'task-lists',
+                      label: listBlock.name ?? '',
+                      organisationId: selectedOrganisationId,
+                    }
+                  : undefined
+              }
               editHref={`/admin/collections/task-lists/${listId}?locale=${localeCode}`}
               existingLinks={existingShareLinks}
               locale={localeCode}

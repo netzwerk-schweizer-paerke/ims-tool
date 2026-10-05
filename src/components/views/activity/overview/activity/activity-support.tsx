@@ -62,7 +62,7 @@ export const ActivitySupport = ({ activity, links, locale }: Props) => {
         <h2 className={'mx-auto max-w-52 hyphens-auto text-xl font-bold'} lang={locale}>
           {activity.name}
         </h2>
-        <ActivityEditLink id={activity.id} links={links} locale={locale} />
+        <ActivityEditLink activity={activity} links={links} locale={locale} />
       </div>
       <div className={'flex grow flex-col items-center justify-center'}>
         <div className={'relative flex flex-row flex-wrap justify-center'}>

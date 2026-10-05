@@ -8,11 +8,13 @@ import { LandscapeSearch } from '@/components/landscape-search'
 import { StepNav } from '@/components/step-nav'
 import { ViewToolbar } from '@/components/view-toolbar'
 import { OverviewContent } from '@/components/views/activity/overview/overview-content'
-import { ADMIN_VIEW_LINKS } from '@/components/views/view-links'
+import { adminViewLinks } from '@/components/views/view-links'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
 import { Translate } from '@/lib/translate'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { isParkAdmin } from '@/payload/utilities/is-park-admin'
@@ -57,6 +59,10 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
         })
       : []
 
+  // PIMS-83, first release: super admins only.
+  const canCopy = checkUserRoles([ROLE_SUPER_ADMIN], user)
+  const links = adminViewLinks(canCopy, selectedOrganisationId)
+
   return (
     <DefaultTemplate
       i18n={initPageResult.req.i18n}
@@ -81,11 +87,11 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
             </Link>
           }
           landscape={landscape}
-          links={ADMIN_VIEW_LINKS}
+          links={links}
           locale={localeCode}
           search={
             selectedOrganisationId ? (
-              <LandscapeSearch links={ADMIN_VIEW_LINKS} locale={localeCode} />
+              <LandscapeSearch links={links} locale={localeCode} />
             ) : undefined
           }
           toolbar={
@@ -95,6 +101,9 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
                 editHref={'/admin/collections/activities'}
                 existingLinks={existingShareLinks}
                 locale={localeCode}
+                pasteTarget={
+                  canCopy ? { kind: 'landscape', organisationId: selectedOrganisationId } : undefined
+                }
                 target={shareTarget}
               />
             ) : undefined

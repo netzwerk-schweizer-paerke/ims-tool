@@ -1,13 +1,15 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, ReactNode } from 'react'
 
 import { OuterTargets } from '@/components/graph/fields/graph/lib/outer-targets'
 import { RootTargetName } from '@/components/graph/fields/graph/lib/root-target'
 
 type Props = PropsWithChildren & {
+  /** A menu in the padding corner. It sits outside the root target, so the arrows keep their box. */
+  actions?: ReactNode
   id: null | string | undefined
 }
 
-export const BlockWrapper = ({ children, id }: Props) => {
+export const BlockWrapper = ({ actions, children, id }: Props) => {
   if (!id) {
     throw new Error('BlockWrapper requires an id prop')
   }
@@ -21,6 +23,7 @@ export const BlockWrapper = ({ children, id }: Props) => {
         </div>
       </div>
       <OuterTargets id={id} />
+      {actions && <div className={'absolute right-1 top-1 z-10'}>{actions}</div>}
     </div>
   )
 }

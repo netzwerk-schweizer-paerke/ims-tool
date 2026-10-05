@@ -8,11 +8,13 @@ import React from 'react'
 import { StepNav } from '@/components/step-nav'
 import { ViewToolbar } from '@/components/view-toolbar'
 import { ActivityBlockContent } from '@/components/views/activity/view/activity-block-content'
-import { ADMIN_VIEW_LINKS } from '@/components/views/view-links'
+import { adminViewLinks } from '@/components/views/view-links'
 import { getDefaultLocaleCode, toContentLocale } from '@/lib/locale-utils'
 import { logger } from '@/lib/logger'
 import { requireAuthenticatedUser } from '@/lib/require-authenticated-user'
 import { ShareTarget } from '@/lib/share-link-target'
+import { checkUserRoles } from '@/payload/utilities/check-user-roles'
+import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { findOwnShareLinks } from '@/payload/utilities/find-own-share-links'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 import { isParkAdmin } from '@/payload/utilities/is-park-admin'
@@ -80,6 +82,10 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
       })
     : []
 
+  // PIMS-83, first release: super admins only. Only a Prozessgruppe is copied or pasted into.
+  const canCopy = checkUserRoles([ROLE_SUPER_ADMIN], user) && activityBlock?.blockType === 'activity-task'
+  const links = adminViewLinks(canCopy, selectedOrganisationId)
+
   return (
     <DefaultTemplate
       i18n={initPageResult.req.i18n}
@@ -106,13 +112,34 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
         <ActivityBlockContent
           activity={activity}
           activityBlock={activityBlock}
-          links={ADMIN_VIEW_LINKS}
+          links={links}
           toolbar={
             <ViewToolbar
               canShare={isParkAdmin(user)}
+              copyItem={
+                canCopy
+                  ? {
+                      activityId: activityid,
+                      blockId: activityBlockId,
+                      kind: 'activityBlock',
+                      label: activityBlock?.graph?.task?.text ?? '',
+                      organisationId: selectedOrganisationId,
+                    }
+                  : undefined
+              }
               editHref={`/admin/collections/activities/${activityid}?locale=${localeCode}`}
               existingLinks={existingShareLinks}
               locale={localeCode}
+              pasteTarget={
+                canCopy
+                  ? {
+                      activityId: activityid,
+                      blockId: activityBlockId,
+                      kind: 'activityBlock',
+                      organisationId: selectedOrganisationId,
+                    }
+                  : undefined
+              }
               target={shareTarget}
             />
           }

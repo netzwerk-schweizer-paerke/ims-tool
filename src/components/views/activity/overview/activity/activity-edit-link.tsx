@@ -1,27 +1,39 @@
-import Link from 'next/link'
-
+import { ItemActions } from '@/components/clipboard/item-actions'
 import { ViewLinks } from '@/components/views/view-links'
-import { Translate } from '@/lib/translate'
+import { Activity } from '@/payload-types'
 
 type Props = {
-  id: null | number | string
+  activity: Activity
   links: ViewLinks
   locale: string
 }
 
-export const ActivityEditLink = ({ id, links, locale }: Props) => {
-  // A public share page has no editor, so it renders no edit link at all.
+/**
+ * The menu under a Thema heading: edit, copy the Thema, and paste a Prozessgruppe into it
+ * (PIMS-83). A public share page has no editor, so it renders nothing there.
+ */
+export const ActivityEditLink = ({ activity, links, locale }: Props) => {
   if (!links.showEdit) {
     return null
   }
 
+  const organisationId = links.canCopy ? (links.organisationId ?? null) : null
+
   return (
-    <Link
-      className={
-        'text-sm underline underline-offset-4 opacity-70 transition-opacity hover:opacity-100'
-      }
-      href={`/admin/collections/activities/${id}?locale=${locale}`}>
-      <Translate k={'common:edit'} />
-    </Link>
+    <div className={'flex justify-center'}>
+      <ItemActions
+        copyItem={
+          organisationId === null
+            ? undefined
+            : { id: activity.id, kind: 'activity', label: activity.name ?? '', organisationId }
+        }
+        editHref={`/admin/collections/activities/${activity.id}?locale=${locale}`}
+        pasteTarget={
+          organisationId === null
+            ? undefined
+            : { activityId: activity.id, kind: 'activity', organisationId }
+        }
+      />
+    </div>
   )
 }

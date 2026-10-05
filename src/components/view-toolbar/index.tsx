@@ -3,7 +3,10 @@
 import { Button, Drawer, useDrawerSlug, useModal, useTranslation } from '@payloadcms/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ClipboardHolding } from '@/components/clipboard/clipboard-holding'
+import { ItemActions } from '@/components/clipboard/item-actions'
 import { DateTime } from '@/components/date-time'
+import { type ClipboardItem, type PasteTarget } from '@/lib/clipboard/paste-request'
 import { EXPIRY_MONTH_OPTIONS } from '@/lib/share-link-expiry'
 import { buildShareUrl, ShareTarget } from '@/lib/share-link-target'
 import { Translate } from '@/lib/translate'
@@ -33,10 +36,14 @@ export type ShareLinkRef = {
 type Props = {
   /** Resolved on the server. A reader may delete an old link, but not make one (PIMS-92). */
   canShare: boolean
+  /** The page's own item in the clipboard menu. Absent when the viewer may not copy (PIMS-83). */
+  copyItem?: ClipboardItem
   editHref: string
   /** Every link this user made for this page, newest first, resolved on the server. */
   existingLinks: ShareLinkRef[]
   locale: string
+  /** Where a paste from this page lands. Absent when the viewer may not paste (PIMS-83). */
+  pasteTarget?: PasteTarget
   target: ShareTarget
 }
 
@@ -66,7 +73,15 @@ const warn = (message: string) => {
  * The share action opens a dialog that lists every link this user made for the page. Each link
  * carries its own expiry and its own delete action, so one recipient loses access alone.
  */
-export const ViewToolbar = ({ canShare, editHref, existingLinks, locale, target }: Props) => {
+export const ViewToolbar = ({
+  canShare,
+  copyItem,
+  editHref,
+  existingLinks,
+  locale,
+  pasteTarget,
+  target,
+}: Props) => {
   const drawerSlug = useDrawerSlug('share-link')
   const { closeModal, openModal } = useModal()
   const { t } = useTranslation<I18nObject, I18nKeys>()
@@ -242,16 +257,9 @@ export const ViewToolbar = ({ canShare, editHref, existingLinks, locale, target 
 
   return (
     <div className={'flex flex-row items-center gap-2'}>
-      <Button
-        buttonStyle={'secondary'}
-        el={'link'}
-        icon={['edit']}
-        iconPosition={'left'}
-        margin={false}
-        size={'small'}
-        url={editHref}>
-        <Translate k={'common:edit'} />
-      </Button>
+      {/* Edit, copy and paste share one menu (PIMS-83). */}
+      <ItemActions copyItem={copyItem} editHref={editHref} pasteTarget={pasteTarget} />
+      {pasteTarget || copyItem ? <ClipboardHolding /> : null}
       <Button
         buttonStyle={'secondary'}
         margin={false}

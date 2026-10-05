@@ -27,7 +27,7 @@ export const ActivityTitles = ({ activity, links, locale }: Props) => {
       <h2 className={'hyphens-auto text-xl font-bold'} lang={locale}>
         {activity.name}
       </h2>
-      <ActivityEditLink id={activity.id} links={links} locale={locale} />
+      <ActivityEditLink activity={activity} links={links} locale={locale} />
     </div>
   )
 }

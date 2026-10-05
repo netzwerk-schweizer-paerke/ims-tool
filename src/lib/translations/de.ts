@@ -50,6 +50,17 @@ export const de = {
       title: 'Organisation auswählen',
     },
   },
+  clipboard: {
+    actions: 'Aktionen',
+    clear: 'Zwischenablage leeren',
+    copied: '«{{label}}» ist kopiert. Fügen Sie es eine Ebene höher ein.',
+    copy: 'Kopieren',
+    holding: 'Kopiert: {{label}}',
+    pasted: '«{{label}}» ist eingefügt.',
+    pasteFailed: 'Das Einfügen ist fehlgeschlagen: {{error}}',
+    pasteHere: '«{{label}}» hier einfügen',
+    working: 'Bitte warten…',
+  },
   cloneActivity: {
     button: 'Aktivitäten klonen',
     clone: 'Aktivitäten klonen',

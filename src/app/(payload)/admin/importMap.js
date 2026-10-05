@@ -23,6 +23,7 @@ import { Icon as Icon_f8022cf35b3d492829ec1a405bd134e9 } from '@/components/icon
 import { Logo as Logo_7a89b5675912f3f4f82dd41bbb03d52e } from '@/components/logo'
 import { ActivityLandscapeLink as ActivityLandscapeLink_1f583f1712000b1eebb17dfdc7ea52f5 } from '@/components/activity-landscape-link'
 import { OrganisationSelect as OrganisationSelect_821016dd90dbfccf78f9ba146644dd1e } from '@/components/organisation-select'
+import { ClipboardProvider as ClipboardProvider_938bef30f891bb64742be7870cb10449 } from '@/components/clipboard/clipboard-provider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { ActivitiesView as ActivitiesView_027ca867d2163c8ffc7d59a1792ce0a7 } from '@/components/views/activity/overview'
 import { ActivityBlockView as ActivityBlockView_f343c9fa1808ff4f8c080c4cae00aecb } from '@/components/views/activity/view'
@@ -57,6 +58,7 @@ export const importMap = {
   "@/components/logo#Logo": Logo_7a89b5675912f3f4f82dd41bbb03d52e,
   "@/components/activity-landscape-link#ActivityLandscapeLink": ActivityLandscapeLink_1f583f1712000b1eebb17dfdc7ea52f5,
   "@/components/organisation-select#OrganisationSelect": OrganisationSelect_821016dd90dbfccf78f9ba146644dd1e,
+  "@/components/clipboard/clipboard-provider#ClipboardProvider": ClipboardProvider_938bef30f891bb64742be7870cb10449,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/components/views/activity/overview#ActivitiesView": ActivitiesView_027ca867d2163c8ffc7d59a1792ce0a7,
   "@/components/views/activity/view#ActivityBlockView": ActivityBlockView_f343c9fa1808ff4f8c080c4cae00aecb,

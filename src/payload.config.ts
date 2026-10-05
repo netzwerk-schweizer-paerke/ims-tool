@@ -55,6 +55,8 @@ export default buildConfig({
         Icon: '@/components/icon#Icon',
         Logo: '@/components/logo#Logo',
       },
+      // PIMS-83: one clipboard for every admin view, kept as a user preference.
+      providers: ['@/components/clipboard/clipboard-provider#ClipboardProvider'],
       views: {
         ActivitiesView: {
           Component: '@/components/views/activity/overview#ActivitiesView',

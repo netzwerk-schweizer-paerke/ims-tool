@@ -50,6 +50,17 @@ export const en = {
       title: 'Choose active organisation',
     },
   },
+  clipboard: {
+    actions: 'Actions',
+    clear: 'Clear clipboard',
+    copied: '"{{label}}" is copied. Paste it one level up.',
+    copy: 'Copy',
+    holding: 'Copied: {{label}}',
+    pasted: '"{{label}}" is pasted.',
+    pasteFailed: 'The paste failed: {{error}}',
+    pasteHere: 'Paste "{{label}}" here',
+    working: 'Please wait…',
+  },
   cloneActivity: {
     button: 'Clone activities',
     clone: 'Clone Activities',
