@@ -24,7 +24,7 @@ export const en = {
     blockHasNoName: 'Block has no name',
     noBlocks: 'No blocks',
     noContent: 'No activities or processes defined yet. Create some first.',
-    title: 'Activity Landscape',
+    title: 'Process landscape',
   },
   activityOverview: {
     notAvailableInLocale:
@@ -35,7 +35,7 @@ export const en = {
   },
   admin: {
     links: {
-      activityLandscape: 'Activity Landscape',
+      activityLandscape: 'Process landscape',
       dashboard: 'Dashboard',
       title: 'Links',
     },

@@ -79,10 +79,10 @@ export const I18nCollection = {
       it: 'File',
     },
     process: {
-      de: 'Prozess',
-      en: 'Process',
-      fr: 'Processus',
-      it: 'Processo',
+      de: 'Ebenen',
+      en: 'Levels',
+      fr: 'Niveaux',
+      it: 'Livelli',
     },
     settings: {
       de: 'Einstellungen',
@@ -228,17 +228,18 @@ export const I18nCollection = {
     },
   },
   fieldLabel: {
+    // PIMS-83: an activity is a Thema of the landscape. "Prozessgruppe" names level 2, a block.
     activities: {
-      de: 'Prozessgruppen',
-      en: 'Activities',
-      fr: 'Activités',
-      it: 'Attività',
+      de: 'Ebene 1 – Prozesslandschaft',
+      en: 'Level 1 – Process landscape',
+      fr: 'Niveau 1 – Paysage des processus',
+      it: 'Livello 1 – Panorama dei processi',
     },
     activity: {
-      de: 'Prozessgruppe',
-      en: 'Activity',
-      fr: 'Activité',
-      it: 'Attività',
+      de: 'Thema',
+      en: 'Topic',
+      fr: 'Thème',
+      it: 'Tema',
     },
     activityInfos: {
       de: 'Aktivitätsinfos',
@@ -583,10 +584,10 @@ export const I18nCollection = {
       it: 'Flusso',
     },
     taskFlows: {
-      de: 'Prozesse',
-      en: 'Processes',
-      fr: 'Fluxe',
-      it: 'Flussi',
+      de: 'Ebene 3 – Prozesse',
+      en: 'Level 3 – Processes',
+      fr: 'Niveau 3 – Flux',
+      it: 'Livello 3 – Flussi',
     },
     taskList: {
       de: 'Liste',
@@ -595,10 +596,10 @@ export const I18nCollection = {
       it: 'Elenco',
     },
     taskLists: {
-      de: 'Listen',
-      en: 'Lists',
-      fr: 'Listes',
-      it: 'Elenchi',
+      de: 'Ebene 3 – Listen',
+      en: 'Level 3 – Lists',
+      fr: 'Niveau 3 – Listes',
+      it: 'Livello 3 – Elenchi',
     },
     tasks: {
       de: 'Aufgaben',
