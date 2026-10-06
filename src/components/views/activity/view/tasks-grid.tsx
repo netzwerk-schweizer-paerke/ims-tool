@@ -34,7 +34,7 @@ const TaskActions = ({
   parent?: { activityId: number; blockId: string }
   task: { id: number; kind: 'task-flows' | 'task-lists'; name?: null | string }
 }) => {
-  if (!links.showEdit) {
+  if (!links.canEdit) {
     return null
   }
 

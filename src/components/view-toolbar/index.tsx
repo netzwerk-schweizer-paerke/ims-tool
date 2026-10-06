@@ -38,7 +38,8 @@ type Props = {
   canShare: boolean
   /** The page's own item in the clipboard menu. Absent when the viewer may not copy (PIMS-83). */
   copyItem?: ClipboardItem
-  editHref: string
+  /** The edit form of the page. Absent for a reader, who gets no edit entry. */
+  editHref?: string
   /** Every link this user made for this page, newest first, resolved on the server. */
   existingLinks: ShareLinkRef[]
   locale: string

@@ -38,7 +38,7 @@ const BlockActions = ({
   links: ViewLinks
   locale: string
 }) => {
-  if (!links.showEdit || !block.id) {
+  if (!links.canEdit || !block.id) {
     return null
   }
 

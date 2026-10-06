@@ -84,7 +84,8 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
 
   // PIMS-83, first release: super admins only. Only a Prozessgruppe is copied or pasted into.
   const canCopy = checkUserRoles([ROLE_SUPER_ADMIN], user) && activityBlock?.blockType === 'activity-task'
-  const links = adminViewLinks(canCopy, selectedOrganisationId)
+  const canEdit = isParkAdmin(user)
+  const links = adminViewLinks({ canCopy, canEdit, organisationId: selectedOrganisationId })
 
   return (
     <DefaultTemplate
@@ -116,7 +117,7 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
           locale={localeCode}
           toolbar={
             <ViewToolbar
-              canShare={isParkAdmin(user)}
+              canShare={canEdit}
               copyItem={
                 canCopy
                   ? {
@@ -128,7 +129,9 @@ export const ActivityBlockView: React.FC<AdminViewServerProps> = async ({
                     }
                   : undefined
               }
-              editHref={`/admin/collections/activities/${activityid}?locale=${localeCode}`}
+              editHref={
+                canEdit ? `/admin/collections/activities/${activityid}?locale=${localeCode}` : undefined
+              }
               existingLinks={existingShareLinks}
               locale={localeCode}
               pasteTarget={

@@ -61,7 +61,8 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
 
   // PIMS-83, first release: super admins only.
   const canCopy = checkUserRoles([ROLE_SUPER_ADMIN], user)
-  const links = adminViewLinks(canCopy, selectedOrganisationId)
+  const canEdit = isParkAdmin(user)
+  const links = adminViewLinks({ canCopy, canEdit, organisationId: selectedOrganisationId })
 
   return (
     <DefaultTemplate
@@ -82,9 +83,11 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
         }}>
         <OverviewContent
           emptyAction={
-            <Link href={'/admin/collections/activities/create'}>
-              <Translate k={'common:continue'} />
-            </Link>
+            canEdit ? (
+              <Link href={'/admin/collections/activities/create'}>
+                <Translate k={'common:continue'} />
+              </Link>
+            ) : undefined
           }
           landscape={landscape}
           links={links}
@@ -97,8 +100,8 @@ export const ActivitiesView: React.FC<AdminViewServerProps> = async ({
           toolbar={
             selectedOrganisationId ? (
               <ViewToolbar
-                canShare={isParkAdmin(user)}
-                editHref={'/admin/collections/activities'}
+                canShare={canEdit}
+                editHref={canEdit ? '/admin/collections/activities' : undefined}
                 existingLinks={existingShareLinks}
                 locale={localeCode}
                 pasteTarget={

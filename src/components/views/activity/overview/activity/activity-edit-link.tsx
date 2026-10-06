@@ -13,7 +13,7 @@ type Props = {
  * (PIMS-83). A public share page has no editor, so it renders nothing there.
  */
 export const ActivityEditLink = ({ activity, links, locale }: Props) => {
-  if (!links.showEdit) {
+  if (!links.canEdit) {
     return null
   }
 

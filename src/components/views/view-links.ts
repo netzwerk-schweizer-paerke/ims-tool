@@ -12,18 +12,32 @@ export type ViewLinks = {
    * client component cannot read the role helpers. A share page never sets it.
    */
   canCopy?: boolean
+  /**
+   * The viewer may edit the park: a super admin or an admin of the selected park. A reader gets no
+   * edit link and no action menu. A share page never sets it.
+   */
+  canEdit?: boolean
   /** The park the view shows. A copy remembers it, and a paste compares against it. */
   organisationId?: null | number
-  /** The admin shows the edit link. A public page shows none, because the visitor cannot edit. */
+  /** The view runs inside the admin, so a link may open an admin form. A public page sets false. */
   showEdit: boolean
 }
 
 export const ADMIN_VIEW_LINKS: ViewLinks = { basePath: '/admin', showEdit: true }
 
-/** The links of one admin view, with the copy permission the server resolved for the viewer. */
-export const adminViewLinks = (canCopy: boolean, organisationId: null | number): ViewLinks => ({
+/** The links of one admin view, with the permissions the server resolved for the viewer. */
+export const adminViewLinks = ({
+  canCopy,
+  canEdit,
+  organisationId,
+}: {
+  canCopy: boolean
+  canEdit: boolean
+  organisationId: null | number
+}): ViewLinks => ({
   ...ADMIN_VIEW_LINKS,
-  canCopy: canCopy && organisationId !== null,
+  canCopy: canEdit && canCopy && organisationId !== null,
+  canEdit,
   organisationId,
 })
 

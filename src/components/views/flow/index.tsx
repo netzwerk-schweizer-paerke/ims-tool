@@ -112,7 +112,11 @@ export const FlowBlockView: React.FC<AdminViewServerProps> = async ({
                     }
                   : undefined
               }
-              editHref={`/admin/collections/task-flows/${flowId}?locale=${localeCode}`}
+              editHref={
+                isParkAdmin(user)
+                  ? `/admin/collections/task-flows/${flowId}?locale=${localeCode}`
+                  : undefined
+              }
               existingLinks={existingShareLinks}
               locale={localeCode}
               target={shareTarget}

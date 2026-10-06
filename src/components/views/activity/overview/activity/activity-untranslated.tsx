@@ -25,7 +25,7 @@ export const ActivityUntranslated = ({ activityId, links, locale }: Props) => {
           vars={{ locale: locale.toUpperCase() }}
         />
       </p>
-      {links.showEdit && (
+      {links.canEdit && (
         <Link
           className={
             'inline-flex items-center rounded px-3 py-2 text-sm font-medium no-underline transition-colors [background-color:var(--theme-elevation-100)] [color:var(--theme-elevation-800)] hover:[background-color:var(--theme-elevation-200)]'

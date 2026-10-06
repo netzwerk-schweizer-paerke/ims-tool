@@ -111,7 +111,11 @@ export const ListBlockView: React.FC<AdminViewServerProps> = async ({
                     }
                   : undefined
               }
-              editHref={`/admin/collections/task-lists/${listId}?locale=${localeCode}`}
+              editHref={
+                isParkAdmin(user)
+                  ? `/admin/collections/task-lists/${listId}?locale=${localeCode}`
+                  : undefined
+              }
               existingLinks={existingShareLinks}
               locale={localeCode}
               target={shareTarget}
