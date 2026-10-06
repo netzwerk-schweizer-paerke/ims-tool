@@ -388,71 +388,21 @@ describe('createCloneEndpoint', () => {
   })
 })
 
-// PIMS-83: a paste inside one park keeps the original tasks and documents.
-describe('createCloneEndpoint in link mode', () => {
-  const linkBody = { ...validBody, mode: 'link' }
-  const sameParkSource = () =>
-    vi.fn().mockResolvedValue({ id: SOURCE_ID, organisation: TARGET_ORG_ID })
-
-  test('copies no document, and hands the clone the original document ids', async () => {
-    const { req } = makeReq('tx-link', { findByID: sameParkSource() }, linkBody)
+// PIMS-83: the link mode is gone. Every paste copies, also inside one park.
+describe('createCloneEndpoint with a stale mode field', () => {
+  test('copies the documents when an old client still sends mode: link', async () => {
+    const { req } = makeReq(
+      'tx-stale-link',
+      { findByID: vi.fn().mockResolvedValue({ id: SOURCE_ID, organisation: TARGET_ORG_ID }) },
+      { ...validBody, mode: 'link' },
+    )
 
     const response = await handle(req)
 
     expect(response.status).toBe(200)
-    expect(preloadDocuments).not.toHaveBeenCalled()
-    const { documentPreloader } = cloneSource.mock.calls[0][0]
-    expect(documentPreloader.clonedDocumentIds.get(DOCUMENT_ID)).toBe(DOCUMENT_ID)
-  })
-
-  // The identity map names the originals. A cleanup over it would delete the source documents.
-  test('deletes no document when the clone rolls back', async () => {
-    cloneSource.mockRejectedValue(new Error('boom'))
-    const { mocks, req } = makeReq('tx-link-rollback', { findByID: sameParkSource() }, linkBody)
-
-    const response = await handle(req)
-
-    expect(response.status).toBe(500)
-    expect(mocks.rollbackTransaction).toHaveBeenCalledWith('tx-link-rollback')
-    expect(mocks.delete).not.toHaveBeenCalled()
-  })
-
-  test('deletes no document when the transaction cannot begin', async () => {
-    const { mocks, req } = makeReq(
-      'tx-link-begin',
-      { beginTransaction: vi.fn().mockResolvedValue(null), findByID: sameParkSource() },
-      linkBody,
-    )
-
-    const response = await handle(req)
-
-    expect(response.status).toBe(500)
-    expect(mocks.delete).not.toHaveBeenCalled()
-  })
-
-  test('refuses a link into another park before any write', async () => {
-    const { mocks, req } = makeReq(
-      'tx-link-foreign',
-      { findByID: vi.fn().mockResolvedValue({ id: SOURCE_ID, organisation: 3 }) },
-      linkBody,
-    )
-
-    const response = await handle(req)
-
-    expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: 'Failed to clone widgets: Widget 5: a link is only possible inside one park',
-    })
-    expect(preloadDocuments).not.toHaveBeenCalled()
-    expect(mocks.beginTransaction).not.toHaveBeenCalled()
-  })
-
-  test('keeps copying when the body names no mode', async () => {
-    const { req } = makeReq('tx-default', { findByID: sameParkSource() })
-
-    await handle(req)
-
     expect(preloadDocuments).toHaveBeenCalledTimes(1)
+    const { documentPreloader } = cloneSource.mock.calls[0][0]
+    expect(documentPreloader.clonedDocumentIds.get(DOCUMENT_ID)).toBe(CLONED_DOCUMENT_ID)
   })
 })
 

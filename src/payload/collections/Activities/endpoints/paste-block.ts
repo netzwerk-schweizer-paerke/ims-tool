@@ -28,7 +28,6 @@ type BlockSource = Map<TypedLocale, ActivityBlock>
 
 const bodySchema = z.object({
   locale: z.string(),
-  mode: z.enum(['copy', 'link']).default('copy'),
   // "Davor" or "Danach" a Prozessgruppe of the target Thema. Absent, the block goes last.
   position: z
     .object({ anchorBlockId: z.string().min(1), placement: z.enum(['after', 'before']) })
@@ -212,7 +211,7 @@ export const pasteBlockEndpoint: Endpoint = {
       return Response.json(formatValidationErrors(parsed.error), { status: 400 })
     }
 
-    const { locale: requestedLocale, mode, position, source, targetActivityId } = parsed.data
+    const { locale: requestedLocale, position, source, targetActivityId } = parsed.data
     const locale = toContentLocale(requestedLocale, req.payload.config)
 
     if (!locale) {
@@ -240,7 +239,6 @@ export const pasteBlockEndpoint: Endpoint = {
       {
         cloneLocales: getCloneLocales(req.payload.config),
         locale,
-        mode,
         req,
         sourceIds: [source.activityId],
         targetOrganisationId,

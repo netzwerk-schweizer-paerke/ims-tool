@@ -6,7 +6,6 @@ import { currentOrganisationCollectionReadAccess } from '@/payload/collections/a
 import { currentOrganisationCollectionWriteAccess } from '@/payload/collections/access/current-organisation-collection-write-access'
 import { ActivityIOBlock } from '@/payload/collections/Activities/blocks/input-output'
 import { ActivityTaskBlock } from '@/payload/collections/Activities/blocks/task'
-import { attachTaskEndpoint } from '@/payload/collections/Activities/endpoints/attach-task'
 import { cloneActivityTransactional } from '@/payload/collections/Activities/endpoints/clone/clone-activity-transactional'
 import { fetchLegacyDocsTransactional } from '@/payload/collections/Activities/endpoints/legacy-fetcher/fetch-legacy-docs-transactional'
 import { pasteBlockEndpoint } from '@/payload/collections/Activities/endpoints/paste-block'
@@ -45,7 +44,6 @@ export const Activities: CollectionConfig = {
   endpoints: [
     cloneActivityTransactional,
     fetchLegacyDocsTransactional,
-    attachTaskEndpoint,
     pasteBlockEndpoint,
   ],
   fields: [

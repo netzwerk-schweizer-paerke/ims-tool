@@ -57,25 +57,27 @@ describe('canPaste', () => {
 describe('pasteRequest', () => {
   test('clones a Thema into another park as a copy', () => {
     expect(pasteRequest(thema, landscape(OTHER), 'de')).toEqual({
-      body: { ids: [124], locale: 'de', mode: 'copy', targetOrganisationId: OTHER },
+      body: { ids: [124], locale: 'de', targetOrganisationId: OTHER },
       path: '/api/activities/clone',
     })
   })
 
   // PIMS-83: a paste always clones, also inside one park. It never links the originals.
-  test('clones a Thema inside its own park as a copy', () => {
-    expect(pasteRequest(thema, landscape(PARK), 'fr')?.body).toMatchObject({ mode: 'copy' })
+  test('clones a Thema inside its own park with the same request as across parks', () => {
+    expect(pasteRequest(thema, landscape(PARK), 'fr')).toEqual({
+      body: { ids: [124], locale: 'fr', targetOrganisationId: PARK },
+      path: '/api/activities/clone',
+    })
   })
 
-  test('clones a Prozessgruppe inside its own park as a copy', () => {
-    expect(pasteRequest(block, intoThema(PARK), 'de')?.body).toMatchObject({ mode: 'copy' })
+  test('clones a Prozessgruppe inside its own park with the same request as across parks', () => {
+    expect(pasteRequest(block, intoThema(PARK), 'de')?.body).not.toHaveProperty('mode')
   })
 
   test('pastes a Prozessgruppe into a Thema', () => {
     expect(pasteRequest(block, intoThema(OTHER), 'de')).toEqual({
       body: {
         locale: 'de',
-        mode: 'copy',
         source: { activityId: 124, blockId: 'b-de-0' },
         targetActivityId: 177,
       },
@@ -88,7 +90,6 @@ describe('pasteRequest', () => {
       body: {
         ids: [498],
         locale: 'de',
-        mode: 'copy',
         target: { activityId: 177, blockId: 't-de-2' },
         targetOrganisationId: park,
       },

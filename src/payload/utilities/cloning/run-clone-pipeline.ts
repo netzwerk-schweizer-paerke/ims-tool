@@ -21,7 +21,6 @@ import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statis
 import { deleteCreatedDocuments } from '@/payload/utilities/cloning/delete-created-documents'
 import { DocumentPreloader, preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
-import { linkDocumentsInPlace } from '@/payload/utilities/cloning/link-documents-in-place'
 import {
   type ActivityPosition,
   placeActivities,
@@ -30,8 +29,6 @@ import {
 import { CloneRecordRef, remapTaskLinks } from '@/payload/utilities/cloning/remap-task-links'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
-
-export type CloneMode = 'copy' | 'link'
 
 export interface ClonePipelineArgs {
   /**
@@ -43,11 +40,6 @@ export interface ClonePipelineArgs {
   cloneLocales: TypedLocale[]
   /** The request locale, already narrowed to a content locale. */
   locale: TypedLocale
-  /**
-   * `copy` creates new tasks and documents in the target park. `link` keeps the originals, and is
-   * valid only when every source belongs to the target park (PIMS-83).
-   */
-  mode: CloneMode
   req: PayloadRequest
   /** Unique source ids. */
   sourceIds: number[]
@@ -77,7 +69,6 @@ export const runClonePipeline = async <TSource>(
     activityPosition,
     cloneLocales,
     locale,
-    mode,
     req,
     sourceIds,
     target,
@@ -89,13 +80,8 @@ export const runClonePipeline = async <TSource>(
   let resolvedTarget: null | ResolvedBlockTarget = null
   let anchorVariant: Awaited<ReturnType<typeof resolveActivityAnchor>> | null = null
 
-  // In link mode the preloader maps every document to itself. A cleanup over its values would
-  // delete the originals, so only a copy run may delete what phase 1 created.
-  const deletePhaseOneCopies = async (preloader: DocumentPreloader) => {
-    if (mode === 'copy') {
-      await deleteCreatedDocuments(req, preloader.clonedDocumentIds.values())
-    }
-  }
+  const deletePhaseOneCopies = (preloader: DocumentPreloader) =>
+    deleteCreatedDocuments(req, preloader.clonedDocumentIds.values())
 
   // PHASE 1: Check access, read the sources, download the documents and create their copies.
   // This must stay OUTSIDE the transaction. One document create costs seconds, and would
@@ -170,14 +156,6 @@ export const runClonePipeline = async <TSource>(
 
       const sourceOrganisationId = getIdFromRelation(sourceRecord.organisation)
 
-      // A link across parks would point one park's record at another park's tasks.
-      if (mode === 'link' && sourceOrganisationId !== targetOrganisationId) {
-        throw new CloneHttpError(
-          `${label.singular} ${sourceId}: a link is only possible inside one park`,
-          400,
-        )
-      }
-
       allDocumentIds.push(...documentIds)
       entries.push({ id: sourceId, name, source, sourceOrganisationId })
     }
@@ -189,10 +167,7 @@ export const runClonePipeline = async <TSource>(
 
     // Copy all unique documents into the target organisation
     const uniqueDocumentIds = Array.from(new Set(allDocumentIds))
-    documentPreloader =
-      mode === 'link'
-        ? linkDocumentsInPlace(uniqueDocumentIds)
-        : await preloadDocuments(req, uniqueDocumentIds, targetOrganisationId)
+    documentPreloader = await preloadDocuments(req, uniqueDocumentIds, targetOrganisationId)
 
     req.payload.logger.info({
       clonedCount: documentPreloader.clonedDocumentIds.size,
@@ -243,10 +218,6 @@ export const runClonePipeline = async <TSource>(
   }
 
   const tracker = CloneStatisticsTracker.getInstance(transactionID)
-
-  if (mode === 'link') {
-    tracker.linkTasksInPlace()
-  }
 
   try {
     // PHASE 2: Clone the sources with the copied documents (INSIDE the transaction)

@@ -65,7 +65,6 @@ export const pasteRequest = (
     return null
   }
 
-  const mode = 'copy'
   const placement = target.anchor?.placement ?? 'after'
 
   if (item.kind === 'activity' && target.kind === 'landscape') {
@@ -73,7 +72,6 @@ export const pasteRequest = (
       body: {
         ids: [item.id],
         locale,
-        mode,
         targetOrganisationId: target.organisationId,
         ...(target.anchor && {
           position: { anchorActivityId: target.anchor.activityId, placement },
@@ -87,7 +85,6 @@ export const pasteRequest = (
     return {
       body: {
         locale,
-        mode,
         source: { activityId: item.activityId, blockId: item.blockId },
         targetActivityId: target.activityId,
         ...(target.anchor && { position: { anchorBlockId: target.anchor.blockId, placement } }),
@@ -107,7 +104,6 @@ export const pasteRequest = (
       body: {
         ids: [item.id],
         locale,
-        mode,
         target: {
           activityId: target.activityId,
           blockId: target.blockId,

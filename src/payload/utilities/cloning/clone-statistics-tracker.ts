@@ -9,8 +9,6 @@ export class CloneStatisticsTracker {
   private documentCloneMaps: Map<number, Map<number, number>> = new Map()
   private documentClonePromises: Map<number, Map<number, Promise<number>>> = new Map()
   private entitiesStats: Map<number, GenericCloneStatistics> = new Map()
-  /** Link mode (PIMS-83): a paste inside one park keeps the linked tasks instead of copying. */
-  private linkExistingTasks = false
   private taskCloneMaps: Map<number, Map<string, number>> = new Map()
   private taskClonePromises: Map<number, Map<string, Promise<number>>> = new Map()
   private taskLinkEntities: Set<number> = new Set()
@@ -333,11 +331,6 @@ export class CloneStatisticsTracker {
     return this.taskLinkEntities.has(entityId)
   }
 
-  /** Makes `resolveClonedTaskId` answer the source task itself. Set once, before phase 2. */
-  linkTasksInPlace(): void {
-    this.linkExistingTasks = true
-  }
-
   /** Records that one rich text field links a task. `processNode` calls it. */
   noteTaskLink(): void {
     if (this.currentEntityId !== null) {
@@ -397,11 +390,6 @@ export class CloneStatisticsTracker {
     sourceId: number,
     cloneTask: () => Promise<number>,
   ): Promise<number> {
-    // Nothing is recorded, so the link remap never reads back and rewrites an original task.
-    if (this.linkExistingTasks) {
-      return sourceId
-    }
-
     const inFlight = this.getCurrentTaskClonePromises()
     const key = `${collection}:${sourceId}`
     const existing = inFlight.get(key)

@@ -14,8 +14,6 @@ import { requireAuthentication } from '@/payload/utilities/endpoints/require-aut
 const batchCloneBodySchema = z.object({
   ids: z.array(z.number().min(1)).min(1, 'At least one ID is required'),
   locale: z.string(),
-  // Absent for every clone from a list view. A paste inside one park sends `link` (PIMS-83).
-  mode: z.enum(['copy', 'link']).default('copy'),
   // A Thema pasted "Davor" or "Danach" a Thema of the target park (PIMS-83).
   position: z
     .object({ anchorActivityId: z.number().min(1), placement: z.enum(['after', 'before']) })
@@ -136,14 +134,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const {
-      ids,
-      locale: requestedLocale,
-      mode,
-      position,
-      target,
-      targetOrganisationId,
-    } = validatedBody
+    const { ids, locale: requestedLocale, position, target, targetOrganisationId } = validatedBody
 
     // A repeated id would clone one source twice, and the link remap would then visit the same
     // nested records twice. The second visit degrades the links the first visit resolved.
@@ -168,7 +159,6 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       activityPosition: position,
       cloneLocales,
       locale,
-      mode,
       req,
       sourceIds,
       target,
