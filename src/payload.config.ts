@@ -115,9 +115,7 @@ export default buildConfig({
         user: process.env.SMTP_USER || '',
       },
       host: process.env.SMTP_HOST || '',
-      logger: true,
       port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
-      transactionLog: true,
     },
   }),
   endpoints: [
