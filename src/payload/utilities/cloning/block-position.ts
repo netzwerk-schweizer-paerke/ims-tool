@@ -31,13 +31,15 @@ export const findBlockIndex = (
 }
 
 /**
- * Appends a task to the relations of the block at `index`. It answers null when there is nothing
- * to write: the locale has no task block there, or the block already links the task.
+ * Adds a task to the relations of the block at `index`, at the end or next to an anchor task.
+ * It answers null when there is nothing to write: the locale has no task block there, or the
+ * block already links the task. A missing anchor appends, so a locale without it still gets it.
  */
 export const appendTaskRelation = (
   blocks: readonly StoredBlock[],
   index: number,
   task: { id: number; relationTo: TaskCollection },
+  position?: TaskPosition,
 ): null | StoredBlock[] => {
   const block = blocks[index]
 
@@ -48,25 +50,39 @@ export const appendTaskRelation = (
   }
 
   const tasks = block.relations?.tasks ?? []
-  const linked = tasks.some(
-    (entry) =>
-      entry.relationTo === task.relationTo &&
-      (typeof entry.value === 'number' ? entry.value : entry.value.id) === task.id,
-  )
+  const matches = (entry: StoredTaskRelation, collection: TaskCollection, id: number) =>
+    entry.relationTo === collection &&
+    (typeof entry.value === 'number' ? entry.value : entry.value.id) === id
 
-  if (linked) {
+  if (tasks.some((entry) => matches(entry, task.relationTo, task.id))) {
     return null
   }
 
-  return blocks.map((entry, position) =>
-    position === index
+  const anchorIndex = position
+    ? tasks.findIndex((entry) => matches(entry, position.anchorCollection, position.anchorId))
+    : -1
+  const insertAt =
+    anchorIndex === -1
+      ? tasks.length
+      : anchorIndex + (position?.placement === 'before' ? 0 : 1)
+  const added = { relationTo: task.relationTo, value: task.id }
+
+  return blocks.map((entry, blockPosition) =>
+    blockPosition === index
       ? {
           ...entry,
           relations: {
             ...entry.relations,
-            tasks: [...tasks, { relationTo: task.relationTo, value: task.id }],
+            tasks: [...tasks.slice(0, insertAt), added, ...tasks.slice(insertAt)],
           },
         }
       : entry,
   )
+}
+
+/** "Davor" or "Danach" one task of the same Prozessgruppe (PIMS-83). */
+export type TaskPosition = {
+  anchorCollection: TaskCollection
+  anchorId: number
+  placement: 'after' | 'before'
 }

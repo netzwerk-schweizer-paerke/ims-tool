@@ -7,9 +7,11 @@ type Props = PropsWithChildren & {
   /** A menu in the padding corner. It sits outside the root target, so the arrows keep their box. */
   actions?: ReactNode
   id: null | string | undefined
+  /** Marks the box for the highlight after a paste. See `use-paste-run.ts`. */
+  pasteKey?: string
 }
 
-export const BlockWrapper = ({ actions, children, id }: Props) => {
+export const BlockWrapper = ({ actions, children, id, pasteKey }: Props) => {
   if (!id) {
     throw new Error('BlockWrapper requires an id prop')
   }
@@ -17,7 +19,9 @@ export const BlockWrapper = ({ actions, children, id }: Props) => {
     <div className={'activity-block relative p-8'}>
       {/* The height must match `min-h-32` on the shape wrapper. A shorter box lets the shape
           overflow, and the arrow then starts inside the visible border. */}
-      <div className={'flex h-32 w-52 items-center justify-center text-center'}>
+      <div
+        className={'flex h-32 w-52 items-center justify-center text-center'}
+        data-paste-key={pasteKey}>
         <div className={'root-target relative size-full'} id={`${id}-${RootTargetName}`}>
           {children}
           {/* Inside the box, top right. An absolute child leaves the measured box unchanged. */}

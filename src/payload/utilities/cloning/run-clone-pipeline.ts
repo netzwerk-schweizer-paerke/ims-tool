@@ -22,6 +22,11 @@ import { deleteCreatedDocuments } from '@/payload/utilities/cloning/delete-creat
 import { DocumentPreloader, preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
 import { linkDocumentsInPlace } from '@/payload/utilities/cloning/link-documents-in-place'
+import {
+  type ActivityPosition,
+  placeActivities,
+  resolveActivityAnchor,
+} from '@/payload/utilities/cloning/place-activities'
 import { CloneRecordRef, remapTaskLinks } from '@/payload/utilities/cloning/remap-task-links'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
@@ -29,6 +34,11 @@ import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 export type CloneMode = 'copy' | 'link'
 
 export interface ClonePipelineArgs {
+  /**
+   * A Thema of the target park that the new Themen go before or after (PIMS-83). Valid for
+   * activities only. Without it, a new Thema keeps the band and the order of its source.
+   */
+  activityPosition?: ActivityPosition
   /** Every locale the clone carries, default first. */
   cloneLocales: TypedLocale[]
   /** The request locale, already narrowed to a content locale. */
@@ -64,6 +74,7 @@ export interface ClonePipelineResult {
 export const runClonePipeline = async <TSource>(
   config: CloneEndpointConfig<TSource>,
   {
+    activityPosition,
     cloneLocales,
     locale,
     mode,
@@ -76,6 +87,7 @@ export const runClonePipeline = async <TSource>(
 ): Promise<ClonePipelineResult> => {
   const { cloneSource, collectionSlug, collectNestedDocumentIds, label, readSource } = config
   let resolvedTarget: null | ResolvedBlockTarget = null
+  let anchorVariant: Awaited<ReturnType<typeof resolveActivityAnchor>> | null = null
 
   // In link mode the preloader maps every document to itself. A cleanup over its values would
   // delete the originals, so only a copy run may delete what phase 1 created.
@@ -128,6 +140,14 @@ export const runClonePipeline = async <TSource>(
       }
 
       resolvedTarget = await resolveBlockTarget(req, target, targetOrganisationId)
+    }
+
+    if (activityPosition) {
+      if (collectionSlug !== 'activities') {
+        throw new CloneHttpError('Only a Thema can be placed next to a Thema', 400)
+      }
+
+      anchorVariant = await resolveActivityAnchor(req, activityPosition, targetOrganisationId)
     }
 
     for (const sourceId of sourceIds) {
@@ -277,6 +297,7 @@ export const runClonePipeline = async <TSource>(
       if (resolvedTarget && collectionSlug !== 'activities') {
         const written = await attachTaskToBlock({
           cloneLocales,
+          position: target?.position,
           req: transactionalReq,
           target: resolvedTarget,
           task: { id: cloned.id, relationTo: collectionSlug },
@@ -300,6 +321,16 @@ export const runClonePipeline = async <TSource>(
       })
 
       tracker.endEntity()
+    }
+
+    if (activityPosition && anchorVariant) {
+      await placeActivities({
+        newIds: clonedEntries.map(({ record }) => record.id),
+        organisationId: targetOrganisationId,
+        position: activityPosition,
+        req: transactionalReq,
+        variant: anchorVariant,
+      })
     }
 
     // A rich text link cannot resolve while the clone runs, because two task flows often link

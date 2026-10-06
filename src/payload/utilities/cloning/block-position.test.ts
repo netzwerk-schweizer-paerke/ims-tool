@@ -78,3 +78,58 @@ describe('appendTaskRelation', () => {
     expect(next?.[0].relations?.tasks).toEqual([{ relationTo: 'task-flows', value: 9 }])
   })
 })
+
+// PIMS-83: "Davor" and "Danach" next to a task of the same Prozessgruppe.
+describe('appendTaskRelation with an anchor', () => {
+  const three = () => [
+    block('a', {
+      tasks: [
+        { relationTo: 'task-flows', value: 1 },
+        { relationTo: 'task-lists', value: 2 },
+        { relationTo: 'task-flows', value: 3 },
+      ],
+    }),
+  ]
+  const order = (blocks: null | StoredBlock[]) =>
+    blocks?.[0].relations?.tasks?.map((t) => `${t.relationTo}:${String(t.value)}`)
+
+  test('inserts directly before the anchor', () => {
+    const next = appendTaskRelation(three(), 0, { id: 9, relationTo: 'task-lists' }, {
+      anchorCollection: 'task-lists',
+      anchorId: 2,
+      placement: 'before',
+    })
+
+    expect(order(next)).toEqual(['task-flows:1', 'task-lists:9', 'task-lists:2', 'task-flows:3'])
+  })
+
+  test('inserts directly after the anchor', () => {
+    const next = appendTaskRelation(three(), 0, { id: 9, relationTo: 'task-lists' }, {
+      anchorCollection: 'task-lists',
+      anchorId: 2,
+      placement: 'after',
+    })
+
+    expect(order(next)).toEqual(['task-flows:1', 'task-lists:2', 'task-lists:9', 'task-flows:3'])
+  })
+
+  test('tells a task flow and a task list of one id apart as the anchor', () => {
+    const next = appendTaskRelation(three(), 0, { id: 9, relationTo: 'task-flows' }, {
+      anchorCollection: 'task-lists',
+      anchorId: 1,
+      placement: 'before',
+    })
+
+    expect(order(next)?.at(-1)).toBe('task-flows:9')
+  })
+
+  test('appends when this locale does not hold the anchor', () => {
+    const next = appendTaskRelation(three(), 0, { id: 9, relationTo: 'task-flows' }, {
+      anchorCollection: 'task-flows',
+      anchorId: 77,
+      placement: 'before',
+    })
+
+    expect(order(next)?.at(-1)).toBe('task-flows:9')
+  })
+})

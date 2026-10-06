@@ -56,10 +56,16 @@ export const en = {
     copied: '"{{label}}" is copied. Paste it one level up.',
     copy: 'Copy',
     holding: 'Copied: {{label}}',
+    pasteAfter: 'Paste "{{label}}" after',
+    pasteBefore: 'Paste "{{label}}" before',
     pasted: '"{{label}}" is pasted.',
+    pastedWithIssues: '"{{label}}" is pasted, but not completely.',
     pasteFailed: 'The paste failed: {{error}}',
     pasteHere: 'Paste "{{label}}" here',
-    working: 'Please wait…',
+    pasting: 'Pasting "{{label}}"…',
+    pastingHint:
+      'All processes, lists and documents are copied. This can take some minutes. Stay on this page.',
+    resultTitle: 'Paste result',
   },
   cloneActivity: {
     button: 'Clone activities',

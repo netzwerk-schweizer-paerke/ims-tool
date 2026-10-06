@@ -56,10 +56,16 @@ export const it = {
     copied: '«{{label}}» è copiato. Incollalo un livello più in alto.',
     copy: 'Copia',
     holding: 'Copiato: {{label}}',
+    pasteAfter: 'Incolla «{{label}}» dopo',
+    pasteBefore: 'Incolla «{{label}}» prima',
     pasted: '«{{label}}» è incollato.',
+    pastedWithIssues: '«{{label}}» è incollato, ma non completamente.',
     pasteFailed: 'Incollare non è riuscito: {{error}}',
     pasteHere: 'Incolla «{{label}}» qui',
-    working: 'Attendere prego…',
+    pasting: 'Incollo «{{label}}»…',
+    pastingHint:
+      'Tutti i processi, le liste e i documenti vengono copiati. Può richiedere alcuni minuti. Rimani su questa pagina.',
+    resultTitle: 'Risultato dell’incolla',
   },
   cloneActivity: {
     button: 'Clona attività',

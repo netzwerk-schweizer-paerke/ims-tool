@@ -1,15 +1,13 @@
 'use client'
 
 import { Popup, PopupList, toast, useLocale, useTranslation } from '@payloadcms/ui'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 import { useClipboard } from '@/components/clipboard/clipboard-provider'
 import {
   canPaste,
   type ClipboardItem,
-  pasteRequest,
   type PasteTarget,
+  placeTarget,
 } from '@/lib/clipboard/paste-request'
 import { I18nKeys, I18nObject } from '@/lib/use-translation-custom-types'
 
@@ -18,11 +16,16 @@ type Props = {
   copyItem?: ClipboardItem
   /** The edit form of this item. Absent on the public share page. */
   editHref?: string
-  /** Where a paste from this menu lands. Absent when the user may not paste. */
+  /** Where a paste into this item lands, one level down. Absent when the user may not paste. */
   pasteTarget?: PasteTarget
+  /**
+   * The level this item belongs to, anchored on this item. It offers "Davor" and "Danach" when
+   * the clipboard holds an item of the same kind. Absent when the user may not paste.
+   */
+  siblingTarget?: PasteTarget
 }
 
-/** A round trigger with three vertical dots. The parent places it in a top right corner. */
+/** A round trigger with three vertical dots. The parent places it. */
 const TRIGGER =
   'flex size-7 items-center justify-center rounded-full border border-solid transition-colors [border-color:var(--theme-elevation-150)] [background-color:var(--theme-elevation-0)] [color:var(--theme-elevation-800)] hover:[background-color:var(--theme-elevation-100)]'
 
@@ -35,16 +38,15 @@ const VerticalDots = () => (
 )
 
 /** The menu that holds edit, copy and paste for one item (PIMS-83). */
-export const ItemActions = ({ copyItem, editHref, pasteTarget }: Props) => {
+export const ItemActions = ({ copyItem, editHref, pasteTarget, siblingTarget }: Props) => {
   const { t } = useTranslation<I18nObject, I18nKeys>()
   const { code: locale } = useLocale()
-  const router = useRouter()
-  const { copy, item } = useClipboard()
-  const [busy, setBusy] = useState(false)
+  const { copy, item, paste, pasting: busy } = useClipboard()
 
   const pasteable = pasteTarget && item && canPaste(item, pasteTarget) ? item : null
+  const sibling = siblingTarget && item && canPaste(item, siblingTarget) ? item : null
 
-  if (!editHref && !copyItem && !pasteable) {
+  if (!editHref && !copyItem && !pasteable && !sibling) {
     return null
   }
 
@@ -57,45 +59,8 @@ export const ItemActions = ({ copyItem, editHref, pasteTarget }: Props) => {
     toast.success(t('clipboard:copied', { label: copyItem.label }))
   }
 
-  const onPaste = async () => {
-    if (!pasteable || !pasteTarget || busy) {
-      return
-    }
-
-    const request = pasteRequest(pasteable, pasteTarget, locale)
-
-    if (!request) {
-      return
-    }
-
-    setBusy(true)
-
-    try {
-      const response = await fetch(request.path, {
-        body: JSON.stringify(request.body),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
-      })
-      const body: unknown = await response.json().catch(() => null)
-
-      if (!response.ok) {
-        const error =
-          typeof body === 'object' && body !== null && 'error' in body
-            ? String(body.error)
-            : `HTTP ${response.status}`
-        toast.error(t('clipboard:pasteFailed', { error }))
-        return
-      }
-
-      toast.success(t('clipboard:pasted', { label: pasteable.label }))
-      router.refresh()
-    } catch (error) {
-      toast.error(t('clipboard:pasteFailed', { error: String(error) }))
-    } finally {
-      setBusy(false)
-    }
-  }
+  const onPaste = (clipboardItem: ClipboardItem, target: PasteTarget) =>
+    paste(clipboardItem, target, locale)
 
   return (
     <Popup
@@ -124,11 +89,29 @@ export const ItemActions = ({ copyItem, editHref, pasteTarget }: Props) => {
               {t('clipboard:copy')}
             </PopupList.Button>
           )}
-          {pasteable && (
+          {sibling && siblingTarget && (
+            <>
+              <PopupList.Button
+                onClick={() => {
+                  close()
+                  void onPaste(sibling, placeTarget(siblingTarget, 'before'))
+                }}>
+                {t('clipboard:pasteBefore', { label: sibling.label })}
+              </PopupList.Button>
+              <PopupList.Button
+                onClick={() => {
+                  close()
+                  void onPaste(sibling, placeTarget(siblingTarget, 'after'))
+                }}>
+                {t('clipboard:pasteAfter', { label: sibling.label })}
+              </PopupList.Button>
+            </>
+          )}
+          {pasteable && pasteTarget && (
             <PopupList.Button
               onClick={() => {
                 close()
-                void onPaste()
+                void onPaste(pasteable, pasteTarget)
               }}>
               {t('clipboard:pasteHere', { label: pasteable.label })}
             </PopupList.Button>

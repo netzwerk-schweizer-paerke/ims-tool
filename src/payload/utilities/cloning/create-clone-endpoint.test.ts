@@ -15,6 +15,10 @@ vi.mock('@/payload/utilities/cloning/attach-task-to-block', () => ({
   attachTaskToBlock: vi.fn(),
   resolveBlockTarget: vi.fn(),
 }))
+vi.mock('@/payload/utilities/cloning/place-activities', () => ({
+  placeActivities: vi.fn(),
+  resolveActivityAnchor: vi.fn(),
+}))
 
 import type { CloneEndpointConfig } from '@/payload/utilities/cloning/create-clone-endpoint'
 import type { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
@@ -27,6 +31,7 @@ import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { createCloneEndpoint } from '@/payload/utilities/cloning/create-clone-endpoint'
 import { preloadDocuments } from '@/payload/utilities/cloning/document-preloader'
+import { placeActivities, resolveActivityAnchor } from '@/payload/utilities/cloning/place-activities'
 import { validateCloneAccess } from '@/payload/utilities/cloning/validate-access'
 
 const SOURCE_ID = 5
@@ -536,5 +541,71 @@ describe('createCloneEndpoint with a block target', () => {
 
     expect(resolveBlockTarget).not.toHaveBeenCalled()
     expect(attachTaskToBlock).not.toHaveBeenCalled()
+  })
+})
+
+// PIMS-83: a pasted Thema goes "Davor" or "Danach" a Thema of the target park.
+describe('createCloneEndpoint with a Thema position', () => {
+  const position = { anchorActivityId: 40, placement: 'before' as const }
+
+  const activityEndpoint = createCloneEndpoint<string>({
+    cloneSource,
+    collectionSlug: 'activities',
+    label: { plural: 'Themen', singular: 'Thema' },
+    readSource,
+  })
+
+  test('checks the anchor before any copy, and places the clone inside the transaction', async () => {
+    vi.mocked(resolveActivityAnchor).mockResolvedValue('supportActivity')
+    const { mocks, req } = makeReq('tx-place', {}, { ...validBody, position })
+
+    const response = await activityEndpoint.handler(req)
+
+    expect(response.status).toBe(200)
+    expect(resolveActivityAnchor).toHaveBeenCalledWith(req, position, TARGET_ORG_ID)
+    expect(vi.mocked(resolveActivityAnchor).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(preloadDocuments).mock.invocationCallOrder[0],
+    )
+    expect(placeActivities).toHaveBeenCalledWith({
+      newIds: [77],
+      organisationId: TARGET_ORG_ID,
+      position,
+      req: expect.objectContaining({ transactionID: 'tx-place' }),
+      variant: 'supportActivity',
+    })
+    expect(vi.mocked(placeActivities).mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.commitTransaction.mock.invocationCallOrder[0],
+    )
+  })
+
+  test('answers the anchor error and copies nothing when the anchor is in another park', async () => {
+    vi.mocked(resolveActivityAnchor).mockRejectedValue(
+      new CloneHttpError('Anchor Thema 40 is not in the target park', 400),
+    )
+    const { mocks, req } = makeReq('tx-bad-anchor', {}, { ...validBody, position })
+
+    const response = await activityEndpoint.handler(req)
+
+    expect(response.status).toBe(400)
+    expect(readSource).not.toHaveBeenCalled()
+    expect(mocks.beginTransaction).not.toHaveBeenCalled()
+  })
+
+  test('refuses a position for a Prozess', async () => {
+    const { mocks, req } = makeReq('tx-task-position', {}, { ...validBody, position })
+
+    const response = await handle(req)
+
+    expect(response.status).toBe(400)
+    expect(resolveActivityAnchor).not.toHaveBeenCalled()
+    expect(mocks.beginTransaction).not.toHaveBeenCalled()
+  })
+
+  test('places nothing when the body names no position', async () => {
+    const { req } = makeReq('tx-no-position')
+
+    await activityEndpoint.handler(req)
+
+    expect(placeActivities).not.toHaveBeenCalled()
   })
 })

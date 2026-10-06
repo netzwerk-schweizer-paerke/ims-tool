@@ -18,10 +18,28 @@ export type ClipboardItem =
 
 export type PasteRequest = { body: Record<string, unknown>; path: string }
 
+/**
+ * Where a paste lands. Without an anchor the item goes to the end of the level. With an anchor
+ * it goes directly before or after that sibling. The menu sets `placement` per entry.
+ */
 export type PasteTarget =
-  | { activityId: number; blockId: string; kind: 'activityBlock'; organisationId: number }
-  | { activityId: number; kind: 'activity'; organisationId: number }
-  | { kind: 'landscape'; organisationId: number }
+  | {
+      activityId: number
+      anchor?: { blockId: string; placement?: Placement }
+      kind: 'activity'
+      organisationId: number
+    }
+  | {
+      activityId: number
+      anchor?: { collection: 'task-flows' | 'task-lists'; id: number; placement?: Placement }
+      blockId: string
+      kind: 'activityBlock'
+      organisationId: number
+    }
+  | { anchor?: { activityId: number; placement?: Placement }; kind: 'landscape'; organisationId: number }
+
+/** Where a pasted item lands next to a sibling of its own level ("Davor" / "Danach"). */
+export type Placement = 'after' | 'before'
 
 /** The level each kind pastes into. */
 const PASTE_LEVEL: Record<ClipboardItem['kind'], PasteTarget['kind']> = {
@@ -35,8 +53,8 @@ export const canPaste = (item: ClipboardItem | null, target: PasteTarget): boole
   item !== null && PASTE_LEVEL[item.kind] === target.kind
 
 /**
- * The API call of one paste, or null when the item does not paste into this target. Inside one
- * park the paste links the existing tasks and documents. Across parks it copies them.
+ * The API call of one paste, or null when the item does not paste into this target. Every paste
+ * clones the item with its tasks and documents, also inside one park.
  */
 export const pasteRequest = (
   item: ClipboardItem,
@@ -47,12 +65,20 @@ export const pasteRequest = (
     return null
   }
 
-  const samePark = item.organisationId === target.organisationId
-  const mode = samePark ? 'link' : 'copy'
+  const mode = 'copy'
+  const placement = target.anchor?.placement ?? 'after'
 
   if (item.kind === 'activity' && target.kind === 'landscape') {
     return {
-      body: { ids: [item.id], locale, mode, targetOrganisationId: target.organisationId },
+      body: {
+        ids: [item.id],
+        locale,
+        mode,
+        targetOrganisationId: target.organisationId,
+        ...(target.anchor && {
+          position: { anchorActivityId: target.anchor.activityId, placement },
+        }),
+      },
       path: '/api/activities/clone',
     }
   }
@@ -64,25 +90,29 @@ export const pasteRequest = (
         mode,
         source: { activityId: item.activityId, blockId: item.blockId },
         targetActivityId: target.activityId,
+        ...(target.anchor && { position: { anchorBlockId: target.anchor.blockId, placement } }),
       },
       path: '/api/activities/paste-block',
     }
   }
 
   if ((item.kind === 'task-flows' || item.kind === 'task-lists') && target.kind === 'activityBlock') {
-    // Inside one park nothing is copied. The existing task gets linked to the Prozessgruppe.
-    if (samePark) {
-      return {
-        body: { blockId: target.blockId, collection: item.kind, taskId: item.id },
-        path: `/api/activities/${target.activityId}/attach-task`,
-      }
+    const position = target.anchor && {
+      anchorCollection: target.anchor.collection,
+      anchorId: target.anchor.id,
+      placement,
     }
 
     return {
       body: {
         ids: [item.id],
         locale,
-        target: { activityId: target.activityId, blockId: target.blockId },
+        mode,
+        target: {
+          activityId: target.activityId,
+          blockId: target.blockId,
+          ...(position && { position }),
+        },
         targetOrganisationId: target.organisationId,
       },
       path: `/api/${item.kind}/clone`,
@@ -91,6 +121,10 @@ export const pasteRequest = (
 
   return null
 }
+
+/** The same target with the anchor placed before or after. A target with no anchor stays as it is. */
+export const placeTarget = (target: PasteTarget, placement: Placement): PasteTarget =>
+  target.anchor ? ({ ...target, anchor: { ...target.anchor, placement } } as PasteTarget) : target
 
 /** A stored preference is untrusted input. Anything that is not a valid item reads as empty. */
 export const parseClipboardItem = (value: unknown): ClipboardItem | null => {

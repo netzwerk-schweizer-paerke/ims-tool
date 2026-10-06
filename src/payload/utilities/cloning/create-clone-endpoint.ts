@@ -6,6 +6,7 @@ import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { CloneStatisticsTracker } from '@/payload/utilities/cloning/clone-statistics-tracker'
 import { DocumentPreloader } from '@/payload/utilities/cloning/document-preloader'
 import { runClonePipeline } from '@/payload/utilities/cloning/run-clone-pipeline'
+import { taskPositionSchema } from '@/payload/utilities/cloning/task-position-schema'
 import { GenericCloneStatisticsFinalized } from '@/payload/utilities/cloning/types'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
@@ -15,8 +16,18 @@ const batchCloneBodySchema = z.object({
   locale: z.string(),
   // Absent for every clone from a list view. A paste inside one park sends `link` (PIMS-83).
   mode: z.enum(['copy', 'link']).default('copy'),
+  // A Thema pasted "Davor" or "Danach" a Thema of the target park (PIMS-83).
+  position: z
+    .object({ anchorActivityId: z.number().min(1), placement: z.enum(['after', 'before']) })
+    .optional(),
   // A paste of a Prozess or a Liste names the Prozessgruppe that links the copy (PIMS-83).
-  target: z.object({ activityId: z.number().min(1), blockId: z.string().min(1) }).optional(),
+  target: z
+    .object({
+      activityId: z.number().min(1),
+      blockId: z.string().min(1),
+      position: taskPositionSchema.optional(),
+    })
+    .optional(),
   targetOrganisationId: z.number(),
 })
 
@@ -125,7 +136,14 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
       return Response.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { ids, locale: requestedLocale, mode, target, targetOrganisationId } = validatedBody
+    const {
+      ids,
+      locale: requestedLocale,
+      mode,
+      position,
+      target,
+      targetOrganisationId,
+    } = validatedBody
 
     // A repeated id would clone one source twice, and the link remap would then visit the same
     // nested records twice. The second visit degrades the links the first visit resolved.
@@ -147,6 +165,7 @@ export const createCloneEndpoint = <TSource>(config: CloneEndpointConfig<TSource
     const cloneLocales = getCloneLocales(req.payload.config)
 
     const { body, status } = await runClonePipeline(config, {
+      activityPosition: position,
       cloneLocales,
       locale,
       mode,

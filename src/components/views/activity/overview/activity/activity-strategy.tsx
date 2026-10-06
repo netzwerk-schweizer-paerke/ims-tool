@@ -60,7 +60,9 @@ export const ActivityStrategy = ({ activity, links, locale }: Props) => {
 
   return (
     <div className={'activity-strategy z-10 flex w-min flex-col'}>
-        <div className={'flex items-center justify-center gap-2 text-center'}>
+        <div
+          className={'flex items-center justify-center gap-2 text-center'}
+          data-paste-key={`activity:${activity.id}`}>
           <h2 className={'max-w-52 hyphens-auto text-xl font-bold'} lang={locale}>
           {activity.name}
         </h2>
@@ -68,36 +70,39 @@ export const ActivityStrategy = ({ activity, links, locale }: Props) => {
         </div>
         <div className={'relative flex h-full grow flex-col justify-center'}>
           {blocksDisplay.input.length === 0 ? (
-            <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
+            <ActivityBlock activity={activity} links={links} locale={locale} type={'empty'} />
           ) : (
             blocksDisplay.input.map((block) => (
               <ActivityBlock
-                activityId={activity.id}
+                activity={activity}
                 block={block}
                 key={block.id}
                 links={links}
+                locale={locale}
                 type={'input'}
               />
             ))
           )}
           {blocksDisplay.tasks.map((block) => (
             <ActivityBlock
-              activityId={activity.id}
+              activity={activity}
               block={block}
               key={block.id}
               links={links}
+              locale={locale}
               type={'task'}
             />
           ))}
           {blocksDisplay.output.length === 0 ? (
-            <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
+            <ActivityBlock activity={activity} links={links} locale={locale} type={'empty'} />
           ) : (
             blocksDisplay.output.map((block) => (
               <ActivityBlock
-                activityId={activity.id}
+                activity={activity}
                 block={block}
                 key={block.id}
                 links={links}
+                locale={locale}
                 type={'output'}
               />
             ))

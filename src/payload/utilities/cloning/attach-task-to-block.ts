@@ -5,6 +5,7 @@ import {
   findBlockIndex,
   type StoredBlock,
   type TaskCollection,
+  type TaskPosition,
 } from '@/payload/utilities/cloning/block-position'
 import { CloneHttpError } from '@/payload/utilities/cloning/clone-http-error'
 import { lockActivityForPaste } from '@/payload/utilities/cloning/lock-activity'
@@ -12,7 +13,7 @@ import { mergeReqContextTargetOrgId } from '@/payload/utilities/cloning/merge-re
 import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 
 /** A Prozessgruppe: one task block of one activity (PIMS-83). */
-export type BlockTarget = { activityId: number; blockId: string }
+export type BlockTarget = { activityId: number; blockId: string; position?: TaskPosition }
 
 export type ResolvedBlockTarget = { activityId: number; blockIndex: number; organisationId: number }
 
@@ -72,11 +73,14 @@ export const resolveBlockTarget = async (
  */
 export const attachTaskToBlock = async ({
   cloneLocales,
+  position,
   req,
   target,
   task,
 }: {
   cloneLocales: TypedLocale[]
+  /** "Davor" or "Danach" a task of the same Prozessgruppe. Without it the task goes last. */
+  position?: TaskPosition
   req: PayloadRequest
   target: ResolvedBlockTarget
   task: { id: number; relationTo: TaskCollection }
@@ -97,7 +101,7 @@ export const attachTaskToBlock = async ({
     })
 
     const blocks = (activity.blocks ?? []) as unknown as StoredBlock[]
-    const next = appendTaskRelation(blocks, target.blockIndex, task)
+    const next = appendTaskRelation(blocks, target.blockIndex, task, position)
 
     if (!next) {
       continue

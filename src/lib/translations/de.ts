@@ -56,10 +56,16 @@ export const de = {
     copied: '«{{label}}» ist kopiert. Fügen Sie es eine Ebene höher ein.',
     copy: 'Kopieren',
     holding: 'Kopiert: {{label}}',
+    pasteAfter: '«{{label}}» danach einfügen',
+    pasteBefore: '«{{label}}» davor einfügen',
     pasted: '«{{label}}» ist eingefügt.',
+    pastedWithIssues: '«{{label}}» ist eingefügt, aber nicht vollständig.',
     pasteFailed: 'Das Einfügen ist fehlgeschlagen: {{error}}',
     pasteHere: '«{{label}}» hier einfügen',
-    working: 'Bitte warten…',
+    pasting: '«{{label}}» wird eingefügt…',
+    pastingHint:
+      'Alle Prozesse, Listen und Dokumente werden kopiert. Das kann einige Minuten dauern. Bleiben Sie auf dieser Seite.',
+    resultTitle: 'Ergebnis des Einfügens',
   },
   cloneActivity: {
     button: 'Aktivitäten klonen',

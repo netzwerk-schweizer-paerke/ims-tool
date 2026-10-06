@@ -34,6 +34,11 @@ export const ActivityEditLink = ({ activity, links, locale }: Props) => {
             ? undefined
             : { activityId: activity.id, kind: 'activity', organisationId }
         }
+        siblingTarget={
+          organisationId === null
+            ? undefined
+            : { anchor: { activityId: activity.id }, kind: 'landscape', organisationId }
+        }
       />
     </div>
   )

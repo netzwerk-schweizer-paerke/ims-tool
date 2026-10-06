@@ -58,7 +58,9 @@ export const ActivitySupport = ({ activity, links, locale }: Props) => {
 
   return (
     <div className={'activity-support relative z-10 flex flex-col'}>
-      <div className={'flex items-center justify-center gap-2 text-center'}>
+      <div
+        className={'flex items-center justify-center gap-2 text-center'}
+        data-paste-key={`activity:${activity.id}`}>
         <h2 className={'max-w-52 hyphens-auto text-xl font-bold'} lang={locale}>
           {activity.name}
         </h2>
@@ -68,10 +70,11 @@ export const ActivitySupport = ({ activity, links, locale }: Props) => {
         <div className={'relative flex flex-row flex-wrap justify-center'}>
           {blocksDisplay.tasks.map((block) => (
             <ActivityBlock
-              activityId={activity.id}
+              activity={activity}
               block={block}
               key={block.id}
               links={links}
+              locale={locale}
               type={'task'}
             />
           ))}

@@ -29,9 +29,15 @@ type BlockSource = Map<TypedLocale, ActivityBlock>
 const bodySchema = z.object({
   locale: z.string(),
   mode: z.enum(['copy', 'link']).default('copy'),
+  // "Davor" or "Danach" a Prozessgruppe of the target Thema. Absent, the block goes last.
+  position: z
+    .object({ anchorBlockId: z.string().min(1), placement: z.enum(['after', 'before']) })
+    .optional(),
   source: z.object({ activityId: z.number().min(1), blockId: z.string().min(1) }),
   targetActivityId: z.number().min(1),
 })
+
+type BlockPosition = { anchorBlockId: string; placement: 'after' | 'before' }
 
 /**
  * The pipeline config of one block paste. The source block and the target Thema come from the
@@ -40,6 +46,7 @@ const bodySchema = z.object({
 const pasteBlockConfig = (
   blockId: string,
   targetActivityId: number,
+  position?: BlockPosition,
 ): CloneEndpointConfig<BlockSource> => ({
   cloneSource: async ({ cloneLocales, documentPreloader, req, source, targetOrgId, tracker }) => {
     let written = 0
@@ -55,6 +62,14 @@ const pasteBlockConfig = (
     }
 
     await lockActivityForPaste(req, targetActivityId)
+
+    // Read after the lock, so a paste that waited sees the blocks the earlier one wrote.
+    const anchor = position
+      ? {
+          index: await findBlockIndexIn(req, targetActivityId, position.anchorBlockId),
+          placement: position.placement,
+        }
+      : undefined
 
     for (const locale of cloneLocales) {
       const block = source.get(locale) ?? fallbackBlock
@@ -88,7 +103,7 @@ const pasteBlockConfig = (
 
       await req.payload.update({
         collection: 'activities',
-        data: { blocks: insertBlock(target.blocks ?? [], prepared) },
+        data: { blocks: insertBlock(target.blocks ?? [], prepared, anchor) },
         depth: 0,
         id: targetActivityId,
         locale,
@@ -120,7 +135,7 @@ const pasteBlockConfig = (
     ),
   label: { plural: 'Prozessgruppen', singular: 'Prozessgruppe' },
   readSource: async ({ cloneLocales, req, sourceId }) => {
-    const index = await findSourceBlockIndex(req, sourceId, blockId)
+    const index = await findBlockIndexIn(req, sourceId, blockId)
     const source: BlockSource = new Map()
     const documentIds: number[] = []
 
@@ -155,7 +170,8 @@ const pasteBlockConfig = (
   stampsCloneSource: false,
 })
 
-const findSourceBlockIndex = async (
+/** The position of a block in its Thema, across all locales. See `block-id-is-per-locale`. */
+const findBlockIndexIn = async (
   req: PayloadRequest,
   activityId: number,
   blockId: string,
@@ -175,7 +191,7 @@ const findSourceBlockIndex = async (
   )
 
   if (index === -1) {
-    throw new CloneHttpError(`Source block ${blockId} not found`, 404)
+    throw new CloneHttpError(`Block ${blockId} not found in Thema ${activityId}`, 404)
   }
 
   return index
@@ -196,7 +212,7 @@ export const pasteBlockEndpoint: Endpoint = {
       return Response.json(formatValidationErrors(parsed.error), { status: 400 })
     }
 
-    const { locale: requestedLocale, mode, source, targetActivityId } = parsed.data
+    const { locale: requestedLocale, mode, position, source, targetActivityId } = parsed.data
     const locale = toContentLocale(requestedLocale, req.payload.config)
 
     if (!locale) {
@@ -220,7 +236,7 @@ export const pasteBlockEndpoint: Endpoint = {
     }
 
     const { body, status } = await runClonePipeline(
-      pasteBlockConfig(source.blockId, targetActivityId),
+      pasteBlockConfig(source.blockId, targetActivityId, position),
       {
         cloneLocales: getCloneLocales(req.payload.config),
         locale,

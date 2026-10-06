@@ -6,6 +6,7 @@ import {
   parseClipboardItem,
   pasteRequest,
   type PasteTarget,
+  placeTarget,
 } from '@/lib/clipboard/paste-request'
 
 const PARK = 6
@@ -61,8 +62,13 @@ describe('pasteRequest', () => {
     })
   })
 
-  test('clones a Thema inside its own park as a link', () => {
-    expect(pasteRequest(thema, landscape(PARK), 'fr')?.body).toMatchObject({ mode: 'link' })
+  // PIMS-83: a paste always clones, also inside one park. It never links the originals.
+  test('clones a Thema inside its own park as a copy', () => {
+    expect(pasteRequest(thema, landscape(PARK), 'fr')?.body).toMatchObject({ mode: 'copy' })
+  })
+
+  test('clones a Prozessgruppe inside its own park as a copy', () => {
+    expect(pasteRequest(block, intoThema(PARK), 'de')?.body).toMatchObject({ mode: 'copy' })
   })
 
   test('pastes a Prozessgruppe into a Thema', () => {
@@ -77,20 +83,14 @@ describe('pasteRequest', () => {
     })
   })
 
-  test('links an existing Prozess inside one park, with no clone', () => {
-    expect(pasteRequest(flow, intoBlock(PARK), 'de')).toEqual({
-      body: { blockId: 't-de-2', collection: 'task-flows', taskId: 498 },
-      path: '/api/activities/177/attach-task',
-    })
-  })
-
-  test('clones a Prozess into a Prozessgruppe of another park', () => {
-    expect(pasteRequest(flow, intoBlock(OTHER), 'de')).toEqual({
+  test.each([PARK, OTHER])('clones a Prozess into a Prozessgruppe of park %i', (park) => {
+    expect(pasteRequest(flow, intoBlock(park), 'de')).toEqual({
       body: {
         ids: [498],
         locale: 'de',
+        mode: 'copy',
         target: { activityId: 177, blockId: 't-de-2' },
-        targetOrganisationId: OTHER,
+        targetOrganisationId: park,
       },
       path: '/api/task-flows/clone',
     })
@@ -98,6 +98,60 @@ describe('pasteRequest', () => {
 
   test('answers null for a target on the wrong level', () => {
     expect(pasteRequest(flow, landscape(PARK), 'de')).toBeNull()
+  })
+})
+
+describe('pasteRequest next to a sibling', () => {
+  test('places a Thema before another Thema', () => {
+    const target = placeTarget(
+      { anchor: { activityId: 40 }, kind: 'landscape', organisationId: OTHER },
+      'before',
+    )
+
+    expect(pasteRequest(thema, target, 'de')?.body).toMatchObject({
+      position: { anchorActivityId: 40, placement: 'before' },
+    })
+  })
+
+  test('places a Prozessgruppe after another Prozessgruppe by default', () => {
+    const target: PasteTarget = {
+      activityId: 177,
+      anchor: { blockId: 't-de-1' },
+      kind: 'activity',
+      organisationId: OTHER,
+    }
+
+    expect(pasteRequest(block, target, 'de')?.body).toMatchObject({
+      position: { anchorBlockId: 't-de-1', placement: 'after' },
+    })
+  })
+
+  test('places a cloned Prozess next to the anchor task in either park', () => {
+    const nextToList = (organisationId: number) =>
+      placeTarget(
+        {
+          activityId: 177,
+          anchor: { collection: 'task-lists', id: 7 },
+          blockId: 't-de-2',
+          kind: 'activityBlock',
+          organisationId,
+        },
+        'before',
+      )
+    const position = { anchorCollection: 'task-lists', anchorId: 7, placement: 'before' }
+
+    expect(pasteRequest(flow, nextToList(PARK), 'de')?.body).toMatchObject({
+      target: { position },
+    })
+    expect(pasteRequest(flow, nextToList(OTHER), 'de')?.body).toMatchObject({
+      target: { position },
+    })
+  })
+
+  test('sends no position without an anchor', () => {
+    expect(pasteRequest(thema, placeTarget(landscape(PARK), 'before'), 'de')?.body).not.toHaveProperty(
+      'position',
+    )
   })
 })
 

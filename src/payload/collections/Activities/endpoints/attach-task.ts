@@ -8,6 +8,7 @@ import { attachTaskToBlock, resolveBlockTarget } from '@/payload/utilities/cloni
 import { getErrorStatus } from '@/payload/utilities/cloning/clone-http-error'
 import { getCloneLocales } from '@/payload/utilities/cloning/clone-locales'
 import { getErrorMessage } from '@/payload/utilities/cloning/error-utils'
+import { taskPositionSchema } from '@/payload/utilities/cloning/task-position-schema'
 import { formatValidationErrors } from '@/payload/utilities/cloning/validation-schemas'
 import { ROLE_SUPER_ADMIN } from '@/payload/utilities/constants'
 import { requireAuthentication } from '@/payload/utilities/endpoints/require-authentication'
@@ -16,6 +17,8 @@ import { getIdFromRelation } from '@/payload/utilities/get-id-from-relation'
 const bodySchema = z.object({
   blockId: z.string().min(1),
   collection: z.enum(['task-flows', 'task-lists']),
+  // "Davor" or "Danach" a task of the same Prozessgruppe. Absent, the task goes last.
+  position: taskPositionSchema.optional(),
   taskId: z.number().min(1),
 })
 
@@ -40,7 +43,7 @@ export const attachTaskEndpoint: Endpoint = {
       )
     }
 
-    const { blockId, collection, taskId } = parsed.data
+    const { blockId, collection, position, taskId } = parsed.data
 
     const activity = await req.payload.findByID({
       collection: 'activities',
@@ -90,6 +93,7 @@ export const attachTaskEndpoint: Endpoint = {
 
       const written = await attachTaskToBlock({
         cloneLocales: getCloneLocales(req.payload.config),
+        position,
         req: transactionID === null ? req : { ...req, transactionID },
         target,
         task: { id: taskId, relationTo: collection },
@@ -97,6 +101,15 @@ export const attachTaskEndpoint: Endpoint = {
 
       if (transactionID !== null) {
         await req.payload.db.commitTransaction(transactionID)
+      }
+
+      // No locale took the task, because the Prozessgruppe already links it. A 200 would let
+      // the menu report a paste that changed nothing.
+      if (written === 0) {
+        return Response.json(
+          { error: 'The Prozessgruppe already links this task' },
+          { status: 409 },
+        )
       }
 
       return Response.json({ locales: written }, { status: 200 })

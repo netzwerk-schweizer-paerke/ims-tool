@@ -8,6 +8,8 @@ type Props = {
   links: ViewLinks
   /** The content locale of the edit links. The public share page shows none. */
   locale?: string
+  /** The Prozessgruppe that holds these tiles. A paste before or after a tile lands in it. */
+  parent?: { activityId: number; blockId: string }
   tasks:
     | (
         | { relationTo: 'task-flows'; value: number | TaskFlow }
@@ -18,16 +20,18 @@ type Props = {
 }
 
 /**
- * The menu of one Prozess or Liste tile: edit, and copy for a paste into another Prozessgruppe
- * (PIMS-83). It sits in the top right corner, outside the shape.
+ * The menu of one Prozess or Liste tile: edit, copy, and a paste before or after the tile
+ * (PIMS-83). It sits inside the tile, top right.
  */
 const TaskActions = ({
   links,
   locale,
+  parent,
   task,
 }: {
   links: ViewLinks
   locale?: string
+  parent?: { activityId: number; blockId: string }
   task: { id: number; kind: 'task-flows' | 'task-lists'; name?: null | string }
 }) => {
   if (!links.showEdit) {
@@ -45,12 +49,23 @@ const TaskActions = ({
             : { id: task.id, kind: task.kind, label: task.name ?? '', organisationId }
         }
         editHref={`/admin/collections/${task.kind}/${task.id}${locale ? `?locale=${locale}` : ''}`}
+        siblingTarget={
+          organisationId === null || !parent
+            ? undefined
+            : {
+                activityId: parent.activityId,
+                anchor: { collection: task.kind, id: task.id },
+                blockId: parent.blockId,
+                kind: 'activityBlock',
+                organisationId,
+              }
+        }
       />
     </div>
   )
 }
 
-export const TasksGrid = ({ links, locale, tasks }: Props) => {
+export const TasksGrid = ({ links, locale, parent, tasks }: Props) => {
   if (!tasks) {
     return null
   }
@@ -63,12 +78,13 @@ export const TasksGrid = ({ links, locale, tasks }: Props) => {
         switch (task.relationTo) {
           case 'task-flows': {
             return (
-              <div className={'relative'} key={i}>
+              <div className={'relative'} data-paste-key={record ? `task-flows:${record.id}` : undefined} key={i}>
                 <FlowBlock flow={task.value} links={links} />
                 {record && (
                   <TaskActions
                     links={links}
                     locale={locale}
+                    parent={parent}
                     task={{ id: record.id, kind: 'task-flows', name: record.name }}
                   />
                 )}
@@ -77,12 +93,13 @@ export const TasksGrid = ({ links, locale, tasks }: Props) => {
           }
           case 'task-lists': {
             return (
-              <div className={'relative'} key={i}>
+              <div className={'relative'} data-paste-key={record ? `task-lists:${record.id}` : undefined} key={i}>
                 <ListBlock links={links} list={task.value} />
                 {record && (
                   <TaskActions
                     links={links}
                     locale={locale}
+                    parent={parent}
                     task={{ id: record.id, kind: 'task-lists', name: record.name }}
                   />
                 )}

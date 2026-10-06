@@ -23,7 +23,9 @@ export const ActivityTitles = ({ activity, links, locale }: Props) => {
   }
 
   return (
-    <div className={'flex items-center justify-center gap-2 px-4 text-center'}>
+    <div
+      className={'flex items-center justify-center gap-2 px-4 text-center'}
+      data-paste-key={`activity:${activity.id}`}>
       <h2 className={'hyphens-auto text-xl font-bold'} lang={locale}>
         {activity.name}
       </h2>

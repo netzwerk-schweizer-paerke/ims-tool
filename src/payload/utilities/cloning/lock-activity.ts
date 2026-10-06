@@ -6,17 +6,10 @@ import { sql } from '@payloadcms/db-postgres'
 /** The first key of the lock pair. It keeps these locks apart from any other advisory lock. */
 const PASTE_LOCK_NAMESPACE = 83
 
-/**
- * Serialises every paste into one Thema until the transaction ends (PIMS-83).
- *
- * A paste reads the whole block array and writes it back, so two pastes at once would lose one.
- * A `FOR UPDATE` through drizzle does not serialise, but an advisory lock does. See the vendor
- * rule `payload/cms-3`, section "drizzle session.execute() doesn't serialize FOR UPDATE locks".
- */
-export const lockActivityForPaste = async (
-  req: PayloadRequest,
-  activityId: number,
-): Promise<void> => {
+/** The first key of the lock on the Themen order of one park. */
+const PARK_ORDER_LOCK_NAMESPACE = 84
+
+const lockUntilCommit = async (req: PayloadRequest, namespace: number, key: number) => {
   const transactionID = await req.transactionID
 
   if (transactionID === undefined || transactionID === null) {
@@ -29,7 +22,22 @@ export const lockActivityForPaste = async (
     throw new Error(`No database session for transaction ${String(transactionID)}`)
   }
 
-  await session.db.execute(
-    sql`SELECT pg_advisory_xact_lock(${PASTE_LOCK_NAMESPACE}, ${activityId})`,
-  )
+  await session.db.execute(sql`SELECT pg_advisory_xact_lock(${namespace}, ${key})`)
 }
+
+/**
+ * Serialises every paste into one Thema until the transaction ends (PIMS-83).
+ *
+ * A paste reads the whole block array and writes it back, so two pastes at once would lose one.
+ * A `FOR UPDATE` through drizzle does not serialise, but an advisory lock does. See the vendor
+ * rule `payload/cms-3`, section "drizzle session.execute() doesn't serialize FOR UPDATE locks".
+ */
+export const lockActivityForPaste = (req: PayloadRequest, activityId: number): Promise<void> =>
+  lockUntilCommit(req, PASTE_LOCK_NAMESPACE, activityId)
+
+/**
+ * Serialises every renumber of the Themen order of one park until the transaction ends. Two
+ * placements at once would each renumber from the same stale order.
+ */
+export const lockParkOrderForPaste = (req: PayloadRequest, organisationId: number): Promise<void> =>
+  lockUntilCommit(req, PARK_ORDER_LOCK_NAMESPACE, organisationId)

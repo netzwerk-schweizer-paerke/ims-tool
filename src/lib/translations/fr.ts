@@ -56,10 +56,16 @@ export const fr = {
     copied: '« {{label}} » est copié. Collez-le un niveau plus haut.',
     copy: 'Copier',
     holding: 'Copié : {{label}}',
+    pasteAfter: 'Coller « {{label}} » après',
+    pasteBefore: 'Coller « {{label}} » avant',
     pasted: '« {{label}} » est collé.',
+    pastedWithIssues: '« {{label}} » est collé, mais pas entièrement.',
     pasteFailed: 'Le collage a échoué : {{error}}',
     pasteHere: 'Coller « {{label}} » ici',
-    working: 'Veuillez patienter…',
+    pasting: 'Collage de « {{label}} »…',
+    pastingHint:
+      'Tous les processus, listes et documents sont copiés. Cela peut prendre quelques minutes. Restez sur cette page.',
+    resultTitle: 'Résultat du collage',
   },
   cloneActivity: {
     button: 'Cloner les activités',

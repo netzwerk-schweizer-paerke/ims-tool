@@ -74,6 +74,11 @@ export const ActivityBlockContent = ({
                   <TasksGrid
                     links={links}
                     locale={locale}
+                    parent={
+                      activityBlock.id
+                        ? { activityId: activity.id, blockId: activityBlock.id }
+                        : undefined
+                    }
                     tasks={activityBlock?.relations?.tasks}
                   />
                 </div>

@@ -61,24 +61,26 @@ export const ActivityFlow = ({ activity, links, locale }: Props) => {
     <div className={'activity-flow z-10 flex grow flex-col items-center justify-stretch'}>
       <div className={'relative flex w-min grow flex-col'}>
         {blocksDisplay.input.length === 0 ? (
-          <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
+          <ActivityBlock activity={activity} links={links} locale={locale} type={'empty'} />
         ) : (
           blocksDisplay.input.map((block) => (
             <ActivityBlock
-              activityId={activity.id}
+              activity={activity}
               block={block}
               key={block.id}
               links={links}
+              locale={locale}
               type={'input'}
             />
           ))
         )}
         {blocksDisplay.tasks.map((block) => (
           <ActivityBlock
-            activityId={activity.id}
+            activity={activity}
             block={block}
             key={block.id}
             links={links}
+            locale={locale}
             type={'task'}
           />
         ))}
@@ -86,14 +88,15 @@ export const ActivityFlow = ({ activity, links, locale }: Props) => {
           <div className={'absolute left-1/2 top-0 h-full -translate-x-[1px] border'}></div>
         </div>
         {blocksDisplay.output.length === 0 ? (
-          <ActivityBlock activityId={activity.id} links={links} type={'empty'} />
+          <ActivityBlock activity={activity} links={links} locale={locale} type={'empty'} />
         ) : (
           blocksDisplay.output.map((block) => (
             <ActivityBlock
-              activityId={activity.id}
+              activity={activity}
               block={block}
               key={block.id}
               links={links}
+              locale={locale}
               type={'output'}
             />
           ))
