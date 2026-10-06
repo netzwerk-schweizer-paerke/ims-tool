@@ -24,7 +24,7 @@ export const it = {
     blockHasNoName: 'Il blocco non ha un nome',
     noBlocks: 'Nessun blocco',
     noContent: 'Nessuna attività o processo definito. Creane alcuni prima.',
-    title: 'Panorama dei processi',
+    title: 'Panorama delle attività',
   },
   activityOverview: {
     notAvailableInLocale:
@@ -35,7 +35,7 @@ export const it = {
   },
   admin: {
     links: {
-      activityLandscape: 'Panorama dei processi',
+      activityLandscape: 'Panorama delle attività',
       dashboard: 'Pannello di controllo',
       title: 'Collegamenti',
     },
