@@ -62,6 +62,11 @@ const BlockActions = ({
           : undefined
       }
       editHref={editHref}
+      pasteTarget={
+        isTask && organisationId !== null
+          ? { activityId: activity.id, blockId: block.id, kind: 'activityBlock', organisationId }
+          : undefined
+      }
       siblingTarget={
         isTask && organisationId !== null
           ? {
