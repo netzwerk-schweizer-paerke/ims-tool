@@ -20,6 +20,7 @@ import * as migration_20260904_183652_share_link_expiry from './20260904_183652_
 import * as migration_20260904_222437_add_statistics_global from './20260904_222437_add_statistics_global';
 import * as migration_20260922_065619_payload_3_90_1 from './20260922_065619_payload_3_90_1';
 import * as migration_20261005_133037_pims_93_last_login_and_clone_source from './20261005_133037_pims_93_last_login_and_clone_source';
+import * as migration_20261026_121145_payload_3_92_0 from './20261026_121145_payload_3_92_0';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20261005_133037_pims_93_last_login_and_clone_source.up,
     down: migration_20261005_133037_pims_93_last_login_and_clone_source.down,
-    name: '20261005_133037_pims_93_last_login_and_clone_source'
+    name: '20261005_133037_pims_93_last_login_and_clone_source',
+  },
+  {
+    up: migration_20261026_121145_payload_3_92_0.up,
+    down: migration_20261026_121145_payload_3_92_0.down,
+    name: '20261026_121145_payload_3_92_0'
   },
 ];
